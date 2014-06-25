@@ -14,6 +14,10 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat"], functi
           QUnit.equal(p.data.foo[2], 6, "First value matches");
           QUnit.equal(p.data.bar[2], 10, "Other value matches");
           cb();
+        },
+        error: function (e) {
+          QUnit.ok(false, e);
+          cb();
         }
       });
 

@@ -19,6 +19,10 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat", "app/Da
           QUnit.equal(dv.data.fie[dv.header.colsByName.fie.items.length * 2 + 2], 8, "Average value matches");
 
           cb();
+        },
+        error: function (e) {
+          QUnit.ok(false, e);
+          cb();
         }
       });
 
@@ -47,6 +51,10 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat", "app/Da
           QUnit.equal(dv.data.selected[dv.header.colsByName.selected.items.length * 1], 1, "Selected row 1 is selected in DataView");
           QUnit.equal(dv.data.selected[dv.header.colsByName.selected.items.length * 2], 0, "Unselected row 1 is not selected in DataView");
 
+          cb();
+        },
+        error: function (e) {
+          QUnit.ok(false, e);
           cb();
         }
       });
