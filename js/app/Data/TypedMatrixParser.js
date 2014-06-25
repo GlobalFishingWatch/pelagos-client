@@ -256,7 +256,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           self.rowLen += col.typespec.size;
         };
 
-        self.offset = 4 + self.headerLen;
+        self.offset += self.headerLen;
         self.headerIsLoaded = true;
         self.headerLoaded(self.header);
       }
