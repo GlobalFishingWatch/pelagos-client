@@ -648,7 +648,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     mergeTiles: function (tiles) {
       var self = this;
-      return self.mergeSortTiles(tiles);
+      return self.appendTiles(tiles);
     },
 
     toString: function () {
