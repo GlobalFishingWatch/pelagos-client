@@ -38,10 +38,18 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
     gl.shaderSource(vertexShader, vertexSrc);
     gl.compileShader(vertexShader);
 
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+      throw gl.getShaderInfoLog(vertexShader);
+    }
+
     // create fragment shader
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     gl.shaderSource(fragmentShader, fragmentSrc);
     gl.compileShader(fragmentShader);
+
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+      throw gl.getShaderInfoLog(fragmentShader);
+    }
 
     // link shaders to create our program
     var program = gl.createProgram();
