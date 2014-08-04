@@ -469,26 +469,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     mergeTiles: function (tiles) {
       var self = this;
 
-      function compareTiles(a, b) {
-        if (a.value.content.compareRows(a.merged_rowcount, b.value.content, b.merged_rowcount) > 0) {
-          return b;
-        } else {
-          return a;
-        }
-      }
-
-      function nextTile(tiles) {
-        if (!tiles.length) return undefined;
-        res = tiles.reduce(function (a, b) {
-          if (a.value.content.data == undefined || b.merged_rowcount >= b.value.content.rowcount) return a;
-          if (b.value.content.data == undefined || a.merged_rowcount >= a.value.content.rowcount) return b;
-          return compareTiles(a, b);
-        });
-        if (res.merged_rowcount >= res.value.content.rowcount) return undefined;
-        res.merged_rowcount++;
-        return res;
-      }
-
       var start = new Date();
 
       dst = new BaseTiledFormat.DataContainer();
@@ -500,10 +480,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         });
       }
 
-      tiles = tiles.map(function (tile) {
-        return {value: tile, merged_rowcount: 0};
-      });
-
       var coalesce = function(fn, val1, val2) {
         if (val1 == undefined) return val2;
         if (val2 == undefined) return val1;
@@ -511,11 +487,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       }
 
       tiles.map(function (tile) {
-        if (!tile.value.content.header) return;
+        if (!tile.content.header) return;
 
-        dst.header.length += tile.value.content.header.length;
+        dst.header.length += tile.content.header.length;
 
-        Object.items(tile.value.content.header.colsByName).map(function (item) {
+        Object.items(tile.content.header.colsByName).map(function (item) {
+          if (item.key == 'series') return;
+
           var dstval = dst.header.colsByName[item.key] || {};
           var srcval = item.value || {};
 
@@ -529,41 +507,37 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         });
       });
 
+
       for (var name in dst.header.colsByName) {
         var col = dst.header.colsByName[name];
         dst.data[name] = new (eval(col.typespec.array))(dst.header.length);
       }
       dst.data.tile = new Int32Array(dst.header.length);
 
-      var lastSeries = function () {}; // Magic unique value
-      var tile;
-      while (tile = nextTile(tiles)) {
+
+      // For now, just append tile data - don't actually merge. Note:
+      // series don't work when we do this...
+      dst.rowcount = 0;
+      tiles.map(function (tile) {
         for (var name in dst.data) {
-          if (tile.value.content.data[name] == undefined) {
-            dst.data[name][dst.rowcount] = NaN;
+          if (tile.content.data[name] == undefined) {
+            for (var rowidx = 0; rowidx < tile.content.rowcount; rowidx++) {
+              dst.data[name][dst.rowcount + rowidx] = NaN;
+            }
           } else {
-            dst.data[name][dst.rowcount] = tile.value.content.data[name][tile.merged_rowcount-1];
+            for (var rowidx = 0; rowidx < tile.content.rowcount; rowidx++) {
+              dst.data[name][dst.rowcount + rowidx] = tile.content.data[name][rowidx];
+            }
           }
         }
-        if (tile.value.idx != undefined) {
-          dst.data.tile[dst.rowcount] = tile.value.idx;
-        } else {
-          dst.data.tile[dst.rowcount] = tile.value.content.data.tile[tile.merged_rowcount-1];
-        }
-        if (!dst.data.series) {
-          dst.seriescount++;
-        } else if (dst.data.series[dst.rowcount] != lastSeries) {
-          dst.seriescount++;
-          lastSeries = dst.data.series[dst.rowcount];
-        }
-        dst.rowcount++;
-      }
+        dst.rowcount += tile.content.rowcount;
+      });
 
       self.header.length = dst.header.length;
       self.header.colsByName = dst.header.colsByName;
       self.data = dst.data;
       self.rowcount = dst.rowcount;
-      self.seriescount = dst.seriescount;
+      self.seriescount = 0;
 
       var end = new Date();
       Logging.default.log("Data.BaseTiledFormat.mergeTiles", {start: start, end: end, toString: function () { return ((this.end - this.start) / 1000.0).toString(); }});
