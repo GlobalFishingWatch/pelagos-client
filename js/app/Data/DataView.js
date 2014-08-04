@@ -16,28 +16,20 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
      */
 
     columns: {
-      points: {type: "Int32", items: [
-        {name: "latitude", source: {latitude: 1.0}},
-        {name: "longitude", source: {longitude: 1.0}}]},
-      color: {type: "Int32", items: [
-        {name: "red", source: {_: 1.0}},
-        {name: "green", source: {_: 1.0}},
-        {name: "blue", source: {_: 0.0}}]},
-      magnitude: {type: "Int32", items: [
-        {name: "magnitude", source: {_: 1.0}}]}
+      /*
+        points: {type: "Int32", items: [
+          {name: "longitude", source: {longitude: 1.0}},
+          {name: "latitude", source: {latitude: 1.0}}]},
+        color: {type: "Int32", items: [
+          {name: "red", source: {_: 1.0}},
+          {name: "green", source: {_: 1.0}},
+          {name: "blue", source: {_: 0.0}}]},
+        magnitude: {type: "Int32", items: [
+          {name: "magnitude", source: {_: 1.0}}]}
+      */
     },
 
     transforms: {
-      coordinate: function (col, offset) {
-        var spec = this;
-        var longitude = col[offset + spec.itemsByName.longitude.index];
-        var latitude = col[offset + spec.itemsByName.latitude.index];
-
-        var pixel = GeoProjection.LatLongToPixelXY(latitude, longitude);
-
-        col[offset + spec.itemsByName.latitude.index] = pixel.y;
-        col[offset + spec.itemsByName.longitude.index] = pixel.x;
-      },
       rowidx: function (col, offset) {
         var spec = this;
         var rowidx = (offset / spec.items.length) + 1;

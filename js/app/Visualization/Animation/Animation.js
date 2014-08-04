@@ -2,15 +2,17 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
   var Animation = Class({
     name: "Animation",
     columns: {
-      point: {type: "Float32", transform: "coordinate", items: [
-        {name: "latitude", source: {latitude: 1.0}},
-        {name: "longitude", source: {longitude: 1.0}}]},
-      color: {type: "Float32", items: [
-        {name: "red", source: {_: 1.0}},
-        {name: "green", source: {_: 1.0}},
-        {name: "blue", source: {_: 0.0}}]},
-      magnitude: {type: "Float32", items: [
-        {name: "magnitude", source: {_: 1.0}}]}
+      /*
+        point: {type: "Float32", items: [
+          {name: "longitude", source: {longitude: 1.0}},
+          {name: "latitude", source: {latitude: 1.0}}]},
+        color: {type: "Float32", items: [
+          {name: "red", source: {_: 1.0}},
+          {name: "green", source: {_: 1.0}},
+          {name: "blue", source: {_: 0.0}}]},
+        magnitude: {type: "Float32", items: [
+          {name: "magnitude", source: {_: 1.0}}]}
+      */
     },
 
     programSpecs: {},

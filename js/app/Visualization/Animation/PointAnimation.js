@@ -8,8 +8,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
         items: [
           {name: "longitude", source: {longitude: 1.0}},
           {name: "latitude", source: {latitude: 1.0}}
-        ],
-        transform: "coordinate"
+        ]
       },
       color: {type: "Float32", items: [
         {name: "red", source: {score: 0.85, _:-0.1, hover:1.0, selected:1.0}, min: 0.0, max: 1.0},
