@@ -18,21 +18,33 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
     }
   };
 
-  Shader.createShaderProgram = function(gl, vertexShaderNode, fragmentShaderNode) {
-    return Shader.createShaderProgramFromSource(gl, $(vertexShaderNode).text(), $(fragmentShaderNode).text());
+  Shader.preprocess = function(src, context, cb) {
+    // FIXME: Async + $.get(require.toUrl()) stuff
+
+    cb(src.split("\n").map(function (line) {
+      if (line.indexOf('#pragma include') == -1) return line;
+
+      var key = line.match(/#pragma include '(.*)';/)[1];
+      return context[key];
+
+    }).join("\n"));
   };
 
-  Shader.createShaderProgramFromUrl = function(gl, vertexShaderUrl, fragmentShaderUrl, cb) {
+  Shader.createShaderProgramFromUrl = function(gl, vertexShaderUrl, fragmentShaderUrl, context, cb) {
     var vertexSrc;
     var fragmentSrc;
     async.series([
-      function (cb) { $.get(vertexShaderUrl, function (data) { vertexSrc = data; cb(); }, "text"); },
-      function (cb) { $.get(fragmentShaderUrl, function (data) { fragmentSrc = data; cb(); }, "text"); },
+      function (cb) { $.get(vertexShaderUrl, function (data) { Shader.preprocess(data, context, function (data) { vertexSrc = data; cb(); }); }, "text"); },
+      function (cb) { $.get(fragmentShaderUrl, function (data) { Shader.preprocess(data, context, function (data) { fragmentSrc = data; cb(); }); }, "text"); },
       function (dummy) { cb(Shader.createShaderProgramFromSource(gl, vertexSrc, fragmentSrc)); }
     ]);
   }
 
   Shader.createShaderProgramFromSource = function(gl, vertexSrc, fragmentSrc) {
+      console.log("===={vertex shader}====\n" + vertexSrc +
+        "===={fragment shader}====\n" + fragmentSrc);
+
+
     // create vertex shader
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexSrc);
@@ -74,6 +86,35 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
     }
 
     return program;
+  };
+
+  Shader.compileMapping = function(srcColsByName, dstNames) {
+    var attrDec = Object.keys(srcColsByName).map(function (srcName) {
+      return 'attribute float ' + srcName + ';'
+    }).join('\n') + '\n';
+
+    var paramDec = dstNames.map(function (dstName) {
+      return 'float _' + dstName + ';'
+    }).join('\n') + '\n';
+
+    var mappingDec = dstNames.map(function (dstName) {
+      return 'uniform float attrmap_' + dstName + '_from_const;\n' +
+        Object.keys(srcColsByName).map(function (srcName) {
+          return 'uniform float attrmap_' + dstName + '_from_' + srcName + ';'
+        }).join('\n');
+    }).join('\n') + '\n';
+
+    var mapper = 'void attrmapper() {\n' +
+      dstNames.map(function (dstName) {
+        return '  _' + dstName + ' = attrmap_' + dstName + '_from_const + \n' +
+          Object.keys(srcColsByName).map(function (srcName) {
+            return '    attrmap_' + dstName + '_from_' + srcName + ' * ' + srcName
+          }).join('+ \n') + ';';
+      }).join('\n') +
+      '\n}';
+
+    var mapping = attrDec + paramDec + mappingDec + mapper;
+    return mapping;
   };
 
   return Shader;
