@@ -64,7 +64,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
               }
 
               self.mergeTiles();
-              self.events.triggerEvent("header", data);
+              var e = {update: "header", header: data};
+              self.events.triggerEvent(e.update, e);
+              self.events.triggerEvent("update", e);
             } else {
               self.handleError(Ajax.makeError(request, url, "header"));
             }
