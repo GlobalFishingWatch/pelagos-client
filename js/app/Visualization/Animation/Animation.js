@@ -88,7 +88,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           require.toUrl(item.value.vertex),
           require.toUrl(item.value.fragment),
           {
-            attrmapper: Shader.compileMapping(Object.keys(self.data_view.source.header.colsByName), self.columns)
+            attrmapper: Shader.compileMapping(self.data_view.source.header.colsByName, self.columns)
           },
           function (program) {
             program.name = item.key;
@@ -112,9 +112,11 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     updateData: function() {
       var self = this;
 
+        self.initGlPrograms(function () {
       Object.values(self.programs).map(self.updateDataProgram.bind(self));
 
       self.manager.triggerUpdate();
+        });
     },
 
     updateDataProgram: function (program) {
