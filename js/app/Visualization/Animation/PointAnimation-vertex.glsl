@@ -22,7 +22,7 @@ void main() {
     baseColor = vec4(0, 0, 0, 0);
     gl_PointSize = 0.0;
   } else {
-    gl_PointSize = pointSize * magnitude;
+    gl_PointSize = pointSize * _magnitude;
     baseColor = vec4(_red, _green, _blue, _alpha);
   }
 }

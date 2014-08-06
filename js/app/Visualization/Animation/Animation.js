@@ -88,7 +88,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           require.toUrl(item.value.vertex),
           require.toUrl(item.value.fragment),
           {
-            attrmapper: Shader.compileMapping(self.columns, Object.keys(self.data_view.source.header.colsByName))
+            attrmapper: Shader.compileMapping(Object.keys(self.data_view.source.header.colsByName), self.columns)
           },
           function (program) {
             program.name = item.key;

@@ -88,28 +88,29 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
     return program;
   };
 
-  Shader.compileMapping = function(srcColsByName, dstNames) {
-    var attrDec = Object.keys(srcColsByName).map(function (srcName) {
+  Shader.compileMapping = function(srcColumns, dstColumns) {
+    var attrDec = Object.keys(srcColumns).map(function (srcName) {
       return 'attribute float ' + srcName + ';'
     }).join('\n') + '\n';
 
-    var paramDec = dstNames.map(function (dstName) {
+    var paramDec = Object.keys(dstColumns).map(function (dstName) {
       return 'float _' + dstName + ';'
     }).join('\n') + '\n';
 
-    var mappingDec = dstNames.map(function (dstName) {
-      return 'uniform float attrmap_' + dstName + '_from_const;\n' +
-        Object.keys(srcColsByName).map(function (srcName) {
+    var mappingDec = Object.keys(dstColumns).map(function (dstName) {
+      return 'uniform float attrmap_' + dstName + '_from_const;' +
+        Object.keys(srcColumns).map(function (srcName) {
           return 'uniform float attrmap_' + dstName + '_from_' + srcName + ';'
         }).join('\n');
     }).join('\n') + '\n';
 
     var mapper = 'void attrmapper() {\n' +
-      dstNames.map(function (dstName) {
-        return '  _' + dstName + ' = attrmap_' + dstName + '_from_const + \n' +
-          Object.keys(srcColsByName).map(function (srcName) {
-            return '    attrmap_' + dstName + '_from_' + srcName + ' * ' + srcName
-          }).join('+ \n') + ';';
+      Object.keys(dstColumns).map(function (dstName) {
+        return '  _' + dstName + ' = ' +
+          ['attrmap_' + dstName + '_from_const'].concat(
+            Object.keys(srcColumns).map(function (srcName) {
+              return '    attrmap_' + dstName + '_from_' + srcName + ' * ' + srcName
+            })).join('+ \n') + ';';
       }).join('\n') +
       '\n}';
 
