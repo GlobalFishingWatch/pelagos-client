@@ -527,7 +527,11 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
               dst.data[name][dst.rowcount + rowidx] = NaN;
             }
           } else {
-            dst.data[name].set(tile.content.data[name], dst.rowcount);
+            var srcCol = tile.content.data[name];
+            if (srcCol.length != tile.content.header.length) {
+              srcCol = new srcCol.constructor(srcCol.buffer, 0, tile.content.header.length * srcCol.BYTES_PER_ELEMENT);
+            }
+            dst.data[name].set(srcCol, dst.rowcount);
           }
         }
         dst.rowcount += tile.content.rowcount;
