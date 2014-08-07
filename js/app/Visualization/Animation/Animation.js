@@ -112,11 +112,9 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     updateData: function() {
       var self = this;
 
-        self.initGlPrograms(function () {
       Object.values(self.programs).map(self.updateDataProgram.bind(self));
 
       self.manager.triggerUpdate();
-        });
     },
 
     updateDataProgram: function (program) {
@@ -149,7 +147,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       self.data_view.useSeries(function (series, cb) {
         // -1 since series contains POINT_COUNT in the last item
         for (var i = 0; i < series.length - 1; i++) {
-            console.log(["drawArrays", i, series[i]*program.items_per_source_item, (series[i+1]-series[i])*program.items_per_source_item]);
           program.gl.drawArrays(
             mode,
             series[i]*program.items_per_source_item,
