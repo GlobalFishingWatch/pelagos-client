@@ -46,7 +46,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       self.manager.visualization.data.createView({
         source: self.source,
-        columns: {}, //self.columns,
+        columns: self.columns,
         selections: self.selections
       }, function (err, data_view) {
         if (err) throw err; // FIXME: Make cb handle cb(err);
@@ -88,7 +88,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           require.toUrl(item.value.vertex),
           require.toUrl(item.value.fragment),
           {
-            attrmapper: Shader.compileMapping(self.data_view.source.header.colsByName, self.columns)
+            attrmapper: Shader.compileMapping(self.data_view.source.header.colsByName, self.data_view.header.colsByName)
           },
           function (program) {
             program.name = item.key;
@@ -200,7 +200,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       program.gl.uniform1f(program.uniforms.startTime, time - offset * 24 * 60 * 60 * 1000);
       program.gl.uniform1f(program.uniforms.endTime, time);
 
-      Object.items(self.columns).map(function (column) {
+      Object.items(self.data_view.header.colsByName).map(function (column) {
         Object.items(column.value.source).map(function (source) {
           var srcKey = source.key;
           if (srcKey == '_') srcKey = 'const';

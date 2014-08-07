@@ -29,20 +29,20 @@ if (!app.useDojo) {
         self.generateUI();
       },
 
-      generateSourceUI: function (itemwidget, spec, item, source) {
+      generateSourceUI: function (colwidget, spec, source) {
         var self = this;
 
         self.dataview.useHeader(function (header, cb) {
           var sourcespec = header.colsByName[source.key];
           var min = -1.0;
           var max = 1.0;
-          if (item.min != undefined && item.max != undefined) {
+          if (spec.min != undefined && spec.max != undefined) {
             if (sourcespec != undefined && sourcespec.min != undefined && sourcespec.max != undefined) {
-              max = item.max / sourcespec.max;
-              min = -item.max / sourcespec.max;
+              max = spec.max / sourcespec.max;
+              min = -spec.max / sourcespec.max;
             } else {
-              min = -item.max;
-              max = item.max;
+              min = -spec.max;
+              max = spec.max;
             }
           }
           var label = "[Constant value]";
@@ -53,17 +53,16 @@ if (!app.useDojo) {
             style: "padding-top: 0; padding-bottom: 8px;"
           });
           $(sourcewidget.domNode).find("a.remove").click(function () {
-            delete item.source[source.key];
+            delete spec.source[source.key];
             sourcewidget.destroy();
           })
           Logging.default.log(
-            "DataViewUI.source." + spec.name + "." + item.name + "." + source.key,
+            "DataViewUI.source." + spec.name + "." + source.key,
             {
               toString: function () {
-                return this.column + "." + this.item + " [" + this.min + ", " + this.max + "] = " + this.value + " * " + this.source;
+                return this.column + " [" + this.min + ", " + this.max + "] = " + this.value + " * " + this.source;
               },
               column: spec.name,
-              item: item.name,
               min: min,
               max: max,
               value: source.value,
@@ -79,22 +78,21 @@ if (!app.useDojo) {
             style: "width:200px;",
             onChange: function (value) {
               Logging.default.log(
-                "DataViewUI.set." + spec.name + "." + item.name + "." + source.key,
+                "DataViewUI.set." + spec.name + "." + source.key,
                 {
                   toString: function () {
-                    return this.column + "." + this.item + " = " + this.value + " * " + this.source;
+                    return this.column + " = " + this.value + " * " + this.source;
                   },
                   column: spec.name,
-                  item: item.name,
                   value: value,
                   source: source.key
                 }
               );                    
-              item.source[source.key] = value;
+              spec.source[source.key] = value;
               self.dataview.changeCol(spec);
             }
           }));
-          itemwidget.addChild(sourcewidget);
+          colwidget.addChild(sourcewidget);
           cb();
         });
       },
@@ -108,50 +106,50 @@ if (!app.useDojo) {
 
           Object.values(header.colsByName).map(function (spec) {
             if (spec.hidden) return;
-            spec.items.map(function (item) {
-              if (item.hidden) return;
-              var itemwidget = new ContentPane({
-                content: spec.name + "." + item.name + " <a href='javascript:void(0);' class='add'><i class='fa fa-plus-square'></i></a>",
-                style: "padding-top: 0; padding-bottom: 0;"
-              });
-              $(itemwidget.domNode).find("a.add").click(function () {
-                self.dataview.getAvailableColumns(function (err, availableColumns) {
-                  var sourceselect = new Menu({
-                    onMouseLeave: function () {
-                      popup.close(sourceselect);
-                    }
-                  });
-                  availableColumns.map(function (colname) {
-                    sourceselect.addChild(new MenuItem({
-                      label: colname,
-                      onClick: function(evt) {
-                        item.source[colname] = 0.0;
-                        self.generateSourceUI(itemwidget, spec, item, {key:colname, value: 0.0});
-                      }
-                    }));
-                  });
+
+            var colwidget = new ContentPane({
+              content: spec.name + " <a href='javascript:void(0);' class='add'><i class='fa fa-plus-square'></i></a>",
+              style: "padding-top: 0; padding-bottom: 0;"
+            });
+            $(colwidget.domNode).find("a.add").click(function () {
+              self.dataview.getAvailableColumns(function (err, availableColumns) {
+                var sourceselect = new Menu({
+                  onMouseLeave: function () {
+                    popup.close(sourceselect);
+                  }
+                });
+                availableColumns.map(function (colname) {
                   sourceselect.addChild(new MenuItem({
-                    label: "[Constant value]",
+                    label: colname,
                     onClick: function(evt) {
-                      item.source["_"] = 0.0;
-                      self.generateSourceUI(itemwidget, spec, item, {key:"_", value: 0.0});
+                      spec.source[colname] = 0.0;
+                      self.generateSourceUI(colwidget, spec, {key:colname, value: 0.0});
                     }
                   }));
-                  popup.open({
-                    popup: sourceselect,
-                    onExecute : function() { 
-                      popup.close(sourceselect);
-                    }, 
-                    onCancel : function() { 
-                      popup.close(sourceselect);
-                    }, 
-                    around: $(itemwidget.domNode).find("a.add")[0]
-                  });
+                });
+                sourceselect.addChild(new MenuItem({
+                  label: "[Constant value]",
+                  onClick: function(evt) {
+                    spec.source._ = 0.0;
+                    self.generateSourceUI(colwidget, spec, {key:"_", value: 0.0});
+                  }
+                }));
+                popup.open({
+                  popup: sourceselect,
+                  onExecute : function() { 
+                    popup.close(sourceselect);
+                  }, 
+                  onCancel : function() { 
+                    popup.close(sourceselect);
+                  }, 
+                  around: $(colwidget.domNode).find("a.add")[0]
                 });
               });
-              Object.items(item.source).map(function (source) { self.generateSourceUI(itemwidget, spec, item, source); });
-              ui.addChild(itemwidget);
             });
+            Object.items(spec.source).map(function (source) { self.generateSourceUI(colwidget, spec, source); });
+            ui.addChild(colwidget);
+
+
           });
 
           self.ui = ui;
