@@ -186,29 +186,6 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       });
     },
 
-    useData: function (fn) {
-      var self = this;
-      if (app.worker) {
-        app.worker.withDataset('data', fn);
-      } else {
-        fn(self.data, function () {});
-      }
-    },
-
-    useSeries: function (fn) {
-      var self = this;
-      if (app.worker) {
-        app.worker.withDataset('series', fn);
-      } else {
-        fn(self.series || [], function () {});
-      }
-    },
-
-    useHeader: function (fn) {
-      var self = this;
-      fn(self.header, function () {});
-    },
-
     getAvailableColumns: function (cb) {
       var self = this;
 

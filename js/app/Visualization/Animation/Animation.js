@@ -144,16 +144,14 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       self.setGeneralUniforms(program);
 
       var mode = self.getDrawMode(program);
-      self.data_view.useSeries(function (series, cb) {
-        // -1 since series contains POINT_COUNT in the last item
-        for (var i = 0; i < series.length - 1; i++) {
-          program.gl.drawArrays(
-            mode,
-            series[i]*program.items_per_source_item,
-            (series[i+1]-series[i])*program.items_per_source_item
-          );
-        }
-      });
+      // -1 since series contains POINT_COUNT in the last item
+      for (var i = 0; i < self.data_view.series.length - 1; i++) {
+        program.gl.drawArrays(
+          mode,
+          self.data_view.series[i]*program.items_per_source_item,
+          (self.data_view.series[i+1]-self.data_view.series[i])*program.items_per_source_item
+        );
+      }
     },
 
     createDataViewArrayBuffers: function (program, columns, items_per_source_item) {
