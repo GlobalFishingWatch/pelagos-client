@@ -527,9 +527,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
               dst.data[name][dst.rowcount + rowidx] = NaN;
             }
           } else {
-            for (var rowidx = 0; rowidx < tile.content.rowcount; rowidx++) {
-              dst.data[name][dst.rowcount + rowidx] = tile.content.data[name][rowidx];
-            }
+            dst.data[name].set(tile.content.data[name], dst.rowcount);
           }
         }
         dst.rowcount += tile.content.rowcount;
