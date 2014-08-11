@@ -44,6 +44,9 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
       // For convenience we store POINT_COUNT in an element at the end
       // of the array, so that the length of each series is
       // series[i+1]-series[i].
+
+      self.seriescount = Math.max(self.seriescount || 0, 1);
+
       self.series = new Int32Array(Math.max(2, self.seriescount + 1));
       self.series[0] = 0;
       self.series[self.series.length - 1] = header.length;
@@ -60,7 +63,6 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
           self.series[self.seriescount] = rowidx + 1;
         }
       }
-      self.seriescount = Math.max(self.seriescount, 1);
     },
 
     sortcols: ['series', 'datetime'],
