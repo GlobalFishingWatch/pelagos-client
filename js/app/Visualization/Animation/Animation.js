@@ -93,7 +93,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           function (program) {
             program.name = item.key;
             self.programs[item.key] = program;
-            self.createDataViewArrayBuffers(program, Object.keys(self.data_view.source.header.colsByName), 1);
             cb();
           }
         );
@@ -119,6 +118,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
     updateDataProgram: function (program) {
       var self = this;
+
       self.loadDataViewArrayBuffers(program);
     },
 
@@ -140,43 +140,46 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     drawProgram: function (program) {
       var self = this;
 
-      self.bindDataViewArrayBuffers(program);
       self.setGeneralUniforms(program);
 
       var mode = self.getDrawMode(program);
-      // -1 since series contains POINT_COUNT in the last item
-      for (var i = 0; i < self.data_view.series.length - 1; i++) {
-        program.gl.drawArrays(
-          mode,
-          self.data_view.series[i]*program.items_per_source_item,
-          (self.data_view.series[i+1]-self.data_view.series[i])*program.items_per_source_item
-        );
-      }
-    },
 
-    createDataViewArrayBuffers: function (program, columns, items_per_source_item) {
-      var self = this;
-      program.dataViewArrayBuffers = {};
-      program.items_per_source_item = items_per_source_item || 1;
-      columns.map(function (name) {
-        program.dataViewArrayBuffers[name] = program.gl.createBuffer();
+      self.data_view.source.getContent().map(function (tile) {
+        self.bindDataViewArrayBuffers(program, tile);
+
+        // -1 since series contains POINT_COUNT in the last item
+        for (var i = 0; i < tile.series.length - 1; i++) {
+          program.gl.drawArrays(
+            mode,
+            tile.series[i],
+            tile.series[i+1]-tile.series[i]
+          );
+        }
       });
     },
 
-    loadDataViewArrayBuffers: function(program) {
+    loadDataViewArrayBuffers: function (program) {
       var self = this;
+
       program.gl.useProgram(program);
 
-      for (var name in program.dataViewArrayBuffers) {
-        Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[name], self.data_view.source.data[name], program);
-      };
+      program.dataViewArrayBuffers = {};
+
+      self.data_view.source.getContent().map(function (tile) {
+        program.dataViewArrayBuffers[tile.url] = {};
+
+        Object.keys(tile.header.colsByName).map(function (name) {
+          program.dataViewArrayBuffers[tile.url][name] = program.gl.createBuffer();
+          Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.url][name], tile.data[name], program);
+        });
+      });
     },
 
-    bindDataViewArrayBuffers: function(program) {
+    bindDataViewArrayBuffers: function(program, tile) {
       var self = this;
       program.gl.useProgram(program);
-      for (var name in program.dataViewArrayBuffers) {
-        Shader.programBindArray(program.gl, program.dataViewArrayBuffers[name], program, name, 1, program.gl.FLOAT);
+      for (var name in program.dataViewArrayBuffers[tile.url]) {
+        Shader.programBindArray(program.gl, program.dataViewArrayBuffers[tile.url][name], program, name, 1, program.gl.FLOAT);
       };
     },
 

@@ -43,6 +43,8 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
     allLoaded: function () {
       var self = this;
 
+      self.updateSeries(); // Calculate this incrementally in rowLoaded maybe?
+
       // We aren't getting any more, so if anyone's waiting they'd be
       // waiting forever if we didn't tell them...
       self.header.length = self.rowcount;

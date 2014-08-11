@@ -353,6 +353,14 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       });
     },
 
+    getContent: function () {
+      var self = this;
+
+      return self.getDoneTiles().map(function (tile) {
+        return tile.content;
+      });
+    },
+
     printTree: function (maxdepth) {
       var self = this;
 
