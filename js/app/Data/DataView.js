@@ -86,33 +86,6 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       self.lastUpdate = update;
     },
 
-    updateSeries: function() {
-      var self = this;
-      var header = self.source.header;
-      var data = self.source.data;
-
-      // For convenience we store POINT_COUNT in an element at the end
-      // of the array, so that the length of each series is
-      // series[i+1]-series[i].
-      self.series = new Int32Array(Math.max(2, self.source.seriescount + 1));
-      self.series[0] = 0;
-      self.series[self.series.length - 1] = header.length;
-
-      self.lastSeries = function () {}; // Value we will never find in the data
-      self.seriescount = 0;
-      if (data.series) {
-        for (var rowidx = 0; rowidx < header.length; rowidx++) {
-          var series = data.series[rowidx];
-          if (self.lastSeries != series) {
-            self.seriescount++;
-            self.lastSeries = series;
-          }
-          self.series[self.seriescount] = rowidx + 1;
-        }
-      }
-      self.seriescount = Math.max(self.seriescount, 1);
-    },
-
     performUpdate: function (update) {
       var self = this;
 
@@ -122,8 +95,6 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
 
       self.header.length = self.source.header.length;
       self.seriescount = self.source.seriescount;
-
-      self.updateSeries();
 
       lastUpdate.json = self.toJSON();
       lastUpdate.string = self.toString();
