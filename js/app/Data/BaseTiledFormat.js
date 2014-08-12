@@ -10,7 +10,7 @@
   tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
 */
 
-define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "jQuery", "app/LangExtensions"], function(Class, Events, Bounds, Format, Tile, Pack, Logging, $) {
+define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Format, Tile, Pack, Logging, Ajax, _) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
     initialize: function() {
@@ -22,6 +22,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       self.tileCache = {};
       /* The tiles we really want to display. Might not all be loaded yet, or might have replacements... */
       self.wantedTiles = {};
+      self.tileIdxCounter = 0;
       Format.prototype.initialize.apply(self, arguments);
     },
 
@@ -44,42 +45,67 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         return;
       }
 
-      $.ajax({
-        url: self.url + "/header",
-        dataType: 'json',
-        beforeSend: function(jqXHR, settings) {
-          for (var key in self.headers) {
-            var values = self.headers[key]
-            if (typeof(values) == "string") values = [values];
-            for (var i = 0; i < values.length; i++) {
-              jqXHR.setRequestHeader(key, values[i]);
+      if (typeof XMLHttpRequest != "undefined") {
+        var url = self.url + "/header";
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        Ajax.setHeaders(request, self.headers);
+        request.onreadystatechange = function() {
+          if (request.readyState === 4) {
+            if (Ajax.isSuccess(request, url)) {
+              var data = JSON.parse(request.responseText);
+
+              self.tilesetHeader = data;
+
+              if (data.colsByName) {
+                Object.values(data.colsByName).map(function (col) {
+                  col.typespec = Pack.typemap.byname[col.type];
+                });
+              }
+
+              self.mergeTiles();
+              self.events.triggerEvent("header", data);
+            } else {
+              self.handleError(Ajax.makeError(request, url, "header"));
             }
           }
-          return true;
-        },
-        success: function(data, textStatus, jqXHR) {
-          self.tilesetHeader = data;
-
-          if (data.colsByName) {
-            Object.values(data.colsByName).map(function (col) {
-              col.typespec = Pack.typemap.byname[col.type];
-            });
+        };
+        request.send(null);
+      } else {
+        self.handleError({
+          toString: function () {
+            return "XMLHttpRequest not supported";
           }
-
-          self.mergeTiles();
-          self.events.triggerEvent("header", data);
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-          self.handleError({
-            textStatus: textStatus,
-            status: jqXHR.status,
-            toString: function () {
-              return "HTTP status for header: " + this.textStatus + "(" + this.status.toString() + ")";
-            }
-          });
-        }
-      });
+        });
+      }
       self.events.triggerEvent("load");
+    },
+
+    getSelectionInfo: function(selection, cb) {
+      var self = this;
+
+      var data = {};
+      for (var key in selection.data) {
+        data[key] = selection.data[key][0];
+      }
+
+      var url = self.url + "/series";
+      var request = new XMLHttpRequest();
+      request.open('POST', url, true);
+      Ajax.setHeaders(request, self.headers);
+      request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+          if (Ajax.isSuccess(request, url)) {
+            var data = JSON.parse(request.responseText);
+            cb(null, data);
+          } else {
+            var e = Ajax.makeError(request, url, "selection information from ");
+            e.source = self;
+            self.events.triggerEvent("info-error", e);
+          }
+        }
+      };
+      request.send(JSON.stringify(data));
     },
 
     tileParamsForRegion: function(bounds) {
@@ -223,11 +249,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         item.value.dereference();
       });
 
-      // Merge any already loaded tiles
-      self.mergeTiles();
-
       wantedTileBounds.map(function (tilebounds) {
-        self.wantedTiles[tilebounds.toBBOX()].content.load();
+        setTimeout(function () {
+          self.wantedTiles[tilebounds.toBBOX()].load();
+        }, 0);
       });
     },
 
@@ -245,8 +270,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       if (!self.tileCache[key]) {
         var tile = new Tile(self, tilebounds);
 
+        tile.idx = self.tileIdxCounter++;
         tile.setContent(self.getTileContent(tile));
-
         tile.findOverlaps();
 
         tile.content.events.on({
@@ -267,7 +292,30 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     handleTileRemoval: function (tile) {
       var self = this;
+      var idx = tile.idx;
+      self.rowcount = 0;
+      self.seriescount = 0;
+      var lastSeries = function () {}; // Magic unique value
+      for (var src = 0; src < self.header.length; src++) {
+        if (self.data.tile[src] != idx) {
+          for (var key in self.data) {
+            self.data[key][self.rowcount] = self.data[key][src];
+          }
+          self.data.tile[self.rowcount] = self.data.tile[src];
+          if (!self.data.series) {
+            self.seriescount++;
+          } else if (self.data.series[self.rowcount] != lastSeries) {
+            self.seriescount++;
+            lastSeries = self.data.series[self.rowcount];
+          }
+          self.rowcount++;
+        }
+      }
+      self.header.length = self.rowcount;
       delete self.tileCache[tile.bounds.toBBOX()];
+      e = {update: "tile-removal", tile: tile};
+      self.events.triggerEvent(e.update, e);
+      self.events.triggerEvent("update", e);
     },
 
     handleBatch: function (tile) {
@@ -318,7 +366,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var loaded = tile.content.allIsLoaded ? ", loaded" : "";
         var wanted = self.wantedTiles[key] ? ", wanted" : "";
         var error = tile.content.error ? ", error" : "";
-        var res = indent + key + "(Usage: " + tile.usage.toString() + loaded + error + wanted + ")";
+        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + error + wanted + ")";
         if (maxdepth != undefined && depth > maxdepth) {
           res += " ...\n";
         } else {
@@ -444,7 +492,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var start = new Date();
 
       dst = new BaseTiledFormat.DataContainer();
-      $.extend(true, dst.header, self.tilesetHeader);
+      _.merge(dst.header, self.tilesetHeader);
 
       if (tiles == undefined) {
         tiles = Object.values(self.tileCache).filter(function (tile) {
@@ -473,7 +521,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
           var min = coalesce(Math.min, dstval.min, srcval.min);
           var max = coalesce(Math.max, dstval.max, srcval.max);
-          $.extend(dstval || {}, srcval);
+          _.extend(dstval, srcval);
           dstval.min = min;
           dstval.max = max;
 
@@ -483,8 +531,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
       for (var name in dst.header.colsByName) {
         var col = dst.header.colsByName[name];
-        dst.data[name] = new col.typespec.array(dst.header.length);
+        dst.data[name] = new (eval(col.typespec.array))(dst.header.length);
       }
+      dst.data.tile = new Int32Array(dst.header.length);
 
       var lastSeries = function () {}; // Magic unique value
       var tile;
@@ -496,11 +545,18 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
             dst.data[name][dst.rowcount] = tile.value.content.data[name][tile.merged_rowcount-1];
           }
         }
-        dst.rowcount++;
-        if (tile.value.content.data.series && tile.value.content.data.series[tile.merged_rowcount-1] != lastSeries) {
-          dst.seriescount++;
-          lastSeries = tile.value.content.data.series;
+        if (tile.value.idx != undefined) {
+          dst.data.tile[dst.rowcount] = tile.value.idx;
+        } else {
+          dst.data.tile[dst.rowcount] = tile.value.content.data.tile[tile.merged_rowcount-1];
         }
+        if (!dst.data.series) {
+          dst.seriescount++;
+        } else if (dst.data.series[dst.rowcount] != lastSeries) {
+          dst.seriescount++;
+          lastSeries = dst.data.series[dst.rowcount];
+        }
+        dst.rowcount++;
       }
 
       self.header.length = dst.header.length;

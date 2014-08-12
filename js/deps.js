@@ -1,19 +1,34 @@
 (function () {
+  app.webworker = typeof importScripts != "undefined";
+
+  if (!app.name) {
+    if (app.webworker) {
+      app.name = 'Webworker';
+    } else {
+      app.name = 'Main';
+    }
+  }
+
   app.paths = app.paths || {};
-  app.paths.page = window.location.pathname.split("/").slice(0, -1);
-  app.paths.script = document.querySelector('script[src$="deps.js"]').getAttribute('src').split("/").slice(0, -1);
-  if (app.paths.script[0] != "") {
-    app.paths.script = app.paths.page.concat(app.paths.script);
+
+  if (app.webworker) {
+    app.paths.script = location.toString().split("/").slice(0, -1);
+  } else {
+    app.paths.page = window.location.pathname.split("/").slice(0, -1);
+    app.paths.script = document.querySelector('script[src$="deps.js"]').getAttribute('src').split("/").slice(0, -1);
+    if (app.paths.script[0] != "") {
+      app.paths.script = app.paths.page.concat(app.paths.script);
+    }
   }
 
   app.paths.shim = app.paths.script.concat("shims");
   app.paths.lib = app.paths.script.concat(['libs']);
   app.paths.app = app.paths.script.concat(['app']);
 
-    app.dirs = app.dirs || {};
-    for (var name in app.paths) {
-      app.dirs[name] = app.paths[name].join("/");
-    }
+  app.dirs = app.dirs || {};
+  for (var name in app.paths) {
+    app.dirs[name] = app.paths[name].join("/");
+  }
 
   app.dependencies = app.dependencies || {};
   app.dependencies.stylesheets = app.dependencies.stylesheets || [];
@@ -30,17 +45,22 @@
   ]);
   app.dependencies.scripts = app.dependencies.scripts || [];
   app.dependencies.scripts = app.dependencies.scripts.concat([
+    app.dirs.lib + "/qunit-1.14.0.js",
+    app.dirs.lib + "/async.js",
+    app.dirs.lib + "/stacktrace.js",
+  ]);
+  if (!app.webworker) {
+  app.dependencies.scripts = app.dependencies.scripts.concat([
     {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
     app.dirs.lib + "/jquery-1.10.2.min.js",
+    app.dirs.lib + "/jquery.mousewheel.js",
     app.dirs.lib + "/less-1.6.2.min.js",
     app.dirs.lib + "/bootstrap.min.js",
     app.dirs.lib + "/CanvasLayer.js",
     app.dirs.lib + "/stats.min.js",
-    app.dirs.lib + "/qunit-1.14.0.js",
-    app.dirs.lib + "/async.js",
-    app.dirs.lib + "/stacktrace.js",
     app.dirs.lib + "/loggly.tracker.js"
   ]);
+  }
 
   app.packages = app.packages || [];
   app.packages = app.packages.concat([
@@ -53,6 +73,7 @@
     {name: 'async', location: app.dirs.shim, main: 'async'},
     {name: 'stacktrace', location: app.dirs.shim, main: 'stacktrace'},
     {name: 'LogglyTracker', location: app.dirs.shim, main: 'LogglyTracker'},
+    {name: 'lodash', location:app.dirs.lib, main:'lodash'},
     {name: 'app', location:app.dirs.app, main: 'app'}
   ]);
 
@@ -100,6 +121,18 @@
     head.appendChild(tag);
   }
 
+  function addImportScript(script, cb) {
+    if (typeof(script) == "string") script = {url: script};
+    self.importScripts(script.url);
+    if (script.handleCb) {
+      var tag = {onload: cb};
+      script.handleCb(tag, cb);
+      tag.onload();
+    } else {
+      cb();
+    }
+  }
+
   function addHeadStylesheet(stylesheet) {
     if (typeof(stylesheet) == "string") stylesheet = {url: stylesheet};
     var head = document.getElementsByTagName('head')[0];
@@ -110,6 +143,19 @@
     head.appendChild(link);
   }
 
-  app.dependencies.stylesheets.map(addHeadStylesheet);
-  asyncmap(app.dependencies.scripts, addHeadScript, app.main);
+  var main = app.main;
+  if (app.mainModule) {
+    main = function () {
+     require([app.mainModule], function (mainModule) {
+       new mainModule();
+     });
+    }
+  }
+
+  if (app.webworker) {
+    asyncmap(app.dependencies.scripts, addImportScript, main);
+  } else {
+    app.dependencies.stylesheets.map(addHeadStylesheet);
+    asyncmap(app.dependencies.scripts, addHeadScript, main);
+  }
 })();

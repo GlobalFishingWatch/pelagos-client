@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "jQuery"], function(Class, Events, $) {
+define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
   var Format = Class({
     name: "Format",
     initialize: function(args) {
@@ -8,6 +8,7 @@ define(["app/Class", "app/Events", "jQuery"], function(Class, Events, $) {
       self.rowcount = 0;
       self.seriescount = 0;
       self.loadingStarted = false;
+      self.loadingCanceled = false;
       self.allIsLoaded = false;
       self.events = new Events("Data.Format");
       self.events.on({
@@ -15,12 +16,12 @@ define(["app/Class", "app/Events", "jQuery"], function(Class, Events, $) {
         load: function () { self.allIsLoaded = false; },
         error: function (exception) { self.error = exception; }
       });
-      if (args) $.extend(self, args);
+      if (args) _.extend(self, args);
     },
 
     load: function () {
       var self = this;
-      if (self.loadingStarted) return;
+      if (self.loadingStarted || self.loadingCanceled) return;
       self.loadingStarted = true;
       self._load();
     },
@@ -30,7 +31,10 @@ define(["app/Class", "app/Events", "jQuery"], function(Class, Events, $) {
       self.headers = headers || {};
     },
 
-    destroy: function () {},
+    destroy: function () {
+      var self = this;
+      self.loadingCanceled = true;
+    },
 
     sortcols: ['series', 'datetime'],
 

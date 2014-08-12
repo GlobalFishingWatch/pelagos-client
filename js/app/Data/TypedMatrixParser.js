@@ -90,6 +90,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
       self.header = {length: 0, colsByName: {}};
       self.loadingStarted = false;
+      self.loadingCanceled = false;
       self.headerIsLoaded = false;
       self.headerLen = null;
       self.offset = 0;
@@ -113,9 +114,9 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       self.headers = headers || {};
     },
 
-    _load: function () {
+    load: function () {
       var self = this;
-      if (self.loadingStarted) return;
+      if (self.loadingStarted || self.loadingCanceled) return;
       self.loadingStarted = true;
       self._load();
     },
@@ -126,7 +127,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       self.loadStartTime = new Date();
       self.events.triggerEvent("load");
 
-      if (window.XMLHttpRequest) {
+      if (typeof XMLHttpRequest != 'undefined') {
         self.request = new XMLHttpRequest();
       } else {
         throw 'XMLHttpRequest is disabled';
@@ -159,7 +160,9 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
     cancel: function () {
       var self = this;
 
-      self.request.abort();
+      if (self.loadingCanceled) return;
+      self.loadingCanceled = true;
+      if (self.request) self.request.abort();
     },
 
     headerLoaded: function (data) {

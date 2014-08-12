@@ -121,6 +121,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       } else {
         self.gl.enable(self.gl.BLEND);
         self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE);
+        self.canvasResize();
         cb();
       }
     },
@@ -134,13 +135,48 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
         for (var key in self.animations) {
           var animation = self.animations[key];
           if (animation.select(e.pageX - offset.left, e.pageY - offset.top, type, true)) {
-            return;
+            return animation.data_view;
           }
         }
+        return false;
       };
 
       $('#map-div').mousemove(function (e) { handleMouse(e, 'hover'); });
       $('#map-div').click(function (e) { handleMouse(e, 'selected'); });
+      google.maps.event.addListener(self.map, "rightclick", function(e) {
+        e.pageX = e.pixel.x;
+        e.pageY = e.pixel.y;
+        var dataView = handleMouse(e, 'info')
+        if (dataView) {
+          console.log({series:dataView.selections.info.data.series[0]});
+          dataView.getSelectionInfo('info', function (err, data) {
+            var dialog;
+            if (err) {
+              dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Error</h4></div><div class="modal-body alert"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
+              dialog.find('.modal-body').html(err.toString());
+            } else {
+              dialog = $('<div class="modal fade" id="info" tabindex="-1" role="dialog" aria-labelledby="infoLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-success"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="infoLabel">Feature information</h4></div><div class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
+              var table = $("<table>");
+              for (var key in data) {
+                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                  table.append("<tr><td colsan='2'><a href='" + data[key] +  "'>" + key + "</a></td></tr>");
+                } else {
+                  table.append("<tr><td>" + key + "</td><td>" + data[key] + "</td></tr>");
+                }
+              }
+              dialog.find('.modal-body').append(table);
+            }
+            $('body').append(dialog);
+            dialog.modal();
+            dialog.on('hidden.bs.modal', function (e) {
+              dialog.detach();
+            });
+          });
+          if (e.preventDefault) e.preventDefault();
+          if (e.stopPropagation) e.stopPropagation();
+          return false;
+        }
+      });
       cb();
     },
 
@@ -246,6 +282,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
     canvasResize: function() {
       var self = this;
 
+      if (!self.gl) return;
+
       var width = self.canvasLayer.canvas.width;
       var height = self.canvasLayer.canvas.height;
 
@@ -258,7 +296,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       self.updateNeeded = true;
     },
 
-    updateTime: function (paused) {
+    updateTime: function (header, paused) {
       var self = this;
 
       self.stats.begin();
@@ -266,19 +304,20 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       if (paused) {
         self.lastUpdate = undefined;
       } else {
+        var timeExtent = self.visualization.state.getValue("timeExtent");
         var time = self.visualization.state.getValue("time").getTime();
-        var min = self.visualization.data.header.colsByName.datetime.min;
-        var max = self.visualization.data.header.colsByName.datetime.max;
+        var min = header.colsByName.datetime.min;
+        var max = header.colsByName.datetime.max;
         var timeNow = new Date().getTime();
+        var timePerTimeExtent = self.visualization.state.getValue("length");
 
-        if (self.lastUpdate == undefined) {
-          var fraction = (time - min) / (max - min);
-          self.lastUpdate = timeNow - fraction * self.visualization.state.getValue("length");
-        } else {
-          var fraction = (timeNow - self.lastUpdate) / self.visualization.state.getValue("length");
-          var time = (max - min) * fraction + min;
+        var timePerAnimationTime = timePerTimeExtent / timeExtent;
+
+        if (self.lastUpdate != undefined) {
+          var time = (timeNow - self.lastUpdate) / timePerAnimationTime + time;
           self.visualization.state.setValue("time", new Date(time));
         }
+        self.lastUpdate = timeNow;
       }
     },
 
@@ -309,37 +348,41 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
     update: function() {
       var self = this;
 
-      var time = self.visualization.state.getValue("time");
-      var paused = self.visualization.state.getValue("paused");
-      if (!self.visualization.data.header.colsByName.datetime) paused = true;
-      if (!paused) {
-        var min = self.visualization.data.header.colsByName.datetime.min;
-        var max = self.visualization.data.header.colsByName.datetime.max;
-        if (time < min || time > max) paused = true;
-      }
+      if (!self.gl) return;
 
-      if (!self.updateNeeded && paused) {
-        return;
-      }
-      self.updateNeeded = false;
+      self.visualization.data.useHeader(function (header, cb) {
+        var time = self.visualization.state.getValue("time");
+        var paused = self.visualization.state.getValue("paused");
+        if (!header.colsByName.datetime) paused = true;
+        if (!paused) {
+          var min = header.colsByName.datetime.min;
+          var max = header.colsByName.datetime.max;
+          if (time < min || time > max) paused = true;
+        }
 
-      self.updateTime(paused);
-      self.updateProjection();
+        if (!self.updateNeeded && paused) {
+          return;
+        }
+        self.updateNeeded = false;
 
-      self.gl.clear(self.gl.COLOR_BUFFER_BIT);
+        self.updateTime(header, paused);
+        self.updateProjection();
 
-      Logging.default.log("Visualization.Animation.AnimationManager.update", {
-        toString: function () {
-          return (this.time != undefined ? this.time.rfcstring(" ") : "undefined")
-            + " [" + (this.offset != undefined ? this.offset.toString() : "undefined") + "]";
-        },
-        offset: self.visualization.state.getValue("offset"),
-        time: time
+        self.gl.clear(self.gl.COLOR_BUFFER_BIT);
+
+        Logging.default.log("Visualization.Animation.AnimationManager.update", {
+          toString: function () {
+            return (this.time != undefined ? this.time.rfcstring(" ") : "undefined")
+              + " [" + (this.timeExtent != undefined ? this.timeExtent.toString() : "undefined") + "]";
+          },
+          timeExtent: self.visualization.state.getValue("timeExtent"),
+          time: time
+        });
+
+        self.animations.map(function (animation) { animation.draw(); });
+
+        self.stats.end();
       });
-
-      self.animations.map(function (animation) { animation.draw(); });
-
-      self.stats.end();
     },
 
     triggerUpdate: function (e) {

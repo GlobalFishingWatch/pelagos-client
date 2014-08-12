@@ -1,4 +1,4 @@
-define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/GeoProjection", "app/Data/DataView", "app/Visualization/DataViewUI", "jQuery"], function(Class, async, Shader, GeoProjection, DataView, DataViewUI, $) {
+define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjection", "app/Data/DataView", "app/Visualization/DataViewUI", "jQuery"], function(Class, async, Shader, GeoProjection, DataView, DataViewUI, $) {
   var Animation = Class({
     name: "Animation",
     columns: {
@@ -13,28 +13,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
         {name: "magnitude", source: {_: 1.0}}]}
     },
 
-    transforms: {
-      coordinate: function (col, offset) {
-        var spec = this;
-        var longitude = col[offset + spec.itemsByName.longitude.index];
-        var latitude = col[offset + spec.itemsByName.latitude.index];
-
-        var pixel = GeoProjection.LatLongToPixelXY(latitude, longitude);
-
-        col[offset + spec.itemsByName.latitude.index] = pixel.y;
-        col[offset + spec.itemsByName.longitude.index] = pixel.x;
-      },
-      rowidx: function (col, offset) {
-        var spec = this;
-        var rowidx = (offset / spec.items.length) + 1;
-
-        col[offset + spec.itemsByName.r.index] = ((rowidx >> 16) & 0xff) / 255;
-        col[offset + spec.itemsByName.g.index] = ((rowidx >> 8) & 0xff) / 255;
-        col[offset + spec.itemsByName.b.index] = (rowidx & 0xff) / 255;
-        col[offset + spec.itemsByName.a.index] = 1.0;
-      }
-    },
-
     programSpecs: {},
 
     initialize: function(manager, args) {
@@ -43,19 +21,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
       self.visible = true;
       if (args) $.extend(self, args);
       self.manager = manager;
-      var source = self.manager.visualization.data.addSource(self.source);
-      source.events.on({
-        error: self.handleError.bind(self)
-      });
-      self.data_view = new DataView(
-        source,
-        {
-          columns: self.columns,
-          selections: self.selections,
-          transforms: self.transforms
-        }
-      );
-      source.load();
     },
 
     setVisible: function (visible) {
@@ -76,16 +41,31 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
 
     initGl: function(gl, cb) {
       var self = this;
-      self.gl = gl;
-      self.rowidxCanvas = document.createElement('canvas');
 
-      rowidxCanvas = $(self.rowidxCanvas);
-      self.rowidxGl = self.rowidxCanvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
-      self.rowidxGl.enable(self.rowidxGl.BLEND);
-      self.rowidxGl.blendFunc(self.rowidxGl.SRC_ALPHA, self.rowidxGl.ONE_MINUS_SRC_ALPHA);
-      self.rowidxGl.lineWidth(1.0);
+      self.manager.visualization.data.createView({
+        source:self.source,
+        columns: self.columns,
+        selections: self.selections
+      }, function (err, data_view) {
+        if (err) throw err; // FIXME: Make cb handle cb(err);
+        self.data_view = data_view;
 
-      self.initGlPrograms(cb);
+        self.data_view.events.on({
+          error: self.handleError.bind(self)
+        });
+        self.data_view.load();
+
+        self.gl = gl;
+        self.rowidxCanvas = document.createElement('canvas');
+
+        rowidxCanvas = $(self.rowidxCanvas);
+        self.rowidxGl = self.rowidxCanvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+        self.rowidxGl.enable(self.rowidxGl.BLEND);
+        self.rowidxGl.blendFunc(self.rowidxGl.SRC_ALPHA, self.rowidxGl.ONE_MINUS_SRC_ALPHA);
+        self.rowidxGl.lineWidth(1.0);
+
+        self.initGlPrograms(cb);
+      });
     },
 
     initGlPrograms: function(cb) {
@@ -93,19 +73,17 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
 
       self.programs = {};
       async.map(Object.items(self.programSpecs), function (item, cb) {
-        Animation.prototype.initGl(self[item.value.context], function () {
-          Shader.createShaderProgramFromUrl(
-            self[item.value.context],
-            require.toUrl(item.value.vertex),
-            require.toUrl(item.value.fragment),
-            function (program) {
-              program.name = item.key;
-              self.programs[item.key] = program;
-              self.createDataViewArrayBuffers(program, item.value.columns, item.value.items_per_source_item);
-              cb();
-            }
-          );
-        });
+        Shader.createShaderProgramFromUrl(
+          self[item.value.context],
+          require.toUrl(item.value.vertex),
+          require.toUrl(item.value.fragment),
+          function (program) {
+            program.name = item.key;
+            self.programs[item.key] = program;
+            self.createDataViewArrayBuffers(program, item.value.columns, item.value.items_per_source_item);
+            cb();
+          }
+        );
       }, cb);
     },
 
@@ -120,26 +98,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
 
     updateData: function() {
       var self = this;
-      var format = self.data_view.source;
-      var header = format.header;
-      var data = format.data;
-
-      // For convenience we store POINT_COUNT in an element at the end
-      // of the array, so that the length of each series is
-      // rawSeries[i+1]-rawSeries[i].      
-      self.rawSeries = new Int32Array(format.seriescount + 1);
-      self.rawSeries[0] = 0;
-      self.lastSeries = function () {}; // Value we will never find in the data
-
-      self.seriescount = 0;
-      for (var rowidx = 0; rowidx < header.length; rowidx++) {
-        var series = data.series && data.series[rowidx];
-        if (self.lastSeries != series) {
-          self.seriescount++;
-          self.lastSeries = series;
-        }
-        self.rawSeries[self.seriescount] = rowidx + 1;
-      }
 
       Object.values(self.programs).map(self.updateDataProgram.bind(self));
 
@@ -173,13 +131,16 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
       self.setGeneralUniforms(program);
 
       var mode = self.getDrawMode(program);
-      for (var i = 0; i < self.seriescount; i++) {
-        program.gl.drawArrays(
-          mode,
-          self.rawSeries[i]*program.items_per_source_item,
-          (self.rawSeries[i+1]-self.rawSeries[i])*program.items_per_source_item
-        );
-      }
+      self.data_view.useSeries(function (series, cb) {
+        // -1 since series contains POINT_COUNT in the last item
+        for (var i = 0; i < series.length - 1; i++) {
+          program.gl.drawArrays(
+            mode,
+            series[i]*program.items_per_source_item,
+            (series[i+1]-series[i])*program.items_per_source_item
+          );
+        }
+      });
     },
 
     createDataViewArrayBuffers: function (program, columns, items_per_source_item) {
@@ -195,24 +156,32 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
       var self = this;
       program.gl.useProgram(program);
 
-      for (var name in program.dataViewArrayBuffers) {
-        Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[name], self.data_view.data[name], program);
-      };
+      self.data_view.useData(function (data, cb) {
+        for (var name in program.dataViewArrayBuffers) {
+          Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[name], data[name], program);
+        };
+        cb();
+      });
     },
 
     bindDataViewArrayBuffers: function(program) {
       var self = this;
       program.gl.useProgram(program);
-      for (var name in program.dataViewArrayBuffers) {
-        var col = self.data_view.header.colsByName[name];
-        Shader.programBindArray(program.gl, program.dataViewArrayBuffers[name], program, name, col.items.length / program.items_per_source_item, program.gl.FLOAT);
-      };
+      self.data_view.useHeader(function (header, cb) {
+        for (var name in program.dataViewArrayBuffers) {
+          var col = header.colsByName[name];
+          if (col) {
+            Shader.programBindArray(program.gl, program.dataViewArrayBuffers[name], program, name, col.items.length / program.items_per_source_item, program.gl.FLOAT);
+          }
+        };
+        cb();
+      });
     },
 
     setGeneralUniforms: function (program) {
       var self = this;
       var time = self.manager.visualization.state.getValue("time");
-      var offset = self.manager.visualization.state.getValue("offset");
+      var timeExtent = self.manager.visualization.state.getValue("timeExtent");
 
       if (time == undefined) return;
       time = time.getTime();
@@ -224,7 +193,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
 
       program.gl.uniform1f(program.uniforms.pointSize, pointSize*1.0);
       program.gl.uniformMatrix4fv(program.uniforms.mapMatrix, false, self.manager.mapMatrix);
-      program.gl.uniform1f(program.uniforms.startTime, time - offset * 24 * 60 * 60 * 1000);
+      program.gl.uniform1f(program.uniforms.startTime, time - timeExtent);
       program.gl.uniform1f(program.uniforms.endTime, time);
     },
 
@@ -274,13 +243,13 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Visualization/Geo
     select: function (x, y, type, replace) {
       var self = this;
       var rowidx = self.getRowidxAtPos(x, y);
-      self.data_view.selections[type].addRange(self.data_view.source, rowidx, rowidx, replace);
+      self.data_view.addSelectionRange(type, rowidx, rowidx, replace);
       return rowidx;
     },
 
     toString: function () {
       var self = this;
-      return self.name + ": " + self.data_view.source;
+      return self.name + ": " + self.data_view;
     },
 
     toJSON: function () {

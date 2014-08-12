@@ -1,10 +1,9 @@
-define(["app/Class", "jQuery", "app/Events", "app/Data/Format", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat"], function(Class, $, Events, Format) {
+define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat"], function(Class, Bounds, _, Events, Format, DataView) {
   return Class({
     name: "DataManager",
-    initialize: function (visualization) {
+    initialize: function () {
       var self = this;
 
-      self.visualization = visualization;
       self.sources = {};
       self.events = new Events("Data.DataManager");
       self.header = {colsByName: {}};
@@ -31,20 +30,22 @@ define(["app/Class", "jQuery", "app/Events", "app/Data/Format", "app/Data/TiledB
         source.source.events.on({
           error: self.handleError.bind(self, source),
           "tile-error": self.handleTileError.bind(self, source),
+          "info-error": self.handleInfoError.bind(self, source),
           header: self.handleHeader.bind(self, source.source),
           load: self.handleLoad.bind(self, source.source),
           update: self.handleUpdate.bind(self, source.source),
         });
-        self.visualization.state.events.on({
-          httpHeaders: function () {
-            source.source.setHeaders(self.visualization.state.getValue("httpHeaders"));
-          }
-        });
-        source.source.setHeaders(self.visualization.state.getValue("httpHeaders"));
       }
       self.sources[key].usage++;
       self.events.triggerEvent("add", self.sources[key]);
       return self.sources[key].source;
+    },
+
+    setHeaders: function (headers, cb) {
+      var self = this;
+      for (var key in self.sources) {
+        self.sources[key].source.setHeaders(headers);
+      }
     },
 
     removeSource: function (source) {
@@ -61,18 +62,31 @@ define(["app/Class", "jQuery", "app/Events", "app/Data/Format", "app/Data/TiledB
       self.events.triggerEvent("remove", source);
     },
 
-    listSources: function () {
+    listSources: function (cb) {
       var self = this;
-      return Object.values(self.sources).map(function (source) { return source.spec; });
+      cb(Object.values(self.sources).map(function (source) { return source.spec; }));
     },
 
-    listSourceTypes: function () {
+    listSourceTypes: function (cb) {
       var self = this;
-      return Object.keys(Format.formatClasses);
+      cb(Object.keys(Format.formatClasses));
+    },
+
+    createView: function(view, cb) {
+      var self = this;
+      cb(null, new DataView(
+        self.addSource(view.source),
+        {
+          columns: view.columns,
+          selections: view.selections,
+        }
+      ));
     },
 
     zoomTo: function (bounds) {
       var self = this;
+      if (bounds.length > 0) bounds = new Bounds(bounds);
+        console.log("zoomTo(" + bounds.toBBOX() + ") for " + Object.keys(self.sources).join(", "));
       Object.values(self.sources).map (function (source) {
         source.source.zoomTo(bounds);
       });
@@ -85,7 +99,7 @@ define(["app/Class", "jQuery", "app/Events", "app/Data/Format", "app/Data/TiledB
       Object.values(self.sources).map(function (source) {
         Object.items(source.source.header.colsByName).map(function (item) {
           if (!self.header.colsByName[item.key]) {
-            self.header.colsByName[item.key] = $.extend({}, item.value);
+            self.header.colsByName[item.key] = _.clone(item.value);
           } else {
             self.header.colsByName[item.key].min = Math.min(
               self.header.colsByName[item.key].min, item.value.min);
@@ -94,6 +108,7 @@ define(["app/Class", "jQuery", "app/Events", "app/Data/Format", "app/Data/TiledB
           }
         });
       });
+      self.events.triggerEvent("header", self.header);
     },
 
     handleError: function (source, error) {
@@ -109,11 +124,16 @@ define(["app/Class", "jQuery", "app/Events", "app/Data/Format", "app/Data/TiledB
       self.events.triggerEvent("tile-error", error);
     },
 
+    handleInfoError: function (source, error) {
+      var self = this;
+      error.source = source;
+      self.events.triggerEvent("error", error);
+    },
+
     handleHeader: function (source, header) {
       var self = this;
       header.source = source;
       self.updateHeader();
-      self.events.triggerEvent("header", header);
     },
 
     handleLoad: function (source) {
@@ -123,7 +143,7 @@ define(["app/Class", "jQuery", "app/Events", "app/Data/Format", "app/Data/TiledB
 
     handleUpdate: function (source, update) {
       var self = this;
-      update = $.extend({}, update);
+      update = _.clone(update);
       update.source = source;
       self.updateHeader();
       if (update.update == "all") {
@@ -136,6 +156,11 @@ define(["app/Class", "jQuery", "app/Events", "app/Data/Format", "app/Data/TiledB
       }
       self.events.triggerEvent(update.update, update);
       self.events.triggerEvent("update", update);
+    },
+
+    useHeader: function (fn) {
+      var self = this;
+      fn(self.header, function () {});
     }
   });
 });
