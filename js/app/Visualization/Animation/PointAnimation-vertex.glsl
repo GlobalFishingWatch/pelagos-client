@@ -15,7 +15,6 @@ void main() {
 
   float x = (_longitude + 180.0) * 256.0 / 360.0;
   float y = 128.0 - log(tan((_latitude + 90.0) * pi / 360.0)) * 128.0 / pi;
-
   gl_Position = mapMatrix * vec4(x, y, 0.0, 1.0);
 
   if (_time < startTime || _time > endTime) {
