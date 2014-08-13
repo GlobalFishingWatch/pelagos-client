@@ -88,7 +88,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           require.toUrl(item.value.vertex),
           require.toUrl(item.value.fragment),
           {
-            attrmapper: Shader.compileMapping(self.data_view.source.header.colsByName, self.data_view.header.colsByName)
+            attrmapper: Shader.compileMapping(self.data_view)
           },
           function (program) {
             program.name = item.key;
@@ -201,13 +201,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       program.gl.uniform1f(program.uniforms.startTime, time - timeExtent);
       program.gl.uniform1f(program.uniforms.endTime, time);
 
-      Object.items(self.data_view.header.colsByName).map(function (column) {
-        Object.items(column.value.source).map(function (source) {
-          var srcKey = source.key;
-          if (srcKey == '_') srcKey = 'const';
-          program.gl.uniform1f(program.uniforms['attrmap_' + column.key + '_from_' + srcKey], source.value);
-        });
-      });
+      Shader.setMappingUniforms(program, self.data_view);
     },
 
     /* Uses the rowidxGl canvas to get a source data rowid from a

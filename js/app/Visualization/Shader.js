@@ -88,35 +88,110 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
     return program;
   };
 
-  Shader.compileMapping = function(srcColumns, dstColumns) {
-    var attrDec = Object.keys(srcColumns).map(function (srcName) {
+  Shader.compileMapping = function(dataView) {
+    var selectionsMappingDec = Shader.compileSelectionsMappingDeclarations(dataView);
+    var selectionsDec = Shader.compileSelectionsDeclarations(dataView);
+    var selectionsMapper = Shader.compileSelectionsMapper(dataView);
+
+    var srcCols = Object.keys(dataView.source.header.colsByName);
+    var dstCols = Object.keys(dataView.header.colsByName);
+    var selCols = Object.keys(dataView.selections).map(function (name) { return 'selection_' + name; });
+
+    var columnDec = Shader.compileColumnDeclarations(srcCols, dstCols);
+    var columnMappingDec = Shader.compileColumnMappingDeclarations(srcCols.concat(selCols), dstCols);
+    var columnMapper = Shader.compileColumnMapper(srcCols.concat(selCols), dstCols);
+
+    return (
+      selectionsMappingDec + "\n" + 
+      selectionsDec + '\n' + 
+      columnDec + "\n" + 
+      columnMappingDec + "\n" + 
+      selectionsMapper + "\n" + 
+      columnMapper);
+  };
+
+  Shader.compileSelectionsDeclarations = function (dataView) {
+    return Object.items(dataView.selections).map(function (item) {
+      return 'float selection_' + item.key + ';';
+    }).join('\n') + '\n';
+  };
+
+  Shader.compileSelectionsMappingDeclarations = function (dataView) {
+    return Object.items(dataView.selections).map(function (item) {
+      return item.value.sortcols.map(function (sortcol) {
+        return (
+          'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_lower;\n' +
+          'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_upper;');
+      }).join('\n');
+    }).join('\n') + '\n';
+  };
+
+  Shader.compileSelectionsMapper = function (dataView) {
+    return 'void selectionmapper() {\n' +
+      Object.items(dataView.selections).map(function (item) {
+        return '  selection_' + item.key + ' = (\n' +
+          item.value.sortcols.map(function (sortcol) {
+              return '    selectionmap_' + item.key + '_from_' + sortcol + '_lower >= ' + sortcol + ' &&\n' +
+                     '    selectionmap_' + item.key + '_from_' + sortcol + '_upper <= ' + sortcol;
+          }).join(' &&\n') + ') ? 1.0 : 0.0;';
+      }).join('\n') +
+      '\n}\n';
+  };
+
+  Shader.compileColumnDeclarations = function(srcColumns, dstColumns) {
+    var attrDec = srcColumns.map(function (srcName) {
       return 'attribute float ' + srcName + ';'
     }).join('\n') + '\n';
 
-    var paramDec = Object.keys(dstColumns).map(function (dstName) {
+    var paramDec = dstColumns.map(function (dstName) {
       return 'float _' + dstName + ';'
     }).join('\n') + '\n';
 
-    var mappingDec = Object.keys(dstColumns).map(function (dstName) {
+    return attrDec + "\n" + paramDec;
+  };
+
+  Shader.compileColumnMappingDeclarations = function(srcColumns, dstColumns) {
+    return dstColumns.map(function (dstName) {
       return 'uniform float attrmap_' + dstName + '_from_const;' +
-        Object.keys(srcColumns).map(function (srcName) {
+        srcColumns.map(function (srcName) {
           return 'uniform float attrmap_' + dstName + '_from_' + srcName + ';'
         }).join('\n');
     }).join('\n') + '\n';
+  };
 
-    var mapper = 'void attrmapper() {\n' +
-      Object.keys(dstColumns).map(function (dstName) {
+  Shader.compileColumnMapper = function(srcColumns, dstColumns) {
+    return 'void attrmapper() {\n' +
+      dstColumns.map(function (dstName) {
         return '  _' + dstName + ' = ' +
           ['attrmap_' + dstName + '_from_const'].concat(
-            Object.keys(srcColumns).map(function (srcName) {
+            srcColumns.map(function (srcName) {
               return '    attrmap_' + dstName + '_from_' + srcName + ' * ' + srcName
-            })).join('+ \n') + ';';
+            })).join(' +\n') + ';';
       }).join('\n') +
-      '\n}';
-
-    var mapping = attrDec + paramDec + mappingDec + mapper;
-    return mapping;
+      '\n}\n';
   };
+
+  Shader.setMappingUniforms = function (program, dataView) {
+    Object.items(dataView.header.colsByName).map(function (column) {
+      Object.items(column.value.source).map(function (source) {
+        var srcKey = source.key;
+        if (srcKey == '_') srcKey = 'const';
+        program.gl.uniform1f(program.uniforms['attrmap_' + column.key + '_from_' + srcKey], source.value);
+      });
+    });
+    Object.items(dataView.selections).map(function (item) {
+      item.value.sortcols.map(function (sortcol) {
+        var lower = undefined;
+        var upper = undefined;
+        if (item.value.data[sortcol].length >= 2) {
+          lower = item.value.data[sortcol][0];
+          upper = item.value.data[sortcol][1];
+        }
+        program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_lower'], lower);
+        program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_upper'], upper);
+      });
+    });
+  }
 
   return Shader;
 });
