@@ -27,7 +27,7 @@ vec4 rowidxColor() {
 }
 
 void main() {
-  attrmapper();
+  mapper();
 
   float x = (_longitude + 180.0) * 256.0 / 360.0;
   float y = 128.0 - log(tan((_latitude + 90.0) * pi / 360.0)) * 128.0 / pi;

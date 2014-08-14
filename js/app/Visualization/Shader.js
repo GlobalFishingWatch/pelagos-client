@@ -95,11 +95,17 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
 
     var srcCols = Object.keys(dataView.source.header.colsByName);
     var dstCols = Object.keys(dataView.header.colsByName);
-    var selCols = Object.keys(dataView.selections).map(function (name) { return 'selection_' + name; });
+    var selCols = Object.keys(dataView.selections);
 
     var columnDec = Shader.compileColumnDeclarations(srcCols, dstCols);
     var columnMappingDec = Shader.compileColumnMappingDeclarations(srcCols.concat(selCols), dstCols);
     var columnMapper = Shader.compileColumnMapper(srcCols.concat(selCols), dstCols);
+
+    var mapper =
+      'void mapper() {\n' +
+      '  selectionmapper();\n' +
+      '  attrmapper();\n' +
+      '}\n';
 
     return (
       selectionsMappingDec + "\n" + 
@@ -107,12 +113,13 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
       columnDec + "\n" + 
       columnMappingDec + "\n" + 
       selectionsMapper + "\n" + 
-      columnMapper);
+      columnMapper + "\n" +
+      mapper);
   };
 
   Shader.compileSelectionsDeclarations = function (dataView) {
     return Object.items(dataView.selections).map(function (item) {
-      return 'float selection_' + item.key + ';';
+      return 'float ' + item.key + ';';
     }).join('\n') + '\n';
   };
 
@@ -129,10 +136,10 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
   Shader.compileSelectionsMapper = function (dataView) {
     return 'void selectionmapper() {\n' +
       Object.items(dataView.selections).map(function (item) {
-        return '  selection_' + item.key + ' = (\n' +
+        return '  ' + item.key + ' = (\n' +
           item.value.sortcols.map(function (sortcol) {
-              return '    selectionmap_' + item.key + '_from_' + sortcol + '_lower >= ' + sortcol + ' &&\n' +
-                     '    selectionmap_' + item.key + '_from_' + sortcol + '_upper <= ' + sortcol;
+              return '    selectionmap_' + item.key + '_from_' + sortcol + '_lower <= ' + sortcol + ' &&\n' +
+                     '    selectionmap_' + item.key + '_from_' + sortcol + '_upper >= ' + sortcol;
           }).join(' &&\n') + ') ? 1.0 : 0.0;';
       }).join('\n') +
       '\n}\n';
