@@ -141,7 +141,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
         return false;
       };
 
-      // $('#map-div').mousemove(function (e) { handleMouse(e, 'hover'); });
+      $('#map-div').mousemove(function (e) { handleMouse(e, 'hover'); });
       $('#map-div').click(function (e) { handleMouse(e, 'selected'); });
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;

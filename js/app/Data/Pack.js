@@ -20,7 +20,7 @@ define(["app/Class"], function (Class) {
   var byname = {
     Int32: {
       size: Int32Array.BYTES_PER_ELEMENT,
-      array: 'Int32Array',
+      array: 'Float32Array',
       getter: 'getInt32',
       setter: 'setInt32'
     },
