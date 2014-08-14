@@ -24,6 +24,7 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
         self.data[name] = new (eval(col.typespec.array))(self.header.length);
       }
 
+      Format.prototype.headerLoaded.call(self, data);
       TypedMatrixParser.prototype.headerLoaded.call(self, data);
     },
 
@@ -31,6 +32,7 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
       var self = this;
 
       for (var name in self.header.colsByName) {
+        if (name == 'rowidx') continue;
         self.data[name][self.rowcount] = data[name];
         self.header.colsByName[name].min = self.header.colsByName[name].min == undefined ? data[name] : Math.min(self.header.colsByName[name].min, data[name]);
         self.header.colsByName[name].max = self.header.colsByName[name].max == undefined ? data[name] : Math.max(self.header.colsByName[name].max, data[name]);

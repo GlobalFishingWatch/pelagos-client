@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
+define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, Events, Pack, _) {
   var Format = Class({
     name: "Format",
     initialize: function(args) {
@@ -24,6 +24,21 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
       if (self.loadingStarted || self.loadingCanceled) return;
       self.loadingStarted = true;
       self._load();
+    },
+
+    headerLoaded: function (data) {
+      var self = this;
+      if (self.header.length == 0) return;
+      self.header.colsByName.rowidx = {
+        type: "Float32",
+        min: 0,
+        max: self.header.length - 1,
+        typespec: Pack.typemap.byname.Float32
+      };
+      self.data.rowidx = new Float32Array(self.header.length);
+      for (var rowidx = 0; rowidx < self.header.length; rowidx++) {
+        self.data.rowidx[rowidx] = rowidx;
+      }
     },
 
     setHeaders: function (headers) {

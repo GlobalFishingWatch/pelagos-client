@@ -60,6 +60,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
                 Object.values(data.colsByName).map(function (col) {
                   col.typespec = Pack.typemap.byname[col.type];
                 });
+                data.colsByName.rowidx = {
+                  type: "Int32",
+                  typespec: Pack.typemap.byname.Int32
+                };
               }
               var e = {update: "header", header: data};
               self.events.triggerEvent(e.update, e);

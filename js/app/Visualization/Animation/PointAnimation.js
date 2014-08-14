@@ -18,12 +18,12 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
         context: "gl",
         vertex: "app/Visualization/Animation/PointAnimation-vertex.glsl",
         fragment: "app/Visualization/Animation/PointAnimation-fragment.glsl"
-      } /*,
+      },
       rowidxProgram: {
         context: "rowidxGl",
         vertex: "app/Visualization/Animation/PointAnimation-rowidx-vertex.glsl",
         fragment: "app/Visualization/Animation/PointAnimation-rowidx-fragment.glsl"
-      } */
+      }
     },
 
     drawProgram: function (program) {

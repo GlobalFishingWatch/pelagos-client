@@ -38,7 +38,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
     destroy: function () {
       var self = this;
-      // $(self.rowidxCanvas).remove();
+      $(self.rowidxCanvas).remove();
     },
 
     initGl: function(gl, cb) {
@@ -58,7 +58,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           self.data_view.events.un({
             "update": handleHeader
           });
-  /*
+
           self.rowidxCanvas = document.createElement('canvas');
 
           rowidxCanvas = $(self.rowidxCanvas);
@@ -66,7 +66,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           self.rowidxGl.enable(self.rowidxGl.BLEND);
           self.rowidxGl.blendFunc(self.rowidxGl.SRC_ALPHA, self.rowidxGl.ONE_MINUS_SRC_ALPHA);
           self.rowidxGl.lineWidth(1.0);
-  */
+
           self.initGlPrograms(cb);
         }
 
@@ -125,7 +125,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     draw: function () {
       var self = this;
       if (!self.visible) return;
-/*
+
       var width = self.manager.canvasLayer.canvas.width;
       var height = self.manager.canvasLayer.canvas.height;
       self.rowidxCanvas.width = width;
@@ -133,7 +133,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       self.rowidxGl.viewport(0, 0, width, height);
       self.rowidxGl.clear(self.rowidxGl.COLOR_BUFFER_BIT);
-*/
+
       Object.values(self.programs).map(self.drawProgram.bind(self));
     },
 
@@ -144,8 +144,11 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       var mode = self.getDrawMode(program);
 
+      var tileidx = 0;
       self.data_view.source.getContent().map(function (tile) {
         self.bindDataViewArrayBuffers(program, tile);
+
+        program.gl.uniform1f(program.uniforms.tileidx, tileidx);
 
         // -1 since series contains POINT_COUNT in the last item
         for (var i = 0; i < tile.series.length - 1; i++) {
@@ -155,6 +158,8 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
             tile.series[i+1]-tile.series[i]
           );
         }
+
+        tileidx++;
       });
     },
 
@@ -210,7 +215,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
      * pixel. */
     getRowidxAtPos: function (x, y, radius) {
       var self = this;
-        return undefined;
 
       /* Canvas coordinates are upside down for some reason... */
       y = self.manager.canvasLayer.canvas.height - y;
@@ -223,9 +227,10 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       self.rowidxGl.readPixels(x-radius, y-radius, size, size, self.rowidxGl.RGBA, self.rowidxGl.UNSIGNED_BYTE, data);
 
       var pixelToId = function (offset) {
-        var res = ((data[offset] << 16) | (data[offset+1] << 8) | data[offset+2]) - 1;
-        if (res == -1) res = undefined;
-        return res;
+        var tileidx = data[offset];
+        var rowidx = ((data[offset+1] << 8) | data[offset+2]) - 1;
+        if (rowidx == -1) return undefined;
+        return [tileidx, rowidx];
       }
 
       var rowIdx = [];
@@ -245,6 +250,9 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
         }
       }
 
+      console.log(last);
+
+      return undefined;
       return last;
     },
 

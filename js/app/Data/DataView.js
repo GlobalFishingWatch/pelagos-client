@@ -48,9 +48,10 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
         self.addSelectionCategory("info");
         self.addSelectionCategory("hover");
       }
-
+/*
       self.lastUpdate = undefined;
       self.updateInterval = setInterval(self.performUpdate.bind(self), 500);
+*/
     },
 
     addSelectionCategory: function (name, args) {
@@ -84,6 +85,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       var self = this;
 
       self.lastUpdate = update;
+      self.performUpdate(update);
     },
 
     performUpdate: function (update) {
