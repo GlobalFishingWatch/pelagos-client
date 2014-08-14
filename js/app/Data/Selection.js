@@ -31,11 +31,15 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
         self._clearRanges();
       }
       if (startidx != undefined && endidx != undefined) {
+
+        var startTile = source.getContent()[startidx[0]];
+        var endTile = source.getContent()[endidx[0]];
+
         updated = true;
         self.sortcols.map(function (col) {
-          if (source.data[col] != undefined) {
-            self.data[col].push(source.data[col][startidx]);
-            self.data[col].push(source.data[col][endidx]);
+          if (startTile.data[col] != undefined & endTile.data[col] != undefined) {
+            self.data[col].push(startTile.data[col][startidx[1]]);
+            self.data[col].push(endTile.data[col][endidx[1]]);
           } else {
             self.data[col].push(undefined);
             self.data[col].push(undefined);

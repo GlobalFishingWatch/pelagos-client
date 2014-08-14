@@ -250,9 +250,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
         }
       }
 
-      console.log(last);
-
-      return undefined;
       return last;
     },
 
