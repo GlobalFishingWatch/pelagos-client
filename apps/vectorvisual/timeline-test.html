@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <title>VectorVisual</title>
+    <link rel="stylesheet/less" type="text/css" href="style.less" />
+    <script type="text/javascript">
+      app = {
+        useDojo: false,
+
+        main: function() {
+          require(['app/MultiTimeline', 'jQuery'], function (Timeline, $) {
+            $(document).ready(function () {
+              timeline = new Timeline({node: '#timeline'});
+            });
+          });
+        }
+      };
+    </script>
+    <script type="text/javascript" src="../../js/deps.js"></script>
+  </head>
+  <body>
+    <div id="timeline" style='width: 90%; height: 200px; margin: 20px;'></div>
+  </body>
+</html>
