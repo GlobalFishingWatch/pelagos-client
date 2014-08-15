@@ -152,11 +152,13 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
         // -1 since series contains POINT_COUNT in the last item
         for (var i = 0; i < tile.series.length - 1; i++) {
-          program.gl.drawArrays(
-            mode,
-            tile.series[i],
-            tile.series[i+1]-tile.series[i]
-          );
+          if (tile.series[i+1]-tile.series[i] > 0) {
+            program.gl.drawArrays(
+              mode,
+              tile.series[i],
+              tile.series[i+1]-tile.series[i]
+            );
+          }
         }
 
         tileidx++;
