@@ -10,7 +10,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
     zoomSize: 1.2,
     hiddenContext: 2, // total space, as a multiple of visible size
-    context: 0.5, // visible space on each side of the window (multiples of window size)
+    context: 25, // visible space on each side of the window (in percentage of visible range)
     stepLabelStyle: "fullDate",
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
@@ -49,9 +49,11 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         "<div class='overlay'>" +
         "  <div class='leftFrame'></div>" +
         "  <div class='window'>" +
-        "    <div class='startLabel'><span></span></div>" +
-        "    <div class='lengthLabel'><span></span></div>" +
-        "    <div class='endLabel'><span></span></div>" +
+        "    <div class='frame'>" +
+        "      <div class='startLabel'><span></span></div>" +
+        "      <div class='lengthLabel'><span></span></div>" +
+        "      <div class='endLabel'><span></span></div>" +
+        "    </div>" +
         "  </div>" +
         "  <div class='rightFrame'></div>" +
         "</div>" +
@@ -78,20 +80,8 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.zoomOutNode.click(self.zoomOut.bind(self));
       self.zoomInNode.mousedown(function (e) { self.eatEvent(e); });
       self.zoomOutNode.mousedown(function (e) { self.eatEvent(e); });
-
-      self.lineNode.css({'width': self.hiddenContext * 100.0 + '%'});
-
-      self.leftFrameNode.css({
-        'width': 100.0 * self.context / (self.context * 2 + 1) + '%',
-      });
-      self.windowNode.css({
-        'width': 100.0 * 1 / (self.context * 2 + 1) + '%',
-      });
-      self.rightFrameNode.css({
-        'width': 100.0 * self.context / (self.context * 2 + 1) + '%',
-      });
-
-      self.node.mousedown(self.dragStart.bind(self));
+      self.windowNode.mousedown(self.windowDragStart.bind(self));
+      self.node.mousedown(self.dragStart.bind(self, 'moveTimeline'));
       $(document).mousemove(self.drag.bind(self));
       $(document).mouseup(self.dragEnd.bind(self));
 
@@ -107,6 +97,9 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       self.node.attr('unselectable', 'on').css('user-select', 'none').on('selectstart', false);
 
+      self.lineNode.css({'width': self.hiddenContext * 100.0 + '%'});
+      self.leftContext = self.context;
+      self.rightContext = self.context;
       self.setRange(self.windowStart, self.windowEnd);
     },
 
@@ -314,19 +307,19 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.offset = offset;
 
       self.visibleStart = new Date(self.start.getTime() + self.offset);
-      self.visibleEnd = new Date(self.visibleStart.getTime() + self.windowSize * (self.context + 1 + self.context));
+      self.visibleEnd = new Date(self.visibleStart.getTime() + self.visibleContextSize);
 
-      self.windowStart = new Date(self.visibleStart.getTime() + self.windowSize * self.context);
+      self.windowStart = new Date(self.visibleStart.getTime() + self.visibleContextSize * self.leftContext / 100.0);
       self.windowEnd = new Date(self.windowStart.getTime() + self.windowSize);
 
-/*
-      console.log(  "START:  " + self.start.toISOString() +
-                  "\nVSTART: " + self.visibleStart.toISOString() +
-                  "\nWSTART: " + self.windowStart.toISOString() +
-                  "\nWEND:   " + self.windowEnd.toISOString() +
-                  "\nVEND:   " + self.visibleEnd.toISOString() +
-                  "\nEND:    " + self.end.toISOString());
-*/
+      console.log({
+        update: "setRangeFromOffset",
+        start: self.start,
+        visibleStart: self.visibleStart,
+        visibleEnd: self.visibleEnd,
+        windowStart: self.windowStart,
+        windowEnd: self.windowEnd
+      });
 
       self.updateRange();
 
@@ -336,8 +329,10 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     setContextFromVisibleContext: function() {
       var self = this;
       self.contextSize = self.visibleContextSize * self.hiddenContext;
+      console.log("contextSize: " + self.intervalToLabel(self.contextSize));
+      console.log(" from visibleContextSize: " + self.intervalToLabel(self.visibleContextSize));
 
-      self.start = self.roundTimeToSteplength(new Date(self.visibleStart.getTime() - (self.visibleContextSize * self.context / 2)));
+      self.start = self.roundTimeToSteplength(new Date(self.visibleStart.getTime() - (self.contextSize - self.visibleContextSize) / 2));
       self.end = new Date(self.start.getTime() + self.contextSize);
 
       self.offset = self.visibleStart - self.start;
@@ -368,10 +363,15 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
     setVisibleContextFromRange: function() {
       var self = this;
-      self.visibleStart = new Date(self.windowStart.getTime() - self.windowSize * self.context);
-      self.visibleEnd = new Date(self.windowEnd.getTime() + self.windowSize * self.context);
 
-      self.visibleContextSize = self.visibleEnd - self.visibleStart;
+      self.visibleContextSize = 100.0 * self.windowSize / (100.0 - self.leftContext - self.rightContext);
+      console.log("visibleContextSize: " + self.intervalToLabel(self.visibleContextSize));
+      self.windowSize = self.windowEnd - self.windowStart;
+      console.log("    windowSize: " + self.intervalToLabel(self.windowSize));
+
+      self.visibleStart = new Date(self.windowStart.getTime() - self.visibleContextSize * self.leftContext / 100.0);
+      self.visibleEnd = new Date(self.windowEnd.getTime() + self.visibleContextSize * self.rightContext / 100.0);
+
       if (self.start != undefined) {
         self.offset = self.visibleStart - self.start;
       }
@@ -381,7 +381,13 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       var self = this;
       self.windowStart = windowStart;
       self.windowEnd = windowEnd;
-      self.windowSize = self.windowEnd - self.windowStart;
+      var windowSize = self.windowEnd - self.windowStart
+      if (windowSize != self.windowSize) {
+        self.start = undefined;
+        self.end = undefined;
+      }
+      self.windowSize = windowSize;
+      console.log("windowSize: " + self.intervalToLabel(self.windowSize));
 
       self.steplength = self.roundSteplength(self.windowSize / self.steps);
       self.substeps = self.stepToSubsteps(self.steplength);
@@ -404,6 +410,8 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         self.setContextFromVisibleContext();
       }
 
+      self.setWindowSize();
+
       self.percentOffset = 100.0 * self.hiddenContext * self.offset / self.contextSize;
       self.lineNode.css({'left': -(self.percentOffset) + '%'});
       self.startLabel.html(self.windowStart.toISOString().replace("T", " ").replace("Z", ""));
@@ -411,26 +419,68 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.endLabel.html(self.windowEnd.toISOString().replace("T", " ").replace("Z", ""));
     },
 
-    dragStart: function (e) {
+    setWindowSize: function () {
       var self = this;
+
+      var leftContext = 100.0 * (self.windowStart - self.visibleStart) / self.visibleContextSize;
+      var rightContext = 100.0 * (self.visibleEnd - self.windowEnd) / self.visibleContextSize;
+
+      var window = 100.0 - leftContext - rightContext;
+
+      self.leftFrameNode.css({
+        'width': leftContext + '%',
+      });
+      self.windowNode.css({
+        'width': window + '%',
+      });
+      self.rightFrameNode.css({
+        'width': rightContext + '%',
+      });
+    },
+
+    windowDragStart: function (e) {
+      var self = this;
+
+      var pos = self.windowNode.offset();
+      pos.width = self.windowNode.outerWidth();
+      pos.right = pos.left + pos.width;
+      pos.borderLeft = parseFloat($(".window").css('border-left-width'));
+      pos.borderRight = parseFloat($(".window").css('border-right-width'));
+
+      pos.innerLeft = pos.left + pos.borderLeft;
+      pos.innerRight = pos.right - pos.borderRight;
+
+      if (e.pageX >= pos.left && e.pageX <= pos.innerLeft) {
+        self.dragStart('windowResizeLeft', e);
+      } else if (e.pageX >= pos.innerRight && e.pageX <= pos.right) {
+        self.dragStart('windowResizeRight', e);
+      }
+    },
+
+    dragStart: function (type, e) {
+      var self = this;
+      self.dragType = type;
       self.dragStartX = e.pageX;
-      self.dragStartOffset = self.offset;
+      self.dragStartY = e.pageY;
+      self['dragStart_' + self.dragType](e);
       self.eatEvent(e);
     },
 
     drag: function (e) {
       var self = this;
 
-      if (self.dragStartX == undefined) return;
+      if (self.dragType == undefined) return;
 
       self.dragX = e.pageX;
+      self.dragY = e.pageY;
 
-      var pixelOffset = self.dragStartX - self.dragX;
+      self.dragOffsetX = self.dragStartX - self.dragX;
+      self.dragOffsetY = self.dragStartY - self.dragY;
       var pixelWidth = self.lineVisibilityNode.innerWidth();
-      var percentOffset = 100.0 * pixelOffset / pixelWidth;
-      var offset = percentOffset * self.visibleContextSize / 100.0;
+      self.dragVisiblePercentOffsetX = 100.0 * self.dragOffsetX / pixelWidth;
+      self.dragTimeOffset = self.dragVisiblePercentOffsetX * self.visibleContextSize / 100.0;
 
-      self.setRangeFromOffset(self.dragStartOffset + offset, 'temporary-range');
+      self['drag_' + self.dragType](e);
 
       self.eatEvent(e);
     },
@@ -438,11 +488,52 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     dragEnd: function (e) {
       var self = this;
 
-      if (self.dragStartX == undefined) return;
-
-      self.dragStartX = undefined;
-      self.events.triggerEvent('set-range', {start: self.windowStart, end: self.windowEnd});
+      if (self.dragType == undefined) return;
+      self['dragEnd_' + self.dragType](e);
+      self.dragType = undefined;
       self.eatEvent(e);
+    },
+
+
+    dragStart_windowResizeLeft: function (e) {
+      var self = this;
+      self.dragStartWindowStart = self.windowStart;
+    },
+    drag_windowResizeLeft: function (e) {
+      var self = this;
+      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragTimeOffset);
+      self.updateRange();
+    },
+    dragEnd_windowResizeLeft: function (e) {
+      var self = this;
+      self.setRange(self.windowStart, self.windowEnd, 'set-range');
+    },
+
+    dragStart_windowResizeRight: function (e) {
+      var self = this;
+      self.dragStartWindowEnd = self.windowEnd;
+    },
+    drag_windowResizeRight: function (e) {
+      var self = this;
+      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragTimeOffset);
+      self.updateRange();
+    },
+    dragEnd_windowResizeRight: function (e) {
+      var self = this;
+      self.setRange(self.windowStart, self.windowEnd, 'set-range');
+    },
+
+    dragStart_moveTimeline: function (e) {
+      var self = this;
+      self.dragStartOffset = self.offset;
+    },
+    drag_moveTimeline: function (e) {
+      var self = this;
+      self.setRangeFromOffset(self.dragStartOffset + self.dragTimeOffset, 'temporary-range');
+    },
+    dragEnd_moveTimeline: function (e) {
+      var self = this;
+      self.events.triggerEvent('set-range', {start: self.windowStart, end: self.windowEnd});
     }
   });
 });
