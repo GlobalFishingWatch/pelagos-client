@@ -422,16 +422,19 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     setWindowSize: function () {
       var self = this;
 
-      var window = 100.0 - self.leftContext - self.rightContext;
+      var leftContext = 100.0 * (self.windowStart - self.visibleStart) / self.visibleContextSize;
+      var rightContext = 100.0 * (self.visibleEnd - self.windowEnd) / self.visibleContextSize;
+
+      var window = 100.0 - leftContext - rightContext;
 
       self.leftFrameNode.css({
-        'width': self.leftContext + '%',
+        'width': leftContext + '%',
       });
       self.windowNode.css({
         'width': window + '%',
       });
       self.rightFrameNode.css({
-        'width': self.rightContext + '%',
+        'width': rightContext + '%',
       });
     },
 
@@ -498,7 +501,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_windowResizeLeft: function (e) {
       var self = this;
-      self.windowStart = new Date(self.dragStartWindowStart.getTime() + self.dragTimeOffset);
+      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragTimeOffset);
       self.updateRange();
     },
     dragEnd_windowResizeLeft: function (e) {
@@ -512,7 +515,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_windowResizeRight: function (e) {
       var self = this;
-      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() + self.dragTimeOffset);
+      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragTimeOffset);
       self.updateRange();
     },
     dragEnd_windowResizeRight: function (e) {
