@@ -14,7 +14,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     stepLabelStyle: "fullDate",
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
-    steps: 10,
+    steps: 20,
     snapZoomToTickmarks: true,
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
@@ -33,6 +33,8 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       month: 1000*60*60*24*30,
       year: 1000*60*60*24*365
     },
+
+    mainSteplengths: ["second", "minute", "hour", "day", "week", "month", "year"],
 
     initialize: function (args) {
       var self = this;
@@ -312,15 +314,6 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.windowStart = new Date(self.visibleStart.getTime() + self.visibleContextSize * self.leftContext / 100.0);
       self.windowEnd = new Date(self.windowStart.getTime() + self.windowSize);
 
-      console.log({
-        update: "setRangeFromOffset",
-        start: self.start,
-        visibleStart: self.visibleStart,
-        visibleEnd: self.visibleEnd,
-        windowStart: self.windowStart,
-        windowEnd: self.windowEnd
-      });
-
       self.updateRange();
 
       self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
@@ -329,8 +322,6 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     setContextFromVisibleContext: function() {
       var self = this;
       self.contextSize = self.visibleContextSize * self.hiddenContext;
-      console.log("contextSize: " + self.intervalToLabel(self.contextSize));
-      console.log(" from visibleContextSize: " + self.intervalToLabel(self.visibleContextSize));
 
       self.start = self.roundTimeToSteplength(new Date(self.visibleStart.getTime() - (self.contextSize - self.visibleContextSize) / 2));
       self.end = new Date(self.start.getTime() + self.contextSize);
@@ -365,9 +356,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       var self = this;
 
       self.visibleContextSize = 100.0 * self.windowSize / (100.0 - self.leftContext - self.rightContext);
-      console.log("visibleContextSize: " + self.intervalToLabel(self.visibleContextSize));
       self.windowSize = self.windowEnd - self.windowStart;
-      console.log("    windowSize: " + self.intervalToLabel(self.windowSize));
 
       self.visibleStart = new Date(self.windowStart.getTime() - self.visibleContextSize * self.leftContext / 100.0);
       self.visibleEnd = new Date(self.windowEnd.getTime() + self.visibleContextSize * self.rightContext / 100.0);
@@ -387,12 +376,12 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         self.end = undefined;
       }
       self.windowSize = windowSize;
-      console.log("windowSize: " + self.intervalToLabel(self.windowSize));
-
-      self.steplength = self.roundSteplength(self.windowSize / self.steps);
-      self.substeps = self.stepToSubsteps(self.steplength);
 
       self.setVisibleContextFromRange();
+
+      self.steplength = self.roundSteplength(self.visibleContextSize / self.steps);
+      self.substeps = self.stepToSubsteps(self.steplength);
+
       if (self.start == undefined) {
         self.setContextFromVisibleContext();
       }
