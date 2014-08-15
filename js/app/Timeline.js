@@ -381,7 +381,12 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       var self = this;
       self.windowStart = windowStart;
       self.windowEnd = windowEnd;
-      self.windowSize = self.windowEnd - self.windowStart;
+      var windowSize = self.windowEnd - self.windowStart
+      if (windowSize != self.windowSize) {
+        self.start = undefined;
+        self.end = undefined;
+      }
+      self.windowSize = windowSize;
       console.log("windowSize: " + self.intervalToLabel(self.windowSize));
 
       self.steplength = self.roundSteplength(self.windowSize / self.steps);
@@ -493,7 +498,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_windowResizeLeft: function (e) {
       var self = this;
-      self.windowStart = self.dragStartWindowStart + self.dragTimeOffset;
+      self.windowStart = new Date(self.dragStartWindowStart.getTime() + self.dragTimeOffset);
       self.updateRange();
     },
     dragEnd_windowResizeLeft: function (e) {
@@ -507,7 +512,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_windowResizeRight: function (e) {
       var self = this;
-      self.windowEnd = self.dragStartWindowEnd + self.dragTimeOffset;
+      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() + self.dragTimeOffset);
       self.updateRange();
     },
     dragEnd_windowResizeRight: function (e) {
