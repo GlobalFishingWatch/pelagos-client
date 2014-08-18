@@ -70,6 +70,9 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
           if (updating) return;
           self.visualization.state.setValue("time", e.end);
           self.visualization.state.setValue("timeExtent", e.end - e.start);
+        },
+        'user-update-start': function (e) {
+          self.visualization.state.setValue("paused", true);
         }
       });
 

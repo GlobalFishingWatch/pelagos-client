@@ -543,6 +543,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
     dragStart_windowResizeLeft: function (e) {
       var self = this;
+      self.events.triggerEvent('user-update-start', {type:'window-resize-left'});
       self.dragStartWindowStart = self.windowStart;
     },
     drag_windowResizeLeft: function (e) {
@@ -557,6 +558,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
     dragStart_windowResizeRight: function (e) {
       var self = this;
+      self.events.triggerEvent('user-update-start', {type:'window-resize-right'});
       self.dragStartWindowEnd = self.windowEnd;
     },
     drag_windowResizeRight: function (e) {
@@ -571,6 +573,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
     dragStart_moveTimeline: function (e) {
       var self = this;
+      self.events.triggerEvent('user-update-start', {type:'move-timeline'});
       self.dragStartOffset = self.offset;
     },
     drag_moveTimeline: function (e) {
