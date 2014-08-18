@@ -353,37 +353,17 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       self.rangesNode.find('.range').remove();
 
-      /* Create a set of non-overlapping ranges with no gaps covering
-       * the current context */
-      var ranges = [];
-      var last = {end: self.start};
       self.ranges.map(function (range) {
         if (overlaps(range, self)) {
-          if (range.start > last.end) {
-            ranges.push({start:last.end, end:range.start, color:'none'});
-          }
-          ranges.push(range);
-          last = range;
-        }
-      });
-      if (self.end > last.end) {
-        ranges.push({start:last.end, end:self.end, color:'none'});
-      }
-      if (ranges[0].start < self.start) {
-        ranges[0] = $.extend({}, ranges[0]);
-        ranges[0].start = self.start;
-      }
-      var last = ranges.length - 1;
-      if (ranges[last].end > self.end) {
-        ranges[last] = $.extend({}, ranges[last]);
-        ranges[last].end = self.end;
-      }
+          var start = new Date(Math.max(range.start, self.start));
+          var end = new Date(Math.min(range.end, self.end));
 
-      ranges.map(function (range) {
-        var width = 100.0 * (range.end - range.start) / (self.end - self.start);
-        var rangeNode = $("<div class='range'>");
-        rangeNode.css({width: width + '%', background: range.color});
-        self.rangesNode.append(rangeNode);
+          var left = 100.0 * (start - self.start) / (self.end - self.start);
+          var width = 100.0 * (end - start) / (self.end - self.start);
+          var rangeNode = $("<div class='range'>");
+          rangeNode.css({width: width + '%', left: left + '%', background: range.color});
+          self.rangesNode.append(rangeNode);
+        }
       });
     },
 

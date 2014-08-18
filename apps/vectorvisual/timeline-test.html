@@ -8,7 +8,7 @@
         useDojo: false,
 
         main: function() {
-          require(['app/MultiTimeline', 'jQuery'], function (Timeline, $) {
+          require(['app/Timeline', 'jQuery'], function (Timeline, $) {
             $(document).ready(function () {
               timeline = new Timeline({node: '#timeline'});
             });
