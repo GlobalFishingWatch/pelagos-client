@@ -82,6 +82,20 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
           self.timeline.min = new Date(header.colsByName.datetime.min);
           self.timeline.max = new Date(header.colsByName.datetime.max);
 
+          var rangemarks = self.timeline.rangemarks;
+          if (self.timeline.dataRangemark == undefined) {
+            self.timeline.dataRangemark = {
+              start: self.timeline.min,
+              end: self.timeline.max,
+              css: {background:"#ffffff", 'z-index': 0},
+            };
+            rangemarks.push(self.timeline.dataRangemark);
+          } else {
+            self.timeline.dataRangemark.start = self.timeline.min;
+            self.timeline.dataRangemark.end = self.timeline.max;
+          }
+          self.timeline.setRangemarks(rangemarks);
+
           daySliderUpdateValue();
         });
       };

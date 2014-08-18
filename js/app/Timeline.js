@@ -417,6 +417,12 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       }
     },
 
+    setRangemarks: function (rangemarks) {
+      var self = this;
+      self.rangemarks = rangemarks;
+      self.recreateRangemarks();
+    },
+
     setRange: function (windowStart, windowEnd, type) {
       var self = this;
       self.windowStart = windowStart;
