@@ -19,6 +19,11 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
 
+    ranges: [
+      {start:new Date('1969-12-30'), end: new Date('1970-01-05'), color: "#88ff88"},
+      {start:new Date('1970-01-07'), end: new Date('1970-01-10'), color: "#ff8888"}
+    ],
+
     steplengths: {
       second: 1000,
       secfiver: 1000*5,
@@ -60,7 +65,12 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         "  <div class='rightFrame'></div>" +
         "</div>" +
         "<div class='line-visibility'>" +
-        "  <div class='line'></div>" +
+        "  <div class='line'>" +
+        "    <div class='ranges'>" +
+        "    </div>" +
+        "    <div class='tickmarks'>" +
+        "    </div>" +
+        "  </div>" +
         "</div>" +
         "<a class='zoomIn'><i class='fa fa-plus-square'></i></a>" +
         "<a class='zoomOut'><i class='fa fa-minus-square'></i></a>"
@@ -77,6 +87,8 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.lengthLabel = self.node.find('.lengthLabel span');
       self.endLabel = self.node.find('.endLabel span');
       self.lineNode = self.node.find('.line');
+      self.rangesNode = self.node.find('.ranges');
+      self.tickmarksNode = self.node.find('.tickmarks');
 
       self.zoomInNode.click(self.zoomIn.bind(self));
       self.zoomOutNode.click(self.zoomOut.bind(self));
@@ -328,7 +340,57 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       self.offset = self.visibleStart - self.start;
 
-      self.lineNode.find('.quanta').remove();
+      self.recreateRangemarks();
+      self.recreateTickmarks();
+    },
+
+    recreateRangemarks: function () {
+      var self = this;
+
+      var overlaps = function (a, b) {
+        return (a.start < b.end && a.end > b.start);
+      }
+
+      self.rangesNode.find('.range').remove();
+
+      /* Create a set of non-overlapping ranges with no gaps covering
+       * the current context */
+      var ranges = [];
+      var last = {end: self.start};
+      self.ranges.map(function (range) {
+        if (overlaps(range, self)) {
+          if (range.start > last.end) {
+            ranges.push({start:last.end, end:range.start, color:'none'});
+          }
+          ranges.push(range);
+          last = range;
+        }
+      });
+      if (self.end > last.end) {
+        ranges.push({start:last.end, end:self.end, color:'none'});
+      }
+      if (ranges[0].start < self.start) {
+        ranges[0] = $.extend({}, ranges[0]);
+        ranges[0].start = self.start;
+      }
+      var last = ranges.length - 1;
+      if (ranges[last].end > self.end) {
+        ranges[last] = $.extend({}, ranges[last]);
+        ranges[last].end = self.end;
+      }
+
+      ranges.map(function (range) {
+        var width = 100.0 * (range.end - range.start) / (self.end - self.start);
+        var rangeNode = $("<div class='range'>");
+        rangeNode.css({width: width + '%', background: range.color});
+        self.rangesNode.append(rangeNode);
+      });
+    },
+
+    recreateTickmarks: function () {
+      var self = this;
+
+      self.tickmarksNode.find('.quanta').remove();
 
       self.stepCount = 0;
       self.stepsEnd = self.start;
@@ -336,15 +398,15 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         self.stepCount++;
         var stepNode = $("<div class='quanta'><div class='label'><span></span></div></div>");
         stepNode.find("span").html(self.dateToSteplengthLabel(self.stepsEnd));
-        self.lineNode.append(stepNode);
+        self.tickmarksNode.append(stepNode);
         for (var subPos = 0; subPos < self.substeps - 1; subPos++) {
-          self.lineNode.append("<div class='quanta small'></div>");
+          self.tickmarksNode.append("<div class='quanta small'></div>");
         }
       }
       self.stepsSize = (self.stepsEnd - self.start) / (self.end - self.start)
 
       self.stepWidth = 100.0 * self.stepsSize / (self.stepCount * self.substeps);
-      self.lineNode.find('.quanta').css({'margin-right': self.stepWidth + '%'});
+      self.tickmarksNode.find('.quanta').css({'margin-right': self.stepWidth + '%'});
 
       if (self.dragStartX != undefined) {
         self.dragStartX = self.dragX;
