@@ -125,6 +125,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
             if (end > self.timeline.max) {
               end = self.timeline.max;
               start = new Date(end.getTime() - timeExtent);
+              self.visualization.state.setValue("paused", true);
               adjusted = true;
             }
             if (start < self.timeline.min) {
