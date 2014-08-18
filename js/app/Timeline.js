@@ -19,9 +19,10 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
 
-    ranges: [
-      {start:new Date('1969-12-30'), end: new Date('1970-01-05'), color: "#88ff88"},
-      {start:new Date('1970-01-07'), end: new Date('1970-01-10'), color: "#ff8888"}
+    rangemarks: [
+      {start:new Date('1969-12-30'), end:new Date('1970-01-05'), css:{background:"#88ff88"}},
+      {start:new Date('1970-01-07'), end:new Date('1970-01-10'), css:{background:"#ff8888", opacity: 0.5}},
+      {start:new Date('1970-01-08'), end:new Date('1970-01-12'), css:{background:"#0000ff", opacity: 0.5}}
     ],
 
     steplengths: {
@@ -66,7 +67,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         "</div>" +
         "<div class='line-visibility'>" +
         "  <div class='line'>" +
-        "    <div class='ranges'>" +
+        "    <div class='rangemarks'>" +
         "    </div>" +
         "    <div class='tickmarks'>" +
         "    </div>" +
@@ -87,7 +88,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.lengthLabel = self.node.find('.lengthLabel span');
       self.endLabel = self.node.find('.endLabel span');
       self.lineNode = self.node.find('.line');
-      self.rangesNode = self.node.find('.ranges');
+      self.rangemarksNode = self.node.find('.rangemarks');
       self.tickmarksNode = self.node.find('.tickmarks');
 
       self.zoomInNode.click(self.zoomIn.bind(self));
@@ -351,18 +352,19 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         return (a.start < b.end && a.end > b.start);
       }
 
-      self.rangesNode.find('.range').remove();
+      self.rangemarksNode.find('.rangemark').remove();
 
-      self.ranges.map(function (range) {
-        if (overlaps(range, self)) {
-          var start = new Date(Math.max(range.start, self.start));
-          var end = new Date(Math.min(range.end, self.end));
+      self.rangemarks.map(function (rangemark) {
+        if (overlaps(rangemark, self)) {
+          var start = new Date(Math.max(rangemark.start, self.start));
+          var end = new Date(Math.min(rangemark.end, self.end));
 
           var left = 100.0 * (start - self.start) / (self.end - self.start);
           var width = 100.0 * (end - start) / (self.end - self.start);
-          var rangeNode = $("<div class='range'>");
-          rangeNode.css({width: width + '%', left: left + '%', background: range.color});
-          self.rangesNode.append(rangeNode);
+          var rangemarkNode = $("<div class='rangemark'>");
+          rangemarkNode.css({width: width + '%', left: left + '%'});
+          rangemarkNode.css(rangemark.css);
+          self.rangemarksNode.append(rangemarkNode);
         }
       });
     },
