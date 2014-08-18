@@ -97,8 +97,8 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.rangemarksNode = self.node.find('.rangemarks');
       self.tickmarksNode = self.node.find('.tickmarks');
 
-      self.zoomInNode.click(self.zoomIn.bind(self));
-      self.zoomOutNode.click(self.zoomOut.bind(self));
+      self.zoomInNode.click(self.zoomIn.bind(self, undefined));
+      self.zoomOutNode.click(self.zoomOut.bind(self, undefined));
       self.zoomInNode.mousedown(function (e) { self.eatEvent(e); });
       self.zoomOutNode.mousedown(function (e) { self.eatEvent(e); });
       self.windowNode.mousedown(self.windowDragStart.bind(self));
@@ -278,22 +278,40 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       if (e.stopPropagation) e.stopPropagation();
     },
 
+    pixelPositionToTime: function (pos) {
+      var self = this;
+
+      offset = pos - self.lineVisibilityNode.offset().left;
+      return new Date(self.visibleStart.getTime() + self.pixelOffsetToTimeOffset(offset));
+    },
+
+    pixelOffsetToTimeOffset: function (offset) {
+      var self = this;
+      var pixelWidth = self.lineVisibilityNode.innerWidth();
+      var percentOffset = 100.0 * offset / pixelWidth;
+      return percentOffset * self.visibleContextSize / 100.0;
+    },
+
     zoomOut: function (e) {
       var self = this;
-      self.zoom(self.zoomSize);
+      self.zoom(self.zoomSize, e && self.pixelPositionToTime(e.pageX));
       self.eatEvent(e);
     },
 
     zoomIn: function (e) {
       var self = this;
-      self.zoom(1 / self.zoomSize);
+
+      self.zoom(1 / self.zoomSize, e && self.pixelPositionToTime(e.pageX));
       self.eatEvent(e);
     },
 
-    zoom: function (factor) {
+    zoom: function (factor, middle) {
       var self = this;
 
-      var middle = self.windowStart.getTime() + self.windowSize / 2;
+      if (middle == undefined) middle = new Date(self.windowStart.getTime() + self.windowSize / 2);
+      var left = 100.0 * (middle - self.windowStart) / self.windowSize;
+      var right = 100.0 * (self.windowEnd - middle) / self.windowSize;
+
       var windowSize = Math.max(1, Math.floor(self.windowSize * factor));
 
       if (self.maxWindowSize != undefined && self.maxWindowSize < windowSize) {
@@ -320,7 +338,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       self.start = undefined;
       self.end = undefined;
-      self.setRange(new Date(middle - windowSize / 2), new Date(middle + windowSize / 2));
+      self.setRange(new Date(middle.getTime() - windowSize * left / 100.0), new Date(middle.getTime() + windowSize * right / 100.0));
     },
 
     setRangeFromOffset: function (offset, type) {
@@ -522,9 +540,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       self.dragOffsetX = self.dragStartX - self.dragX;
       self.dragOffsetY = self.dragStartY - self.dragY;
-      var pixelWidth = self.lineVisibilityNode.innerWidth();
-      self.dragVisiblePercentOffsetX = 100.0 * self.dragOffsetX / pixelWidth;
-      self.dragTimeOffset = self.dragVisiblePercentOffsetX * self.visibleContextSize / 100.0;
+      self.dragTimeOffset = self.pixelOffsetToTimeOffset(self.dragOffsetX);
 
       self['drag_' + self.dragType](e);
 
