@@ -19,10 +19,16 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
 
+    backgroundCss: {background: '#ff8888'},
     rangemarks: [
-      {start:new Date('1969-12-30'), end:new Date('1970-01-05'), css:{background:"#88ff88"}},
-      {start:new Date('1970-01-07'), end:new Date('1970-01-10'), css:{background:"#ff8888", opacity: 0.5}},
-      {start:new Date('1970-01-08'), end:new Date('1970-01-12'), css:{background:"#0000ff", opacity: 0.5}}
+      /* Example ranges. The first one is a white background range
+       * below all the other ranges, that hides the styling from
+       * backgroundCss.
+       *
+       * {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#ffffff", 'z-index': 0}},
+       * {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
+       * {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
+       */
     ],
 
     steplengths: {
@@ -352,8 +358,9 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         return (a.start < b.end && a.end > b.start);
       }
 
-      self.rangemarksNode.find('.rangemark').remove();
+      self.rangemarksNode.css(self.backgroundCss);
 
+      self.rangemarksNode.find('.rangemark').remove();
       self.rangemarks.map(function (rangemark) {
         if (overlaps(rangemark, self)) {
           var start = new Date(Math.max(rangemark.start, self.start));
