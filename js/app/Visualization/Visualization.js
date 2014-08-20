@@ -1,4 +1,4 @@
-define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/UI", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, UI, async, $, Json) {
+define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/SidePanels", "app/Visualization/UI", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, SidePanels, UI, async, $, Json) {
   return Class({
     name: "Visualization",
     paramspec: {
@@ -43,6 +43,7 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
         }
       });
 
+      self.sidePanels = new SidePanels(self);
       self.data = new DataManager(self);
       self.animations = new AnimationManager(self);
       self.ui = new UI(self);

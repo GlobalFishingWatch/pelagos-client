@@ -37,21 +37,7 @@ if (!app.useDojo) {
           remove: self.removeHandler.bind(self),
         });
 
-        self.container = new BorderContainer({class: 'AnimationUI', liveSplitters: true, design: 'sidebar'});
-        self.animationsContainer = new ContentPane({class: 'AnimationContainer', region: 'center'});
-        self.container.addChild(self.animationsContainer);
-
-        self.sidebarContainer = new AccordionContainer({region: 'right', splitter:true});
-        self.container.addChild(self.sidebarContainer);
-
         self.generateUI();
-
-        var nodes = self.visualization.node.children();
-        nodes.remove();
-        $(self.animationsContainer.domNode).append(nodes);
-        self.visualization.node.append(self.container.domNode);
-
-        self.container.startup();
       },
 
       addHandler: function (event) {
@@ -194,7 +180,8 @@ if (!app.useDojo) {
 
         self.animationManager.animations.map(self.generateAnimationUI.bind(self));
 
-        self.sidebarContainer.addChild(self.ui);
+        self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
+        self.visualization.sidePanels.container.layout();
       },
 
       generateAnimationUI: function (animation) {
