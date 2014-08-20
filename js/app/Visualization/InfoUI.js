@@ -19,7 +19,7 @@ if (!app.useDojo) {
 
         self.visualization = visualization;
 
-        self.ui = new ContentPane({title: 'Info', content:"No object selected", doLayout: false});
+        self.ui = new ContentPane({title: 'Info', content:"<table class='table table-striped table-bordered'><tr><th>No object selected</th></tr></table>", doLayout: false});
 
         self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
         self.visualization.sidePanels.container.layout();
