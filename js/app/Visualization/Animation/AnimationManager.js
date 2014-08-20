@@ -128,40 +128,68 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       }
     },
 
+
+    handleMouse: function (e, type) {
+      var self = this;
+
+      var offset = self.node.offset();
+
+      for (var key in self.animations) {
+        var animation = self.animations[key];
+        if (animation.select(e.pageX - offset.left, e.pageY - offset.top, type, true)) {
+          return animation.data_view;
+        }
+      }
+      return false;
+    },
+
     initMouse: function(cb) {
       var self = this;
 
-      var handleMouse = function (e, type) {
-        var offset = self.node.offset();
-
-        for (var key in self.animations) {
-          var animation = self.animations[key];
-          if (animation.select(e.pageX - offset.left, e.pageY - offset.top, type, true)) {
-            return animation.data_view;
+      self.node.mousemove(function (e) { self.handleMouse(e, 'hover'); });
+      self.node.click(function (e) {
+        var dataView = self.handleMouse(e, 'selected');
+        if (!dataView) return;
+        dataView.getSelectionInfo('info', function (err, data) {
+          if (err) {
+            self.events.triggerEvent('info-error', err);
+          } else {
+            self.events.triggerEvent('info', data);
           }
-        }
+        });
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
         return false;
-      };
-
-      self.node.mousemove(function (e) { handleMouse(e, 'hover'); });
-      self.node.click(function (e) { handleMouse(e, 'selected'); });
+      });
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;
-        var dataView = handleMouse(e, 'info')
-        if (dataView) {
-          console.log({series:dataView.selections.info.data.series[0]});
-          dataView.getSelectionInfo('info', function (err, data) {
-            if (err) {
-              self.events.triggerEvent('info-error', err);
-            } else {
-              self.events.triggerEvent('info', data);
+        var dataView = self.handleMouse(e, 'info')
+        if (!dataView) return;
+        dataView.getSelectionInfo('info', function (err, data) {
+          var content;
+          if (err) {
+            content = $(err.toString());
+          } else {
+            var content = $("<table class='table table-striped table-bordered'>");
+            for (var key in data) {
+              if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                content.append("<tr><th colspan='2'><a href='" + data[key] +  "'>" + key + "</a></th></tr>");
+              } else {
+                content.append("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+              }
             }
+          }
+
+          var popup=new google.maps.InfoWindow({
+            content: content[0],
+            position: e.latLng,
           });
-          if (e.preventDefault) e.preventDefault();
-          if (e.stopPropagation) e.stopPropagation();
-          return false;
-        }
+          popup.open(self.map);
+        });
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        return false;
       });
       cb();
     },
