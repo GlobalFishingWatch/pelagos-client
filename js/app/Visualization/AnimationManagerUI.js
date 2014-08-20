@@ -10,6 +10,8 @@ if (!app.useDojo) {
     "app/Visualization/Animation/Animation",
     "jQuery",
     "dijit/Fieldset",
+    "dijit/layout/BorderContainer",
+    "dijit/layout/AccordionContainer",
     "dojox/layout/FloatingPane",
     "dijit/layout/ContentPane",
     "dijit/Menu",
@@ -22,31 +24,34 @@ if (!app.useDojo) {
     "dojo/dom",
     "dojo/parser",
     "dojo/domReady!"
-  ], function(Class, Logging, DataViewUI, Animation, $, Fieldset, FloatingPane, ContentPane, Menu, MenuItem, TooltipDialog, Select, TextBox, Button, popup){
+  ], function(Class, Logging, DataViewUI, Animation, $, Fieldset, BorderContainer, AccordionContainer, FloatingPane, ContentPane, Menu, MenuItem, TooltipDialog, Select, TextBox, Button, popup){
     return Class({
       name: "VisualizationUI",
-      initialize: function (animationManager) {
+      initialize: function (visualization) {
         var self = this;
 
-        self.animationManager = animationManager;
+        self.visualization = visualization;
+        self.animationManager = visualization.animations;
         self.animationManager.events.on({
           add: self.addHandler.bind(self),
           remove: self.removeHandler.bind(self),
         });
 
-        self.dialog = new FloatingPane({
-          title: "VisualizationUI",
-          resizable: true,
-          dockable: true,
-          style: "position: absolute"
-        });
-        self.dialog.placeAt($("body")[0]);
-        self.dialog.resize({x:10, y:10, w:400, h:500});
+        self.container = new BorderContainer({class: 'AnimationUI', liveSplitters: true, design: 'sidebar'});
+        self.animationsContainer = new ContentPane({class: 'AnimationContainer', region: 'center'});
+        self.container.addChild(self.animationsContainer);
+
+        self.sidebarContainer = new AccordionContainer({region: 'right', splitter:true});
+        self.container.addChild(self.sidebarContainer);
 
         self.generateUI();
 
-        self.dialog.startup();
-        self.dialog.show();
+        var nodes = self.visualization.node.children();
+        nodes.remove();
+        $(self.animationsContainer.domNode).append(nodes);
+        self.visualization.node.append(self.container.domNode);
+
+        self.container.startup();
       },
 
       addHandler: function (event) {
@@ -145,7 +150,7 @@ if (!app.useDojo) {
       generateUI: function () {
         var self = this;
 
-        self.ui = new ContentPane({content:"", doLayout: false});
+        self.ui = new ContentPane({title: 'Animations', content:"", doLayout: false});
 
         var state = self.animationManager.visualization.state;
         if (!state.getValue('title')) {
@@ -189,7 +194,7 @@ if (!app.useDojo) {
 
         self.animationManager.animations.map(self.generateAnimationUI.bind(self));
 
-        self.dialog.addChild(self.ui);
+        self.sidebarContainer.addChild(self.ui);
       },
 
       generateAnimationUI: function (animation) {

@@ -23,8 +23,10 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
       // httpHeaders: {default: {"X-Client-Cache": "true"}}
     },
 
-    initialize: function () {
+    initialize: function (node) {
       var self = this;
+
+      self.node = $(node);
 
       self.state = new SubscribableDict(self.paramspec);
 

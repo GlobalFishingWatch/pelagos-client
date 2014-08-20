@@ -1,7 +1,7 @@
 define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "async", "jQuery", "app/Visualization/sliders"], function(Class, Timeline, AnimationManagerUI, async, $) {
   return Class({
     name: "UI",
-    initialize: function (visualization) {
+      initialize: function (visualization) {
       var self = this;
       self.visualization = visualization;
     },
@@ -22,12 +22,15 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
     initLoadSpinner: function(cb) {
       var self = this;
 
+      self.loadingNode = $('<div id="loading"><img src="../../img/Ajax-loader.gif"></div>');
+      self.visualization.node.append(self.loadingNode);
+
       self.visualization.data.events.on({
         load: function () {
-          $("#loading").fadeIn();
+          self.loadingNode.fadeIn();
         },
         all: function () {
-          $("#loading").fadeOut();
+          self.loadingNode.fadeOut();
         },
         error: function (data) {
           var dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Error</h4></div><div class="modal-body alert"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
@@ -52,7 +55,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
         var logo = $("<a class='logo'><img></a>");
         logo.find("img").attr({src:logo_img});
         logo.attr({href:logo_url});
-        $("body").append(logo);
+        self.visualization.node.append(logo);
       }
       cb();
     },
@@ -62,7 +65,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
       var updating = false;
 
       self.timelineNode = $('<div class="main-timeline">');
-      $("body").append(self.timelineNode);
+      self.visualization.node.append(self.timelineNode);
 
       self.timeline = new Timeline({node: self.timelineNode});
 
@@ -147,20 +150,23 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
     initToggleButtons: function(cb) {
       var self = this;
 
-      $("#animate-button").click(function () {
-        val = $("#animate-button input").val() == "true";
-        $("#animate-button input").val(val ? "false" : "true");
-        $("#animate-button input").trigger("change");
+      self.animateButtonNode = $('<button name="animate-button" id="animate-button" class="btn btn-xs"><input type="hidden"><i class="fa fa-pause"></i></button>');
+      self.visualization.node.append(self.animateButtonNode);
+
+      self.animateButtonNode.click(function () {
+        val = self.animateButtonNode.find("input").val() == "true";
+        self.animateButtonNode.find("input").val(val ? "false" : "true");
+        self.animateButtonNode.find("input").trigger("change");
       });
-      $("#animate-button input").change(function () {
-        self.visualization.state.setValue("paused", $("#animate-button input").val() == "true");
+      self.animateButtonNode.find("input").change(function () {
+        self.visualization.state.setValue("paused", self.animateButtonNode.find("input").val() == "true");
       });
       function setValue(value) {
-        $("#animate-button input").val(value ? "true" : "false");
+        self.animateButtonNode.find("input").val(value ? "true" : "false");
         if (value) {
-          $("#animate-button").find("i").removeClass("fa-pause").addClass("fa-play");
+          self.animateButtonNode.find("i").removeClass("fa-pause").addClass("fa-play");
         } else {
-          $("#animate-button").find("i").removeClass("fa-play").addClass("fa-pause");
+          self.animateButtonNode.find("i").removeClass("fa-play").addClass("fa-pause");
         }
       }
       self.visualization.state.events.on({paused: function (e) { setValue(e.new); }});
@@ -172,7 +178,10 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
     initSaveButton: function(cb) {
       var self = this;
 
-      $("#save-button").click(function () {
+      self.saveButtonNode = $('<button name="save-button" id="save-button" class="btn btn-xs"><input type="hidden"><i class="fa fa-save"></i></button>')
+      self.visualization.node.append(self.saveButtonNode);
+
+      self.saveButtonNode.click(function () {
         self.visualization.save(function (url) {
           url = window.location.toString().split("#")[0] + "#workspace=" + escape(url);
 
@@ -192,7 +201,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/AnimationManagerUI", "as
     initAnimationManagerUI: function (cb) {
       var self = this;
 
-      self.animations = new AnimationManagerUI(self.visualization.animations);
+      self.animations = new AnimationManagerUI(self.visualization);
       cb();
     }
   });

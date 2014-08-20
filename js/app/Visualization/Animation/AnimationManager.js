@@ -18,6 +18,9 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       self.events = new Events("AnimationManager");
 
       self.visualization = visualization;
+      self.node = $("<div class='animations'>");
+      self.visualization.node.append(self.node);
+
       self.indrag = false;
       self.inPanZoom = false;
     },
@@ -66,9 +69,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
     initMap: function (cb) {
       var self = this;
 
-      var mapDiv = document.getElementById('map-div');
       self.map = new google.maps.Map(
-        mapDiv,
+        self.node[0],
         $.extend(
           {
             zoom: 1,

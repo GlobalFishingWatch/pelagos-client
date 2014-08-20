@@ -11,7 +11,7 @@ app = {
         } else {
           $("#test").hide();
           $("#visualization").show();
-          visualization = new Visualization();
+          visualization = new Visualization('#visualization');
         }
       });
     });
