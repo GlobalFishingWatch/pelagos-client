@@ -132,7 +132,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       var self = this;
 
       var handleMouse = function (e, type) {
-        var offset = $('#map-div').offset();
+        var offset = self.node.offset();
 
         for (var key in self.animations) {
           var animation = self.animations[key];
@@ -143,8 +143,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
         return false;
       };
 
-      $('#map-div').mousemove(function (e) { handleMouse(e, 'hover'); });
-      $('#map-div').click(function (e) { handleMouse(e, 'selected'); });
+      self.node.mousemove(function (e) { handleMouse(e, 'hover'); });
+      self.node.click(function (e) { handleMouse(e, 'selected'); });
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;
@@ -152,27 +152,11 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
         if (dataView) {
           console.log({series:dataView.selections.info.data.series[0]});
           dataView.getSelectionInfo('info', function (err, data) {
-            var dialog;
             if (err) {
-              dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Error</h4></div><div class="modal-body alert"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-              dialog.find('.modal-body').html(err.toString());
+              self.events.triggerEvent('info-error', err);
             } else {
-              dialog = $('<div class="modal fade" id="info" tabindex="-1" role="dialog" aria-labelledby="infoLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-success"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="infoLabel">Feature information</h4></div><div class="modal-body"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-              var table = $("<table>");
-              for (var key in data) {
-                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                  table.append("<tr><td colsan='2'><a href='" + data[key] +  "'>" + key + "</a></td></tr>");
-                } else {
-                  table.append("<tr><td>" + key + "</td><td>" + data[key] + "</td></tr>");
-                }
-              }
-              dialog.find('.modal-body').append(table);
+              self.events.triggerEvent('info', data);
             }
-            $('body').append(dialog);
-            dialog.modal();
-            dialog.on('hidden.bs.modal', function (e) {
-              dialog.detach();
-            });
           });
           if (e.preventDefault) e.preventDefault();
           if (e.stopPropagation) e.stopPropagation();

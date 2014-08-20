@@ -104,7 +104,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
           } else {
             var e = Ajax.makeError(request, url, "selection information from ");
             e.source = self;
-            self.events.triggerEvent("info-error", e);
+            cb(e, null);
           }
         }
       };

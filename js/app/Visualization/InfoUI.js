@@ -19,34 +19,38 @@ if (!app.useDojo) {
 
         self.visualization = visualization;
 
-        self.ui = new ContentPane({title: 'Info', content:"Nanananana", doLayout: false});
+        self.ui = new ContentPane({title: 'Info', content:"No object selected", doLayout: false});
 
         self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
         self.visualization.sidePanels.container.layout();
 
 
         self.visualization.animations.events.on({
-          'info-selected': self.update.bind(self),
-          'error': self.error.bind(self),
+          'info': self.update.bind(self),
+          'info-error': self.error.bind(self),
         });
       },
 
-      update: function (info) {
+      update: function (data) {
         var self = this;
 
-        var table = $("<table>");
+        var table = $("<table class='table table-striped table-bordered'>");
         for (var key in data) {
           if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-            table.append("<tr><td colsan='2'><a href='" + data[key] +  "'>" + key + "</a></td></tr>");
+            table.append("<tr><th colspan='2'><a href='" + data[key] +  "'>" + key + "</a></th></tr>");
           } else {
-            table.append("<tr><td>" + key + "</td><td>" + data[key] + "</td></tr>");
+            table.append("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
           }
         }
         $(self.ui.domNode).html(table);
+        $(self.ui.domNode).css({background: "#ffffff"});
       },
 
       error: function (info) {
+        var self = this;
+
         $(self.ui.domNode).html(info.toString());
+        $(self.ui.domNode).css({background: "#ff8888"});
       }
     });
   });
