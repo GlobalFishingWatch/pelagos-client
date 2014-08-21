@@ -136,7 +136,7 @@ if (!app.useDojo) {
       generateUI: function () {
         var self = this;
 
-        self.ui = new ContentPane({title: 'Animations', content:"", doLayout: false});
+        self.ui = new ContentPane({title: 'Layers', content:"", doLayout: false});
 
         var state = self.animationManager.visualization.state;
         if (!state.getValue('title')) {
