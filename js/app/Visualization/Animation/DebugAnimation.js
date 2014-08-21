@@ -8,8 +8,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
         items: [
           {name: "longitude", source: {longitude: 1.0}},
           {name: "latitude", source: {latitude: 1.0}}
-        ],
-        transform: 'coordinate'
+        ]
       }
     },
 

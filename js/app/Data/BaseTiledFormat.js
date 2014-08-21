@@ -15,7 +15,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     name: "BaseTiledFormat",
     initialize: function() {
       var self = this;
-      self.tilesetHeader = {};
       /* Any tiles we have loaded that we still need (maybe because
        * they are wanted, or no wanted tile for that area has loaded
        * fully yet */
@@ -55,16 +54,20 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
             if (Ajax.isSuccess(request, url)) {
               var data = JSON.parse(request.responseText);
 
-              self.tilesetHeader = data;
+              self.header = data;
 
               if (data.colsByName) {
                 Object.values(data.colsByName).map(function (col) {
                   col.typespec = Pack.typemap.byname[col.type];
                 });
+                data.colsByName.rowidx = {
+                  type: "Int32",
+                  typespec: Pack.typemap.byname.Int32
+                };
               }
-
-              self.mergeTiles();
-              self.events.triggerEvent("header", data);
+              var e = {update: "header", header: data};
+              self.events.triggerEvent(e.update, e);
+              self.events.triggerEvent("update", e);
             } else {
               self.handleError(Ajax.makeError(request, url, "header"));
             }
@@ -101,7 +104,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
           } else {
             var e = Ajax.makeError(request, url, "selection information from ");
             e.source = self;
-            self.events.triggerEvent("info-error", e);
+            cb(e, null);
           }
         }
       };
@@ -292,26 +295,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     handleTileRemoval: function (tile) {
       var self = this;
-      var idx = tile.idx;
-      self.rowcount = 0;
-      self.seriescount = 0;
-      var lastSeries = function () {}; // Magic unique value
-      for (var src = 0; src < self.header.length; src++) {
-        if (self.data.tile[src] != idx) {
-          for (var key in self.data) {
-            self.data[key][self.rowcount] = self.data[key][src];
-          }
-          self.data.tile[self.rowcount] = self.data.tile[src];
-          if (!self.data.series) {
-            self.seriescount++;
-          } else if (self.data.series[self.rowcount] != lastSeries) {
-            self.seriescount++;
-            lastSeries = self.data.series[self.rowcount];
-          }
-          self.rowcount++;
-        }
-      }
-      self.header.length = self.rowcount;
+
       delete self.tileCache[tile.bounds.toBBOX()];
       e = {update: "tile-removal", tile: tile};
       self.events.triggerEvent(e.update, e);
@@ -348,6 +332,14 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         self.tileCache
       ).filter(function (tile) {
         return tile.content.allIsLoaded;
+      });
+    },
+
+    getContent: function () {
+      var self = this;
+
+      return self.getDoneTiles().map(function (tile) {
+        return tile.content;
       });
     },
 
@@ -418,8 +410,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     handleFullTile: function (tile) {
       var self = this;
 
-      self.mergeTile(tile);
-
       var e;
       e = {update: "full-tile", tile: tile};
       self.events.triggerEvent(e.update, e);
@@ -456,117 +446,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         }
       };
       self.events.triggerEvent("error", self.error);
-    },
-
-    mergeTile: function (tile) {
-      var self = this;
-      // A BaseTiledFormat instance can be treated as a tile itself, as
-      // it's a subclass of Format. This way, we can merge one more
-      // tile without revisiting all the other already loaded tiles.
-      self.mergeTiles([{content:self}, tile]);
-    },
-
-    mergeTiles: function (tiles) {
-      var self = this;
-
-      function compareTiles(a, b) {
-        if (a.value.content.compareRows(a.merged_rowcount, b.value.content, b.merged_rowcount) > 0) {
-          return b;
-        } else {
-          return a;
-        }
-      }
-
-      function nextTile(tiles) {
-        if (!tiles.length) return undefined;
-        res = tiles.reduce(function (a, b) {
-          if (a.value.content.data == undefined || b.merged_rowcount >= b.value.content.rowcount) return a;
-          if (b.value.content.data == undefined || a.merged_rowcount >= a.value.content.rowcount) return b;
-          return compareTiles(a, b);
-        });
-        if (res.merged_rowcount >= res.value.content.rowcount) return undefined;
-        res.merged_rowcount++;
-        return res;
-      }
-
-      var start = new Date();
-
-      dst = new BaseTiledFormat.DataContainer();
-      _.merge(dst.header, self.tilesetHeader);
-
-      if (tiles == undefined) {
-        tiles = Object.values(self.tileCache).filter(function (tile) {
-          return tile.content.allIsLoaded;
-        });
-      }
-
-      tiles = tiles.map(function (tile) {
-        return {value: tile, merged_rowcount: 0};
-      });
-
-      var coalesce = function(fn, val1, val2) {
-        if (val1 == undefined) return val2;
-        if (val2 == undefined) return val1;
-        return fn(val1, val2);
-      }
-
-      tiles.map(function (tile) {
-        if (!tile.value.content.header) return;
-
-        dst.header.length += tile.value.content.header.length;
-
-        Object.items(tile.value.content.header.colsByName).map(function (item) {
-          var dstval = dst.header.colsByName[item.key] || {};
-          var srcval = item.value || {};
-
-          var min = coalesce(Math.min, dstval.min, srcval.min);
-          var max = coalesce(Math.max, dstval.max, srcval.max);
-          _.extend(dstval, srcval);
-          dstval.min = min;
-          dstval.max = max;
-
-          dst.header.colsByName[item.key] = dstval;
-        });
-      });
-
-      for (var name in dst.header.colsByName) {
-        var col = dst.header.colsByName[name];
-        dst.data[name] = new (eval(col.typespec.array))(dst.header.length);
-      }
-      dst.data.tile = new Int32Array(dst.header.length);
-
-      var lastSeries = function () {}; // Magic unique value
-      var tile;
-      while (tile = nextTile(tiles)) {
-        for (var name in dst.data) {
-          if (tile.value.content.data[name] == undefined) {
-            dst.data[name][dst.rowcount] = NaN;
-          } else {
-            dst.data[name][dst.rowcount] = tile.value.content.data[name][tile.merged_rowcount-1];
-          }
-        }
-        if (tile.value.idx != undefined) {
-          dst.data.tile[dst.rowcount] = tile.value.idx;
-        } else {
-          dst.data.tile[dst.rowcount] = tile.value.content.data.tile[tile.merged_rowcount-1];
-        }
-        if (!dst.data.series) {
-          dst.seriescount++;
-        } else if (dst.data.series[dst.rowcount] != lastSeries) {
-          dst.seriescount++;
-          lastSeries = dst.data.series[dst.rowcount];
-        }
-        dst.rowcount++;
-      }
-
-      self.header.length = dst.header.length;
-      self.header.colsByName = dst.header.colsByName;
-      self.data = dst.data;
-      self.rowcount = dst.rowcount;
-      self.seriescount = dst.seriescount;
-
-      var end = new Date();
-      Logging.default.log("Data.BaseTiledFormat.mergeTiles", {start: start, end: end, toString: function () { return ((this.end - this.start) / 1000.0).toString(); }});
     },
 
     toString: function () {

@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
+define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, Events, Pack, _) {
   var Format = Class({
     name: "Format",
     initialize: function(args) {
@@ -26,6 +26,21 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
       self._load();
     },
 
+    headerLoaded: function (data) {
+      var self = this;
+      if (self.header.length == 0) return;
+      self.header.colsByName.rowidx = {
+        type: "Float32",
+        min: 0,
+        max: self.header.length - 1,
+        typespec: Pack.typemap.byname.Float32
+      };
+      self.data.rowidx = new Float32Array(self.header.length);
+      for (var rowidx = 0; rowidx < self.header.length; rowidx++) {
+        self.data.rowidx[rowidx] = rowidx;
+      }
+    },
+
     setHeaders: function (headers) {
       var self = this;
       self.headers = headers || {};
@@ -34,6 +49,35 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
     destroy: function () {
       var self = this;
       self.loadingCanceled = true;
+    },
+
+    updateSeries: function() {
+      var self = this;
+      var header = self.header;
+      var data = self.data;
+
+      // For convenience we store POINT_COUNT in an element at the end
+      // of the array, so that the length of each series is
+      // series[i+1]-series[i].
+
+      self.seriescount = Math.max(self.seriescount || 0, 1);
+
+      self.series = new Int32Array(Math.max(2, self.seriescount + 1));
+      self.series[0] = 0;
+      self.series[self.series.length - 1] = header.length;
+
+      self.lastSeries = function () {}; // Value we will never find in the data
+      self.seriescount = 0;
+      if (data.series) {
+        for (var rowidx = 0; rowidx < header.length; rowidx++) {
+          var series = data.series[rowidx];
+          if (self.lastSeries != series) {
+            self.seriescount++;
+            self.lastSeries = series;
+          }
+          self.series[self.seriescount] = rowidx + 1;
+        }
+      }
     },
 
     sortcols: ['series', 'datetime'],

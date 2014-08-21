@@ -2,15 +2,17 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
   var Animation = Class({
     name: "Animation",
     columns: {
-      point: {type: "Float32", transform: "coordinate", items: [
-        {name: "latitude", source: {latitude: 1.0}},
-        {name: "longitude", source: {longitude: 1.0}}]},
-      color: {type: "Float32", items: [
-        {name: "red", source: {_: 1.0}},
-        {name: "green", source: {_: 1.0}},
-        {name: "blue", source: {_: 0.0}}]},
-      magnitude: {type: "Float32", items: [
-        {name: "magnitude", source: {_: 1.0}}]}
+      /*
+        point: {type: "Float32", items: [
+          {name: "longitude", source: {longitude: 1.0}},
+          {name: "latitude", source: {latitude: 1.0}}]},
+        color: {type: "Float32", items: [
+          {name: "red", source: {_: 1.0}},
+          {name: "green", source: {_: 1.0}},
+          {name: "blue", source: {_: 0.0}}]},
+        magnitude: {type: "Float32", items: [
+          {name: "magnitude", source: {_: 1.0}}]}
+      */
     },
 
     programSpecs: {},
@@ -43,28 +45,36 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       var self = this;
 
       self.manager.visualization.data.createView({
-        source:self.source,
+        source: self.source,
         columns: self.columns,
         selections: self.selections
       }, function (err, data_view) {
         if (err) throw err; // FIXME: Make cb handle cb(err);
         self.data_view = data_view;
 
+        var handleHeader = function () {
+          self.gl = gl;
+
+          self.data_view.events.un({
+            "update": handleHeader
+          });
+
+          self.rowidxCanvas = document.createElement('canvas');
+
+          rowidxCanvas = $(self.rowidxCanvas);
+          self.rowidxGl = self.rowidxCanvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+          self.rowidxGl.enable(self.rowidxGl.BLEND);
+          self.rowidxGl.blendFunc(self.rowidxGl.SRC_ALPHA, self.rowidxGl.ONE_MINUS_SRC_ALPHA);
+          self.rowidxGl.lineWidth(1.0);
+
+          self.initGlPrograms(cb);
+        }
+
         self.data_view.events.on({
-          error: self.handleError.bind(self)
+          error: self.handleError.bind(self),
+          "update": handleHeader
         });
         self.data_view.load();
-
-        self.gl = gl;
-        self.rowidxCanvas = document.createElement('canvas');
-
-        rowidxCanvas = $(self.rowidxCanvas);
-        self.rowidxGl = self.rowidxCanvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
-        self.rowidxGl.enable(self.rowidxGl.BLEND);
-        self.rowidxGl.blendFunc(self.rowidxGl.SRC_ALPHA, self.rowidxGl.ONE_MINUS_SRC_ALPHA);
-        self.rowidxGl.lineWidth(1.0);
-
-        self.initGlPrograms(cb);
       });
     },
 
@@ -77,10 +87,12 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           self[item.value.context],
           require.toUrl(item.value.vertex),
           require.toUrl(item.value.fragment),
+          {
+            attrmapper: Shader.compileMapping(self.data_view)
+          },
           function (program) {
             program.name = item.key;
             self.programs[item.key] = program;
-            self.createDataViewArrayBuffers(program, item.value.columns, item.value.items_per_source_item);
             cb();
           }
         );
@@ -106,6 +118,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
     updateDataProgram: function (program) {
       var self = this;
+
       self.loadDataViewArrayBuffers(program);
     },
 
@@ -127,55 +140,54 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     drawProgram: function (program) {
       var self = this;
 
-      self.bindDataViewArrayBuffers(program);
       self.setGeneralUniforms(program);
 
       var mode = self.getDrawMode(program);
-      self.data_view.useSeries(function (series, cb) {
+
+      var tileidx = 0;
+      self.data_view.source.getContent().map(function (tile) {
+        self.bindDataViewArrayBuffers(program, tile);
+
+        program.gl.uniform1f(program.uniforms.tileidx, tileidx);
+
         // -1 since series contains POINT_COUNT in the last item
-        for (var i = 0; i < series.length - 1; i++) {
-          program.gl.drawArrays(
-            mode,
-            series[i]*program.items_per_source_item,
-            (series[i+1]-series[i])*program.items_per_source_item
-          );
-        }
-      });
-    },
-
-    createDataViewArrayBuffers: function (program, columns, items_per_source_item) {
-      var self = this;
-      program.dataViewArrayBuffers = {};
-      program.items_per_source_item = items_per_source_item || 1;
-      columns.map(function (name) {
-        program.dataViewArrayBuffers[name] = program.gl.createBuffer();
-      });
-    },
-
-    loadDataViewArrayBuffers: function(program) {
-      var self = this;
-      program.gl.useProgram(program);
-
-      self.data_view.useData(function (data, cb) {
-        for (var name in program.dataViewArrayBuffers) {
-          Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[name], data[name], program);
-        };
-        cb();
-      });
-    },
-
-    bindDataViewArrayBuffers: function(program) {
-      var self = this;
-      program.gl.useProgram(program);
-      self.data_view.useHeader(function (header, cb) {
-        for (var name in program.dataViewArrayBuffers) {
-          var col = header.colsByName[name];
-          if (col) {
-            Shader.programBindArray(program.gl, program.dataViewArrayBuffers[name], program, name, col.items.length / program.items_per_source_item, program.gl.FLOAT);
+        for (var i = 0; i < tile.series.length - 1; i++) {
+          if (tile.series[i+1]-tile.series[i] > 0) {
+            program.gl.drawArrays(
+              mode,
+              tile.series[i],
+              tile.series[i+1]-tile.series[i]
+            );
           }
-        };
-        cb();
+        }
+
+        tileidx++;
       });
+    },
+
+    loadDataViewArrayBuffers: function (program) {
+      var self = this;
+
+      program.gl.useProgram(program);
+
+      program.dataViewArrayBuffers = {};
+
+      self.data_view.source.getContent().map(function (tile) {
+        program.dataViewArrayBuffers[tile.url] = {};
+
+        Object.keys(tile.header.colsByName).map(function (name) {
+          program.dataViewArrayBuffers[tile.url][name] = program.gl.createBuffer();
+          Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.url][name], tile.data[name], program);
+        });
+      });
+    },
+
+    bindDataViewArrayBuffers: function(program, tile) {
+      var self = this;
+      program.gl.useProgram(program);
+      for (var name in program.dataViewArrayBuffers[tile.url]) {
+        Shader.programBindArray(program.gl, program.dataViewArrayBuffers[tile.url][name], program, name, 1, program.gl.FLOAT);
+      };
     },
 
     setGeneralUniforms: function (program) {
@@ -195,6 +207,8 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       program.gl.uniformMatrix4fv(program.uniforms.mapMatrix, false, self.manager.mapMatrix);
       program.gl.uniform1f(program.uniforms.startTime, time - timeExtent);
       program.gl.uniform1f(program.uniforms.endTime, time);
+
+      Shader.setMappingUniforms(program, self.data_view);
     },
 
     /* Uses the rowidxGl canvas to get a source data rowid from a
@@ -215,9 +229,10 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       self.rowidxGl.readPixels(x-radius, y-radius, size, size, self.rowidxGl.RGBA, self.rowidxGl.UNSIGNED_BYTE, data);
 
       var pixelToId = function (offset) {
-        var res = ((data[offset] << 16) | (data[offset+1] << 8) | data[offset+2]) - 1;
-        if (res == -1) res = undefined;
-        return res;
+        var tileidx = data[offset];
+        var rowidx = ((data[offset+1] << 8) | data[offset+2]) - 1;
+        if (rowidx == -1) return undefined;
+        return [tileidx, rowidx];
       }
 
       var rowIdx = [];

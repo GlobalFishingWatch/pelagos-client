@@ -18,9 +18,39 @@
 
 define(["app/Class"], function (Class) {
   var byname = {
+    Uint8: {
+      size: Uint8Array.BYTES_PER_ELEMENT,
+      array: 'Float32Array',
+      getter: 'getUint8',
+      setter: 'setUint8'
+    },
+    Int8: {
+      size: Int8Array.BYTES_PER_ELEMENT,
+      array: 'Float32Array',
+      getter: 'getUint8',
+      setter: 'setUint8'
+    },
+    Uint16: {
+      size: Uint16Array.BYTES_PER_ELEMENT,
+      array: 'Float32Array',
+      getter: 'getUint16',
+      setter: 'setUint16'
+    },
+    Int16: {
+      size: Int16Array.BYTES_PER_ELEMENT,
+      array: 'Float32Array',
+      getter: 'getInt16',
+      setter: 'setInt16'
+    },
+    Uint32: {
+      size: Uint32Array.BYTES_PER_ELEMENT,
+      array: 'Float32Array',
+      getter: 'getUint32',
+      setter: 'setUint32'
+    },
     Int32: {
       size: Int32Array.BYTES_PER_ELEMENT,
-      array: 'Int32Array',
+      array: 'Float32Array',
       getter: 'getInt32',
       setter: 'setInt32'
     },
@@ -29,6 +59,12 @@ define(["app/Class"], function (Class) {
       array: 'Float32Array',
       getter: 'getFloat32',
       setter: 'setFloat32'
+    },
+    Float64: {
+      size: Float64Array.BYTES_PER_ELEMENT,
+      array: 'Float64Array',
+      getter: 'getFloat64',
+      setter: 'setFloat64'
     }
   };
 
