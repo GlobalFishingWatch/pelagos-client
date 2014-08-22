@@ -12,6 +12,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     hiddenContext: 2, // total space, as a multiple of visible size
     context: 25, // visible space on each side of the window (in percentage of visible range)
     stepLabelStyle: "fullDate",
+    windowLabelStyle: "stepLabel",
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
     steps: 20,
@@ -64,9 +65,9 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         "  <div class='leftFrame'></div>" +
         "  <div class='window'>" +
         "    <div class='frame'>" +
-        "      <div class='startLabel'><span></span></div>" +
+        "      <div class='startLabel'>&lt; <span></span></div>" +
         "      <div class='lengthLabel'><span></span></div>" +
-        "      <div class='endLabel'><span></span></div>" +
+        "      <div class='endLabel'><span></span> &gt;</div>" +
         "    </div>" +
         "  </div>" +
         "  <div class='rightFrame'></div>" +
@@ -122,6 +123,33 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.leftContext = self.context;
       self.rightContext = self.context;
       self.setRange(self.windowStart, self.windowEnd);
+    },
+
+    windowTimesToLabel: function (d) {
+      var self = this;
+      return self["windowTimesToLabel_" + self.windowLabelStyle](d);
+    },
+
+    windowTimesToLabel_fullDate: function (d) {
+      return d.toISOString().replace("T", " ").replace("Z", "");
+    },
+
+    windowTimesToLabel_stepLabel: function (d) {
+      var self = this;
+
+      var iso = d.toISOString().split('Z')[0].replace('T', ' ');
+
+      if (self.steplength > self.steplengths.month) {
+        return iso.split(' ')[0].split('-').slice(0, -1).join('-')
+      } else if (self.steplength > self.steplengths.day) {
+        return iso.split(' ')[0]
+      } else if (self.steplength > self.steplengths.minute) {
+        return iso.split(':').slice(0, -1).join(':');
+      } else if (self.steplength > self.steplengths.second) {
+        return iso.split('.')[0];
+      } else {
+        return iso;
+      }
     },
 
     pad: function (n, width, z) {
@@ -478,9 +506,9 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       self.percentOffset = 100.0 * self.hiddenContext * self.offset / self.contextSize;
       self.lineNode.css({'left': -(self.percentOffset) + '%'});
-      self.startLabel.html(self.windowStart.toISOString().replace("T", " ").replace("Z", ""));
+      self.startLabel.html(self.windowTimesToLabel(self.windowStart));
       self.lengthLabel.html(self.intervalToLabel(self.windowEnd - self.windowStart));
-      self.endLabel.html(self.windowEnd.toISOString().replace("T", " ").replace("Z", ""));
+      self.endLabel.html(self.windowTimesToLabel(self.windowEnd));
     },
 
     setWindowSize: function () {
