@@ -180,6 +180,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
     initMouse: function(cb) {
       var self = this;
 
+      self.infoPopup = new google.maps.InfoWindow({});
+
       self.node.mousemove(function (e) { self.handleMouse(e, 'hover'); });
       self.node.click(function (e) {
         self.handleMouseSelection(e, 'selected', function (err, data) {
@@ -196,11 +198,11 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
         self.handleMouseSelection(e, 'info', function (err, data) {
           if (err) data = err;
           if (!data) return;
-          var popup=new google.maps.InfoWindow({
+          self.infoPopup.setOptions({
             content: data.toString(),
             position: e.latLng,
           });
-          popup.open(self.map);
+          self.infoPopup.open(self.map);
         });
       });
       cb();
