@@ -182,10 +182,10 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
 
       self.node.mousemove(function (e) { self.handleMouse(e, 'hover'); });
       self.node.click(function (e) {
-        self.handleMouseSelection(e, 'info', function (err, data) {
+        self.handleMouseSelection(e, 'selected', function (err, data) {
           if (err) {
             self.events.triggerEvent('info-error', err);
-          } else {
+          } else if (data) {
             self.events.triggerEvent('info', data);
           }
         });
@@ -195,6 +195,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
         e.pageY = e.pixel.y;
         self.handleMouseSelection(e, 'info', function (err, data) {
           if (err) data = err;
+          if (!data) return;
           var popup=new google.maps.InfoWindow({
             content: data.toString(),
             position: e.latLng,
