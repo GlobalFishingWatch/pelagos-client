@@ -26,6 +26,12 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
       self._load();
     },
 
+    getContent: function () {
+      var self = this;
+
+      return [self];
+    },
+
     headerLoaded: function (data) {
       var self = this;
       if (self.header.length == 0) return;
