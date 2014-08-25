@@ -7,6 +7,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       self.sources = {};
       self.events = new Events("Data.DataManager");
       self.header = {colsByName: {}};
+      self.bounds = undefined;
     },
 
     init: function (cb) {
@@ -38,6 +39,11 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       }
       self.sources[key].usage++;
       self.events.triggerEvent("add", self.sources[key]);
+
+      if (self.bounds != undefined) {
+        self.sources[key].source.zoomTo(self.bounds);
+      }
+
       return self.sources[key].source;
     },
 
@@ -86,7 +92,8 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
     zoomTo: function (bounds) {
       var self = this;
       if (bounds.length > 0) bounds = new Bounds(bounds);
-        console.log("zoomTo(" + bounds.toBBOX() + ") for " + Object.keys(self.sources).join(", "));
+      console.log("zoomTo(" + bounds.toBBOX() + ") for " + Object.keys(self.sources).join(", "));
+      self.bounds = bounds;
       Object.values(self.sources).map (function (source) {
         source.source.zoomTo(bounds);
       });
