@@ -158,8 +158,16 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
           } else {
             data.toString = function () {
               var content = ["<table class='table table-striped table-bordered'>"];
+              if (data.name) {
+                var name = data.name;
+                if (data.link) {
+                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
+                }
+                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+              }
+
               Object.keys(data).sort().map(function (key) {
-                if (key == 'toString') return;
+                if (key == 'toString' || key == 'name' || key == 'link') return;
                 if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
                   content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
                 } else {
