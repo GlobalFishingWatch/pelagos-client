@@ -16,7 +16,6 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Em
       self.events.triggerEvent("load");
 
       self.tilesetHeader = {length: 0, colsByName: {}};
-      self.mergeTiles();
       self.events.triggerEvent("header", self.tilesetHeader);
     },
 

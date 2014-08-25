@@ -26,31 +26,16 @@ if (!app.useDojo) {
 
 
         self.visualization.animations.events.on({
-          'info': self.update.bind(self),
-          'info-error': self.error.bind(self),
+          'info': self.update.bind(self, "#ffffff"),
+          'info-error': self.update.bind(self, "#ff8888"),
         });
       },
 
-      update: function (data) {
-        var self = this;
-
-        var table = $("<table class='table table-striped table-bordered'>");
-        for (var key in data) {
-          if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-            table.append("<tr><th colspan='2'><a href='" + data[key] +  "'>" + key + "</a></th></tr>");
-          } else {
-            table.append("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
-          }
-        }
-        $(self.ui.domNode).html(table);
-        $(self.ui.domNode).css({background: "#ffffff"});
-      },
-
-      error: function (info) {
+      update: function (color, info) {
         var self = this;
 
         $(self.ui.domNode).html(info.toString());
-        $(self.ui.domNode).css({background: "#ff8888"});
+        $(self.ui.domNode).css({background: color});
       }
     });
   });

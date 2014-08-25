@@ -143,53 +143,67 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       return false;
     },
 
+    handleMouseSelection: function (e, type, cb) {
+      var self = this;
+
+      var dataView = self.handleMouse(e, type)
+      if (!dataView) {
+        cb(null, null);
+      } else {
+        dataView.getSelectionInfo(type, function (err, data) {
+          var content;
+
+          if (err) {
+            cb(err, null);
+          } else {
+            data.toString = function () {
+              var content = ["<table class='table table-striped table-bordered'>"];
+              Object.keys(data).sort().map(function (key) {
+                if (key == 'toString') return;
+                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
+                } else {
+                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+                }
+              });
+              content.push("</table>");
+              return content.join('\n');
+            };
+            cb(null, data);
+          }
+        });
+      }
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+    },
+
     initMouse: function(cb) {
       var self = this;
 
+      self.infoPopup = new google.maps.InfoWindow({});
+
       self.node.mousemove(function (e) { self.handleMouse(e, 'hover'); });
       self.node.click(function (e) {
-        var dataView = self.handleMouse(e, 'selected');
-        if (!dataView) return;
-        dataView.getSelectionInfo('info', function (err, data) {
+        self.handleMouseSelection(e, 'selected', function (err, data) {
           if (err) {
             self.events.triggerEvent('info-error', err);
-          } else {
+          } else if (data) {
             self.events.triggerEvent('info', data);
           }
         });
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-        return false;
       });
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;
-        var dataView = self.handleMouse(e, 'info')
-        if (!dataView) return;
-        dataView.getSelectionInfo('info', function (err, data) {
-          var content;
-          if (err) {
-            content = $(err.toString());
-          } else {
-            var content = $("<table class='table table-striped table-bordered'>");
-            for (var key in data) {
-              if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                content.append("<tr><th colspan='2'><a href='" + data[key] +  "'>" + key + "</a></th></tr>");
-              } else {
-                content.append("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
-              }
-            }
-          }
-
-          var popup=new google.maps.InfoWindow({
-            content: content[0],
+        self.handleMouseSelection(e, 'info', function (err, data) {
+          if (err) data = err;
+          if (!data) return;
+          self.infoPopup.setOptions({
+            content: data.toString(),
             position: e.latLng,
           });
-          popup.open(self.map);
+          self.infoPopup.open(self.map);
         });
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-        return false;
       });
       cb();
     },
