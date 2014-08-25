@@ -138,6 +138,10 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
 
             cb();
           }
+        },
+        error: function (e) {
+          QUnit.ok(false, e);
+          cb();
         }
       });
 
@@ -159,6 +163,10 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
             QUnit.equal(p.bounds.right, -180 + 5.625, "Correct bounds")
             QUnit.ok(p.tileCache["174.375,0,180,2.8125"], "Tile Present")
 
+            cb();
+          },
+          error: function (e) {
+            QUnit.ok(false, e);
             cb();
           }
         });

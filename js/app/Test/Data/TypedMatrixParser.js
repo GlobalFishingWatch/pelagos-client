@@ -46,6 +46,10 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/TypedMatrixParser",
         all: function () {
           QUnit.ok(true, "Parsed data");
           cb();
+        },
+        error: function (e) {
+          QUnit.ok(false, e);
+          cb();
         }
       });
 

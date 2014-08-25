@@ -1,5 +1,8 @@
 define(["app/Class", "app/Data/Pack"], function (Class, Pack) {
   return Class({
+    name: 'TypedMatrixParser',
+    MAGIC_COOKIE: 'tmtx',
+
     initialize: function (header, columns) {
       var self = this;
       self.header = header;
@@ -80,7 +83,7 @@ define(["app/Class", "app/Data/Pack"], function (Class, Pack) {
 
       var headerstr = JSON.stringify(header)
 
-      var output = Pack.pack(Pack.typemap.byname.Int32, headerstr.length, true) + headerstr;
+      var output = self.MAGIC_COOKIE + Pack.pack(Pack.typemap.byname.Int32, headerstr.length, true) + headerstr;
 
       for (var rowidx = 0; rowidx < datalen; rowidx++) {
         for (var colidx = 0; colidx < cols.length; colidx++) {

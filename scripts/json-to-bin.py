@@ -102,6 +102,7 @@ print "Header length: ", len(headerstr)
 print "Writing data..."
 
 with open(outfile, "w") as f:
+    f.write('tmtx');
     f.write(struct.pack("<i", len(headerstr)))
     f.write(headerstr)
 

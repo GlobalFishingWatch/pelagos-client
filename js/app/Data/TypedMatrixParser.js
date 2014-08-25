@@ -84,6 +84,7 @@
 define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Class, Events, Pack, Logging) {
   return Class({
     name: "TypedMatrixParser",
+    MAGIC_COOKIE: 'tmtx',
     initialize: function(url) {
       var self = this;
 
@@ -224,10 +225,20 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       var length = self.request.responseText.length;
       var text = self.request.responseText;
 
-      if (length < 4) return;
+      if (length < 8) return;
       if (self.headerLen == null) {
-        self.headerLen = new DataView(Pack.stringToArrayBuffer(text, 0, 4)).getInt32(0, true);
-        self.offset = 4;
+        if (text.slice(0, 4) != self.MAGIC_COOKIE) {
+          self.errorLoading({
+            url: self.url,
+            cookie: text.slice(0, 4),
+            toString: function () {
+              return 'Could not load ' + this.url + ' due to incorrect file format. Cookie: [' + this.cookie + ']';
+            }
+          });
+          return true;
+        }
+        self.headerLen = new DataView(Pack.stringToArrayBuffer(text, 4, 8)).getInt32(0, true);
+        self.offset = 8;
       }
       if (length < self.offset + self.headerLen) return;
       if (!self.headerIsLoaded) {
@@ -248,7 +259,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           self.rowLen += col.typespec.size;
         };
 
-        self.offset = 4 + self.headerLen;
+        self.offset += self.headerLen;
         self.headerIsLoaded = true;
         self.headerLoaded(self.header);
       }

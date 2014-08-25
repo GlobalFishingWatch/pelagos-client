@@ -21,6 +21,10 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat", "app/Da
           QUnit.equal(dv.selections.selected.checkRow(p, 2), false, "Unselected row 2 is not selected according to checkRow()");
 
           cb();
+        },
+        error: function (e) {
+          QUnit.ok(false, e);
+          cb();
         }
       });
 
