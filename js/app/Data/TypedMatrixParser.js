@@ -194,7 +194,8 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       var self = this;
 
       self.error = exception;
-      self.events.triggerEvent("error", exception);
+      self.error.url = self.url;
+      self.events.triggerEvent("error", self.error);
     },
 
     handleData: function() {
@@ -210,7 +211,6 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         var success = self.request.status == 200 || (self.isFileUri && self.request.status == 0);
         if (!success) {
           self.errorLoading({
-            url: self.url,
             status: self.request.status,
             toString: function () {
               return 'Could not load ' + this.url + ' due to HTTP status ' + this.status;
@@ -225,11 +225,11 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       var length = self.request.responseText.length;
       var text = self.request.responseText;
 
-      if (length < 8) return;
+      if (length < 4+4+1+4) return;
       if (self.headerLen == null) {
+        var dataView = new DataView(Pack.stringToArrayBuffer(text, 0, 4+4+1+4));
         if (text.slice(0, 4) != self.MAGIC_COOKIE) {
           self.errorLoading({
-            url: self.url,
             cookie: text.slice(0, 4),
             toString: function () {
               return 'Could not load ' + this.url + ' due to incorrect file format. Cookie: [' + this.cookie + ']';
@@ -237,8 +237,22 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           });
           return true;
         }
-        self.headerLen = new DataView(Pack.stringToArrayBuffer(text, 4, 8)).getInt32(0, true);
-        self.offset = 8;
+        self.version = dataView.getInt32(4, true);
+        if (self.version != 1) {
+          self.errorLoading({
+            version: self.version,
+            toString: function () {
+              return 'Could not load ' + this.url + ' due to unsupported file format version. Version: ' + this.version + '. Supported versions: 1.';
+            }
+          });
+          return true;
+        }
+
+        self.orientation = text.slice(4+4, 4+4+1); // 'r' for row-wize or 'c' for column-wize data
+
+        self.headerLen = dataView.getInt32(4+4+1, true);
+
+        self.offset = 4+4+1+4;
       }
       if (length < self.offset + self.headerLen) return;
       if (!self.headerIsLoaded) {
@@ -272,25 +286,43 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
       var dataView = new DataView(self.responseData.buffer);
 
-      if (self.rowLen) {
-        for (; self.offset + self.rowLen <= length; self.rowidx++) {
-          var row = {};
-          for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
-            var col = self.header.cols[colidx];
-            var val = dataView[col.typespec.getter](self.offset, true);
-            if (col.multiplier != undefined) val = val * col.multiplier;
-            if (col.offset != undefined) val = val + col.offset;
-            row[col.name] = val;
-            self.offset += col.typespec.size;
+      if (self.orientation == "r") {
+        if (self.rowLen) {
+          for (; self.offset + self.rowLen <= length; self.rowidx++) {
+            var row = {};
+            for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
+              var col = self.header.cols[colidx];
+              var val = dataView[col.typespec.getter](self.offset, true);
+              if (col.multiplier != undefined) val = val * col.multiplier;
+              if (col.offset != undefined) val = val + col.offset;
+              row[col.name] = val;
+              self.offset += col.typespec.size;
+            }
+            self.rowLoaded(row);
           }
-          self.rowLoaded(row);
         }
-      }
-      if (self.rowidx == self.header.length) {
-        self.allLoaded();
+        if (self.rowidx == self.header.length) {
+          self.allLoaded();
+          return true;
+        } else {
+          self.batchLoaded();
+        }
+      } else if (self.orientation == "c") {
+        self.errorLoading({
+          orientation: self.orientation,
+          toString: function () {
+            return 'Could not load ' + this.url + ' due to unsupported orientation. Orientation code: ' + this.orientation + '. Supported orientations: r';
+          }
+        });
         return true;
       } else {
-        self.batchLoaded();
+        self.errorLoading({
+          orientation: self.orientation,
+          toString: function () {
+            return 'Could not load ' + this.url + ' due to unsupported orientation. Orientation code: ' + this.orientation + '. Supported orientations: c, r';
+          }
+        });
+        return true;
       }
     }
   });
