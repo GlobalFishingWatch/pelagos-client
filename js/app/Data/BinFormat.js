@@ -19,13 +19,23 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
       var self = this;
       self.header = data;
       self.seriescount = self.header.series;
-      for (var name in self.header.colsByName) {
-        var col = self.header.colsByName[name];
-        self.data[name] = new (eval(col.typespec.array))(self.header.length);
+
+      if (self.orientation == 'r') {
+        for (var name in self.header.colsByName) {
+          var col = self.header.colsByName[name];
+          self.data[name] = new (eval(col.typespec.array))(self.header.length);
+        }
       }
 
       Format.prototype.headerLoaded.call(self, data);
       TypedMatrixParser.prototype.headerLoaded.call(self, data);
+    },
+
+    colLoaded: function (col, colValues) {
+      var self = this;
+
+      self.data[col.name] = colValues;
+      TypedMatrixParser.prototype.colLoaded.call(self, col, colValues);
     },
 
     rowLoaded: function(data) {
@@ -47,9 +57,11 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
 
       self.updateSeries(); // Calculate this incrementally in rowLoaded maybe?
 
-      // We aren't getting any more, so if anyone's waiting they'd be
-      // waiting forever if we didn't tell them...
-      self.header.length = self.rowcount;
+      if (self.orientation == 'r') {
+        self.header.length = self.rowcount;
+      } else {
+        self.rowcount = self.header.length;
+      }
       TypedMatrixParser.prototype.allLoaded.call(self);
     },
 

@@ -170,6 +170,11 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       self.events.triggerEvent("header", data);
     },
 
+    colLoaded: function (col, colValues) {
+      var self = this;
+      self.events.triggerEvent("col", {column: col, values: colValues});
+    },
+
     rowLoaded: function(data) {
       var self = this;
       self.events.triggerEvent("row", data);
@@ -274,32 +279,34 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         };
 
         self.offset += self.headerLen;
+        self.dataOffset = self.offset;
         self.headerIsLoaded = true;
         self.headerLoaded(self.header);
+
+        // Empty tile, stop parsing.
+        if (!self.rowLen) {
+          self.allLoaded();
+          return true;
+        }
       }
       if (self.responseData == null) {
-        // Yes, I'm lazy and allocate space for the header to, but we
-        // never write it, just to not have to bother about two self.offsets
-        self.responseData = new Uint8ClampedArray(self.offset + (self.rowLen * self.header.length));
+        self.responseData = new Uint8ClampedArray(self.rowLen * self.header.length);
       }
-      Pack.writeStringToArrayBuffer(text, self.offset, undefined, self.responseData);
-
-      var dataView = new DataView(self.responseData.buffer);
+      Pack.writeStringToArrayBuffer(text, self.offset, undefined, self.responseData, self.offset - self.dataOffset);
 
       if (self.orientation == "r") {
-        if (self.rowLen) {
-          for (; self.offset + self.rowLen <= length; self.rowidx++) {
-            var row = {};
-            for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
-              var col = self.header.cols[colidx];
-              var val = dataView[col.typespec.getter](self.offset, true);
-              if (col.multiplier != undefined) val = val * col.multiplier;
-              if (col.offset != undefined) val = val + col.offset;
-              row[col.name] = val;
-              self.offset += col.typespec.size;
-            }
-            self.rowLoaded(row);
+        var dataView = new DataView(self.responseData.buffer);
+        for (; self.offset + self.rowLen <= length; self.rowidx++) {
+          var row = {};
+          for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
+            var col = self.header.cols[colidx];
+            var val = dataView[col.typespec.getter](self.offset - self.dataOffset, true);
+            if (col.multiplier != undefined) val = val * col.multiplier;
+            if (col.offset != undefined) val = val + col.offset;
+            row[col.name] = val;
+            self.offset += col.typespec.size;
           }
+          self.rowLoaded(row);
         }
         if (self.rowidx == self.header.length) {
           self.allLoaded();
@@ -307,14 +314,21 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         } else {
           self.batchLoaded();
         }
-      } else if (self.orientation == "c") {
-        self.errorLoading({
-          orientation: self.orientation,
-          toString: function () {
-            return 'Could not load ' + this.url + ' due to unsupported orientation. Orientation code: ' + this.orientation + '. Supported orientations: r';
+      } else if (self.orientation == 'c') {
+        if (length >= self.dataOffset + self.header.length * self.rowLen) {
+
+          for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
+            var col = self.header.cols[colidx];
+
+            colValues = new (eval(col.typespec.array))(self.responseData.buffer, self.offset - self.dataOffset, self.header.length)
+            self.offset += self.header.length * col.typespec.size;
+
+            self.colLoaded(col, colValues);
           }
-        });
-        return true;
+
+          self.allLoaded();
+          return true;
+        }
       } else {
         self.errorLoading({
           orientation: self.orientation,

@@ -356,9 +356,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var again = printed[key] || false;
         printed[key] = true;
         var loaded = tile.content.allIsLoaded ? ", loaded" : "";
+        var length = tile.content && tile.content.header ? ", Rows: " + tile.content.header.length : "";
         var wanted = self.wantedTiles[key] ? ", wanted" : "";
         var error = tile.content.error ? ", error" : "";
-        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + error + wanted + ")";
+        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + ")";
         if (maxdepth != undefined && depth > maxdepth) {
           res += " ...\n";
         } else {
