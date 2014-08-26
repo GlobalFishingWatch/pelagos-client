@@ -301,8 +301,6 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
             var col = self.header.cols[colidx];
             var val = dataView[col.typespec.getter](self.offset - self.dataOffset, true);
-            if (col.multiplier != undefined) val = val * col.multiplier;
-            if (col.offset != undefined) val = val + col.offset;
             row[col.name] = val;
             self.offset += col.typespec.size;
           }
