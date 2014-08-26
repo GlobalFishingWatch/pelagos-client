@@ -23,6 +23,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       self.visible = true;
       if (args) $.extend(self, args);
       self.manager = manager;
+      self.dataUpdates = 0;
     },
 
     setVisible: function (visible) {
@@ -103,6 +104,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       var self = this;
       self.data_view.events.on({
         "update": self.updateData.bind(self),
+        "selection-update": self.manager.triggerUpdate.bind(self.manager)
       });
       self.updateData();
       cb();
@@ -110,6 +112,8 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
     updateData: function() {
       var self = this;
+
+      self.dataUpdates++;
 
       Object.values(self.programs).map(self.updateDataProgram.bind(self));
 

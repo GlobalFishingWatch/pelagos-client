@@ -64,7 +64,8 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
           e = _.clone(e);
           e.category = name;
           e.update = "selection-" + e.update;
-          self.handleUpdate(e);
+          self.events.triggerEvent(e.update, e);
+          self.events.triggerEvent("selection-update", e);
         }
       });
     },
@@ -84,26 +85,15 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
     handleUpdate: function (update) {
       var self = this;
 
-      self.lastUpdate = update;
-      self.performUpdate(update);
-    },
-
-    performUpdate: function (update) {
-      var self = this;
-
-      if (!self.lastUpdate) return;
-      var lastUpdate = self.lastUpdate;
-      self.lastUpdate = undefined;
-
       self.header.length = self.source.header.length;
       self.seriescount = self.source.seriescount;
 
-      lastUpdate.json = self.toJSON();
-      lastUpdate.string = self.toString();
-      lastUpdate.header = self.header;
+      update.json = self.toJSON();
+      update.string = self.toString();
+      update.header = self.header;
 
-      self.events.triggerEvent(lastUpdate.update, lastUpdate);
-      self.events.triggerEvent("update", lastUpdate);
+      self.events.triggerEvent(update.update, update);
+      self.events.triggerEvent("update", update);
     },
 
     handleError: function (error) {
