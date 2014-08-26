@@ -104,7 +104,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       var self = this;
       self.data_view.events.on({
         "update": self.updateData.bind(self),
-        "selection-update": self.manager.triggerUpdate.bind(self.manager)
+        "view-update": self.manager.triggerUpdate.bind(self.manager)
       });
       self.updateData();
       cb();

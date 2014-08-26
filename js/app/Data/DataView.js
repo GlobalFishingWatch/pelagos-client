@@ -65,7 +65,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
           e.category = name;
           e.update = "selection-" + e.update;
           self.events.triggerEvent(e.update, e);
-          self.events.triggerEvent("selection-update", e);
+          self.events.triggerEvent("view-update", e);
         }
       });
     },
@@ -116,7 +116,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
         string: self.toString()
       };
       self.events.triggerEvent(e.update, e);
-      self.events.triggerEvent('update', e);
+      self.events.triggerEvent('view-update', e);
     },
 
     addCol: function(spec) {
