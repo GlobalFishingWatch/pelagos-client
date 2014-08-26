@@ -97,29 +97,37 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
     var dstCols = Object.keys(dataView.header.colsByName);
     var selCols = Object.keys(dataView.selections);
 
-    var columnDec = Shader.compileColumnDeclarations(srcCols, dstCols);
+    var sourceMapper = Shader.compileSourceMapper(dataView.source.header.colsByName);
+
+    var srcDec = Shader.compileSrcDeclarations(srcCols);
+    var scaledSrcDec = Shader.compileScaledSrcDeclarations(srcCols);
+    var dstDec = Shader.compileDstDeclarations(dstCols);
     var columnMappingDec = Shader.compileColumnMappingDeclarations(srcCols.concat(selCols), dstCols);
     var columnMapper = Shader.compileColumnMapper(srcCols.concat(selCols), dstCols);
 
     var mapper =
       'void mapper() {\n' +
       '  selectionmapper();\n' +
+      '  sourcemapper();\n' +
       '  attrmapper();\n' +
       '}\n';
 
-    return (
-      selectionsMappingDec + "\n" + 
-      selectionsDec + '\n' + 
-      columnDec + "\n" + 
-      columnMappingDec + "\n" + 
-      selectionsMapper + "\n" + 
-      columnMapper + "\n" +
-      mapper);
+    return [
+      selectionsMappingDec,
+      selectionsDec,
+      srcDec,
+      scaledSrcDec,
+      dstDec,
+      columnMappingDec,
+      selectionsMapper,
+      sourceMapper,
+      columnMapper,
+      mapper].join("\n");
   };
 
   Shader.compileSelectionsDeclarations = function (dataView) {
     return Object.items(dataView.selections).map(function (item) {
-      return 'float ' + item.key + ';';
+      return 'float scaled_' + item.key + ';';
     }).join('\n') + '\n';
   };
 
@@ -136,7 +144,7 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
   Shader.compileSelectionsMapper = function (dataView) {
     return 'void selectionmapper() {\n' +
       Object.items(dataView.selections).map(function (item) {
-        return '  ' + item.key + ' = (\n' +
+        return '  scaled_' + item.key + ' = (\n' +
           item.value.sortcols.map(function (sortcol) {
               return '    selectionmap_' + item.key + '_from_' + sortcol + '_lower <= ' + sortcol + ' &&\n' +
                      '    selectionmap_' + item.key + '_from_' + sortcol + '_upper >= ' + sortcol;
@@ -145,16 +153,45 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
       '\n}\n';
   };
 
-  Shader.compileColumnDeclarations = function(srcColumns, dstColumns) {
-    var attrDec = srcColumns.map(function (srcName) {
+  Shader.compileSourceMapper = function(srcColumns) {
+    function formatFloat(x) {
+      var res = x.toString();
+      if (res.indexOf('.') == -1) {
+        res += '.0';
+      }
+      return res;
+    }
+
+    return 'void sourcemapper() {\n' +
+      Object.items(srcColumns).map(function (item) {
+        var res = item.key;
+        if (item.value.multiplier != undefined) {
+          res = '(' + res + ' * ' + formatFloat(item.value.multiplier) + ')';
+        }
+        if (item.value.offset != undefined) {
+          res = res + ' + ' + formatFloat(item.value.offset);
+        }
+        return '  scaled_' + item.key + ' = ' + res + ';';
+      }).join('\n') +
+      '\n}\n';
+  };
+
+  Shader.compileSrcDeclarations = function(srcColumns) {
+    return srcColumns.map(function (srcName) {
       return 'attribute float ' + srcName + ';'
     }).join('\n') + '\n';
+  };
 
-    var paramDec = dstColumns.map(function (dstName) {
+  Shader.compileScaledSrcDeclarations = function(srcColumns) {
+    return srcColumns.map(function (srcName) {
+      return 'float scaled_' + srcName + ';'
+    }).join('\n') + '\n';
+  };
+
+  Shader.compileDstDeclarations = function(dstColumns) {
+    return dstColumns.map(function (dstName) {
       return 'float _' + dstName + ';'
     }).join('\n') + '\n';
-
-    return attrDec + "\n" + paramDec;
   };
 
   Shader.compileColumnMappingDeclarations = function(srcColumns, dstColumns) {
@@ -172,7 +209,7 @@ define(["app/Class", "async", "jQuery"], function(Class, async, $) {
         return '  _' + dstName + ' = ' +
           ['attrmap_' + dstName + '_from_const'].concat(
             srcColumns.map(function (srcName) {
-              return '    attrmap_' + dstName + '_from_' + srcName + ' * ' + srcName
+              return '    attrmap_' + dstName + '_from_' + srcName + ' * scaled_' + srcName
             })).join(' +\n') + ';';
       }).join('\n') +
       '\n}\n';
