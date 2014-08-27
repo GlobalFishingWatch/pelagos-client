@@ -1,3 +1,4 @@
 swissarmykitchensink
 gsutil
-clustering
+-e git+git@github.com:SkyTruth/clustering.git#egg=Package
+vectortile

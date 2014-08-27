@@ -4,7 +4,7 @@ import json
 import struct
 import datetime
 import dateutil.parser
-import typedmatrix.TypedMatrix
+import vectortile.TypedMatrix
 
 if len(sys.argv) < 3:
     print """Usage:
@@ -58,7 +58,7 @@ for i, d in enumerate(data):
             except:
                 continue
         if key not in cols:
-            cols[key] = {'name': key, 'type': typedmatrix.TypedMatrix.typemap[t], 'min': value, 'max': value}
+            cols[key] = {'name': key, 'type': vectortile.TypedMatrix.typemap[t], 'min': value, 'max': value}
             coltypes[key] = t
         cols[key]['max'] = max(cols[key]['max'], value)
         cols[key]['min'] = min(cols[key]['min'], value)
@@ -73,4 +73,4 @@ print "Header: ", header
 print "Writing data..."
 
 with open(outfile, "w") as f:
-    f.write(typedmatrix.TypedMatrix.pack(data, header, cols))
+    f.write(vectortile.TypedMatrix.pack(data, header, cols))
