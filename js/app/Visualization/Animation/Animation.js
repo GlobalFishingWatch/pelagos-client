@@ -103,16 +103,23 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     initUpdates: function(cb) {
       var self = this;
       self.data_view.events.on({
-        "update": self.updateData.bind(self),
+        "update": self.triggerDataUpdate.bind(self),
         "view-update": self.manager.triggerUpdate.bind(self.manager)
       });
-      self.updateData();
+      self.triggerDataUpdate();
       cb();
+    },
+
+    triggerDataUpdate: function () {
+      var self = this;
+      if (self.dataUpdateTimeout) return;
+      self.dataUpdateTimeout = setTimeout(self.updateData.bind(self), 250);
     },
 
     updateData: function() {
       var self = this;
 
+      self.dataUpdateTimeout = undefined;
       self.dataUpdates++;
 
       Object.values(self.programs).map(self.updateDataProgram.bind(self));
