@@ -179,17 +179,24 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     loadDataViewArrayBuffers: function (program) {
       var self = this;
 
+      // Note: We never reaload an existing tile.
+
       program.gl.useProgram(program);
 
+      var dataViewArrayBuffers = program.dataViewArrayBuffers;
       program.dataViewArrayBuffers = {};
 
       self.data_view.source.getContent().map(function (tile) {
-        program.dataViewArrayBuffers[tile.url] = {};
+        if (dataViewArrayBuffers[tile.url]) {
+          program.dataViewArrayBuffers[tile.url] = dataViewArrayBuffers[tile.url];
+        } else {
+          program.dataViewArrayBuffers[tile.url] = {};
 
-        Object.keys(tile.header.colsByName).map(function (name) {
-          program.dataViewArrayBuffers[tile.url][name] = program.gl.createBuffer();
-          Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.url][name], tile.data[name], program);
-        });
+          Object.keys(tile.header.colsByName).map(function (name) {
+            program.dataViewArrayBuffers[tile.url][name] = program.gl.createBuffer();
+            Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.url][name], tile.data[name], program);
+          });
+        }
       });
     },
 
