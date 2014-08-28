@@ -9,9 +9,11 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
       self.seriescount = 0;
       self.loadingStarted = false;
       self.loadingCanceled = false;
+      self.headerIsLoaded = false;
       self.allIsLoaded = false;
       self.events = new Events("Data.Format");
       self.events.on({
+        header: function () { self.headerIsLoaded = true; },
         all: function () { self.allIsLoaded = true; },
         load: function () { self.allIsLoaded = false; },
         error: function (exception) { self.error = exception; }
@@ -21,7 +23,15 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
 
     load: function () {
       var self = this;
-      if (self.loadingStarted || self.loadingCanceled) return;
+      if (self.loadingCanceled) return;
+      if (self.loadingStarted) {
+        if (self.headerIsLoaded) {
+          var e = {update: "header", header: self.header};
+          self.events.triggerEvent(e.update, e);
+          self.events.triggerEvent("update", e);
+        }
+        return;
+      }
       self.loadingStarted = true;
       self._load();
     },

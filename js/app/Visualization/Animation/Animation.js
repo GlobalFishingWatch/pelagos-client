@@ -57,7 +57,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           self.gl = gl;
 
           self.data_view.events.un({
-            "update": handleHeader
+            "header": handleHeader
           });
 
           self.rowidxCanvas = document.createElement('canvas');
@@ -73,7 +73,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
         self.data_view.events.on({
           error: self.handleError.bind(self),
-          "update": handleHeader
+          "header": handleHeader
         });
         self.data_view.load();
       });
