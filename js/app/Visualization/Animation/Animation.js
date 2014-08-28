@@ -93,6 +93,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           },
           function (program) {
             program.name = item.key;
+            program.dataViewArrayBuffers = {};
             self.programs[item.key] = program;
             cb();
           }
@@ -183,7 +184,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       program.gl.useProgram(program);
 
-      var dataViewArrayBuffers = program.dataViewArrayBuffers || {};
+      var dataViewArrayBuffers = program.dataViewArrayBuffers;
       program.dataViewArrayBuffers = {};
 
       self.data_view.source.getContent().map(function (tile) {
