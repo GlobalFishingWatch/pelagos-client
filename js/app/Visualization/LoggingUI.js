@@ -1,0 +1,115 @@
+if (!app.useDojo) {
+  define(["app/Class"], function (Class) {
+    return Class({name: "LoggingUI"});
+  });
+} else {
+  define([
+    "app/Class",
+    "app/Logging",
+    "jQuery",
+    "dijit/Fieldset",
+    "dijit/form/HorizontalSlider",
+    "dojox/layout/FloatingPane",
+    "dijit/layout/ContentPane",
+    "dijit/Fieldset",
+    "dijit/Menu",
+    "dijit/MenuItem",
+    "dijit/popup",
+    "dojo/dom",
+    "dojo/parser",
+    "dojo/domReady!"
+  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Fieldset, Menu, MenuItem, popup){
+    return Class({
+      name: "LoggingUI",
+      initialize: function (visualization) {
+        var self = this;
+
+        self.visualization = visualization;
+
+        self.ui = new ContentPane({title: "Logging"});
+        self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
+        self.visualization.sidePanels.container.layout();
+
+        self.updateUI(self.visualization.state.getValue("logging"));
+
+        self.visualization.state.events.on({
+          logging: function () {
+            self.updateUI(self.visualization.state.getValue("logging"));
+          }
+        });
+      },
+
+      updateUI: function (rules) {
+        var self = this;
+
+        self.ui.getChildren().map(function (child) {
+          child.destroy();
+        });
+
+        Object.items(rules).map(function (dst) {
+
+          var destinationWidget = new ContentPane({
+            content: dst.key + " <a href='javascript:void(0);' class='add'><i class='fa fa-plus-square'></i></a>",
+            style: "padding-top: 0; padding-bottom: 0;"
+          });
+
+          var addButton = $(destinationWidget.domNode).find("a.add");
+
+          addButton.click(function () {
+            var ruleSelect = new Menu({});
+
+            Logging.default.getUsedCategories().map(function (key) {
+              var item = new MenuItem({
+                label: key,
+                onClick: function () {
+                  var newRules = $.extend({}, rules);
+                  newRules[dst.key] = $.extend({}, newRules[dst.key]);
+                  newRules[dst.key].rules.push(key); 
+                  self.visualization.state.setValue("logging", newRules);
+                }
+              });
+              ruleSelect.addChild(item);
+            });
+
+            popup.open({
+              popup: ruleSelect,
+              onExecute : function() { 
+                popup.close(ruleSelect);
+                ruleSelect.destroy();
+              }, 
+              onCancel : function() { 
+                popup.close(ruleSelect);
+                ruleSelect.destroy();
+              }, 
+              onClose : function() { 
+                popup.close(ruleSelect);
+                ruleSelect.destroy();
+              }, 
+              around:addButton[0]
+            });
+          });
+
+          dst.value.rules.map(function (rule) {
+            var sourceWidget = new ContentPane({
+              content: "<a href='javascript:void(0);' class='remove' style='float:left;'><i class='fa fa-minus-square'></i> " + rule + "</a>",
+              style: "padding-top: 0; padding-bottom: 8px;"
+            });
+            $(sourceWidget.domNode).find("a.remove").click(function () {
+
+              var newRules = $.extend({}, rules);
+              newRules[dst.key] = $.extend({}, newRules[dst.key]);
+              newRules[dst.key].rules = newRules[dst.key].rules.filter(function (x) {
+                return x != rule;
+              });
+
+              self.visualization.state.setValue("logging", newRules);
+              sourceWidget.destroy();
+            })
+            destinationWidget.addChild(sourceWidget);
+          });
+          self.ui.addChild(destinationWidget);
+        });
+      }
+    });
+  });
+}

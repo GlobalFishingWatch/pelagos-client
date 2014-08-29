@@ -7,8 +7,25 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
     initialize: function (args) {
       var self = this;
       self.rules = {};
+      self.compiledRules = {};
+      self.usedCategories = {};
       _.extend(self, args);
       self.setRules(self.rules);
+    },
+
+    updateUsedCategories: function () {
+      var self = this;
+
+      Object.keys(self.compiledRules).map(function (key) {
+        self.usedCategories[key] = true;
+      });
+    },
+
+    getUsedCategories: function () {
+      var self = this;
+
+      self.updateUsedCategories();
+      return Object.keys(self.usedCategories);
     },
 
     rulesToRuleTree: function(rules) {
@@ -60,6 +77,9 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
 
     setRules: function(rules) {
       var self = this;
+
+      // Store any old rule  categories
+      self.updateUsedCategories();
 
       self.rules = rules;
 
