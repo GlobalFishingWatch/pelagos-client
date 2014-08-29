@@ -25,7 +25,9 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
       var self = this;
 
       self.updateUsedCategories();
-      return Object.keys(self.usedCategories);
+      var usedCategories = Object.keys(self.usedCategories);
+      usedCategories.sort();
+      return usedCategories;
     },
 
     rulesToRuleTree: function(rules) {
