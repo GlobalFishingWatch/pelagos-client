@@ -182,6 +182,7 @@ if (!app.useDojo) {
 
         self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
         self.visualization.sidePanels.container.layout();
+        self.visualization.sidePanels.sidebarContainer.selectChild(self.ui, false);
       },
 
       generateAnimationUI: function (animation) {

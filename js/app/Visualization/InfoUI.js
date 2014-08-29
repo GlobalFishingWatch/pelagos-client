@@ -36,6 +36,8 @@ if (!app.useDojo) {
 
         $(self.ui.domNode).html(info.toString());
         $(self.ui.domNode).css({background: color});
+
+        self.visualization.sidePanels.sidebarContainer.selectChild(self.ui, true);
       }
     });
   });
