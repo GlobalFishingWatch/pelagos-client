@@ -20,7 +20,7 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
       self.header = data;
       self.seriescount = self.header.series;
 
-      if (self.orientation == 'r') {
+      if (self.header.orientation == 'rowwise') {
         for (var name in self.header.colsByName) {
           var col = self.header.colsByName[name];
           self.data[name] = new (eval(col.typespec.array))(self.header.length);
@@ -57,7 +57,7 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
 
       self.updateSeries(); // Calculate this incrementally in rowLoaded maybe?
 
-      if (self.orientation == 'r') {
+      if (self.header.orientation == 'rowwise') {
         self.header.length = self.rowcount;
       } else {
         self.rowcount = self.header.length;
