@@ -69,6 +69,7 @@ if (!app.useDojo) {
         );
         sourcewidget.addChild(new HorizontalSlider({
           name: source.key,
+          "class": "pull-right",
           value: source.value,
           minimum: min,
           maximum: max,
@@ -85,11 +86,14 @@ if (!app.useDojo) {
                 value: value,
                 source: source.key
               }
-            );                    
+            );
+            $(sourcewidget.domNode).find('.value').html(value.toPrecision(3));
             spec.source[source.key] = value;
             self.dataview.changeCol(spec);
           }
         }));
+        $(sourcewidget.domNode).append("<span class='value' style='float: right;'>");
+        $(sourcewidget.domNode).find('.value').html(source.value.toPrecision(3));
         colwidget.addChild(sourcewidget);
       },
 
@@ -143,7 +147,7 @@ if (!app.useDojo) {
           Object.items(spec.source).map(function (source) { self.generateSourceUI(colwidget, spec, source); });
           ui.addChild(colwidget);
 
-
+          ui.startup();
         });
 
         self.ui = ui;
