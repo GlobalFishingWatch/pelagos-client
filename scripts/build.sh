@@ -12,8 +12,8 @@ cd js/libs
 
 wget https://raw.githubusercontent.com/caolan/async/master/lib/async.js
 
-wget http://code.jquery.com/jquery-1.10.1.min.js
-wget http://code.jquery.com/jquery-1.10.1.min.map
+wget http://code.jquery.com/jquery-1.10.2.min.js
+wget http://code.jquery.com/jquery-1.10.2.min.map
 
 # wget https://raw.githubusercontent.com/brandonaaron/jquery-mousewheel/master/jquery.mousewheel.min.js
 wget https://raw.githubusercontent.com/brandonaaron/jquery-mousewheel/master/jquery.mousewheel.js
