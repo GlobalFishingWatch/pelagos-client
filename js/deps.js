@@ -21,9 +21,17 @@
     }
   }
 
-  app.paths.shim = app.paths.script.concat("shims");
+  app.paths.build = app.paths.script.slice(0, -1).concat(['js-build']);
   app.paths.lib = app.paths.script.concat(['libs']);
-  app.paths.app = app.paths.script.concat(['app']);
+  if (app.useBuild) {
+    app.paths.shim = app.paths.build;
+    app.paths.app = app.paths.build.concat(['app']);
+    app.paths.dojo = app.paths.build;
+  } else {
+    app.paths.shim = app.paths.script.concat("shims");
+    app.paths.app = app.paths.script.concat(['app']);
+    app.paths.dojo = app.paths.lib.concat(['dojo-release-1.10.0-src']);
+  }
 
   app.dirs = app.dirs || {};
   for (var name in app.paths) {
@@ -32,37 +40,43 @@
 
   app.dependencies = app.dependencies || {};
   app.dependencies.stylesheets = app.dependencies.stylesheets || [];
+  app.dependencies.scripts = app.dependencies.scripts || [];
+  app.packages = app.packages || [];
+
   app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
     app.dirs.lib + "/bootstrap.min.css",
     app.dirs.lib + "/font-awesome-4.0.3/css/font-awesome.min.css",
     app.dirs.lib + "/qunit-1.14.0.css",
-    app.dirs.lib + "/dojo-release-1.9.3/dijit/themes/claro/claro.css",
-
-    app.dirs.lib + "/dojo-release-1.9.3/dojox/layout/resources/FloatingPane.css",
-    app.dirs.lib + "/dojo-release-1.9.3/dojox/layout/resources/ResizeHandle.css",
 
     {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"}
   ]);
-  app.dependencies.scripts = app.dependencies.scripts || [];
+  if (app.useDojo) {
+    app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
+      app.dirs.dojo + "/dijit/themes/claro/claro.css",
+
+      app.dirs.dojo + "/dojox/layout/resources/FloatingPane.css",
+      app.dirs.dojo + "/dojox/layout/resources/ResizeHandle.css"
+    ]);
+  }
   app.dependencies.scripts = app.dependencies.scripts.concat([
     app.dirs.lib + "/qunit-1.14.0.js",
     app.dirs.lib + "/async.js",
     app.dirs.lib + "/stacktrace.js",
   ]);
   if (!app.webworker) {
-  app.dependencies.scripts = app.dependencies.scripts.concat([
-    {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-    app.dirs.lib + "/jquery-1.10.2.min.js",
-    app.dirs.lib + "/jquery.mousewheel.js",
-    app.dirs.lib + "/less-1.6.2.min.js",
-    app.dirs.lib + "/bootstrap.min.js",
-    app.dirs.lib + "/CanvasLayer.js",
-    app.dirs.lib + "/stats.min.js",
-    app.dirs.lib + "/loggly.tracker.js"
-  ]);
+    app.dependencies.scripts = app.dependencies.scripts.concat([
+      {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
+      app.dirs.lib + "/lodash.js",
+      app.dirs.lib + "/jquery-1.10.2.min.js",
+      app.dirs.lib + "/jquery.mousewheel.js",
+      app.dirs.lib + "/less-1.6.2.min.js",
+      app.dirs.lib + "/bootstrap.min.js",
+      app.dirs.lib + "/CanvasLayer.js",
+      app.dirs.lib + "/stats.min.js",
+      app.dirs.lib + "/loggly.tracker.js"
+    ]);
   }
 
-  app.packages = app.packages || [];
   app.packages = app.packages.concat([
     {name: 'bootstrap', location: app.paths.shim.concat(['bootstrap']).join('/')},
     {name: 'CanvasLayer', location: app.paths.shim.concat(['CanvasLayer']).join('/')},
@@ -73,13 +87,13 @@
     {name: 'async', location: app.paths.shim.concat(['async']).join('/')},
     {name: 'stacktrace', location: app.paths.shim.concat(['stacktrace']).join('/')},
     {name: 'LogglyTracker', location: app.paths.shim.concat(['LogglyTracker']).join('/')},
-    {name: 'lodash', location:app.dirs.lib, main:'lodash'},
-    {name: 'app', location:app.dirs.app, main: 'app'}
+    {name: 'lodash', location: app.paths.shim.concat(['lodash']).join('/')},
+    {name: 'app', location:app.dirs.app, main: 'main'}
   ]);
 
   if (app.useDojo) {
     app.dependencies.scripts.push(app.dirs.script + "/dojoconfig.js");
-    app.dependencies.scripts.push(app.dirs.lib + "/dojo-release-1.9.3/dojo/dojo.js");
+    app.dependencies.scripts.push(app.dirs.dojo + "/dojo/dojo.js");
   } else {
     app.dependencies.scripts.push(app.dirs.lib + "/require.js");
     app.dependencies.scripts.push(app.dirs.script + "/requirejsconfig.js");
@@ -149,6 +163,15 @@
      require([app.mainModule], function (mainModule) {
        new mainModule();
      });
+    }
+  }
+
+  if (app.useBuild) {
+    var realMain = main;
+    main = function () {
+      require(["app/app"], function (mainModule) {
+        realMain();
+      });
     }
   }
 
