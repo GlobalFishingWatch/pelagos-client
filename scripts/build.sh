@@ -1,14 +1,14 @@
 #! /bin/bash
 
-cd js/libs
+# These are in lib, but should not be there...
+# base.js
+# CanvasLayer.js
+# glutil2d.js
+# io.js
+# series.js
+# TimeMachineCanvasLayer.js
 
-wget http://download.dojotoolkit.org/release-1.10.0/dojo-release-1.10.0-src.tar.gz
-tar -xvzf dojo-release-1.10.0-src.tar.gz
-rm dojo-release-1.10.0-src.tar.gz
-(
-  cd dojo-release-1.10.0-src/util/buildscripts
-  ./build.sh --dojoConfig ../../../../main.profile.js --release
-)
+cd js/libs
 
 wget https://raw.githubusercontent.com/caolan/async/master/lib/async.js
 
@@ -46,10 +46,10 @@ wget https://rawgithub.com/stacktracejs/stacktrace.js/master/stacktrace.js
 wget https://raw.githubusercontent.com/loggly/loggly-jslogger/master/src/loggly.tracker.js
 wget https://raw.githubusercontent.com/mrdoob/stats.js/master/build/stats.min.js
 
-# These are in lib, but should not be there...
-# base.js
-# CanvasLayer.js
-# glutil2d.js
-# io.js
-# series.js
-# TimeMachineCanvasLayer.js
+wget http://download.dojotoolkit.org/release-1.10.0/dojo-release-1.10.0-src.tar.gz
+tar -xvzf dojo-release-1.10.0-src.tar.gz
+rm dojo-release-1.10.0-src.tar.gz
+(
+  cd dojo-release-1.10.0-src/util/buildscripts
+  ./build.sh --dojoConfig ../../../../main.profile.js --release
+)
