@@ -13,3 +13,5 @@ Vagrantfile
 .DS_Store
 
 release
+js-build
+js/libs
