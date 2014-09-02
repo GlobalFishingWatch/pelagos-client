@@ -54,7 +54,11 @@ define(['lodash'], function(_) {
       initialize.prototype = proto;
     }
 
-    var cls = eval("(function " + name + "() { this.constructor = cls; return initialize.apply(this, arguments); })");
+    // Note: We produce a pure function that doesn't depend on
+    // variablies in the surrounding closure so that it will work even
+    // if this source code is minified.
+    var clsCreator = eval("(function (initialize) { var cls = function " + name + "() { this.constructor = cls; return initialize.apply(this, arguments); }; return cls; })");
+    var cls = clsCreator(initialize);
     cls.prototype = initialize.prototype;
 
     return cls;
