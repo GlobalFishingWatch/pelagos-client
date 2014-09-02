@@ -64,15 +64,15 @@
 
   app.packages = app.packages || [];
   app.packages = app.packages.concat([
-    {name: 'bootstrap', location: app.dirs.shim, main: 'bootstrap'},
-    {name: 'CanvasLayer', location: app.dirs.shim, main: 'CanvasLayer'},
-    {name: 'Stats', location: app.dirs.shim, main: 'Stats'},
-    {name: 'QUnit', location: app.dirs.shim, main: 'QUnit'},
-    {name: 'jQuery', location: app.dirs.shim, main: 'jQuery'},
-    {name: 'less', location: app.dirs.shim, main: 'less'},
-    {name: 'async', location: app.dirs.shim, main: 'async'},
-    {name: 'stacktrace', location: app.dirs.shim, main: 'stacktrace'},
-    {name: 'LogglyTracker', location: app.dirs.shim, main: 'LogglyTracker'},
+    {name: 'bootstrap', location: app.paths.shim.concat(['bootstrap']).join('/')},
+    {name: 'CanvasLayer', location: app.paths.shim.concat(['CanvasLayer']).join('/')},
+    {name: 'Stats', location: app.paths.shim.concat(['Stats']).join('/')},
+    {name: 'QUnit', location: app.paths.shim.concat(['QUnit']).join('/')},
+    {name: 'jQuery', location: app.paths.shim.concat(['jQuery']).join('/')},
+    {name: 'less', location: app.paths.shim.concat(['less']).join('/')},
+    {name: 'async', location: app.paths.shim.concat(['async']).join('/')},
+    {name: 'stacktrace', location: app.paths.shim.concat(['stacktrace']).join('/')},
+    {name: 'LogglyTracker', location: app.paths.shim.concat(['LogglyTracker']).join('/')},
     {name: 'lodash', location:app.dirs.lib, main:'lodash'},
     {name: 'app', location:app.dirs.app, main: 'app'}
   ]);

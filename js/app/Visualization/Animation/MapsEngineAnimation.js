@@ -39,7 +39,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
         if (type == 'rightclick') {
           self.manager.infoPopup.setOptions({
             content: info.infoWindowHtml,
-            position: info.latLng,
+            position: info.latLng
           });
           self.manager.infoPopup.open(self.manager.map);
         } else {
@@ -72,7 +72,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
       var self = this;
       return {
         args: {source: self.source, title: self.title, visible: self.visible},
-        type: self.name
+        "type": self.name
       };
     }
   });

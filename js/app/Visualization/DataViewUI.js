@@ -11,14 +11,13 @@ if (!app.useDojo) {
     "dijit/form/HorizontalSlider",
     "dojox/layout/FloatingPane",
     "dijit/layout/ContentPane",
-    "dijit/Fieldset",
     "dijit/Menu",
     "dijit/MenuItem",
     "dijit/popup",
     "dojo/dom",
     "dojo/parser",
     "dojo/domReady!"
-  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Fieldset, Menu, MenuItem, popup){
+  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Menu, MenuItem, popup){
     return Class({
       name: "DataViewUI",
       initialize: function (dataview) {
@@ -55,7 +54,7 @@ if (!app.useDojo) {
           delete spec.source[source.key];
           sourcewidget.destroy();
         })
-        Logging.default.log(
+        Logging.main.log(
           "DataViewUI.source." + spec.name + "." + source.key,
           {
             toString: function () {
@@ -76,7 +75,7 @@ if (!app.useDojo) {
           intermediateChanges: true,
           style: "width:200px;",
           onChange: function (value) {
-            Logging.default.log(
+            Logging.main.log(
               "DataViewUI.set." + spec.name + "." + source.key,
               {
                 toString: function () {

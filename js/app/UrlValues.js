@@ -13,7 +13,7 @@ define(["app/Class", "app/LangExtensions"], function(Class) {
         latitude: {fromurl: UrlValues.floatFromUrl, precision: 1000, tourl: UrlValues.floatToUrl, urlname: "lat"},
         paused: {fromurl: UrlValues.boolFromUrl, tourl: UrlValues.boolToUrl, urlname: "paused", trueval: "yes", falseval: "no"},
         source: {urlname: "source"}, // String value, no tourl/fromurl needed
-        other: {default: 4711} // Ignored as there is no urlname
+        other: {default_value: 4711} // Ignored as there is no urlname
       }
     */
     initialize: function (values, spec) {
@@ -31,7 +31,7 @@ define(["app/Class", "app/LangExtensions"], function(Class) {
 
       if (spec == undefined || spec.urlname == undefined) return;
 
-      var val = e.new;
+      var val = e.new_value;
       if (spec.tourl) val = spec.tourl.call(spec, val);
       if (val != undefined) val = val.toString();
       UrlValues.setParameter(spec.urlname, val);
@@ -45,7 +45,7 @@ define(["app/Class", "app/LangExtensions"], function(Class) {
         if (spec.urlname == undefined) return;
         var value = UrlValues.getParameter(spec.urlname);
         if (value == undefined) {
-          value = spec.default;
+          value = spec.default_value;
         } else if (spec.fromurl) {
           value = spec.fromurl.call(spec, value);
         }

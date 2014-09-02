@@ -2,25 +2,25 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
   return Class({
     name: "Visualization",
     paramspec: {
-      zoom: {default: 4, fromurl: UrlValues.intFromUrl, tourl: UrlValues.intToUrl, urlname: "zoom", type: "number"},
-      lat: {default: 39.3, fromurl: UrlValues.floatFromUrl, tourl: UrlValues.floatToUrl, precision: 100000, urlname: "lat", type: "number"},
-      lon: {default: -95.8, fromurl: UrlValues.floatFromUrl, tourl: UrlValues.floatToUrl, precision: 100000, urlname: "lon", type: "number"},
-      length: {default: 10000, fromurl: UrlValues.intFromUrl, tourl: UrlValues.intToUrl, urlname: "length", type: "number"},
-      timeExtent: {default: 15 * 24 * 60 * 60 * 1000, fromurl: UrlValues.floatFromUrl, tourl: UrlValues.floatToUrl, precision: 1000, urlname: "timeExtent", type: "number"},
+      zoom: {default_value: 4, fromurl: UrlValues.intFromUrl, tourl: UrlValues.intToUrl, urlname: "zoom", type: "number"},
+      lat: {default_value: 39.3, fromurl: UrlValues.floatFromUrl, tourl: UrlValues.floatToUrl, precision: 100000, urlname: "lat", type: "number"},
+      lon: {default_value: -95.8, fromurl: UrlValues.floatFromUrl, tourl: UrlValues.floatToUrl, precision: 100000, urlname: "lon", type: "number"},
+      length: {default_value: 10000, fromurl: UrlValues.intFromUrl, tourl: UrlValues.intToUrl, urlname: "length", type: "number"},
+      timeExtent: {default_value: 15 * 24 * 60 * 60 * 1000, fromurl: UrlValues.floatFromUrl, tourl: UrlValues.floatToUrl, precision: 1000, urlname: "timeExtent", type: "number"},
       time: {fromurl: UrlValues.dateFromUrl, tourl: UrlValues.dateToUrl, urlname: "time", type: Date},
-      animations: {default: ["point"], fromurl: UrlValues.stringArrayFromUrl, tourl: UrlValues.stringArrayToUrl, urlname: "animations", type: Array},
-      paused: {default: true, fromurl: UrlValues.boolFromUrl, tourl: UrlValues.boolToUrl, urlname: "paused", type: "boolean"},
-      format: {urlname: "format", default: "tiledbin", type: "string"},
+      animations: {default_value: ["point"], fromurl: UrlValues.stringArrayFromUrl, tourl: UrlValues.stringArrayToUrl, urlname: "animations", type: Array},
+      paused: {default_value: true, fromurl: UrlValues.boolFromUrl, tourl: UrlValues.boolToUrl, urlname: "paused", type: "boolean"},
+      format: {urlname: "format", default_value: "tiledbin", type: "string"},
       source: {urlname: "source", type: "string"},
       nowebgl: {urlname: "nowebgl", type: "string"},
       logoimg: {urlname: "logoimg", type: "string"},
       logourl: {urlname: "logourl", type: "string"},
 
-      logging: {default: {}, fromurl: UrlValues.jsonFromUrl, tourl: UrlValues.jsonToUrl, urlname: "logging", type: "object"},
+      logging: {default_value: {}, fromurl: UrlValues.jsonFromUrl, tourl: UrlValues.jsonToUrl, urlname: "logging", type: "object"},
 
-      timeresolution: {default: 60*60*24*1000},
+      // httpHeaders: {default_value: {"X-Client-Cache": "true"}}
 
-      // httpHeaders: {default: {"X-Client-Cache": "true"}}
+      timeresolution: {default_value: 60*60*24*1000}
     },
 
     initialize: function (node) {
@@ -32,10 +32,10 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
 
       self.state.events.on({
         logging: function () {
-          Logging.default.setRules(self.state.getValue("logging"));
+          Logging.main.setRules(self.state.getValue("logging"));
         }
       });
-      Logging.default.setRules(self.state.getValue("logging"));
+      Logging.main.setRules(self.state.getValue("logging"));
 
       self.state.events.on({
         title: function () {

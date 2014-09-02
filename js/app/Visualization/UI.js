@@ -15,7 +15,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
         self.initTimeline.bind(self),
         self.initToggleButtons.bind(self),
         self.initSaveButton.bind(self),
-        self.initDojoUI.bind(self),
+        self.initDojoUI.bind(self)
       ], function () { cb(); });
     },
 
@@ -95,7 +95,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
           self.timeline.dataRangemark = {
             start: self.timeline.min,
             end: self.timeline.max,
-            css: {background:"#ffffff", 'z-index': 0},
+            css: {background:"#ffffff", 'z-index': 0}
           };
           rangemarks.push(self.timeline.dataRangemark);
         } else {
@@ -187,7 +187,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
           self.animateButtonNode.find("i").removeClass("fa-play").addClass("fa-pause");
         }
       }
-      self.visualization.state.events.on({paused: function (e) { setValue(e.new); }});
+      self.visualization.state.events.on({paused: function (e) { setValue(e.new_value); }});
       setValue(self.visualization.state.getValue("paused"));
 
       cb();

@@ -3,8 +3,8 @@ define(["app/Class", "app/Events", "app/Logging"], function(Class, Events, Loggi
     name: "SubscribableDict",
     /*
       spec = {
-        zoom: {default: 3},
-        latitude: {default: 10.47}
+        zoom: {default_value: 3},
+        latitude: {default_value: 10.47}
       }
     */
     initialize: function(spec) {
@@ -40,12 +40,12 @@ define(["app/Class", "app/Events", "app/Logging"], function(Class, Events, Loggi
       var old = self.values[name];
       self.values[name] = value;
       var event = {
-        "name": name,
-        "new": value,
-        "old": old,
+        name: name,
+        new_value: value,
+        old_value: old,
         toString: function () {
-          var o = this.old != undefined ? this.old.toString() : "undefined";
-          var n = this.new != undefined ? this.new.toString() : "undefined";
+          var o = this.old_value != undefined ? this.old_value.toString() : "undefined";
+          var n = this.new_value != undefined ? this.new_value.toString() : "undefined";
           return this.name + " = " + o + " -> " + n;
         }
       };
@@ -58,7 +58,7 @@ define(["app/Class", "app/Events", "app/Logging"], function(Class, Events, Loggi
       if (self.values[name] != undefined) {
         return self.values[name];
       } else {
-        return self.spec[name] && self.spec[name].default;
+        return self.spec[name] && self.spec[name].default_value;
       }
     },
 

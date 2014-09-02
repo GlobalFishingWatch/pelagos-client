@@ -520,13 +520,13 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       var window = 100.0 - leftContext - rightContext;
 
       self.leftFrameNode.css({
-        'width': leftContext + '%',
+        'width': leftContext + '%'
       });
       self.windowNode.css({
-        'width': window + '%',
+        'width': window + '%'
       });
       self.rightFrameNode.css({
-        'width': rightContext + '%',
+        'width': rightContext + '%'
       });
     },
 

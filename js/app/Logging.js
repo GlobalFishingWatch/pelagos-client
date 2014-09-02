@@ -184,9 +184,9 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
     }
   });
 
-  Logging.default = new Logging({
+  Logging.main = new Logging({
     rules: {
-      "screen": {"rules": ["Data.TypedMatrixParser.error", "Data.Format.error"]},
+      "screen": {"rules": ["Data.TypedMatrixParser.error", "Data.Format.error"]}
     }
   });
 

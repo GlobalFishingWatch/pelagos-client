@@ -11,14 +11,13 @@ if (!app.useDojo) {
     "dijit/form/HorizontalSlider",
     "dojox/layout/FloatingPane",
     "dijit/layout/ContentPane",
-    "dijit/Fieldset",
     "dijit/Menu",
     "dijit/MenuItem",
     "dijit/popup",
     "dojo/dom",
     "dojo/parser",
     "dojo/domReady!"
-  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Fieldset, Menu, MenuItem, popup){
+  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Menu, MenuItem, popup){
     return Class({
       name: "LoggingUI",
       initialize: function (visualization) {
@@ -58,7 +57,7 @@ if (!app.useDojo) {
           addButton.click(function () {
             var ruleSelect = new Menu({});
 
-            Logging.default.getUsedCategories().map(function (key) {
+            Logging.main.getUsedCategories().map(function (key) {
               var item = new MenuItem({
                 label: key,
                 onClick: function () {

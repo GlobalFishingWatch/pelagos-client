@@ -34,7 +34,7 @@ if (!app.useDojo) {
         self.animationManager = visualization.animations;
         self.animationManager.events.on({
           add: self.addHandler.bind(self),
-          remove: self.removeHandler.bind(self),
+          remove: self.removeHandler.bind(self)
         });
 
         self.generateUI();

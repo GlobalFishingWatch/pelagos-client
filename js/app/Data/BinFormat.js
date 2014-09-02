@@ -72,7 +72,7 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
 
     toJSON: function () {
       return {
-        type: self.name,
+        "type": self.name,
         args: {
           url: self.url
         }

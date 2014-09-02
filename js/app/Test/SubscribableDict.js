@@ -19,13 +19,13 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/SubscribableDict"], func
       d.events.on({
         foo: function (arg) {
           QUnit.equal(arg.name, "foo", "Named event:  Name of value is the same as name of event");
-          QUnit.equal(arg.old, undefined, "Named event: Old value is unset");
-          QUnit.equal(arg.new, 4711, "Named event: Old value is unset");
+          QUnit.equal(arg.old_value, undefined, "Named event: Old value is unset");
+          QUnit.equal(arg.new_value, 4711, "Named event: Old value is unset");
         },
         set: function (arg) {
           QUnit.equal(arg.name, "foo", "Generic event: Name of value is foo");
-          QUnit.equal(arg.old, undefined, "Generic event: Old value is unset");
-          QUnit.equal(arg.new, 4711, "Generic event: Old value is unset");
+          QUnit.equal(arg.old_value, undefined, "Generic event: Old value is unset");
+          QUnit.equal(arg.new_value, 4711, "Generic event: Old value is unset");
           cb();
         }
       });
@@ -37,7 +37,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/SubscribableDict"], func
       QUnit.expect(3);
 
       var d = new SubscribableDict({
-        foo: {default: 4711}
+        foo: {default_value: 4711}
       });
 
       QUnit.equal(d.getValue("foo"), 4711, "Original value is default value");

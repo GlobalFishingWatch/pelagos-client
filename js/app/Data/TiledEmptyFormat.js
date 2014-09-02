@@ -30,7 +30,7 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Em
 
     toJSON: function () {
       return {
-        type: self.name,
+        "type": self.name,
         args: {
           url: self.url
         }
