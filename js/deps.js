@@ -44,9 +44,9 @@
   app.packages = app.packages || [];
 
   app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-    app.dirs.lib + "/bootstrap.min.css",
-    app.dirs.lib + "/font-awesome-4.0.3/css/font-awesome.min.css",
-    app.dirs.lib + "/qunit-1.14.0.css",
+    app.dirs.lib + "/bootstrap-3.2.0-dist/css/bootstrap.min.css",
+    app.dirs.lib + "/font-awesome-4.2.0/css/font-awesome.min.css",
+    app.dirs.lib + "/qunit-1.15.0.css",
 
     {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"}
   ]);
@@ -59,7 +59,7 @@
     ]);
   }
   app.dependencies.scripts = app.dependencies.scripts.concat([
-    app.dirs.lib + "/qunit-1.14.0.js",
+    app.dirs.lib + "/qunit-1.15.0.js",
     app.dirs.lib + "/async.js",
     app.dirs.lib + "/stacktrace.js",
   ]);
@@ -69,8 +69,8 @@
       app.dirs.lib + "/lodash.js",
       app.dirs.lib + "/jquery-1.10.2.min.js",
       app.dirs.lib + "/jquery.mousewheel.js",
-      app.dirs.lib + "/less-1.6.2.min.js",
-      app.dirs.lib + "/bootstrap.min.js",
+      app.dirs.lib + "/less-1.7.4.min.js",
+      app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
       app.dirs.lib + "/CanvasLayer.js",
       app.dirs.lib + "/stats.min.js",
       app.dirs.lib + "/loggly.tracker.js"
