@@ -27,7 +27,7 @@ if (!app.useDojo) {
 
         self.visualization.animations.events.on({
           'info': self.update.bind(self, "#ffffff"),
-          'info-error': self.update.bind(self, "#ff8888"),
+          'info-error': self.update.bind(self, "#ff8888")
         });
       },
 
@@ -36,6 +36,8 @@ if (!app.useDojo) {
 
         $(self.ui.domNode).html(info.toString());
         $(self.ui.domNode).css({background: color});
+
+        self.visualization.sidePanels.sidebarContainer.selectChild(self.ui, true);
       }
     });
   });

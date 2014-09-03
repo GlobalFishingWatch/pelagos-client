@@ -11,14 +11,13 @@ if (!app.useDojo) {
     "dijit/form/HorizontalSlider",
     "dojox/layout/FloatingPane",
     "dijit/layout/ContentPane",
-    "dijit/Fieldset",
     "dijit/Menu",
     "dijit/MenuItem",
     "dijit/popup",
     "dojo/dom",
     "dojo/parser",
     "dojo/domReady!"
-  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Fieldset, Menu, MenuItem, popup){
+  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Menu, MenuItem, popup){
     return Class({
       name: "DataViewUI",
       initialize: function (dataview) {
@@ -55,7 +54,7 @@ if (!app.useDojo) {
           delete spec.source[source.key];
           sourcewidget.destroy();
         })
-        Logging.default.log(
+        Logging.main.log(
           "DataViewUI.source." + spec.name + "." + source.key,
           {
             toString: function () {
@@ -70,13 +69,14 @@ if (!app.useDojo) {
         );
         sourcewidget.addChild(new HorizontalSlider({
           name: source.key,
+          "class": "pull-right",
           value: source.value,
           minimum: min,
           maximum: max,
           intermediateChanges: true,
           style: "width:200px;",
           onChange: function (value) {
-            Logging.default.log(
+            Logging.main.log(
               "DataViewUI.set." + spec.name + "." + source.key,
               {
                 toString: function () {
@@ -86,11 +86,14 @@ if (!app.useDojo) {
                 value: value,
                 source: source.key
               }
-            );                    
+            );
+            $(sourcewidget.domNode).find('.value').html(value.toPrecision(3));
             spec.source[source.key] = value;
             self.dataview.changeCol(spec);
           }
         }));
+        $(sourcewidget.domNode).append("<span class='value' style='float: right;'>");
+        $(sourcewidget.domNode).find('.value').html(source.value.toPrecision(3));
         colwidget.addChild(sourcewidget);
       },
 
@@ -144,7 +147,7 @@ if (!app.useDojo) {
           Object.items(spec.source).map(function (source) { self.generateSourceUI(colwidget, spec, source); });
           ui.addChild(colwidget);
 
-
+          ui.startup();
         });
 
         self.ui = ui;

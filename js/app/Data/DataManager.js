@@ -34,7 +34,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
           "info-error": self.handleInfoError.bind(self, source),
           header: self.handleHeader.bind(self, source.source),
           load: self.handleLoad.bind(self, source.source),
-          update: self.handleUpdate.bind(self, source.source),
+          update: self.handleUpdate.bind(self, source.source)
         });
       }
       self.sources[key].usage++;
@@ -84,7 +84,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
         self.addSource(view.source),
         {
           columns: view.columns,
-          selections: view.selections,
+          selections: view.selections
         }
       ));
     },

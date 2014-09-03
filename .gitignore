@@ -11,3 +11,7 @@ Vagrantfile
 
 # Mac OS
 .DS_Store
+
+release
+js-build
+js/libs

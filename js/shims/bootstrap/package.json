@@ -1,0 +1,14 @@
+{
+    "name": "bootstrap",
+    "version":"0.1",
+    "main": "main",
+    "description": "",
+    "licenses": [
+        {
+            "type": "GPL",
+            "url": "https://www.gnu.org/licenses/gpl-3.0.txt"
+        }
+    ],
+    "homepage": "https://github.com/SkyTruth/data-visualization-tools",
+    "dojoBuild": "bootstrap.profile.js"
+}

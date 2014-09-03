@@ -7,8 +7,27 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
     initialize: function (args) {
       var self = this;
       self.rules = {};
+      self.compiledRules = {};
+      self.usedCategories = {};
       _.extend(self, args);
       self.setRules(self.rules);
+    },
+
+    updateUsedCategories: function () {
+      var self = this;
+
+      Object.keys(self.compiledRules).map(function (key) {
+        self.usedCategories[key] = true;
+      });
+    },
+
+    getUsedCategories: function () {
+      var self = this;
+
+      self.updateUsedCategories();
+      var usedCategories = Object.keys(self.usedCategories);
+      usedCategories.sort();
+      return usedCategories;
     },
 
     rulesToRuleTree: function(rules) {
@@ -60,6 +79,9 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
 
     setRules: function(rules) {
       var self = this;
+
+      // Store any old rule  categories
+      self.updateUsedCategories();
 
       self.rules = rules;
 
@@ -162,9 +184,9 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
     }
   });
 
-  Logging.default = new Logging({
+  Logging.main = new Logging({
     rules: {
-      "screen": {"rules": ["Data.TypedMatrixParser.error", "Data.Format.error"]},
+      "screen": {"rules": ["Data.TypedMatrixParser.error", "Data.Format.error"]}
     }
   });
 

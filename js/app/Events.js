@@ -32,7 +32,7 @@ define(["app/Class", "app/Logging"], function(Class, Logging) {
     },
     triggerEvent: function (event, data) {
       var self = this;
-      Logging.default.log(self.category + "." + event, data);
+      Logging.main.log(self.category + "." + event, data);
       if (self.handlers[event]) {
         self.handlers[event].map(function (handler) {
           handler.handler.call(handler.scope, data, event);

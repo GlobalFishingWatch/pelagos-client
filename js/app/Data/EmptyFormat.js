@@ -51,7 +51,7 @@ define(["app/Class", "app/Events", "app/Data/Format"], function(Class, Events, F
 
     toJSON: function () {
       return {
-        type: self.name,
+        "type": self.name
       }
     }
   });

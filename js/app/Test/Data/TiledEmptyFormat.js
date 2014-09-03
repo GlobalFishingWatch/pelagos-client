@@ -171,7 +171,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
           }
         });
         p.load()
-    },
+    }
 
   });
 });

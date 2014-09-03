@@ -61,7 +61,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
                   col.typespec = Pack.typemap.byname[col.type];
                 });
                 data.colsByName.rowidx = {
-                  type: "Int32",
+                  "type": "Int32",
                   typespec: Pack.typemap.byname.Int32
                 };
               }
@@ -156,7 +156,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var self = this;
 
       var params = self.tileParamsForRegion(bounds);
-      Logging.default.log("Data.BaseTiledFormat.tileBoundsForRegion", params);
+      Logging.main.log("Data.BaseTiledFormat.tileBoundsForRegion", params);
 
       res = [];
       for (var x = 0; x < params.tilesx; x++) {
@@ -222,7 +222,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       });
       self.wantedTiles = wantedTiles;
 
-      Logging.default.log("Data.BaseTiledFormat.zoomTo", {
+      Logging.main.log("Data.BaseTiledFormat.zoomTo", {
         oldBounds: oldBounds,
         newBounds: bounds,
         newWantedTiles: Object.keys(wantedTiles),
@@ -459,7 +459,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     toJSON: function () {
       return {
-        type: self.name
+        "type": self.name
       }
     }
   });

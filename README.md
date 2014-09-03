@@ -1,9 +1,15 @@
+# Build
+
+Run the following from teh top-level directory:
+
+    scripts/build.sh
+
 # Apps
 Apps are available in the apps directory. To invoke an app, access an url like this:
 
-    http://localhost/apps/visualvector/index.html#source=/data/bin/viirs-flaring-2013-12-10.bin
+    http://localhost/apps/vectorvisual/index.html#workspace=/path/to/workspace
 
-where /data/bin/viirs-flaring-2013-12-10.bin is an URL to the binary file to visualize. More information is available in the README.md inside each app directory.
+where /path/to/workspace is an URL to a JSON file containing a workspace definition.
 
 # Libraries
 

@@ -38,12 +38,11 @@ define(["app/Class", "app/Events"], function(Class, Events) {
         total: content.rowcount
       };
 
-      var namebyvirt = {false: 'real', true: 'virtual'};
-      var namebyinout = {false: 'outside', true: 'inside'};
-
       for (var i = 0; i < content.rowcount; i++) {
-        var virtname = namebyvirt[content.data.virtual && !!content.data.virtual[i]];
-        var inoutname = namebyinout[self.bounds.contains(content.data.longitude[i], content.data.latitude[i])];
+        var virtname = 'real';
+        var inoutname = 'outside';
+        if (content.data.virtual && !!content.data.virtual[i]) virtname = 'virtual';
+          if (self.bounds.contains(content.data.longitude[i], content.data.latitude[i])) inoutname = 'inside';
         res[virtname][inoutname]++;
       }
       return res;
@@ -69,7 +68,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
 
     allLoaded: function () {
       var self = this;
-      Logging.default.log("Data.BaseTiledFormat.Tile.allLOaded", {tile:self.bounds.toBBOX(), toString: function () { return this.tile; }});
+      Logging.main.log("Data.BaseTiledFormat.Tile.allLOaded", {tile:self.bounds.toBBOX(), toString: function () { return this.tile; }});
       self.removeOverlaps();
     },
 

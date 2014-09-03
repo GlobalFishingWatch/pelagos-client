@@ -1,4 +1,4 @@
-define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualization/AnimationManagerUI", "async", "jQuery", "app/Visualization/sliders"], function(Class, Timeline, InfoUI, AnimationManagerUI, async, $) {
+define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualization/LoggingUI", "app/Visualization/AnimationManagerUI", "async", "jQuery", "app/Visualization/sliders"], function(Class, Timeline, InfoUI, LoggingUI, AnimationManagerUI, async, $) {
   return Class({
     name: "UI",
       initialize: function (visualization) {
@@ -15,8 +15,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
         self.initTimeline.bind(self),
         self.initToggleButtons.bind(self),
         self.initSaveButton.bind(self),
-        self.initInfoUI.bind(self),
-        self.initAnimationManagerUI.bind(self)
+        self.initDojoUI.bind(self)
       ], function () { cb(); });
     },
 
@@ -96,7 +95,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
           self.timeline.dataRangemark = {
             start: self.timeline.min,
             end: self.timeline.max,
-            css: {background:"#ffffff", 'z-index': 0},
+            css: {background:"#ffffff", 'z-index': 0}
           };
           rangemarks.push(self.timeline.dataRangemark);
         } else {
@@ -188,7 +187,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
           self.animateButtonNode.find("i").removeClass("fa-play").addClass("fa-pause");
         }
       }
-      self.visualization.state.events.on({paused: function (e) { setValue(e.new); }});
+      self.visualization.state.events.on({paused: function (e) { setValue(e.new_value); }});
       setValue(self.visualization.state.getValue("paused"));
 
       cb();
@@ -217,17 +216,12 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       cb();
     },
 
-    initInfoUI: function (cb) {
+    initDojoUI: function (cb) {
       var self = this;
 
       self.info = new InfoUI(self.visualization);
-      cb();
-    },
-
-    initAnimationManagerUI: function (cb) {
-      var self = this;
-
       self.animations = new AnimationManagerUI(self.visualization);
+      self.logging = new LoggingUI(self.visualization);
       cb();
     }
   });

@@ -6,15 +6,14 @@
    All values in the data format are in little endian. The following
    describes the main data layout:
 
+   ['tmtx' magic cookie]
    [4 byte header length in bytes]
    [header data]
-   [row]
-   [row]
-   ...
+   [content data]
 
    The header is json encoded and should contain at the very least
 
-   {length: NUMBER_OF_ROWS, cols: [COL,...]}
+   {length: NUMBER_OF_ROWS, orientation: ORIENTATION, cols: [COL,...]}
 
    COL should contain {name: NAME, type: TYPE}
 
@@ -27,10 +26,20 @@
 
    value = offset + (multiplier * value)
 
-   Each row consists of data encoded as per the column
+   The content data is either encoded as a series of rows or as a
+   series of columns, depending on the header value orientation
+   ('rowwise' or 'columnwise').
+
+   For rowwise data, each row consists of data encoded as per the column
    specifications (in that same order). The byte length of each
    column is defined by its type.
 
+   For columnwise data, the content data consists of a sequence of
+   columns, in the order specified by the header. Each column is
+   encoded as a sequence of items, each item being encoded as per the
+   column specification. The byte length of each item is defined by
+   the column type. The byte length of a column is the byte length of
+   each item, times the length header value.
 
    API:
 
@@ -230,7 +239,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       var length = self.request.responseText.length;
       var text = self.request.responseText;
 
-      if (length < 4+4+1+4) return;
+      if (length < 4+4) return;
       if (self.headerLen == null) {
         var dataView = new DataView(Pack.stringToArrayBuffer(text, 0, 4+4+1+4));
         if (text.slice(0, 4) != self.MAGIC_COOKIE) {
@@ -242,22 +251,10 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           });
           return true;
         }
-        self.version = dataView.getInt32(4, true);
-        if (self.version != 1) {
-          self.errorLoading({
-            version: self.version,
-            toString: function () {
-              return 'Could not load ' + this.url + ' due to unsupported file format version. Version: ' + this.version + '. Supported versions: 1.';
-            }
-          });
-          return true;
-        }
 
-        self.orientation = text.slice(4+4, 4+4+1); // 'r' for row-wize or 'c' for column-wize data
+        self.headerLen = dataView.getInt32(4, true);
 
-        self.headerLen = dataView.getInt32(4+4+1, true);
-
-        self.offset = 4+4+1+4;
+        self.offset = 4+4;
       }
       if (length < self.offset + self.headerLen) return;
       if (!self.headerIsLoaded) {
@@ -283,6 +280,26 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         self.headerIsLoaded = true;
         self.headerLoaded(self.header);
 
+        if (self.header.version != 1) {
+          self.errorLoading({
+            version: self.header.version,
+            toString: function () {
+              return 'Could not load ' + this.url + ' due to unsupported file format version. Version: ' + this.version + '. Supported versions: 1.';
+            }
+          });
+          return true;
+        }
+
+        if (self.header.orientation != 'rowwise' && self.header.orientation != 'columnwise') {
+          self.errorLoading({
+            orientation: self.header.orientation,
+            toString: function () {
+              return 'Could not load ' + this.url + ' due to unsupported file orientation. Orientation: ' + this.orientation + '. Supported orientations: rowwise, columnwise.';
+            }
+          });
+          return true;
+        }
+
         // Empty tile, stop parsing.
         if (!self.rowLen) {
           self.allLoaded();
@@ -294,7 +311,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       }
       Pack.writeStringToArrayBuffer(text, self.offset, undefined, self.responseData, self.offset - self.dataOffset);
 
-      if (self.orientation == "r") {
+      if (self.header.orientation == "rowwise") {
         var dataView = new DataView(self.responseData.buffer);
         for (; self.offset + self.rowLen <= length; self.rowidx++) {
           var row = {};
@@ -312,7 +329,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         } else {
           self.batchLoaded();
         }
-      } else if (self.orientation == 'c') {
+      } else if (self.header.orientation == 'columnwise') {
         if (length >= self.dataOffset + self.header.length * self.rowLen) {
 
           for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
@@ -327,14 +344,6 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           self.allLoaded();
           return true;
         }
-      } else {
-        self.errorLoading({
-          orientation: self.orientation,
-          toString: function () {
-            return 'Could not load ' + this.url + ' due to unsupported orientation. Orientation code: ' + this.orientation + '. Supported orientations: c, r';
-          }
-        });
-        return true;
       }
     }
   });

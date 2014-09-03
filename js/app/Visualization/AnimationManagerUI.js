@@ -34,7 +34,7 @@ if (!app.useDojo) {
         self.animationManager = visualization.animations;
         self.animationManager.events.on({
           add: self.addHandler.bind(self),
-          remove: self.removeHandler.bind(self),
+          remove: self.removeHandler.bind(self)
         });
 
         self.generateUI();
@@ -182,6 +182,7 @@ if (!app.useDojo) {
 
         self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
         self.visualization.sidePanels.container.layout();
+        self.visualization.sidePanels.sidebarContainer.selectChild(self.ui, false);
       },
 
       generateAnimationUI: function (animation) {

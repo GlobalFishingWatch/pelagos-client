@@ -208,7 +208,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
           if (!data) return;
           self.infoPopup.setOptions({
             content: data.toString(),
-            position: e.latLng,
+            position: e.latLng
           });
           self.infoPopup.open(self.map);
         });
@@ -405,7 +405,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
 
       self.gl.clear(self.gl.COLOR_BUFFER_BIT);
 
-      Logging.default.log("Visualization.Animation.AnimationManager.update", {
+      Logging.main.log("Visualization.Animation.AnimationManager.update", {
         toString: function () {
           return (this.time != undefined ? this.time.rfcstring(" ") : "undefined")
             + " [" + (this.timeExtent != undefined ? this.timeExtent.toString() : "undefined") + "]";
@@ -422,7 +422,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
     triggerUpdate: function (e) {
       var self = this;
 
-      Logging.default.log("Visualization.Animation.AnimationManager.triggerUpdate", {msg: "Trigger update"});
+      Logging.main.log("Visualization.Animation.AnimationManager.triggerUpdate", {msg: "Trigger update"});
 
       self.updateNeeded = true;
     },

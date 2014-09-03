@@ -21,8 +21,8 @@ if (!app.useDojo) {
 
         self.visualization = visualization;
 
-        self.container = new BorderContainer({class: 'AnimationUI', liveSplitters: true, design: 'sidebar'});
-        self.animationsContainer = new ContentPane({class: 'AnimationContainer', region: 'center'});
+        self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar'});
+        self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center'});
         self.container.addChild(self.animationsContainer);
 
         self.sidebarContainer = new AccordionContainer({region: 'right', splitter:true});

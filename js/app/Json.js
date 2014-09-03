@@ -28,7 +28,8 @@ define(["app/Class", "lodash"], function(Class, _) {
       };
       arglist = arglist.join(", ");
 
-      var res = eval("new constr(" + arglist + ")")
+      var constrWrapper = eval("(function (constr, args) { return new constr(" + arglist + "); })");
+      var res = constrWrapper(constr, args);
       _.extend(res, value);
 
       return res;
