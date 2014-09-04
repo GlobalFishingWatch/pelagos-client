@@ -49,7 +49,7 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       return {
         years: date.getUTCFullYear(),
         months: date.getUTCMonth(),
-        days: date.getUTCDate(),
+        days: date.getUTCDate() - 1, // Use 0-based counting for modulo to work, but Date uses 1-based counting
         hours: date.getUTCHours(),
         minutes: date.getUTCMinutes(),
         seconds: date.getUTCSeconds(),
@@ -62,7 +62,7 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
         Date.UTC(
           dict.years,
           dict.months,
-          dict.days,
+          dict.days + 1, // We use 0-based counting for modulo to work, but Date uses 1-based counting
           dict.hours,
           dict.minutes,
           dict.seconds,
@@ -141,20 +141,20 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
         if (requiresEpochCalc) {
           return new Date(other.getTime() - other.getTime() % self.asMilliseconds);
         } else {
-          other = self.dateToDict(other);
+          var d = self.dateToDict(other);
 
           var filtered = false;
           self.keys.map(function (key) {
-            if (self[key] == 0) return;
             if (filtered) {
-              other[key] = 0;
+              d[key] = 0;
             } else {
-              other[key] -= other[key] % self[key];
+              if (self[key] == 0) return;
+              d[key] -= d[key] % self[key];
+              filtered = true;
             }
-            filtered = true;
           });
 
-          return self.dictToDate(other);
+          return self.dictToDate(d);
         }
       } else {
         throw "Unable to do " + other.constructor.name + " modulo Interval";

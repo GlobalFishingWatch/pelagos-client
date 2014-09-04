@@ -44,7 +44,8 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       new Interval({name: 'day', days: 1}),
       new Interval({name: 'week', days: 7}),
       new Interval({name: 'month', months: 1}),
-      new Interval({name: 'year', years: 1})
+      new Interval({name: 'year', years: 1}),
+      new Interval({name: 'decade', years: 10})
     ],
 
     initialize: function (args) {
@@ -207,7 +208,12 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       var low = undefined;
       var high = undefined;
 
-      if (self.steplength.cmp(self.steplengthsByName.month) >= 0) {
+      if (self.steplength.cmp(self.steplengthsByName.year) >= 0) {
+        low = iso.split(' ')[0].split('-').slice(0, 1)[0];
+        if (low[3] == '0') {
+          high = low;
+        }
+      } else if (self.steplength.cmp(self.steplengthsByName.month) >= 0) {
         low = iso.split(' ')[0].split('-').slice(-2, -1)[0];
         if (low == '01') {
           high = iso.split(' ')[0].split('-').slice(0, 1)[0];
@@ -454,6 +460,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         self.stepCount++;
 
         var stepEnd = self.steplength.add(stepStart);
+        if (self.steplength.next) {
+          var largeStepEnd = self.steplength.next.round(stepEnd);
+          if (largeStepEnd > stepStart) stepEnd = largeStepEnd;
+        }
         var stepLength = stepEnd - stepStart;
 
         var stepNode = $("<div class='quanta'><div class='border'></div><div class='label top'><span></span></div><div class='label bottom'><span></span></div></div>");
