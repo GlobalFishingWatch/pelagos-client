@@ -449,13 +449,17 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
       self.stepCount = 0;
       self.stepsEnd = self.start;
-      for (; self.stepsEnd <= self.end; self.stepsEnd = new Date(self.stepsEnd.getTime() + self.steplength.asMilliseconds)) {
+      var stepStart = self.start;
+      while (stepStart <= self.end) {
         self.stepCount++;
+
+        var stepEnd = self.steplength.add(stepStart);
+        var stepLength = stepEnd - stepStart;
 
         var stepNode = $("<div class='quanta'><div class='border'></div><div class='label top'><span></span></div><div class='label bottom'><span></span></div></div>");
         self.tickmarksNode.append(stepNode);
 
-        var labels = self.dateToSteplengthLabel(self.stepsEnd);
+        var labels = self.dateToSteplengthLabel(stepStart);
         if (labels[0]) {
           stepNode.addClass('has-top');
           stepNode.find(".top span").html(labels[0]);
@@ -465,14 +469,12 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
           stepNode.find(".bottom span").html(labels[1]);
         }
 
-        for (var subPos = 0; subPos < self.substeps - 1; subPos++) {
-          self.tickmarksNode.append("<div class='quanta small'></div>");
-        }
-      }
-      self.stepsSize = (self.stepsEnd - self.start) / (self.end - self.start)
+        var stepWidth = 100.0 * stepLength / self.contextSize;
+        stepNode.css({'margin-right': stepWidth + '%'});
 
-      self.stepWidth = 100.0 * self.stepsSize / (self.stepCount * self.substeps);
-      self.tickmarksNode.find('.quanta').css({'margin-right': self.stepWidth + '%'});
+        var stepStart = stepEnd;
+      }
+      self.stepsEnd = stepEnd;
 
       if (self.dragStartX != undefined) {
         self.dragStartX = self.dragX;
