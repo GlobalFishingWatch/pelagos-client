@@ -11,7 +11,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     zoomSize: 1.2,
     hiddenContext: 2, // total space, as a multiple of visible size
     context: 25, // visible space on each side of the window (in percentage of visible range)
-    stepLabelStyle: "fullDate",
+    stepLabelStyle: "minimal",
     windowLabelStyle: "stepLabel",
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
@@ -30,19 +30,28 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
        * {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
        * {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
        */
+
+       {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#ffffff", 'z-index': 0}},
+       {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
+       {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
+
     ],
 
-    steplengths: [
+    stepLengths: [
       new Interval({name: 'second', seconds: 1}),
+/*
       new Interval({name: 'secfiver', seconds: 5}),
       new Interval({name: 'secquarter', seconds: 15}),
+*/
       new Interval({name: 'minute', minutes: 1}),
+/*
       new Interval({name: 'fiver', minutes: 5}),
       new Interval({name: 'quarter', minutes: 15}),
+*/
       new Interval({name: 'hour', hours: 1}),
-      new Interval({name: 'morning', hours: 3}),
+//      new Interval({name: 'morning', hours: 3}),
       new Interval({name: 'day', days: 1}),
-      new Interval({name: 'week', days: 7}),
+//      new Interval({name: 'week', days: 7}),
       new Interval({name: 'month', months: 1}),
       new Interval({name: 'year', years: 1}),
       new Interval({name: 'decade', years: 10})
@@ -73,9 +82,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         "</div>" +
         "<div class='line-visibility'>" +
         "  <div class='line'>" +
-        "    <div class='rangemarks'>" +
-        "    </div>" +
-        "    <div class='tickmarks'>" +
+        "    <div class='rangemarks'></div>" +
+        "    <div class='tickmarks-container'>" +
+        "      <div class='tickmarks top'></div>" +
+        "      <div class='tickmarks bottom'></div>" +
         "    </div>" +
         "  </div>" +
         "</div>" +
@@ -120,13 +130,13 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
       self.lineNode.css({'width': self.hiddenContext * 100.0 + '%'});
 
-      self.steplengthsByName = {};
+      self.stepLengthsByName = {};
       prev = undefined;
-      self.steplengths.map(function (stepLength) {
+      self.stepLengths.map(function (stepLength) {
         stepLength.prev = prev;
         if (prev) prev.next = stepLength;
         prev = stepLength;
-        self.steplengthsByName[stepLength.name] = stepLength;
+        self.stepLengthsByName[stepLength.name] = stepLength;
       });
 
       self.leftContext = self.context;
@@ -148,13 +158,13 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
       var iso = d.toISOString().split('Z')[0].replace('T', ' ');
 
-      if (self.steplength.cmp(self.steplengthsByName.month) > 0) {
+      if (self.stepLength.cmp(self.stepLengthsByName.month) > 0) {
         return iso.split(' ')[0].split('-').slice(0, -1).join('-')
-      } else if (self.steplength.cmp(self.steplengthsByName.day) > 0) {
+      } else if (self.stepLength.cmp(self.stepLengthsByName.day) > 0) {
         return iso.split(' ')[0]
-      } else if (self.steplength.cmp(self.steplengthsByName.minute) > 0) {
+      } else if (self.stepLength.cmp(self.stepLengthsByName.minute) > 0) {
         return iso.split(':').slice(0, -1).join(':');
-      } else if (self.steplength.cmp(self.steplengthsByName.second) > 0) {
+      } else if (self.stepLength.cmp(self.stepLengthsByName.second) > 0) {
         return iso.split('.')[0];
       } else {
         return iso;
@@ -169,12 +179,12 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
     intervalToLabel: function (i) {
       var self = this;
-      var unitNames = ['year', 'week', 'day', 'hour', 'minute'];
+      var unitNames = ['year', /* 'week', */ 'day', 'hour', 'minute'];
 
       res = [];
 
       unitNames.map(function (unitName) {
-        var unit = self.steplengthsByName[unitName].asMilliseconds;
+        var unit = self.stepLengthsByName[unitName].asMilliseconds;
         var value = Math.floor(i / unit);
         if (value != 0) {
           var s = value.toString() + " " + unitName;
@@ -194,88 +204,40 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       return res.join(", ");
     },
 
-    dateToSteplengthLabel: function (d) {
+    dateToStepLengthLabel: function (args) {
       var self = this;
 
-      return self["dateToSteplengthLabel_" + self.stepLabelStyle](d);
+      return self["dateToStepLengthLabel_" + self.stepLabelStyle](args);
     },
 
-    dateToSteplengthLabel_fullDate: function (d) {
-      var self = this;
-
-      var iso = d.toISOString().split('Z')[0].replace('T', ' ');
-        
-      var low = undefined;
-      var high = undefined;
-
-      if (self.steplength.cmp(self.steplengthsByName.year) >= 0) {
-        low = iso.split(' ')[0].split('-').slice(0, 1)[0];
-        if (low[3] == '0') {
-          high = low;
-        }
-      } else if (self.steplength.cmp(self.steplengthsByName.month) >= 0) {
-        low = iso.split(' ')[0].split('-').slice(-2, -1)[0];
-        if (low == '01') {
-          high = iso.split(' ')[0].split('-').slice(0, 1)[0];
-        }
-      } else if (self.steplength.cmp(self.steplengthsByName.day) >= 0) {
-        low = iso.split(' ')[0].split('-').slice(-1)[0];
-        if (low == '01') {
-          high = iso.split(' ')[0].split('-').slice(0, -1).join('-');
-        }
-      } else if (self.steplength.cmp(self.steplengthsByName.minute) >= 0) {
-        low = iso.split(' ')[1].split(':').slice(0, -1).join(':');
-        if (low == '00:00') {
-          high = iso.split(' ')[0];
-        }
-      } else if (self.steplength.cmp(self.steplengthsByName.second) >= 0) {
-        low = iso.split(' ')[1].split('.')[0];
-        if (low == '00:00:00') {
-          high = iso.split(' ')[0];
-        }
-        return iso.split('.')[0];
-      } else {
-        var low = iso.split(' ')[1]
-        if (low != '00:00:00.000') {
-          high = iso.split(' ')[0];
-        }
-      }
-      return [low, high];
-    },
-
-    dateToSteplengthLabel_fluid: function (d) {
+    dateToStepLengthLabel_minimal: function (args) {
       var self = this;
 
       var t = [
-        d.getUTCFullYear(),
-        d.getUTCMonth(),
-        d.getUTCDate() - 1,
-        d.getUTCHours(),
-        d.getUTCMinutes(),
-        d.getUTCSeconds(),
-        d.getUTCMilliseconds()
+        args.date.getUTCFullYear(),
+        args.date.getUTCMonth(),
+        args.date.getUTCDate() - 1,
+        args.date.getUTCHours(),
+        args.date.getUTCMinutes(),
+        args.date.getUTCSeconds(),
+        args.date.getUTCMilliseconds()
       ];
       var s = ['', '-', '-', ' ', ':', ':', '.'];
       var l = [4, 2, 2, 2, 2, 2, 3];
 
       var start = 0;
-      if (self.steplength.cmp(self.steplengthsByName.second) < 0) {
+      if (args.stepLength.cmp(self.stepLengthsByName.second) < 0) {
         start = 6;
-      } else if (self.steplength.cmp(self.steplengthsByName.minute) < 0) {
+      } else if (args.stepLength.cmp(self.stepLengthsByName.minute) < 0) {
         start = 5;
-      } else if (self.steplength.cmp(self.steplengthsByName.hour) < 0) {
+      } else if (args.stepLength.cmp(self.stepLengthsByName.hour) < 0) {
         start = 4;
-      } else if (self.steplength.cmp(self.steplengthsByName.day) < 0) {
+      } else if (args.stepLength.cmp(self.stepLengthsByName.day) < 0) {
         start = 3;
-      } else if (self.steplength.cmp(self.steplengthsByName.month) < 0) {
+      } else if (args.stepLength.cmp(self.stepLengthsByName.month) < 0) {
         start = 2;
-      } else if (self.steplength.cmp(self.steplengthsByName.year) < 0) {
+      } else if (args.stepLength.cmp(self.stepLengthsByName.year) < 0) {
         start = 1;
-      }
-      var end = start+2;
-
-      while (start > 0 && t[start] == 0) {
-        start--;
       }
 
       t[1] += 1;
@@ -285,45 +247,39 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         t[i] = self.pad(t[i], l[i]);
       }
 
-      return _.flatten(_.zip(s.slice(start, end), t.slice(start, end))).join('');
-   },
-
-    roundTimeToSteplength: function (d) {
-      var self = this;
-
-      return self.steplength.round(d);
+      if (args.full) {
+        return _.flatten(_.zip(s.slice(0, start+1), t.slice(0, start+1))).join('');
+      } else {
+        return t[start];
+      }
     },
 
-    roundSteplength: function (steplength) {
+    roundTimeToStepLength: function (d) {
       var self = this;
 
-      if (steplength.asMilliseconds < self.steplengthsByName.second.asMilliseconds / 10) {
-        return new Interval(Math.pow(10, Math.ceil(Math.log(steplength.asMilliseconds, 10))));
-      } else if (steplength.asMilliseconds > self.steplengthsByName.year.asMilliseconds) {
-        return new Interval(Math.pow(10, Math.ceil(Math.log(steplength / self.steplengthsByName.year.asMilliseconds, 10))) * self.steplengthsByName.year.asMilliseconds);
-      }
+      return self.stepLength.round(d);
+    },
 
-      return self.steplengths.filter(function (x) {
-        return x.cmp(steplength) > 0;
+    getNextStepLength: function(stepLength) {
+      var self = this;
+      if (stepLength.next) return stepLength.next;
+      if (stepLength.asMilliseconds >= self.stepLengths.slice(-1)[0].asMilliseconds) {
+        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength / self.stepLengthsByName.year.asMilliseconds, 10))) * self.stepLengthsByName.year.asMilliseconds);
+      }
+      return self.stepLengths.filter(function (x) {
+        return x.cmp(stepLength) > 0;
       })[0];
     },
 
-    stepToSubsteps: function (steplength) {
+    getPrevStepLength: function(stepLength) {
       var self = this;
-
-        return 1;
-
-      if (steplength <= self.steplengthsByName.second) {
-        return 10;
-      } else if (steplength > self.steplengthsByName.year) {
-        return steplength / (Math.pow(10, Math.ceil(Math.log(steplength / self.steplengthsByName.year, 10)) - 1) * self.steplengthsByName.year);
+      if (stepLength.prev) return stepLength.prev;
+      if (stepLength.asMilliseconds < self.stepLengths[0].asMilliseconds / 10) {
+        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength.asMilliseconds, 10))));
       }
-
-      return steplength / Math.max.apply(Math,
-        Object.values(self.steplengthsByName).filter(function (x) {
-          return x < steplength;
-        })
-      );
+      return self.stepLengths.filter(function (x) {
+        return x.cmp(stepLength) <= 0;
+      }).slice(-1)[0];
     },
 
     eatEvent: function (e) {
@@ -376,18 +332,11 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       }
 
       if (self.snapZoomToTickmarks) {
-        var stepLength = self.roundSteplength(new Interval({milliseconds: windowSize / self.steps}));
-        if (stepLength.asMilliseconds >= windowSize) {
-          stepLength = stepLength.prev;
-        }
-        var steps = windowSize / stepLength.asMilliseconds;
-        
         if (factor > 1) {
-          steps = Math.ceil(steps);
+          windowSize = self.getNextStepLength(new Interval({milliseconds: windowSize})).asMilliseconds;
         } else {
-          steps = Math.floor(steps);
+          windowSize = self.getPrevStepLength(new Interval({milliseconds: windowSize})).asMilliseconds;
         }
-          windowSize = stepLength.asMilliseconds * steps;
       }
 
       self.start = undefined;
@@ -414,10 +363,15 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       var self = this;
       self.contextSize = self.visibleContextSize * self.hiddenContext;
 
-      self.start = self.roundTimeToSteplength(new Date(self.visibleStart.getTime() - (self.contextSize - self.visibleContextSize) / 2));
+      self.start = self.roundTimeToStepLength(new Date(self.visibleStart.getTime() - (self.contextSize - self.visibleContextSize) / 2));
       self.end = new Date(self.start.getTime() + self.contextSize);
 
       self.offset = self.visibleStart - self.start;
+
+      if (self.dragStartX != undefined) {
+        self.dragStartX = self.dragX;
+        self.dragStartOffset = self.offset;
+      }
 
       self.recreateRangemarks();
       self.recreateTickmarks();
@@ -448,48 +402,59 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       });
     },
 
+    calculateStepSize: function (stepStart, stepLength) {
+      var self = this;
+
+      var stepEnd = stepLength.round(stepLength.add(stepStart));
+      var largeStepEnd = self.getNextStepLength(stepLength).round(stepEnd);
+      if (largeStepEnd.getTime() > stepStart.getTime()) stepEnd = largeStepEnd;
+      var stepLength = stepEnd - stepStart;
+
+      return {
+        stepStart: stepStart,
+        stepEnd: stepEnd,
+        stepLength: stepLength
+      };
+    },
+
+    recreateTickmarksLevel: function (tickmarksNode, stepLength, fullLabels) {
+      var self = this;
+
+      tickmarksNode.find('.quanta').remove();
+
+      var stepStart = self.start;
+      while (stepStart <= self.end) {
+        var stepSizeInfo = self.calculateStepSize(stepStart, stepLength);
+
+        var stepNode = $("<div class='quanta'><div class='quanta-label'><span></span></div><div class='debug'></div></div>");
+        tickmarksNode.append(stepNode);
+
+        var label = self.dateToStepLengthLabel({
+          date: stepStart,
+          stepLength: stepLength,
+          full: fullLabels
+        });
+        stepNode.find(".quanta-label span").html(label);
+        stepNode.find(".debug ").html(stepStart.toISOString() + " - " + stepSizeInfo.stepEnd.toISOString());
+
+        var stepWidth = 100.0 * stepSizeInfo.stepLength / self.contextSize;
+        stepNode.css({'width': stepWidth + '%'});
+
+        var labelSize = 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize;
+        stepNode.find(".quanta-label").css({"font-size": labelSize + "pt"});
+
+        stepStart = stepSizeInfo.stepEnd;
+      }
+    },
+
     recreateTickmarks: function () {
       var self = this;
 
-      self.tickmarksNode.find('.quanta').remove();
-
-      self.stepCount = 0;
-      self.stepsEnd = self.start;
-      var stepStart = self.start;
-      while (stepStart <= self.end) {
-        self.stepCount++;
-
-        var stepEnd = self.steplength.add(stepStart);
-        if (self.steplength.next) {
-          var largeStepEnd = self.steplength.next.round(stepEnd);
-          if (largeStepEnd > stepStart) stepEnd = largeStepEnd;
-        }
-        var stepLength = stepEnd - stepStart;
-
-        var stepNode = $("<div class='quanta'><div class='border'></div><div class='label top'><span></span></div><div class='label bottom'><span></span></div></div>");
-        self.tickmarksNode.append(stepNode);
-
-        var labels = self.dateToSteplengthLabel(stepStart);
-        if (labels[0]) {
-          stepNode.addClass('has-top');
-          stepNode.find(".top span").html(labels[0]);
-        }
-        if (labels[1]) {
-          stepNode.addClass('has-bottom');
-          stepNode.find(".bottom span").html(labels[1]);
-        }
-
-        var stepWidth = 100.0 * stepLength / self.contextSize;
-        stepNode.css({'margin-right': stepWidth + '%'});
-
-        var stepStart = stepEnd;
-      }
-      self.stepsEnd = stepEnd;
-
-      if (self.dragStartX != undefined) {
-        self.dragStartX = self.dragX;
-        self.dragStartOffset = self.offset;
-      }
+      var stepLength = self.stepLength;
+      for (var i = 0; i < self.tickmarksNode.length; i++) {
+        self.recreateTickmarksLevel($(self.tickmarksNode[i]), stepLength, i == self.tickmarksNode.length - 1);
+        stepLength = self.getNextStepLength(stepLength);
+      };
     },
 
     setVisibleContextFromRange: function() {
@@ -525,8 +490,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
       self.setVisibleContextFromRange();
 
-      self.steplength = self.roundSteplength(new Interval({milliseconds: self.visibleContextSize / self.steps}));
-      self.substeps = self.stepToSubsteps(self.steplength);
+      self.stepLength = self.getPrevStepLength(self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize})));
 
       if (self.start == undefined) {
         self.setContextFromVisibleContext();
