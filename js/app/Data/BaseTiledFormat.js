@@ -22,6 +22,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       /* The tiles we really want to display. Might not all be loaded yet, or might have replacements... */
       self.wantedTiles = {};
       self.tileIdxCounter = 0;
+      self.urlAlternative = 0;
       Format.prototype.initialize.apply(self, arguments);
     },
 
@@ -56,6 +57,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
               self.header = data;
 
+              if (self.header.alternatives == undefined) {
+                self.header.alternatives = [self.url];
+              }
+
               if (data.colsByName) {
                 Object.values(data.colsByName).map(function (col) {
                   col.typespec = Pack.typemap.byname[col.type];
@@ -84,6 +89,15 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       self.events.triggerEvent("load");
     },
 
+    getUrl: function () {
+      var self = this;
+
+      if (self.header.alternatives == undefined) return self.url;
+
+      self.urlAlternative = (self.urlAlternative + 1) % self.header.alternatives.length;
+      return self.header.alternatives[self.urlAlternative];
+    },
+
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
@@ -92,7 +106,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         data[key] = selection.data[key][0];
       }
 
-      var url = self.url + "/series";
+      var url = self.getUrl() + "/series";
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
       Ajax.setHeaders(request, self.headers);
