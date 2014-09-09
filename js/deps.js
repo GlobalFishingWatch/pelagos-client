@@ -15,8 +15,9 @@
     app.paths.script = location.toString().split("/").slice(0, -1);
   } else {
     app.paths.page = window.location.pathname.split("/").slice(0, -1);
-    app.paths.script = document.querySelector('script[src$="deps.js"]').getAttribute('src').split("/").slice(0, -1);
-    if (app.paths.script[0] != "") {
+    var depsUrl = document.querySelector('script[src$="deps.js"]').getAttribute('src');
+    app.paths.script = depsUrl.split("/").slice(0, -1);
+    if (app.paths.script[0] != "" && depsUrl.indexOf('://') == -1) {
       app.paths.script = app.paths.page.concat(app.paths.script);
     }
   }
