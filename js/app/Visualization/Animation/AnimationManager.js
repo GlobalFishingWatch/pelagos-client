@@ -326,8 +326,12 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       self.gl.viewport(0, 0, width, height);
 
       // matrix which maps pixel coordinates to WebGL coordinates
-      self.pixelsToWebGLMatrix.set([2/width, 0, 0, 0, 0, -2/height, 0, 0,
-          0, 0, 0, 0, -1, 1, 0, 1]);
+      self.pixelsToWebGLMatrix.set([
+        2/width, 0,         0, 0,
+        0,       -2/height, 0, 0,
+        0,       0,         0, 0,
+        -1,      1,         0, 1
+      ]);
 
       self.updateNeeded = true;
     },
