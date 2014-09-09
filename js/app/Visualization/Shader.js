@@ -57,18 +57,32 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     ]);
   }
 
+  Shader.formatError = function(log, src) {
+    var match = log.match(/ERROR: [0-9]*:([0-9]*): (.*)/);
+    var line = parseInt(match[1]);
+    var msg = match[2];
+
+    var lines = src.split('\n');
+      return [].concat(
+        lines.slice(0, line),
+        ['/********************************',
+         ' * ',
+         ' * ' + msg,
+         ' * ',
+         ' ********************************/',
+         ''],
+        lines.slice(line)
+      ).join('\n');
+  };
+
   Shader.createShaderProgramFromSource = function(gl, vertexSrc, fragmentSrc) {
-      console.log("===={vertex shader}====\n" + vertexSrc +
-        "===={fragment shader}====\n" + fragmentSrc);
-
-
     // create vertex shader
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexSrc);
     gl.compileShader(vertexShader);
 
     if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-      throw gl.getShaderInfoLog(vertexShader);
+      throw Shader.formatError(gl.getShaderInfoLog(vertexShader), vertexSrc);
     }
 
     // create fragment shader
@@ -77,12 +91,14 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     gl.compileShader(fragmentShader);
 
     if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-      throw gl.getShaderInfoLog(fragmentShader);
+      throw Shader.formatError(gl.getShaderInfoLog(fragmentShader), fragmentSrc);
     }
 
     // link shaders to create our program
     var program = gl.createProgram();
     program.gl = gl;
+    program.vertexSrc = vertexSrc;
+    program.fragmentSrc = fragmentSrc;
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
