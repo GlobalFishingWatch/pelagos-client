@@ -26,8 +26,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       Format.prototype.initialize.apply(self, arguments);
     },
 
-    tilesPerScreenX: 2,
-    tilesPerScreenY: 2,
+    tilesPerScreen: 16,
 
     world: new Bounds(-180, -90, 180, 90),
 
@@ -146,10 +145,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         }
       };
 
-      res.level = Math.ceil(Math.max(
-        Math.log(res.worldwidth / (res.width/self.tilesPerScreenX), 2),
-        Math.log(res.worldheight / (res.height/self.tilesPerScreenY), 2)));
-
+      res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(self.tilesPerScreen)), 2));
+      
       res.tilewidth = res.worldwidth / Math.pow(2, res.level);
       res.tileheight = res.worldheight / Math.pow(2, res.level);
 
