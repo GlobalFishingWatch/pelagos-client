@@ -66,7 +66,7 @@ $(LIBS)/dojo-release-1.10.0-src:
 	cd $(LIBS); tar -xvzf dojo-release-1.10.0-src.tar.gz
 	cd $(LIBS); rm dojo-release-1.10.0-src.tar.gz
 
-js-build: dependencies
+js-build: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release
 
 clean-jsbuild:
