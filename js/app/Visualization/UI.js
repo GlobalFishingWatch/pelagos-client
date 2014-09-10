@@ -22,7 +22,8 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div id="loading"><img src="../../img/Ajax-loader.gif"></div>');
+      self.loadingNode = $('<div id="loading"><img></div>');
+      self.loadingNode.find('img').attr({src: app.paths.script.slice(0, -1).concat('img', 'Ajax-loader.gif').join('/')});
       self.visualization.node.append(self.loadingNode);
 
       self.visualization.data.events.on({
