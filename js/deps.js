@@ -63,11 +63,11 @@
     app.dirs.lib + "/qunit-1.15.0.js",
     app.dirs.lib + "/async.js",
     app.dirs.lib + "/stacktrace.js",
+    app.dirs.lib + "/lodash.js"
   ]);
   if (!app.webworker) {
     app.dependencies.scripts = app.dependencies.scripts.concat([
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-      app.dirs.lib + "/lodash.js",
       app.dirs.lib + "/jquery-1.10.2.min.js",
       app.dirs.lib + "/jquery.mousewheel.js",
       app.dirs.lib + "/less-1.7.4.min.js",
