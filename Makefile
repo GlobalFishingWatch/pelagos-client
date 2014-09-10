@@ -47,18 +47,18 @@ $(LIBS)/stats.min.js:
 
 $(LIBS)/bootstrap-3.2.0-dist:
 	cd $(LIBS); wget https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip
-	cd $(LIBS); unzip bootstrap-3.2.0-dist.zip
+	cd $(LIBS); unzip -o bootstrap-3.2.0-dist.zip
 	cd $(LIBS); rm bootstrap-3.2.0-dist.zip
 
 $(LIBS)/easyXDM:
 	mkdir $(LIBS)/easyXDM
 	cd $(LIBS)/easyXDM; wget https://github.com/oyvindkinsey/easyXDM/releases/download/2.4.19/easyXDM-2.4.19.3.zip
-	cd $(LIBS)/easyXDM; unzip easyXDM-2.4.19.3.zip
+	cd $(LIBS)/easyXDM; unzip -o easyXDM-2.4.19.3.zip
 	cd $(LIBS)/easyXDM; rm easyXDM-2.4.19.3.zip
 
 $(LIBS)/font-awesome-4.2.0:
 	cd $(LIBS); wget https://fortawesome.github.io/Font-Awesome/assets/font-awesome-4.2.0.zip
-	cd $(LIBS); unzip font-awesome-4.2.0.zip
+	cd $(LIBS); unzip -o font-awesome-4.2.0.zip
 	cd $(LIBS); rm font-awesome-4.2.0.zip
 
 $(LIBS)/dojo-release-1.10.0-src:
