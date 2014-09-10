@@ -73,6 +73,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
       QUnit.expect(2);
 
       var p = new TiledEmptyFormat({url:"http://example.com/TiledEmptyFormat"});
+      p.tilesPerScreen = 4;
       p.events.on({
         all: function () {
           var wantedTiles = Object.keys(p.wantedTiles);
@@ -96,6 +97,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
       QUnit.expect(5);
 
       var p = new TiledEmptyFormat({url:"http://example.com/TiledEmptyFormat"});
+      p.tilesPerScreen = 4;
 
       loadStage = 0;
 
@@ -152,6 +154,8 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
         QUnit.expect(3);
 
         var p = new TiledEmptyFormat({url:"http://example.com/TiledEmptyFormat"});
+        p.tilesPerScreen = 4;
+
         p.events.on({
           header: function () {
               console.log("HEADER");
