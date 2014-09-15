@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery", "app/Visualization/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ArrowAnimation", "app/Visualization/Animation/MapsEngineAnimation"], function(Class, Events, Bounds, async, Logging, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery", "app/Visualization/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation"], function(Class, Events, Bounds, async, Logging, $, Matrix, CanvasLayer, Stats, Animation) {
   return Class({
     name: "AnimationManager",
 
@@ -326,8 +326,12 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       self.gl.viewport(0, 0, width, height);
 
       // matrix which maps pixel coordinates to WebGL coordinates
-      self.pixelsToWebGLMatrix.set([2/width, 0, 0, 0, 0, -2/height, 0, 0,
-          0, 0, 0, 0, -1, 1, 0, 1]);
+      self.pixelsToWebGLMatrix.set([
+        2/width, 0,         0, 0,
+        0,       -2/height, 0, 0,
+        0,       0,         0, 0,
+        -1,      1,         0, 1
+      ]);
 
       self.updateNeeded = true;
     },

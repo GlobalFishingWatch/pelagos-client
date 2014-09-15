@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <title>VectorVisual</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      #test, #visualization {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+
+      #map-div {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+    </style>
+    <script type="text/javascript">
+      app = {
+        useDojo: true,
+        useBuild: false,
+        mainModule: 'app/main'
+      };
+    </script>
+    <script type="text/javascript" src="js/deps.js"></script>
+  </head>
+  <body class="claro">
+    <div id="test">
+      <div id="qunit"></div>
+      <div id="qunit-fixture"></div>
+    </div>
+    <div id="visualization"></div>
+  </body>
+</html>

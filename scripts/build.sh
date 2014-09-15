@@ -19,7 +19,7 @@ wget http://code.jquery.com/jquery-1.10.2.min.map
 wget https://raw.githubusercontent.com/brandonaaron/jquery-mousewheel/master/jquery.mousewheel.js
 
 wget https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip
-unzip bootstrap-3.2.0-dist.zip
+unzip -o bootstrap-3.2.0-dist.zip
 rm bootstrap-3.2.0-dist.zip
 
 mkdir easyXDM
@@ -31,7 +31,7 @@ mkdir easyXDM
 )
 
 wget https://fortawesome.github.io/Font-Awesome/assets/font-awesome-4.2.0.zip
-unzip font-awesome-4.2.0.zip
+unzip -o font-awesome-4.2.0.zip
 rm font-awesome-4.2.0.zip
 
 wget https://raw.github.com/less/less.js/master/dist/less-1.7.4.min.js

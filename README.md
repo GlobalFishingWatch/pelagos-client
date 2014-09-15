@@ -2,7 +2,7 @@
 
 Run the following from teh top-level directory:
 
-    scripts/build.sh
+    make
 
 # Apps
 Apps are available in the apps directory. To invoke an app, access an url like this:

@@ -3,21 +3,20 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
     name: "DebugAnimation",
 
     columns: {
-      point: {
-        type: "Float32", hidden: true,
-        items: [
-          {name: "longitude", source: {longitude: 1.0}},
-          {name: "latitude", source: {latitude: 1.0}}
-        ]
-      }
+      longitude: {type: "Float32", hidden: true, source: {longitude: 1.0}},
+      latitude: {type: "Float32", hidden: true, source: {latitude: 1.0}}
     },
 
     programSpecs: {
       program: {
         context: "gl",
         vertex: "app/Visualization/Animation/DebugAnimation-vertex.glsl",
-        fragment: "app/Visualization/Animation/DebugAnimation-fragment.glsl",
-        columns: ["point"]
+        fragment: "app/Visualization/Animation/DebugAnimation-fragment.glsl"
+      },
+      rowidxProgram: {
+        context: "rowidxGl",
+        vertex: "app/Visualization/Animation/DebugAnimation-rowidx-vertex.glsl",
+        fragment: "app/Visualization/Animation/DebugAnimation-rowidx-fragment.glsl"
       }
     },
 
