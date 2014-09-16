@@ -36,12 +36,21 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
         var endTile = source.getContent()[endidx[0]];
 
         updated = true;
-        self.sortcols.map(function (col) {
-          if (startTile.data[col] != undefined & endTile.data[col] != undefined) {
+
+        var cols = $.extend({}, startTile.data, endTile.data);
+        self.sortcols.map(function (col) { cols[col] = true; });
+        cols = Object.keys(cols);
+
+        cols.map(function (col) {
+          if (self.data[col] == undefined) self.data[col] = [];
+          if (startTile.data[col] != undefined) {
             self.data[col].push(startTile.data[col][startidx[1]]);
-            self.data[col].push(endTile.data[col][endidx[1]]);
           } else {
             self.data[col].push(undefined);
+          }
+          if (endTile.data[col] != undefined) {
+            self.data[col].push(endTile.data[col][endidx[1]]);
+          } else {
             self.data[col].push(undefined);
           }
         });

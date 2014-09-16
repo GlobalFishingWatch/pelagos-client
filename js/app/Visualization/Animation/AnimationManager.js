@@ -174,7 +174,15 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
                   content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
                 }
               });
+
+              content.push("<tr><td colspan='2'></td></tr>");
+
+              var sourceData = dataView.selections[type].data;
+              Object.keys(sourceData).sort().map(function (key) {
+                content.push("<tr><th>" + key + "</th><td>" + sourceData[key][0] + "</td></tr>");
+              });
               content.push("</table>");
+
               return content.join('\n');
             };
             cb(null, data);
