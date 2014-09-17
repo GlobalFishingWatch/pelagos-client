@@ -2,7 +2,7 @@ LIBS=js/libs
 
 DEPENDENCIES=$(LIBS)/async.js $(LIBS)/jquery-1.10.2.min.js $(LIBS)/jquery-1.10.2.min.map $(LIBS)/jquery.mousewheel.js $(LIBS)/less-1.7.4.min.js $(LIBS)/lodash.js $(LIBS)/qunit-1.15.0.js $(LIBS)/qunit-1.15.0.css $(LIBS)/require.js $(LIBS)/stacktrace.js $(LIBS)/loggly.tracker.js $(LIBS)/stats.min.js $(LIBS)/bootstrap-3.2.0-dist $(LIBS)/easyXDM $(LIBS)/font-awesome-4.2.0 $(LIBS)/dojo-release-1.10.0-src
 
-.PHONY: all dependencies clean clean-jsbuild clean-dependencies
+.PHONY: all dependencies clean clean-js-build clean-dependencies
 
 all: js-build dependencies
 
@@ -69,10 +69,10 @@ $(LIBS)/dojo-release-1.10.0-src:
 js-build: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release
 
-clean-jsbuild:
+clean-js-build:
 	rm -rf js-build
 
 clean-dependencies:
 	rm -rf $(DEPENDENCIES)
 
-clean: clean-jsbuild clean-dependencies
+clean: clean-js-build clean-dependencies
