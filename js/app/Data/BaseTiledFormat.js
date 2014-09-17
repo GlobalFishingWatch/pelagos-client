@@ -88,13 +88,20 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       self.events.triggerEvent("load");
     },
 
-    getUrl: function () {
+    getUrl: function (key) {
       var self = this;
 
       if (self.header.alternatives == undefined) return self.url;
 
-      self.urlAlternative = (self.urlAlternative + 1) % self.header.alternatives.length;
-      return self.header.alternatives[self.urlAlternative];
+      var alternative;
+      if (key) {
+        alternative = key.hashCode() % self.header.alternatives.length;
+        if (alternative < 0) alternative += self.header.alternatives.length;
+      } else {
+        self.urlAlternative = (self.urlAlternative + 1) % self.header.alternatives.length;
+        alternative = self.urlAlternative;
+      }
+      return self.header.alternatives[alternative];
     },
 
     getSelectionInfo: function(selection, cb) {
