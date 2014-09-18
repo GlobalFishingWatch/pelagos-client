@@ -53,7 +53,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     async.series([
       function (cb) { $.get(vertexShaderUrl, function (data) { Shader.preprocess(data, context, function (data) { vertexSrc = data; cb(); }); }, "text"); },
       function (cb) { $.get(fragmentShaderUrl, function (data) { Shader.preprocess(data, context, function (data) { fragmentSrc = data; cb(); }); }, "text"); },
-      function (dummy) { cb(Shader.createShaderProgramFromSource(gl, vertexSrc, fragmentSrc)); }
+        function (dummy) { cb(Shader.createShaderProgramFromSource(gl, vertexSrc, fragmentSrc, context.attr0)); }
     ]);
   }
 
@@ -75,7 +75,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
       ).join('\n');
   };
 
-  Shader.createShaderProgramFromSource = function(gl, vertexSrc, fragmentSrc) {
+  Shader.createShaderProgramFromSource = function(gl, vertexSrc, fragmentSrc, attr0) {
     // create vertex shader
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexSrc);
@@ -101,6 +101,9 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     program.fragmentSrc = fragmentSrc;
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
+
+    gl.bindAttribLocation(program, 0, attr0);
+
     gl.linkProgram(program);
 
     gl.useProgram(program);
