@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery", "app/Visualization/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation"], function(Class, Events, Bounds, async, Logging, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation"], function(Class, Events, Bounds, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
   return Class({
     name: "AnimationManager",
 
@@ -143,51 +143,64 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       return false;
     },
 
-    handleMouseSelection: function (e, type, cb) {
+    handleMouseSelection: function (e, type, raw, cb) {
       var self = this;
 
       var dataView = self.handleMouse(e, type)
       if (!dataView) {
         cb(null, null);
       } else {
-        dataView.getSelectionInfo(type, function (err, data) {
-          var content;
-
-          if (err) {
-            cb(err, null);
-          } else {
-            data.toString = function () {
-              var content = ["<table class='table table-striped table-bordered'>"];
-              if (data.name) {
-                var name = data.name;
-                if (data.link) {
-                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                }
-                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+        if (raw) {
+          var data = dataView.selections[type].data;
+          data.toString = function () {
+            var content = ["<table class='table table-striped table-bordered'>"];
+            Object.keys(data).sort().map(function (key) {
+              if (key == 'toString') return;
+              var value = data[key][0];
+              if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
+                value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
               }
+              content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
+            });
+            content.push("</table>");
+            return content.join('\n');
+          };
+          cb(null, data);
+        } else {
+          dataView.getSelectionInfo(type, function (err, data) {
+            var content;
 
-              Object.keys(data).sort().map(function (key) {
-                if (key == 'toString' || key == 'name' || key == 'link') return;
-                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                } else {
-                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+            if (err) {
+              cb(err, null);
+            } else {
+              data.toString = function () {
+                var content = ["<table class='table table-striped table-bordered'>"];
+                if (data.name) {
+                  var name = data.name;
+                  if (data.link) {
+                    name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
+                  }
+                  content.push("<tr><th colspan='2'>" + name + "</th><tr>");
                 }
-              });
 
-              content.push("<tr><td colspan='2'></td></tr>");
+                Object.keys(data).sort().map(function (key) {
+                  if (key == 'toString' || key == 'name' || key == 'link') return;
+                  if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                    content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
+                  } else {
+                    content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+                  }
+                });
 
-              var sourceData = dataView.selections[type].data;
-              Object.keys(sourceData).sort().map(function (key) {
-                content.push("<tr><th>" + key + "</th><td>" + sourceData[key][0] + "</td></tr>");
-              });
-              content.push("</table>");
+                content.push("</table>");
 
-              return content.join('\n');
-            };
-            cb(null, data);
-          }
-        });
+                return content.join('\n');
+              };
+              cb(null, data);
+            }
+          });
+
+        }
       }
       if (e.preventDefault) e.preventDefault();
       if (e.stopPropagation) e.stopPropagation();
@@ -200,7 +213,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
 
       self.node.mousemove(function (e) { self.handleMouse(e, 'hover'); });
       self.node.click(function (e) {
-        self.handleMouseSelection(e, 'selected', function (err, data) {
+        self.handleMouseSelection(e, 'selected', KeyModifiers.active.Shift, function (err, data) {
           if (err) {
             self.events.triggerEvent('info-error', err);
           } else if (data) {
@@ -211,7 +224,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "jQuery
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;
-        self.handleMouseSelection(e, 'info', function (err, data) {
+        
+        self.handleMouseSelection(e, 'info', KeyModifiers.active.Shift, function (err, data) {
           if (err) data = err;
           if (!data) return;
           self.infoPopup.setOptions({
