@@ -89,6 +89,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           require.toUrl(item.value.vertex),
           require.toUrl(item.value.fragment),
           {
+            attr0: Object.keys(self.data_view.source.header.colsByName)[0],
             attrmapper: Shader.compileMapping(self.data_view)
           },
           function (program) {
