@@ -17,14 +17,12 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
         context: "gl",
         vertex: "app/Visualization/Animation/ClusterAnimation-vertex.glsl",
         fragment: "app/Visualization/Animation/ClusterAnimation-fragment.glsl"
-      }
-/* ,
+      },
       rowidxProgram: {
         context: "rowidxGl",
         vertex: "app/Visualization/Animation/ClusterAnimation-rowidx-vertex.glsl",
         fragment: "app/Visualization/Animation/ClusterAnimation-rowidx-fragment.glsl"
       }
-*/
     },
 
     getDrawMode: function (program) {
