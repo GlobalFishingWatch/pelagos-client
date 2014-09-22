@@ -22,9 +22,9 @@ void main() {
     vSigma = 0.0;
     vWeight = 0.0;
   } else {
-    gl_PointSize = sqrt(pointSize * pointSize + pow(sigma * pointSize * 5., 2.));
+    gl_PointSize = sqrt(pointSize * pointSize + pow(_sigma * pointSize * 5., 2.));
     vPointSize = pointSize;
-    vSigma = sigma;
-    vWeight = weight;
+    vSigma = _sigma;
+    vWeight = _weight;
   }
 }
