@@ -21,6 +21,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       self.tileCache = {};
       /* The tiles we really want to display. Might not all be loaded yet, or might have replacements... */
       self.wantedTiles = {};
+      self.initialZoom = undefined;
       self.tileIdxCounter = 0;
       self.urlAlternative = 0;
       Format.prototype.initialize.apply(self, arguments);
@@ -69,9 +70,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
                   typespec: Pack.typemap.byname.Int32
                 };
               }
+              self.headerIsLoaded = true;
               var e = {update: "header", header: data};
               self.events.triggerEvent(e.update, e);
               self.events.triggerEvent("update", e);
+              if (self.initialZoom) {
+                self.zoomTo(self.initialZoom);
+              }
             } else {
               self.handleError(Ajax.makeError(request, url, "header"));
             }
@@ -214,10 +219,18 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     zoomTo: function (bounds) {
       var self = this;
+
       if (self.error) {
         /* Retrow error, to not confuse code that expects either an
          * error or a load event... */
         self.events.triggerEvent("error", self.error);
+        return;
+      }
+
+      if (!self.headerIsLoaded) {
+        /* Don't start loading tiles before we have a header and know
+         * what URL alternatives there are. */
+        self.initialZoom = bounds;
         return;
       }
 
