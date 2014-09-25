@@ -24,6 +24,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
 
       self.loadingNode = $('<div id="loading"><img></div>');
       self.loadingNode.find('img').attr({src: app.paths.script.slice(0, -1).concat('img', 'Ajax-loader.gif').join('/')});
+      self.loadingNode.hide();
       self.visualization.node.append(self.loadingNode);
 
       self.visualization.data.events.on({
