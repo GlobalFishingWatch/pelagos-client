@@ -58,6 +58,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       var self = this;
       var key = source.type + "|" + source.args.url;
       source = self.sources[key];
+      if (source == undefined) return;
 
       source.usage--;
       if (source.usage == 0) {
