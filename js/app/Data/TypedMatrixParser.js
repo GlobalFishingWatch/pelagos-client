@@ -149,6 +149,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
       self.request.open('GET', self.url, true);
       self.request.overrideMimeType('text\/plain; charset=x-user-defined');
+      self.request.withCredentials = true;
       for (var key in self.headers) {
         var values = self.headers[key]
         if (typeof(values) == "string") values = [values];

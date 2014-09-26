@@ -49,6 +49,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var url = self.url + "/header";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
+        request.withCredentials = true;
         Ajax.setHeaders(request, self.headers);
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
@@ -120,6 +121,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var url = self.getUrl() + "/series";
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
+      request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
