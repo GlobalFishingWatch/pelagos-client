@@ -47,7 +47,10 @@ if (!app.useDojo) {
 
       removeHandler: function (event) {
         var self = this;
-        event.animation.animationManagerWidget.destroy();
+        if (event.animation.animationManagerWidget) {
+          event.animation.animationManagerWidget.destroy();
+        }
+        event.animation.animationManagerWidget = false;
       },
 
       addAnimationDialog: function (domNode) {
@@ -188,6 +191,8 @@ if (!app.useDojo) {
       generateAnimationUI: function (animation) {
         var self = this;
 
+        if (animation.animationManagerWidget != undefined) return;
+
         if (!animation.title) animation.title = animation.toString();
 
         var content = new ContentPane({content: animation.toString()});
@@ -253,6 +258,7 @@ if (!app.useDojo) {
         var widget = new ContentPane({style: "padding-top: 0; padding-bottom: 0px; padding-left: 2px;"});
         widget.addChild(header);
         widget.addChild(content);
+
         animation.animationManagerWidget = widget;
 
         self.ui.addChild(widget);

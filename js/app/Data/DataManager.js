@@ -124,6 +124,11 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       error.source = source.source;
       self.events.triggerEvent("error", error);
       self.removeSource(source.spec);
+      if (self.getAllLoaded()) {
+        var update = {update: 'all'};
+        self.events.triggerEvent(update.update, update);
+        self.events.triggerEvent("update", update);
+      }
     },
 
     handleTileError: function (source, error) {
@@ -149,16 +154,20 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       self.events.triggerEvent("load", {source: source});
     },
 
+    getAllLoaded: function() {
+      var self = this;
+      return Object.values(self.sources
+        ).map(function (source) { return source.source.allIsLoaded || source.source.error; }
+        ).reduce(function (a, b) { return a && b; }, true);
+    },
+
     handleUpdate: function (source, update) {
       var self = this;
       update = _.clone(update);
       update.source = source;
       self.updateHeader();
       if (update.update == "all") {
-        var allDone = Object.values(self.sources
-          ).map(function (source) { return source.source.allIsLoaded || source.source.error; }
-          ).reduce(function (a, b) { return a && b; }, true);
-        if (!allDone) {
+        if (!self.getAllLoaded()) {
           update.update = 'all-source';
         }
       }
