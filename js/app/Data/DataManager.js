@@ -157,7 +157,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       if (update.update == "all") {
         var allDone = Object.values(self.sources
           ).map(function (source) { return source.source.allIsLoaded || source.source.error; }
-          ).reduce(function (a, b) { return a && b; });
+          ).reduce(function (a, b) { return a && b; }, true);
         if (!allDone) {
           update.update = 'all-source';
         }

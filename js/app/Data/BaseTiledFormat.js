@@ -464,7 +464,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
         self.events.triggerEvent("tile-error", data);
       } else {
-        self.handleError(data);
+        if (self.error) {
+          /* Do not generate multiple errors just because we tried to
+           * load multiple tiles... */
+          self.events.triggerEvent("tile-error", data);
+        } else {
+          self.handleError(data);
+        }
       }
 
       self.handleAllDone();
