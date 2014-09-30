@@ -16,6 +16,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
         self.initLogo.bind(self),
         self.initTimeline.bind(self),
         self.initPlayButton.bind(self),
+        self.initLoopButton.bind(self),
         self.initSaveButton.bind(self),
         self.initDojoUI.bind(self)
       ], function () { cb(); });
@@ -39,7 +40,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
         + '      <img class="arrow" src="' + arrowUrl + '">'
         + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="backward"><i class="fa fa-backward"></i></button>'
-        + '      <button class="btn btn-default btn-xs" data-name="loop">∞</button>'
+        + '      <button class="btn btn-default btn-xs" data-name="loop"><i class="fa fa-repeat"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="forward"><i class="fa fa-forward"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="end"><i class="fa fa-step-forward"></i></button>'
         + '    </div>'
@@ -196,7 +197,12 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
             if (end > self.timeline.max) {
               end = self.timeline.max;
               start = new Date(end.getTime() - timeExtent);
-              self.visualization.state.setValue("paused", true);
+              if (self.visualization.state.getValue("loop")) {
+                start = self.timeline.min;
+                end = new Date(start.getTime() + timeExtent);
+              } else {
+                self.visualization.state.setValue("paused", true);
+              }
               adjusted = true;
             }
             if (start < self.timeline.min) {
@@ -251,6 +257,30 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       self.visualization.state.events.on({paused: function (e) { setValue(e.new_value); }});
       setValue(self.visualization.state.getValue("paused"));
 
+      cb();
+    },
+
+    initLoopButton: function (cb) {
+      var self = this;
+
+      self.buttonNodes.loop.click(function () {
+        val = self.buttonNodes.loop.val() == "true";
+        self.buttonNodes.loop.val(val ? "false" : "true");
+        self.buttonNodes.loop.trigger("change");
+      });
+      self.buttonNodes.loop.change(function () {
+        self.visualization.state.setValue("loop", self.buttonNodes.loop.val() == "true");
+      });
+      function setValue(value) {
+        self.buttonNodes.loop.val(value ? "true" : "false");
+        if (value) {
+          self.buttonNodes.loop.find("i").removeClass("fa-repeat").addClass("fa-long-arrow-right");
+        } else {
+          self.buttonNodes.loop.find("i").removeClass("fa-long-arrow-right").addClass("fa-repeat");
+        }
+      }
+      self.visualization.state.events.on({loop: function (e) { setValue(e.new_value); }});
+      setValue(self.visualization.state.getValue("loop"));
       cb();
     },
 
