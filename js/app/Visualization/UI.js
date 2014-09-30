@@ -1,4 +1,4 @@
-define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualization/LoggingUI", "app/Visualization/AnimationManagerUI", "async", "jQuery", "app/Visualization/sliders"], function(Class, Timeline, InfoUI, LoggingUI, AnimationManagerUI, async, $) {
+define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualization/LoggingUI", "app/Visualization/AnimationManagerUI", "app/Visualization/DataUI", "async", "jQuery", "app/Visualization/sliders"], function(Class, Timeline, InfoUI, LoggingUI, AnimationManagerUI, DataUI, async, $) {
   return Class({
     name: "UI",
       initialize: function (visualization) {
@@ -310,6 +310,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       self.info = new InfoUI(self.visualization);
       self.animations = new AnimationManagerUI(self.visualization);
       self.logging = new LoggingUI(self.visualization);
+      self.data = new DataUI(self.visualization);
       cb();
     }
   });
