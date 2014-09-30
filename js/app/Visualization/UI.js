@@ -15,7 +15,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
         self.initLoadSpinner.bind(self),
         self.initLogo.bind(self),
         self.initTimeline.bind(self),
-        self.initToggleButtons.bind(self),
+        self.initPlayButton.bind(self),
         self.initSaveButton.bind(self),
         self.initDojoUI.bind(self)
       ], function () { cb(); });
@@ -33,15 +33,15 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
         + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share-alt fa-fw"></i></button>'
         + '  <button class="btn btn-default btn-lg" data-name="loading"><i id="loading" class="fa fa-spinner fa-spin fa-fw"></i></button>'
         + ''
-        + '  <a href="#" class="balloon">'
+        + '  <a class="balloon">'
         + '  <button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>'
         + '    <div>'
         + '      <img class="arrow" src="' + arrowUrl + '">'
-        + '      <button class="btn btn-default btn-xs" data-name="step-backward"><i class="fa fa-step-backward"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="backward"><i class="fa fa-backward"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="loop">∞</button>'
         + '      <button class="btn btn-default btn-xs" data-name="forward"><i class="fa fa-forward"></i></button>'
-        + '      <button class="btn btn-default btn-xs" data-name="step-forward"><i class="fa fa-step-forward"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="end"><i class="fa fa-step-forward"></i></button>'
         + '    </div>'
         + '  </a>'
         + '</div>');
@@ -52,7 +52,34 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
         self.buttonNodes[btn.attr("data-name")] = btn;
       });
 
-      self.loadingNode = self.controlButtonsNode.find("#loading")
+      self.buttonNodes.start.click(function () {
+        self.visualization.state.setValue("time", new Date(self.visualization.data.header.colsByName.datetime.min + self.visualization.state.getValue("timeExtent")));
+      });
+
+      self.buttonNodes.backward.click(function () {
+        var timeExtent = self.visualization.state.getValue("timeExtent");
+        var time = self.visualization.state.getValue("time").getTime();
+        var timePerTimeExtent = self.visualization.state.getValue("length");
+        var timePerAnimationTime = timePerTimeExtent / timeExtent;
+
+        time -= 1000 / timePerAnimationTime;
+        self.visualization.state.setValue("time", new Date(time));
+      });
+
+      self.buttonNodes.forward.click(function () {
+        var timeExtent = self.visualization.state.getValue("timeExtent");
+        var time = self.visualization.state.getValue("time").getTime();
+        var timePerTimeExtent = self.visualization.state.getValue("length");
+        var timePerAnimationTime = timePerTimeExtent / timeExtent;
+
+        time += 1000 / timePerAnimationTime;
+        self.visualization.state.setValue("time", new Date(time));
+      });
+
+      self.buttonNodes.end.click(function () {
+        self.visualization.state.setValue("time", new Date(self.visualization.data.header.colsByName.datetime.max));
+      });
+
 
       cb();
     },
@@ -60,6 +87,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
     initLoadSpinner: function(cb) {
       var self = this;
 
+      self.loadingNode = self.buttonNodes.loading.find("i");
       self.loadingNode.hide();
       self.visualization.data.events.on({
         load: function () {
@@ -201,7 +229,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       cb();
     },
 
-    initToggleButtons: function(cb) {
+    initPlayButton: function(cb) {
       var self = this;
 
       self.buttonNodes.play.click(function () {
