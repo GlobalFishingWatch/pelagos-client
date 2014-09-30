@@ -10,6 +10,8 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       var self = this;
 
       async.series([
+        self.initButtons.bind(self),
+
         self.initLoadSpinner.bind(self),
         self.initLogo.bind(self),
         self.initTimeline.bind(self),
@@ -19,14 +21,46 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       ], function () { cb(); });
     },
 
+    initButtons: function (cb) {
+      var self = this;
+      self.buttonNodes = {};
+
+      var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "arrow.png"]).join("/");
+
+      self.controlButtonsNode = $(''
+        + '<div class="control_box">'
+        + '  <button class="btn btn-default btn-lg" data-name="play"><i class="fa fa-play fa-fw"></i></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share-alt fa-fw"></i></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="loading"><i id="loading" class="fa fa-spinner fa-spin fa-fw"></i></button>'
+        + ''
+        + '  <a href="#" class="balloon">'
+        + '  <button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>'
+        + '    <div>'
+        + '      <img class="arrow" src="' + arrowUrl + '">'
+        + '      <button class="btn btn-default btn-xs" data-name="step-backward"><i class="fa fa-step-backward"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="backward"><i class="fa fa-backward"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="loop">∞</button>'
+        + '      <button class="btn btn-default btn-xs" data-name="forward"><i class="fa fa-forward"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="step-forward"><i class="fa fa-step-forward"></i></button>'
+        + '    </div>'
+        + '  </a>'
+        + '</div>');
+      self.visualization.node.append(self.controlButtonsNode);
+
+      self.controlButtonsNode.find(".btn").each(function () {
+        var btn = $(this);
+        self.buttonNodes[btn.attr("data-name")] = btn;
+      });
+
+      self.loadingNode = self.controlButtonsNode.find("#loading")
+
+      cb();
+    },
+
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div id="loading"><img></div>');
-      self.loadingNode.find('img').attr({src: app.paths.script.slice(0, -1).concat('img', 'Ajax-loader.gif').join('/')});
       self.loadingNode.hide();
-      self.visualization.node.append(self.loadingNode);
-
       self.visualization.data.events.on({
         load: function () {
           self.loadingNode.fadeIn();
@@ -170,23 +204,20 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
     initToggleButtons: function(cb) {
       var self = this;
 
-      self.animateButtonNode = $('<button name="animate-button" id="animate-button" class="btn btn-xs"><input type="hidden"><i class="fa fa-pause"></i></button>');
-      self.visualization.node.append(self.animateButtonNode);
-
-      self.animateButtonNode.click(function () {
-        val = self.animateButtonNode.find("input").val() == "true";
-        self.animateButtonNode.find("input").val(val ? "false" : "true");
-        self.animateButtonNode.find("input").trigger("change");
+      self.buttonNodes.play.click(function () {
+        val = self.buttonNodes.play.val() == "true";
+        self.buttonNodes.play.val(val ? "false" : "true");
+        self.buttonNodes.play.trigger("change");
       });
-      self.animateButtonNode.find("input").change(function () {
-        self.visualization.state.setValue("paused", self.animateButtonNode.find("input").val() == "true");
+      self.buttonNodes.play.change(function () {
+        self.visualization.state.setValue("paused", self.buttonNodes.play.val() == "true");
       });
       function setValue(value) {
-        self.animateButtonNode.find("input").val(value ? "true" : "false");
+        self.buttonNodes.play.val(value ? "true" : "false");
         if (value) {
-          self.animateButtonNode.find("i").removeClass("fa-pause").addClass("fa-play");
+          self.buttonNodes.play.find("i").removeClass("fa-pause").addClass("fa-play");
         } else {
-          self.animateButtonNode.find("i").removeClass("fa-play").addClass("fa-pause");
+          self.buttonNodes.play.find("i").removeClass("fa-play").addClass("fa-pause");
         }
       }
       self.visualization.state.events.on({paused: function (e) { setValue(e.new_value); }});
@@ -198,10 +229,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
     initSaveButton: function(cb) {
       var self = this;
 
-      self.saveButtonNode = $('<button name="save-button" id="save-button" class="btn btn-xs"><input type="hidden"><i class="fa fa-save"></i></button>')
-      self.visualization.node.append(self.saveButtonNode);
-
-      self.saveButtonNode.click(function () {
+      self.buttonNodes.share.click(function () {
         self.visualization.save(function (url) {
           url = window.location.toString().split("#")[0] + "#workspace=" + escape(url);
 
