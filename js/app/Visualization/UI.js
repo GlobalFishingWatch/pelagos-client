@@ -1,4 +1,4 @@
-define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualization/LoggingUI", "app/Visualization/AnimationManagerUI", "app/Visualization/DataUI", "async", "jQuery", "app/Visualization/sliders"], function(Class, Timeline, InfoUI, LoggingUI, AnimationManagerUI, DataUI, async, $) {
+define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelManager", "async", "jQuery"], function(Class, Timeline, SidePanelManager, async, $) {
   return Class({
     name: "UI",
       initialize: function (visualization) {
@@ -18,7 +18,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
         self.initPlayButton.bind(self),
         self.initLoopButton.bind(self),
         self.initSaveButton.bind(self),
-        self.initDojoUI.bind(self)
+        self.initSidePanels.bind(self)
       ], function () { cb(); });
     },
 
@@ -304,13 +304,10 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       cb();
     },
 
-    initDojoUI: function (cb) {
+    initSidePanels: function (cb) {
       var self = this;
 
-      self.info = new InfoUI(self.visualization);
-      self.animations = new AnimationManagerUI(self.visualization);
-      self.logging = new LoggingUI(self.visualization);
-      self.data = new DataUI(self.visualization);
+      self.sidePanels = new SidePanelManager(self.visualization);
       cb();
     }
   });

@@ -6,7 +6,7 @@ if (!app.useDojo) {
   define([
     "app/Class",
     "app/Logging",
-    "app/Visualization/DataViewUI",
+    "app/Visualization/SidePanels/DataViewUI",
     "app/Visualization/Animation/Animation",
     "jQuery",
     "dijit/Fieldset",
@@ -183,9 +183,9 @@ if (!app.useDojo) {
 
         self.animationManager.animations.map(self.generateAnimationUI.bind(self));
 
-        self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
-        self.visualization.sidePanels.container.layout();
-        self.visualization.sidePanels.sidebarContainer.selectChild(self.ui, false);
+        self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
+        self.visualization.dojoUI.container.layout();
+        self.visualization.dojoUI.sidebarContainer.selectChild(self.ui, false);
       },
 
       generateAnimationUI: function (animation) {

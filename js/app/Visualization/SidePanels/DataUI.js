@@ -51,8 +51,8 @@ if (!app.useDojo) {
         $(widget.domNode).find('.value').html(BaseTiledFormat.prototype.tilesPerScreen);
         self.ui.addChild(widget);
 
-        self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
-        self.visualization.sidePanels.container.layout();
+        self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
+        self.visualization.dojoUI.container.layout();
       }
     });
   });
