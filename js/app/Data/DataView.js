@@ -39,19 +39,16 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
         self.addCol(value);
       });
 
-      if (args.selections) {
-        Object.items(args.selections).map(function (selection) {
-          self.addSelectionCategory(selection.key, selection.value);
-        });
-      } else {
-        self.addSelectionCategory("selected");
-        self.addSelectionCategory("info");
-        self.addSelectionCategory("hover");
-      }
-/*
-      self.lastUpdate = undefined;
-      self.updateInterval = setInterval(self.performUpdate.bind(self), 500);
-*/
+      var selections = {
+        selected: undefined,
+        info: undefined,
+        hover: undefined,
+        timerange: {hidden: true}
+      };
+      if (args.selections) _.extend(selections, args.selections);
+      Object.items(selections).map(function (selection) {
+        self.addSelectionCategory(selection.key, selection.value);
+      });
     },
 
     addSelectionCategory: function (name, args) {
@@ -154,8 +151,22 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
 
       cb(
         null,
-        Object.keys(self.source.header.colsByName).concat(
-          Object.keys(self.selections)));
+        Object.items(
+          self.source.header.colsByName
+        ).filter(function (item) {
+          return !item.value.hidden
+        }).map(function (item) {
+          return item.key;
+        }).concat(
+          Object.items(
+            self.selections
+          ).filter(function (item) {
+            return !item.value.hidden
+          }).map(function (item) {
+            return item.key;
+          })
+        )
+      );
     },
 
     load: function () {

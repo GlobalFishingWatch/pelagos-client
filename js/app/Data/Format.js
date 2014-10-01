@@ -49,7 +49,8 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
         type: "Float32",
         min: 0,
         max: self.header.length - 1,
-        typespec: Pack.typemap.byname.Float32
+        typespec: Pack.typemap.byname.Float32,
+        hidden: true
       };
       self.data.rowidx = new Float32Array(self.header.length);
       for (var rowidx = 0; rowidx < self.header.length; rowidx++) {

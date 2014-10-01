@@ -68,7 +68,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
                 });
                 data.colsByName.rowidx = {
                   "type": "Int32",
-                  typespec: Pack.typemap.byname.Int32
+                  typespec: Pack.typemap.byname.Int32,
+                  hidden: true
                 };
               }
               self.headerIsLoaded = true;
