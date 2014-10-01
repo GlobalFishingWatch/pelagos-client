@@ -1,4 +1,4 @@
-define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat"], function(Class, Bounds, _, Events, Format, DataView) {
+define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat", "app/Data/ClusterTestFormat"], function(Class, Bounds, _, Events, Format, DataView) {
   return Class({
     name: "DataManager",
     initialize: function () {
