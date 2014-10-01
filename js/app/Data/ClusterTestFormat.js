@@ -13,13 +13,16 @@ define(["app/Class", "app/Events", "app/Data/Format", "app/Data/EmptyFormat"], f
       var start = new Date("1970-01-01T00:00:00").getTime();
       var end = new Date("1970-01-20T00:00:00").getTime();
 
-      self.rowcount = 20;
+      var rows = 20;
+      var radiuses = [0.25, 0.5, 1.0, 1.5, 2.0];
+
+      self.rowcount = (rows + rows * rows / 2) * radiuses.length;
       self.header = {
           "tilesetName": "Clustering Test",
           "colsByName": {
             "series":    {"max": 1.0, "min": 0.0, "type": "Float32"},
             "datetime":  {"max": end, "min": start, "type": "Float32"},
-            "weight":    {"max": 10 * (self.rowcount-1), "min": 0.0, "type": "Float32"},
+            "weight":    {"max": 10 * (rows+1), "min": 0.0, "type": "Float32"},
             "sigma":     {"max": 1.0, "min": 0.0, "type": "Float32"},
 
             "latitude":  {"max": 90.0, "min": 0, "type": "Float32"},
@@ -37,15 +40,43 @@ define(["app/Class", "app/Events", "app/Data/Format", "app/Data/EmptyFormat"], f
         self.data[item.key] = new Float32Array(self.rowcount);
       });
 
-      for (var i = 0; i < self.rowcount; i++) {
-        self.data.series[i] = 0;
-        self.data.datetime[i] = i * (end - start) / self.rowcount;
-        self.data.weight[i] = i * 10;
-        self.data.sigma[i] = 1;
-        self.data.latitude[i] = i * 90 / self.rowcount;
-        self.data.longitude[i] = 0;
-        self.data.rowidx[i] = i;
-      }
+      var i = 0;
+      var displacement = 0;
+
+      radiuses.map(function (radius) {
+        for (var row = 0; row < rows; row++) {
+          self.data.series[i] = 0;
+          self.data.datetime[i] = row * (end - start) / rows;
+          self.data.weight[i] = 10 * (row + 1);
+          self.data.sigma[i] = radius;
+          self.data.latitude[i] = row * 90 / rows;
+          self.data.longitude[i] = displacement;
+          self.data.rowidx[i] = i;
+          i++;
+        }
+
+
+        for (var row = 0; row < rows; row++) {
+          for (var point = 0; point < row + 1; point++) {
+            self.data.series[i] = 0;
+            self.data.datetime[i] = row * (end - start) / rows;
+            self.data.weight[i] = 10;
+            self.data.sigma[i] = 0;
+            self.data.latitude[i] = row * 90 / rows;
+            self.data.longitude[i] = displacement + 10;
+            self.data.rowidx[i] = i;
+
+            if (row > 0) {
+              var angle = 2 * Math.PI * point / (row + 1);
+              self.data.latitude[i] += Math.sin(angle) * radius;
+              self.data.longitude[i] += Math.cos(angle) * radius;
+            }
+
+            i++;
+          }
+        }
+        displacement += 30;
+      });
 
       self.updateSeries();
     }
