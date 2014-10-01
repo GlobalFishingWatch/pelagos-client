@@ -17,7 +17,11 @@ void main() {
     dist = 1. - (dist * 2.);
     dist = max(0., dist);
     float alpha = min(1., dist * sqrt(weight));
-    float colorscale = dist * dist * weight / alpha;
-    gl_FragColor = vec4(1. * colorscale, 0.4 * colorscale, 0.2 * colorscale, alpha);
+    if (alpha == 0.0) {
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+    } else {
+      float colorscale = dist * dist * weight / alpha;
+      gl_FragColor = vec4(1. * colorscale, 0.4 * colorscale, 0.2 * colorscale, alpha);
+    }
   }
 }
