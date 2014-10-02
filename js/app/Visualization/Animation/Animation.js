@@ -1,18 +1,12 @@
 define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjection", "app/Data/DataView", "jQuery"], function(Class, async, Shader, GeoProjection, DataView, $) {
   var Animation = Class({
     name: "Animation",
-    columns: {
-      /*
-        point: {"type": "Float32", items: [
-          {name: "longitude", source: {longitude: 1.0}},
-          {name: "latitude", source: {latitude: 1.0}}]},
-        color: {"type": "Float32", items: [
-          {name: "red", source: {_: 1.0}},
-          {name: "green", source: {_: 1.0}},
-          {name: "blue", source: {_: 0.0}}]},
-        magnitude: {"type": "Float32", items: [
-          {name: "magnitude", source: {_: 1.0}}]}
-      */
+    columns: {},
+    selections: {
+      selected: undefined,
+      info: undefined,
+      hover: undefined,
+      timerange: {sortcols: ["datetime"]}
     },
 
     programSpecs: {},
@@ -21,7 +15,18 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       var self = this;
 
       self.visible = true;
-      if (args) $.extend(self, args);
+      if (args) {
+        args = $.extend({}, args);
+        if (args.columns) {
+          $.extend(self.columns, args.columns);
+          delete args.columns;
+        }
+        if (args.selections) {
+          $.extend(self.selections, args.selections);
+          delete args.selections;
+        }
+        $.extend(self, args);
+      }
       self.manager = manager;
       self.dataUpdates = 0;
     },
@@ -217,6 +222,8 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       if (time == undefined) return;
       time = time.getTime();
+
+      self.data_view.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
 
       // pointSize range [5,20], 21 zoom levels
       var pointSize = Math.max(
