@@ -11,11 +11,11 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
       alpha: {type: "Float32", source: {_: 1.0}, min: 0.0, max: 1.0},
       magnitude: {type: "Float32", source: {score: 5, _:2}, min: 0.0, max: 10.0},
       time: {type: "Float32", hidden: true, source: {datetime: 1.0}},
-      filter: {type: "Float32", source: {_: 2.0, timerange: -1.0, selected: -1}}
+      filter: {type: "Float32", source: {_: 2.0, timerange: -1.0, active_category: -1}}
     },
 
     selections: $.extend(
-      {active_category: {csortcols: ["category"], max_range_count: 3}},
+      {active_category: {sortcols: ["category"], max_range_count: 3}},
       Animation.prototype.selections
     ),
 

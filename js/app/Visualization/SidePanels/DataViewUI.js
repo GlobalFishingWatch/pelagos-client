@@ -9,6 +9,7 @@ if (!app.useDojo) {
     "jQuery",
     "dijit/Fieldset",
     "dijit/form/HorizontalSlider",
+    "dijit/form/Select",
     "dojox/layout/FloatingPane",
     "dijit/layout/ContentPane",
     "dijit/Menu",
@@ -17,7 +18,7 @@ if (!app.useDojo) {
     "dojo/dom",
     "dojo/parser",
     "dojo/domReady!"
-  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Menu, MenuItem, popup){
+  ], function(Class, Logging, $, Fieldset, HorizontalSlider, Select, FloatingPane, ContentPane, Menu, MenuItem, popup){
     return Class({
       name: "DataViewUI",
       initialize: function (dataview) {
@@ -146,10 +147,36 @@ if (!app.useDojo) {
           });
           Object.items(spec.source).map(function (source) { self.generateSourceUI(colwidget, spec, source); });
           ui.addChild(colwidget);
-
-          ui.startup();
         });
 
+        Object.items(self.dataview.selections).map(function (item) {
+          var name = item.key;
+          var selection = item.value;
+          if (selection.hidden) return;
+          if (selection.sortcols.length != 1) return;
+          var sourcename = selection.sortcols[0]
+          var source = self.dataview.source.header.colsByName[sourcename];
+          if (!source.choices) return;
+
+          var selectionwidget = new ContentPane({
+            content: name + " from " + sourcename + " ",
+            style: "padding-top: 0; padding-bottom: 0;"
+          });
+
+          var selectionselect = new Select({
+            name: "selectionselect",
+            multiple: true,
+            options: Object.items(source.choices).map(function (item) {
+              return {label:item.key, value:item.key};
+            })
+          });
+
+          selectionwidget.addChild(selectionselect);
+
+          ui.addChild(selectionwidget);
+        });
+
+        ui.startup();
         self.ui = ui;
       }
     });
