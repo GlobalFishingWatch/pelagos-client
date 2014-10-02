@@ -4,6 +4,8 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
 
     sortcols: ["series"],
 
+    max_range_count: 1,
+
     initialize: function (args) {
       var self = this;
       self.events = new Events("Selection");

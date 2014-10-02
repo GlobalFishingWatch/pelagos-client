@@ -1,6 +1,14 @@
 define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async, $, Ajax) {
   var Shader = Class({name: "Shader"});
 
+  var range = function(lower, upper, fn) {
+    res = [];
+    for (var i = lower; i < upper; i++) {
+      res.push(fn(i));
+    }
+    return res;
+  }
+
   /* Load array data into gl buffers and bind that buffer to a shader
    * program attribute */
   Shader.programLoadArray = function(gl, glbuffer, arraydata, program) {
@@ -169,10 +177,12 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
 
   Shader.compileSelectionsMappingDeclarations = function (dataView) {
     return Object.items(dataView.selections).map(function (item) {
-      return item.value.sortcols.map(function (sortcol) {
-        return (
-          'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_lower;\n' +
-          'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_upper;');
+      return range(0, item.value.max_range_count, function (rangeidx) {
+        return item.value.sortcols.map(function (sortcol) {
+          return (
+            'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower;\n' +
+            'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper;');
+        }).join('\n');
       }).join('\n');
     }).join('\n') + '\n';
   };
@@ -181,10 +191,12 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     return 'void selectionmapper() {\n' +
       Object.items(dataView.selections).map(function (item) {
         return '  scaled_' + item.key + ' = (\n' +
-          item.value.sortcols.map(function (sortcol) {
-              return '    selectionmap_' + item.key + '_from_' + sortcol + '_lower <= ' + sortcol + ' &&\n' +
-                     '    selectionmap_' + item.key + '_from_' + sortcol + '_upper >= ' + sortcol;
-          }).join(' &&\n') + ') ? 1.0 : 0.0;';
+          range(0, item.value.max_range_count, function (rangeidx) {
+            return "    (\n" + item.value.sortcols.map(function (sortcol) {
+                return '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower <= ' + sortcol + ' &&\n' +
+                       '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper >= ' + sortcol;
+            }).join(' &&\n') + ")"
+          }).join(' ||\n') + ') ? 1.0 : 0.0;';
       }).join('\n') +
       '\n}\n';
   };
@@ -261,14 +273,16 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     });
     Object.items(dataView.selections).map(function (item) {
       item.value.sortcols.map(function (sortcol) {
-        var lower = undefined;
-        var upper = undefined;
-        if (item.value.data[sortcol].length >= 2) {
-          lower = item.value.data[sortcol][0];
-          upper = item.value.data[sortcol][1];
-        }
-        program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_lower'], lower);
-        program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_upper'], upper);
+        for (var rangeidx = 0; rangeidx < item.value.max_range_count; rangeidx++) {
+          var lower = undefined;
+          var upper = undefined;
+          if (item.value.data[sortcol].length >= 2 * rangeidx) {
+            lower = item.value.data[sortcol][rangeidx * 2];
+            upper = item.value.data[sortcol][rangeidx * 2 + 1];
+          }
+          program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower'], lower);
+          program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper'], upper);
+        };
       });
     });
   }
