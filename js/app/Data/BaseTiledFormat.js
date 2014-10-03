@@ -375,12 +375,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     getContent: function () {
       var self = this;
 
-      return self.getDoneTiles().map(function (tile) {
-        return tile.content;
-      });
+      return self.getDoneTiles();
     },
 
-    printTree: function (maxdepth) {
+    printTree: function (maxdepth, coveredBy, covers) {
       var self = this;
 
       var printed = {};
@@ -419,16 +417,31 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         return res;
       }
 
+      var filter = function (tile) { return true; };
+      if (covers) {
+        covers = new Bounds(covers);
+        filter = function (tile) {
+          return tile.bounds.containsBounds(covers)
+        };
+      } else if (coveredBy) {
+        coveredBy = new Bounds(coveredBy);
+        filter = function (tile) {
+          return coveredBy.containsBounds(tile.bounds)
+        };
+      }
+
       var res = "";
       res += 'Wanted tiles:\n'
-        res += Object.values(self.wantedTiles).map(printTree.bind(self, "  ", 0)).join("\n");
-      res += 'Forgotten tiles:\n'
+      res += Object.values(self.wantedTiles).filter(filter).map(printTree.bind(self, "  ", 0)).join("\n");
 
-      res += Object.values(self.tileCache).filter(function (tile) {
-        return !printed[tile.bounds.toBBOX()];
-      }).map(
-        printTree.bind(self, "  ", 0)
-      ).join("\n");
+      if (!coveredBy && !covers) {
+        res += 'Forgotten tiles:\n'
+        res += Object.values(self.tileCache).filter(function (tile) {
+          return !printed[tile.bounds.toBBOX()];
+        }).map(
+          printTree.bind(self, "  ", 0)
+        ).join("\n");
+      }
 
       return res;
     },

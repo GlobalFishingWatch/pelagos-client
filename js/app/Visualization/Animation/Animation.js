@@ -159,17 +159,17 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       var tileidx = 0;
       self.data_view.source.getContent().map(function (tile) {
-        self.bindDataViewArrayBuffers(program, tile);
+        self.bindDataViewArrayBuffers(program, tile.content);
 
         program.gl.uniform1f(program.uniforms.tileidx, tileidx);
 
         // -1 since series contains POINT_COUNT in the last item
-        for (var i = 0; i < tile.series.length - 1; i++) {
-          if (tile.series[i+1]-tile.series[i] > 0) {
+        for (var i = 0; i < tile.content.series.length - 1; i++) {
+          if (tile.content.series[i+1]-tile.content.series[i] > 0) {
             program.gl.drawArrays(
               mode,
-              tile.series[i],
-              tile.series[i+1]-tile.series[i]
+              tile.content.series[i],
+              tile.content.series[i+1]-tile.content.series[i]
             );
           }
         }
@@ -189,14 +189,14 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       program.dataViewArrayBuffers = {};
 
       self.data_view.source.getContent().map(function (tile) {
-        if (dataViewArrayBuffers[tile.url]) {
-          program.dataViewArrayBuffers[tile.url] = dataViewArrayBuffers[tile.url];
+        if (dataViewArrayBuffers[tile.content.url]) {
+          program.dataViewArrayBuffers[tile.content.url] = dataViewArrayBuffers[tile.content.url];
         } else {
-          program.dataViewArrayBuffers[tile.url] = {};
+          program.dataViewArrayBuffers[tile.content.url] = {};
 
-          Object.keys(tile.header.colsByName).map(function (name) {
-            program.dataViewArrayBuffers[tile.url][name] = program.gl.createBuffer();
-            Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.url][name], tile.data[name], program);
+          Object.keys(tile.content.header.colsByName).map(function (name) {
+            program.dataViewArrayBuffers[tile.content.url][name] = program.gl.createBuffer();
+            Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.content.url][name], tile.content.data[name], program);
           });
         }
       });

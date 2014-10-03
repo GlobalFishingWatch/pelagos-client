@@ -39,7 +39,10 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
     getContent: function () {
       var self = this;
 
-      return [self];
+      return [{
+        content:self,
+        toString: function () { return ""; }
+      }];
     },
 
     headerLoaded: function (data) {
