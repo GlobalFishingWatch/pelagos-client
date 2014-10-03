@@ -49,6 +49,10 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
         self.data.tile.push(startTile.toString());
         self.data.tile.push(endTile.toString());
 
+        if (self.data.tags == undefined) self.data.tags = [];
+        self.data.tags.push(startTile.content.header.tags ? startTile.content.header.tags.join(", ") : "");
+        self.data.tags.push(endTile.content.header.tags ? endTile.content.header.tags.join(", ") : "");
+
         cols.map(function (col) {
           if (self.data[col] == undefined) self.data[col] = [];
           if (startTile.content.data[col] != undefined) {
