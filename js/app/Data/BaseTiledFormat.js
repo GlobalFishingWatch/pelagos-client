@@ -396,7 +396,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var length = tile.content && tile.content.header ? ", Rows: " + tile.content.header.length : "";
         var wanted = self.wantedTiles[key] ? ", wanted" : "";
         var error = tile.content.error ? ", error" : "";
-        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + ")";
+        var tags = tile.content && tile.content.header && tile.content.header.tags ? ", " + tile.content.header.tags.join(", ") : "";
+        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + tags + ")";
         if (maxdepth != undefined && depth > maxdepth) {
           res += " ...\n";
         } else {
