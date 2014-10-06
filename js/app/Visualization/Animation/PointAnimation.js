@@ -15,7 +15,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
     },
 
     selections: $.extend(
-      {active_category: {sortcols: ["category"], max_range_count: 3}},
+      {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
       Animation.prototype.selections
     ),
 

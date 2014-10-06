@@ -108,7 +108,7 @@ if (!app.useDojo) {
         if (!source.choices) return;
 
         var selectionwidget = new ContentPane({
-          content: name + " from " + sourcename + " ",
+          content: "<div>" + name + " from " + sourcename + "</div>",
           style: "padding-top: 0; padding-bottom: 0;"
         });
 
@@ -117,6 +117,9 @@ if (!app.useDojo) {
           var option = $("<option>");
           option.text(item.key);
           option.attr({value:item.value});
+          if (selection.data[sourcename].indexOf(item.value) != -1) {
+            option.attr({selected:'true'});
+          }
           selectionselect.append(option);
         })
         selectionselect.change(function () {
