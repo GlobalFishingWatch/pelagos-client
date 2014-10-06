@@ -378,7 +378,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       return self.getDoneTiles();
     },
 
-    printTree: function (maxdepth, coveredBy, covers) {
+    printTree: function (args) {
       var self = this;
 
       var printed = {};
@@ -396,8 +396,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var error = tile.content.error ? ", error" : "";
         var tags = tile.content && tile.content.header && tile.content.header.tags ? ", " + tile.content.header.tags.join(", ") : "";
         var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + tags + ")";
-        if (maxdepth != undefined && depth > maxdepth) {
+        if (args.maxdepth != undefined && depth > args.maxdepth) {
           res += " ...\n";
+        } else if (again && !args.expand) {
+          res += " (see above)\n";
         } else {
           res += "\n";
 
@@ -418,15 +420,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       }
 
       var filter = function (tile) { return true; };
-      if (covers) {
-        covers = new Bounds(covers);
+      if (args.covers) {
         filter = function (tile) {
-          return tile.bounds.containsBounds(covers)
+          return tile.bounds.containsBounds(new Bounds(args.covers))
         };
-      } else if (coveredBy) {
-        coveredBy = new Bounds(coveredBy);
+      } else if (args.coveredBy) {
         filter = function (tile) {
-          return coveredBy.containsBounds(tile.bounds)
+          return new Bounds(args.coveredBy).containsBounds(tile.bounds)
         };
       }
 
@@ -434,7 +434,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       res += 'Wanted tiles:\n'
       res += Object.values(self.wantedTiles).filter(filter).map(printTree.bind(self, "  ", 0)).join("\n");
 
-      if (!coveredBy && !covers) {
+      if (!args.coveredBy && !args.covers) {
         res += 'Forgotten tiles:\n'
         res += Object.values(self.tileCache).filter(function (tile) {
           return !printed[tile.bounds.toBBOX()];
