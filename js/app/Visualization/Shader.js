@@ -267,7 +267,13 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     Object.items(dataView.header.colsByName).map(function (column) {
       Object.items(column.value.source).map(function (source) {
         var srcKey = source.key;
-        if (srcKey == '_') srcKey = 'const';
+        var value = source.value;
+        if (srcKey == '_') {
+          srcKey = 'const';
+          if (value == null) {
+            value = Object.keys(column.value.source).length - 1;
+          }
+        }
         program.gl.uniform1f(program.uniforms['attrmap_' + column.key + '_from_' + srcKey], source.value);
       });
     });

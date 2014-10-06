@@ -11,7 +11,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
       alpha: {type: "Float32", source: {_: 1.0}, min: 0.0, max: 1.0},
       magnitude: {type: "Float32", source: {score: 5, _:2}, min: 0.0, max: 10.0},
       time: {type: "Float32", hidden: true, source: {datetime: 1.0}},
-      filter: {type: "Float32", source: {_: 2.0, timerange: -1.0, active_category: -1}}
+      filter: {type: "Float32", source: {_: null, timerange: -1.0, active_category: -1}}
     },
 
     selections: $.extend(
