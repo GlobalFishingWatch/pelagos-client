@@ -103,9 +103,21 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.zoomInNode.mousedown(function (e) { self.eatEvent(e); });
       self.zoomOutNode.mousedown(function (e) { self.eatEvent(e); });
       self.windowNode.mousedown(self.windowDragStart.bind(self));
+
       self.node.mousedown(self.dragStart.bind(self, 'moveTimeline'));
       $(document).mousemove(self.drag.bind(self));
       $(document).mouseup(self.dragEnd.bind(self));
+
+
+      self.zoomInNode.on('touchstart', self.zoomIn.bind(self, undefined));
+      self.zoomOutNode.on('touchstart', self.zoomOut.bind(self, undefined));
+      self.zoomInNode.on('touchstart', function (e) { self.eatEvent(e); });
+      self.zoomOutNode.on('touchstart', function (e) { self.eatEvent(e); });
+      self.windowNode.on('touchstart', self.windowDragStart.bind(self));
+
+      self.node.on('touchstart', self.dragStart.bind(self, 'moveTimeline'));
+      $(document).on('touchmove', self.drag.bind(self));
+      $(document).on('touchend', self.dragEnd.bind(self));
 
       self.node.mousewheel(function(event, delta, deltaX, deltaY) {
         if (deltaY > 0) {
@@ -533,27 +545,39 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     windowDragStart: function (e) {
       var self = this;
 
-      var pos = self.windowNode.offset();
-      pos.width = self.windowNode.outerWidth();
-      pos.right = pos.left + pos.width;
-      pos.borderLeft = parseFloat($(".window").css('border-left-width'));
-      pos.borderRight = parseFloat($(".window").css('border-right-width'));
+      var winPos = self.windowNode.offset();
+      winPos.width = self.windowNode.outerWidth();
+      winPos.right = winPos.left + winPos.width;
+      winPos.borderLeft = parseFloat($(".window").css('border-left-width'));
+      winPos.borderRight = parseFloat($(".window").css('border-right-width'));
 
-      pos.innerLeft = pos.left + pos.borderLeft;
-      pos.innerRight = pos.right - pos.borderRight;
+      winPos.innerLeft = winPos.left + winPos.borderLeft;
+      winPos.innerRight = winPos.right - winPos.borderRight;
 
-      if (e.pageX >= pos.left && e.pageX <= pos.innerLeft) {
+      var pos = self.getEventFirstPosition(e);
+
+      if (pos.pageX >= winPos.left && pos.pageX <= winPos.innerLeft) {
         self.dragStart('windowResizeLeft', e);
-      } else if (e.pageX >= pos.innerRight && e.pageX <= pos.right) {
+      } else if (pos.pageX >= winPos.innerRight && pos.pageX <= winPos.right) {
         self.dragStart('windowResizeRight', e);
       }
     },
 
+    getEventFirstPosition: function (e) {
+      e = e.originalEvent || e;
+      if (e.touches && e.touches.length > 0) {
+        e = e.touches[0];
+      }
+      return e;
+    },
+
     dragStart: function (type, e) {
       var self = this;
+      var pos = self.getEventFirstPosition(e);
+
       self.dragType = type;
-      self.dragStartX = e.pageX;
-      self.dragStartY = e.pageY;
+      self.dragStartX = pos.pageX;
+      self.dragStartY = pos.pageY;
       self['dragStart_' + self.dragType](e);
       self.eatEvent(e);
     },
@@ -563,8 +587,10 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       if (self.dragType == undefined) return;
 
-      self.dragX = e.pageX;
-      self.dragY = e.pageY;
+      var pos = self.getEventFirstPosition(e);
+
+      self.dragX = pos.pageX;
+      self.dragY = pos.pageY;
 
       self.dragOffsetX = self.dragStartX - self.dragX;
       self.dragOffsetY = self.dragStartY - self.dragY;
