@@ -74,7 +74,8 @@
       app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
       app.dirs.lib + "/CanvasLayer.js",
       app.dirs.lib + "/stats.min.js",
-      app.dirs.lib + "/loggly.tracker.js"
+      app.dirs.lib + "/loggly.tracker.js",
+      app.dirs.lib + "/socket.io.js"
     ]);
   }
 
@@ -89,6 +90,7 @@
     {name: 'stacktrace', location: app.paths.shim.concat(['stacktrace']).join('/')},
     {name: 'LogglyTracker', location: app.paths.shim.concat(['LogglyTracker']).join('/')},
     {name: 'lodash', location: app.paths.shim.concat(['lodash']).join('/')},
+    {name: 'socketio', location: app.paths.shim.concat(['socketio']).join('/')},
     {name: 'app', location:app.dirs.app, main: 'main'}
   ]);
 

@@ -1,4 +1,4 @@
-define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/DojoUI", "app/Visualization/UI", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, DojoUI, UI, async, $, Json) {
+define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/DojoUI", "app/Visualization/UI", "async", "jQuery", "app/Json", "app/Remote"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, DojoUI, UI, async, $, Json, Remote) {
   return Class({
     name: "Visualization",
     paramspec: {
@@ -47,6 +47,7 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
       self.data = new DataManager(self);
       self.animations = new AnimationManager(self);
       self.ui = new UI(self);
+      self.remote = new Remote(self);
 
       async.series([
         self.data.init.bind(self.data),
@@ -54,7 +55,8 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
         self.ui.init.bind(self.ui),
         function (cb) {
           self.load(UrlValues.getParameter("workspace"), cb);
-        }
+        },
+        self.remote.init.bind(self.remote)
       ]);
     },
 

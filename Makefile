@@ -1,6 +1,6 @@
 LIBS=js/libs
 
-DEPENDENCIES=$(LIBS)/async.js $(LIBS)/jquery-1.10.2.min.js $(LIBS)/jquery-1.10.2.min.map $(LIBS)/jquery.mousewheel.js $(LIBS)/less-1.7.4.min.js $(LIBS)/lodash.js $(LIBS)/qunit-1.15.0.js $(LIBS)/qunit-1.15.0.css $(LIBS)/require.js $(LIBS)/stacktrace.js $(LIBS)/loggly.tracker.js $(LIBS)/stats.min.js $(LIBS)/bootstrap-3.2.0-dist $(LIBS)/easyXDM $(LIBS)/font-awesome-4.2.0 $(LIBS)/dojo-release-1.10.0-src
+DEPENDENCIES=$(LIBS)/async.js $(LIBS)/jquery-1.10.2.min.js $(LIBS)/jquery-1.10.2.min.map $(LIBS)/jquery.mousewheel.js $(LIBS)/less-1.7.4.min.js $(LIBS)/lodash.js $(LIBS)/qunit-1.15.0.js $(LIBS)/qunit-1.15.0.css $(LIBS)/require.js $(LIBS)/stacktrace.js $(LIBS)/loggly.tracker.js $(LIBS)/stats.min.js $(LIBS)/socket.io.js $(LIBS)/bootstrap-3.2.0-dist $(LIBS)/easyXDM $(LIBS)/font-awesome-4.2.0 $(LIBS)/dojo-release-1.10.0-src
 
 .PHONY: all dependencies clean clean-js-build clean-dependencies
 
@@ -44,6 +44,8 @@ $(LIBS)/loggly.tracker.js:
 $(LIBS)/stats.min.js:
 	curl -L https://raw.githubusercontent.com/mrdoob/stats.js/master/build/stats.min.js > $@
 
+$(LIBS)/socket.io.js:
+	curl -L https://cdn.socket.io/socket.io-1.1.0.js > $@
 
 $(LIBS)/bootstrap-3.2.0-dist:
 	cd $(LIBS); curl -L -O https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip
