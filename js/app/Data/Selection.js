@@ -35,38 +35,40 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
         var startTile = source.getContent()[startidx[0]];
         var endTile = source.getContent()[endidx[0]];
 
-        updated = true;
+        if (startTile && endTile) {
+          updated = true;
 
-        var cols = $.extend({}, startTile.content.data, endTile.content.data);
-        self.sortcols.map(function (col) { cols[col] = true; });
-        cols = Object.keys(cols);
+          var cols = $.extend({}, startTile.content.data, endTile.content.data);
+          self.sortcols.map(function (col) { cols[col] = true; });
+          cols = Object.keys(cols);
 
-        if (self.data.source == undefined) self.data.source = [];
-        self.data.source.push(source.toString());
-        self.data.source.push(source.toString());
+          if (self.data.source == undefined) self.data.source = [];
+          self.data.source.push(source.toString());
+          self.data.source.push(source.toString());
 
-        if (self.data.tile == undefined) self.data.tile = [];
-        self.data.tile.push(startTile.toString());
-        self.data.tile.push(endTile.toString());
+          if (self.data.tile == undefined) self.data.tile = [];
+          self.data.tile.push(startTile.toString());
+          self.data.tile.push(endTile.toString());
 
-        if (self.data.tags == undefined) self.data.tags = [];
-        self.data.tags.push(startTile.content.header.tags ? startTile.content.header.tags.join(", ") : "");
-        self.data.tags.push(endTile.content.header.tags ? endTile.content.header.tags.join(", ") : "");
+          if (self.data.tags == undefined) self.data.tags = [];
+          self.data.tags.push(startTile.content.header.tags ? startTile.content.header.tags.join(", ") : "");
+          self.data.tags.push(endTile.content.header.tags ? endTile.content.header.tags.join(", ") : "");
 
-        cols.map(function (col) {
-          if (self.data[col] == undefined) self.data[col] = [];
-          if (startTile.content.data[col] != undefined) {
-            self.data[col].push(startTile.content.data[col][startidx[1]]);
-          } else {
-            self.data[col].push(undefined);
-          }
-          if (endTile.content.data[col] != undefined) {
-            self.data[col].push(endTile.content.data[col][endidx[1]]);
-          } else {
-            self.data[col].push(undefined);
-          }
-        });
-        self.header.length++;
+          cols.map(function (col) {
+            if (self.data[col] == undefined) self.data[col] = [];
+            if (startTile.content.data[col] != undefined) {
+              self.data[col].push(startTile.content.data[col][startidx[1]]);
+            } else {
+              self.data[col].push(undefined);
+            }
+            if (endTile.content.data[col] != undefined) {
+              self.data[col].push(endTile.content.data[col][endidx[1]]);
+            } else {
+              self.data[col].push(undefined);
+            }
+          });
+          self.header.length++;
+        }
       }
       if (updated) {
         self.events.triggerEvent("update", {update: "add", source:source, startidx:startidx, endidx:endidx});
