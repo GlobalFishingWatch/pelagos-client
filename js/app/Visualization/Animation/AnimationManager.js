@@ -211,7 +211,9 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       self.infoPopup = new google.maps.InfoWindow({});
 
-      self.node.mousemove(function (e) { self.handleMouse(e, 'hover'); });
+      self.node.mousemove(function (e) {
+        if (!self.indrag) self.handleMouse(e, 'hover');
+      });
       self.node.click(function (e) {
         self.handleMouseSelection(e, 'selected', KeyModifiers.active.Shift, function (err, data) {
           if (err) {
