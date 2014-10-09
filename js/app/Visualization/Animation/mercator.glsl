@@ -34,20 +34,20 @@ float metersPerGoogleMercatorAtLatitude(float latitude, float zoom) {
 
 /* Convert lonlat to webgl coordinates */
 
-vec4 lonlat2screenspace(vec2 lonlat, mat4 mapMatrix) {
-  return mapMatrix * lonLatInGoogleMercator(lonlat);
+vec4 lonlat2screenspace(vec2 lonlat, mat4 googleMercator2webglMatrix) {
+  return googleMercator2webglMatrix * lonLatInGoogleMercator(lonlat);
 }
 
-vec4 lonlat2screen(vec2 lonlat, mat4 mapMatrix) {
-  vec4 pos = lonlat2screenspace(lonlat, mapMatrix);
+vec4 lonlat2screen(vec2 lonlat, mat4 googleMercator2webglMatrix) {
+  vec4 pos = lonlat2screenspace(lonlat, googleMercator2webglMatrix);
 
   if (pos[0] < -1.0) {
     lonlat[0] += 360.0;
-    pos = lonlat2screenspace(lonlat, mapMatrix);
+    pos = lonlat2screenspace(lonlat, googleMercator2webglMatrix);
   }
   if (pos[0] > 1.0) {
     lonlat[0] -= 360.0;
-    pos = lonlat2screenspace(lonlat, mapMatrix);
+    pos = lonlat2screenspace(lonlat, googleMercator2webglMatrix);
   }
   return pos;
 }

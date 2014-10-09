@@ -56,7 +56,7 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Sha
 
       Shader.programBindArray(self.gl, self.pointArrayBuffer, self.programs.program, "worldCoord", 2, self.gl.FLOAT);
 
-      self.gl.uniformMatrix4fv(self.programs.program.uniforms.mapMatrix, false, self.manager.mapMatrix);
+      self.gl.uniformMatrix4fv(self.programs.program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
 
       for (var i = 0; i < self.tilecount; i++) {
         self.gl.drawArrays(self.gl.LINE_STRIP, i*5, 5);

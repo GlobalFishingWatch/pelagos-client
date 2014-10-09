@@ -5,7 +5,7 @@ uniform float startTime;
 uniform float endTime;
 uniform float pointSize;
 
-uniform mat4 mapMatrix;
+uniform mat4 googleMercator2webglMatrix;
 
 varying float vPointSize;
 varying float vSigma;
@@ -14,7 +14,7 @@ varying float vWeight;
 void main() {
   mapper();
 
-  gl_Position = lonlat2screen(vec2(_longitude, _latitude), mapMatrix);
+  gl_Position = lonlat2screen(vec2(_longitude, _latitude), googleMercator2webglMatrix);
 
   if (_time < startTime || _time > endTime) {
     gl_PointSize = 0.0;
