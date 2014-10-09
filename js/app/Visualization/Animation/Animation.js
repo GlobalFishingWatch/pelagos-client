@@ -218,10 +218,17 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       if (time == undefined) return;
       time = time.getTime();
 
+      program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
+      program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
+      program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
+
       // pointSize range [5,20], 21 zoom levels
       var pointSize = Math.max(
         Math.floor( ((20-5) * (self.manager.map.zoom - 0) / (21 - 0)) + 5 ),
-        GeoProjection.getPixelDiameterAtLatitude(self.manager.visualization.state.getValue("resolution") || 1000, self.manager.map.getCenter().lat(), self.manager.map.zoom));
+        ((self.manager.visualization.state.getValue("resolution") || 1000)
+         / GeoProjection.metersPerGoogleMercatorAtLatitude(
+             self.manager.map.getCenter().lat(),
+             self.manager.map.zoom)));
 
       program.gl.uniform1f(program.uniforms.pointSize, pointSize*1.0);
       program.gl.uniformMatrix4fv(program.uniforms.mapMatrix, false, self.manager.mapMatrix);

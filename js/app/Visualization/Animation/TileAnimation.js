@@ -38,7 +38,7 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Sha
           {lat: tile.bounds.bottom, lon: tile.bounds.left},
           {lat: tile.bounds.top, lon: tile.bounds.left}];
         corners.map(function (corner) {
-          var pixel = GeoProjection.LatLongToPixelXY(corner.lat, corner.lon);
+          var pixel = GeoProjection.lonLatInGoogleMercator(corner.lat, corner.lon);
           self.rawLatLonData[i++] = pixel.x;
           self.rawLatLonData[i++] = pixel.y;
         });
