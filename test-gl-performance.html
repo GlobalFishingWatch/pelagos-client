@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'/>
+    <script src="js/libs/jquery-1.10.2.min.js"></script>
+ 
+    <script type="text/shader" id="vertex-shader">
+      attribute vec2 position; //the position of the point
+      attribute vec3 color; //the color of the point
+ 
+      varying vec3 vColor;
+ 
+      void main(void) { //pre-built function
+        gl_Position = vec4(position, 0., 1.); //0. is the z, and 1 is w
+        gl_PointSize = 1.0;
+        vColor=color;
+      }
+    </script>
+ 
+    <script type="text/shader" id="fragment-shader">
+      precision mediump float;
+ 
+      varying vec3 vColor;
+ 
+      void main(void) {
+        gl_FragColor = vec4(vColor, 1.);
+      }
+    </script>
+ 
+    <script type="text/javascript">
+      $(document).ready(function() {
+        var CANVAS=$("#your_canvas")[0];
+        CANVAS.width=window.innerWidth;
+        CANVAS.height=window.innerHeight;
+ 
+        try {
+          var GL = CANVAS.getContext("experimental-webgl", {antialias: true});
+        } catch (e) {
+          alert("You are not webgl compatible :(") ;
+          return false;
+        } ;
+ 
+        function get_shader_program(GL) {
+          var shader_vertex_source = $("#vertex-shader").text();
+          var shader_fragment_source = $("#fragment-shader").text();
+ 
+          var get_shader=function(source, type, typeString) {
+            var shader = GL.createShader(type);
+            GL.shaderSource(shader, source);
+            GL.compileShader(shader);
+            if (!GL.getShaderParameter(shader, GL.COMPILE_STATUS)) {
+              alert("ERROR IN "+typeString+ " SHADER : " + GL.getShaderInfoLog(shader));
+              return false;
+            }
+            return shader;
+          };
+ 
+          var shader_vertex=get_shader(shader_vertex_source, GL.VERTEX_SHADER, "VERTEX");
+          var shader_fragment=get_shader(shader_fragment_source, GL.FRAGMENT_SHADER, "FRAGMENT");
+ 
+          var SHADER_PROGRAM=GL.createProgram();
+          GL.attachShader(SHADER_PROGRAM, shader_vertex);
+          GL.attachShader(SHADER_PROGRAM, shader_fragment);
+ 
+          GL.linkProgram(SHADER_PROGRAM);
+ 
+          return SHADER_PROGRAM;
+        }
+ 
+        var SHADER_PROGRAM = get_shader_program(GL);
+        var _color = GL.getAttribLocation(SHADER_PROGRAM, "color");
+        var _position = GL.getAttribLocation(SHADER_PROGRAM, "position");
+ 
+        GL.enableVertexAttribArray(_color);
+        GL.enableVertexAttribArray(_position);
+ 
+        GL.useProgram(SHADER_PROGRAM);
+ 
+        var datasetsnr = 1;
+        var datasetpointsnr = 1000000;
+ 
+        var datasets = [];
+ 
+        for (var i = 0; i < datasetsnr; i++) {
+          var dataset = {};
+          datasets.push(dataset);
+ 
+          dataset.points = new Float32Array(2 * datasetpointsnr);
+          dataset.color = new Float32Array(3 * datasetpointsnr);
+          for (var j = 0; j < datasetpointsnr; j++) {
+            dataset.points[j*2] = Math.random()-0.5;
+            dataset.points[j*2 + 1] = Math.random()-0.5;
+            dataset.color[j*3] = Math.random();
+            dataset.color[j*3+1] = Math.random();
+            dataset.color[j*3+2] = Math.random();
+          }
+        }
+ 
+        var start = performance.now();
+        for (var i = 0; i < datasetsnr; i++) {
+          dataset = datasets[i];
+ 
+          dataset.pointBuffer= GL.createBuffer();
+          dataset.colorBuffer= GL.createBuffer();
+          GL.bindBuffer(GL.ARRAY_BUFFER, dataset.pointBuffer);
+          GL.bufferData(GL.ARRAY_BUFFER, dataset.points, GL.STATIC_DRAW);
+ 
+          GL.bindBuffer(GL.ARRAY_BUFFER, dataset.colorBuffer);
+          GL.bufferData(GL.ARRAY_BUFFER, dataset.color, GL.STATIC_DRAW);
+        }
+        var end = performance.now();
+ 
+        console.log("Load time for " + datasetsnr + " arrays of " + datasetpointsnr + " points = " + (end - start));
+ 
+ 
+ 
+        GL.clearColor(0.0, 0.0, 0.0, 0.0);
+        GL.viewport(0.0, 0.0, CANVAS.width, CANVAS.height);
+        GL.clear(GL.COLOR_BUFFER_BIT);
+ 
+        var start = performance.now();
+        for (var i = 0; i < datasetsnr; i++) {
+          var dataset = datasets[i];
+ 
+          GL.bindBuffer(GL.ARRAY_BUFFER, dataset.pointBuffer);
+          GL.enableVertexAttribArray(_position);
+          GL.vertexAttribPointer(_position, 2, GL.FLOAT, false, 0, 0);
+          GL.bindBuffer(GL.ARRAY_BUFFER, dataset.colorBuffer);
+          GL.enableVertexAttribArray(_color);
+          GL.vertexAttribPointer(_color, 3, GL.FLOAT, false, 0, 0);
+ 
+          GL.drawArrays(GL.POINTS, 0, datasetpointsnr);
+        }
+        var end = performance.now();
+ 
+        console.log("Draw time for " + datasetsnr + " arrays of " + datasetpointsnr + " points = " + (end - start));
+ 
+        GL.flush();
+      });
+    </script>
+  </head>
+  <body style='margin:0px'>
+    <canvas id='your_canvas' style='position: absolute; background-color: black;'></canvas>
+  </body>
+</html>
