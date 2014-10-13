@@ -37,6 +37,9 @@
                 return false;
               } ;
 
+              gl.enable(gl.BLEND);
+              gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
               gl.canvas = canvas;
 
               get_shader_program(gl, data_view, function (program) {
@@ -46,10 +49,9 @@
               });
             }
 
-            function draw_gl(gl, tileset) {
-
+            function draw_gl(gl, data_view) {
               var buffers = {};
-              var tiles = tileset.getContent();
+              var tiles = data_view.source.getContent();
 
               var start = performance.now();
               tiles.map(function (tile) {
@@ -64,16 +66,18 @@
 
               var mat = new Float32Array(16);
               mat.set([
-                2/256,   0,     0, -1,
-                0,       2/256, 0, -1,
-                0,       0,     0, 0,
-                0,       0,     0, 1
+                1.0/128.0, 0,               0, 0,
+                0,         1.0/128.0,       0, 0,
+                0,         0,         0, 0,
+                -1,         -1,         0, 1
               ]);
 
 
               gl.uniformMatrix4fv(gl.program.uniforms.googleMercator2webglMatrix, false, mat);
               gl.uniform1f(gl.program.uniforms.startTime, -1.0/0.0);
               gl.uniform1f(gl.program.uniforms.endTime, 1.0/0.0);
+              gl.uniform1f(gl.program.uniforms.pointSize, 50.0);
+              Shader.setMappingUniforms(gl.program, data_view);
 
 
 
@@ -87,7 +91,6 @@
                 for (var name in buffers[tile.content.url]) {
                   Shader.programBindArray(gl, buffers[tile.content.url][name], gl.program, name, 1, gl.FLOAT);
                 };
-
                 for (var i = 0; i < tile.content.series.length - 1; i++) {
                   if (tile.content.series[i+1]-tile.content.series[i] > 0) {
                     gl.drawArrays(
@@ -106,7 +109,7 @@
             };
 
             f = new TiledBinFormat({url:"/tile/test-grid"});
-            f.tilesPerScreen = 128;
+            f.tilesPerScreen = 4; //128;
 
             f.events.on({
               header: function () {
@@ -140,7 +143,8 @@
                 );
 
                 setupgl(data_view, function (gl) {
-                  draw_gl(gl, f);
+                  GL = gl;
+                  draw_gl(gl, data_view);
                 });
               },
               error: function (e) {
