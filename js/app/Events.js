@@ -3,7 +3,7 @@
  * for __all__. It will be called with the event name as a second
  * argument. */
 define(["app/Class", "app/Logging"], function(Class, Logging) {
-  return Class({
+  Events = Class({
     name: "Events",
     initialize: function (category) {
       var self = this;
@@ -32,7 +32,15 @@ define(["app/Class", "app/Logging"], function(Class, Logging) {
     },
     triggerEvent: function (event, data) {
       var self = this;
+      if (Events.trace) {
+        Events.path.push(event);
+        console.log(Events.path.join(" / "));
+      }
+      var start = performance.now();
       Logging.main.log(self.category + "." + event, data);
+        if (event == "set-range") {
+            console.log("Event is set-range");
+      }
       if (self.handlers[event]) {
         self.handlers[event].map(function (handler) {
           handler.handler.call(handler.scope, data, event);
@@ -43,6 +51,24 @@ define(["app/Class", "app/Logging"], function(Class, Logging) {
           handler.handler.call(handler.scope, data, event);
         });
       }
+      var end = performance.now();
+
+      if (end - start > 50) {
+          console.log("Timing > 50");
+      }
+      Events.timings.time += end - start;
+      Events.timings.count++;
+      if (Events.trace) {
+        Events.path.pop();
+      }
+
     }
   });
+  Events.trace = true;
+  Events.path = [];
+  Events.timings = {
+      time: 0,
+      count: 0
+  };
+  return Events;
 });
