@@ -111,21 +111,21 @@
             f = new TiledBinFormat({url:"/tile/test-grid"});
             f.tilesPerScreen = 128;
 
+            var bounds = [
+              new Bounds(-180,-85,180,85),
+              new Bounds(-90,-42,90,42),
+              new Bounds(-45,-21,45,21),
+              new Bounds(-22,-10,22,10),
+              new Bounds(-11,-5,11,5)];
+
+            var bidx = 0;
+            var cbounds;
+            var start;
+            var data_view;
+            var gl;
             f.events.on({
               header: function () {
-                f.zoomTo(new Bounds(-180,-85,180,85));
-              },
-              update: function (e) {},
-              all: function () {
-                var end = performance.now();
-
-                console.log("Number of tiles: " + f.getContent().length);
-                console.log("Number of series: " + f.getContent().map(function (tile) { return tile.content.series.length - 1; }).reduce(function (a, b) { return a + b; }, 0));
-                console.log("Number of points: " + f.getContent().map(function (tile) { return tile.content.header.length; }).reduce(function (a, b) { return a + b; }, 0));
-
-                console.log("Fetch time: " + (end - start));
-
-                var data_view = new DataView(
+                data_view = new DataView(
                   f,
                   {
                     columns: {
@@ -142,17 +142,39 @@
                   }
                 );
 
-                setupgl(data_view, function (gl) {
+                setupgl(data_view, function (glctx) {
+                  gl = glctx;
                   GL = gl;
-                  draw_gl(gl, data_view);
+
+                  start = performance.now();
+                  cbounds = bounds[bidx];
+                  f.zoomTo(cbounds);
                 });
+              },
+              update: function (e) {},
+              all: function () {
+                var end = performance.now();
+
+                console.log("Number of tiles: " + f.getContent().length);
+                console.log("Number of tiles: " + f.getContent().length);
+                console.log("Number of series: " + f.getContent().map(function (tile) { return tile.content.series.length - 1; }).reduce(function (a, b) { return a + b; }, 0));
+                console.log("Number of points: " + f.getContent().map(function (tile) { return tile.content.header.length; }).reduce(function (a, b) { return a + b; }, 0));
+
+                console.log("Fetch time: " + (end - start));
+
+                draw_gl(gl, data_view);
+
+                bidx++;
+                if (bidx < bounds.length) {
+                  start = performance.now();
+                  cbounds = bounds[bidx];
+                  f.zoomTo(cbounds);
+                }
               },
               error: function (e) {
                 console.log("ERROR");
               }
             });
-
-            var start = performance.now();
 
             f.load();
           });
