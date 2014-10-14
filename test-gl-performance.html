@@ -13,7 +13,7 @@
  
       void main(void) {
         gl_Position = vec4(position, 0., 1.);
-        gl_PointSize = 10.0;
+        gl_PointSize = 20.0;
         vColor=color;
       }
     </script>
@@ -29,6 +29,10 @@
     </script>
  
     <script type="text/javascript">
+
+      datasetsnr = 1;
+      datasetpointsnr = 1000000;
+
       $(document).ready(function() {
         var CANVAS=$("#your_canvas")[0];
         CANVAS.width=window.innerWidth;
@@ -98,9 +102,6 @@
         GL.enableVertexAttribArray(_position);
  
         GL.useProgram(SHADER_PROGRAM);
- 
-        var datasetsnr = 1;
-        var datasetpointsnr = 1000000;
  
         var datasets = [];
  
