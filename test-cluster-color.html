@@ -24,32 +24,35 @@
 
             var node = $("<div>&nbsp;</div>");
 
-
-
-/*
-            var alpha = Math.min(1.0, d * Math.sqrt(w));
-            var c = d*d * w / alpha;
-*/
-            var c = d*w;
-
             var cut1 = function (v) {
-              return 1.0 - 1.0 / (1.0 + v);
-            };
-            var cut2 = function (v) {
               return Math.min(1.0, v);
             };
 
-            var cut3 = function (v) {
+            var cut2 = function (v) {
               var a = 0.1;
               return v/2.0 - Math.sqrt(4.0*a*a + v*v - 2.0*v + 1.0) / 2.0 + 1.0/2.0;
             }
 
-            var cut = cut3;
+            var cut, color;
+            if (0) {
+              var c = d*w;
 
-            var color = [255,
-                         Math.floor(256 * cut(0.6 * c)),
-                         Math.floor(256 * cut(0.3 * c)),
-                         cut(c)];
+              cut = cut2;
+
+              color = [255,
+                       Math.floor(256 * cut(0.6 * c)),
+                       Math.floor(256 * cut(0.3 * c)),
+                       cut(c)];
+            } else if (1) {
+              cut = cut1;
+              var alpha = Math.min(1.0, d * Math.sqrt(w));
+              var c = d*d * w / alpha;
+              color = [Math.floor(256 * cut(1.0 * c)),
+                       Math.floor(256 * cut(0.4 * c)),
+                       Math.floor(256 * cut(0.2 * c)),
+                       cut(alpha)];
+            }
+
             var color = "rgba(" + color.join(", ") + ")";
             node.css({
               top: (100.0*row/rows) + "%",
