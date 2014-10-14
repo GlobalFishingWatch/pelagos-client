@@ -589,13 +589,13 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       var pos = self.getEventPositions(e);
       self.dragOffsets = [];
       for (var i = 0; i < pos.length; i++) {
-        self.dragOffsets.push({
+        var offsets = {
           x: self.dragStartPositions[i].pageX - pos[i].pageX,
           y: self.dragStartPositions[i].pageY - pos[i].pageY
-        });
+        };
+        offsets.time = self.pixelOffsetToTimeOffset(offsets.x);
+        self.dragOffsets.push(offsets);
       }
-
-      self.dragTimeOffset = self.pixelOffsetToTimeOffset(self.dragOffsets[0].x);
 
       self['drag_' + self.dragType](e);
 
@@ -619,7 +619,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_windowResizeLeft: function (e) {
       var self = this;
-      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragTimeOffset);
+      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragOffsets[0].time);
       self.updateRange();
     },
     dragEnd_windowResizeLeft: function (e) {
@@ -634,7 +634,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_windowResizeRight: function (e) {
       var self = this;
-      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragTimeOffset);
+      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragOffsets[0].time);
       self.updateRange();
     },
     dragEnd_windowResizeRight: function (e) {
@@ -649,7 +649,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_moveTimeline: function (e) {
       var self = this;
-      self.setRangeFromOffset(self.dragStartOffset + self.dragTimeOffset, 'temporary-range');
+      self.setRangeFromOffset(self.dragStartOffset + self.dragOffsets[0].time, 'temporary-range');
     },
     dragEnd_moveTimeline: function (e) {
       var self = this;
