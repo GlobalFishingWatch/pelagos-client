@@ -455,9 +455,13 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.stepWidth = 100.0 * self.stepsSize / (self.stepCount * self.substeps);
       self.tickmarksNode.find('.quanta').css({'margin-right': self.stepWidth + '%'});
 
-      if (self.dragStartX != undefined) {
-        self.dragStartX = self.dragX;
-        self.dragStartOffset = self.offset;
+      if (self.dragData != undefined) {
+        self.dragData.startPositions = self.dragData.currentPositions;
+
+        self.dragData.timeOffset = self.offset;
+        self.dragData.range = {};
+        self.dragData.range.windowStart = self.windowStart;
+        self.dragData.range.windowEnd = self.windowEnd;
       }
     },
 
@@ -575,29 +579,30 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     dragStart: function (type, e) {
       var self = this;
 
-      self.dragType = type;
-      self.dragStartPositions = self.getEventPositions(e);
-      self['dragStart_' + self.dragType](e);
+      self.dragData = {};
+      self.dragData.type = type;
+      self.dragData.startPositions = self.getEventPositions(e);
+      self['dragStart_' + self.dragData.type](e);
       self.eatEvent(e);
     },
 
     drag: function (e) {
       var self = this;
 
-      if (self.dragType == undefined) return;
+      if (self.dragData == undefined) return;
 
-      var pos = self.getEventPositions(e);
-      self.dragOffsets = [];
-      for (var i = 0; i < pos.length; i++) {
+      self.dragData.currentPositions = self.getEventPositions(e);
+      self.dragData.offsets = [];
+      for (var i = 0; i < self.dragData.currentPositions.length; i++) {
         var offsets = {
-          x: self.dragStartPositions[i].pageX - pos[i].pageX,
-          y: self.dragStartPositions[i].pageY - pos[i].pageY
+          x: self.dragData.startPositions[i].pageX - self.dragData.currentPositions[i].pageX,
+          y: self.dragData.startPositions[i].pageY - self.dragData.currentPositions[i].pageY
         };
         offsets.time = self.pixelOffsetToTimeOffset(offsets.x);
-        self.dragOffsets.push(offsets);
+        self.dragData.offsets.push(offsets);
       }
 
-      self['drag_' + self.dragType](e);
+      self['drag_' + self.dragData.type](e);
 
       self.eatEvent(e);
     },
@@ -605,9 +610,9 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     dragEnd: function (e) {
       var self = this;
 
-      if (self.dragType == undefined) return;
-      self['dragEnd_' + self.dragType](e);
-      self.dragType = undefined;
+      if (self.dragData == undefined) return;
+      self['dragEnd_' + self.dragData.type](e);
+      self.dragData = undefined;
       self.eatEvent(e);
     },
 
@@ -619,7 +624,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_windowResizeLeft: function (e) {
       var self = this;
-      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragOffsets[0].time);
+      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragData.offsets[0].time);
       self.updateRange();
     },
     dragEnd_windowResizeLeft: function (e) {
@@ -634,7 +639,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     },
     drag_windowResizeRight: function (e) {
       var self = this;
-      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragOffsets[0].time);
+      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragData.offsets[0].time);
       self.updateRange();
     },
     dragEnd_windowResizeRight: function (e) {
@@ -644,12 +649,23 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
     dragStart_moveTimeline: function (e) {
       var self = this;
+      self.dragData.timeOffset = self.offset;
+      self.dragData.range = {};
+      self.dragData.range.windowStart = self.windowStart;
+      self.dragData.range.windowEnd = self.windowEnd;
       self.events.triggerEvent('user-update-start', {type:'move-timeline'});
-      self.dragStartOffset = self.offset;
     },
     drag_moveTimeline: function (e) {
       var self = this;
-      self.setRangeFromOffset(self.dragStartOffset + self.dragOffsets[0].time, 'temporary-range');
+      if (self.dragData.offsets.length == 1) {
+        self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[0].time, 'temporary-range');
+      } else if (self.dragData.offsets.length > 1) {
+        self.setRange(
+          new Date(self.dragData.range.windowStart.getTime() + self.dragData.offsets[0].time),
+          new Date(self.dragData.range.windowEnd.getTime() + self.dragData.offsets[1].time),
+          'temporary-range'
+        );
+      }
     },
     dragEnd_moveTimeline: function (e) {
       var self = this;
