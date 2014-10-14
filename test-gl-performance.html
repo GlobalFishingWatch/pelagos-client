@@ -13,7 +13,7 @@
  
       void main(void) {
         gl_Position = vec4(position, 0., 1.);
-        gl_PointSize = 1.0;
+        gl_PointSize = 10.0;
         vColor=color;
       }
     </script>
@@ -40,7 +40,22 @@
         stats.domElement.style.left = '0px';
         stats.domElement.style.top = '0px';
         document.body.appendChild(stats.domElement);
- 
+
+        var stats2 = new Stats();
+        stats2.setMode(0);
+        stats2.domElement.style.position = 'absolute';
+        stats2.domElement.style.right = '0px';
+        stats2.domElement.style.top = '0px';
+        document.body.appendChild(stats2.domElement);
+
+        var c = 0;
+        setInterval(function () {
+          stats2.begin();
+          c++;
+          $(".test").html(c.toString());
+          stats2.end();
+        }, 100);
+
         try {
           var GL = CANVAS.getContext("experimental-webgl", {antialias: true});
         } catch (e) {
@@ -169,5 +184,6 @@
   </head>
   <body style='margin:0px'>
     <canvas id='your_canvas' style='position: absolute; background-color: black;'></canvas>
+    <div class="test" style="position: absolute; bottom: 0; right: 0; background: red;"></div>
   </body>
 </html>
