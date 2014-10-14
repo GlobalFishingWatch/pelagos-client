@@ -554,7 +554,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       winPos.innerLeft = winPos.left + winPos.borderLeft;
       winPos.innerRight = winPos.right - winPos.borderRight;
 
-      var pos = self.getEventFirstPosition(e);
+      var pos = self.getEventPositions(e)[0];
 
       if (pos.pageX >= winPos.left && pos.pageX <= winPos.innerLeft) {
         self.dragStart('windowResizeLeft', e);
@@ -563,21 +563,20 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       }
     },
 
-    getEventFirstPosition: function (e) {
+    getEventPositions: function (e) {
       e = e.originalEvent || e;
+      var res = [e];
       if (e.touches && e.touches.length > 0) {
-        e = e.touches[0];
+        res = e.touches;
       }
-      return e;
+      return res;
     },
 
     dragStart: function (type, e) {
       var self = this;
-      var pos = self.getEventFirstPosition(e);
 
       self.dragType = type;
-      self.dragStartX = pos.pageX;
-      self.dragStartY = pos.pageY;
+      self.dragStartPositions = self.getEventPositions(e);
       self['dragStart_' + self.dragType](e);
       self.eatEvent(e);
     },
@@ -587,14 +586,16 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       if (self.dragType == undefined) return;
 
-      var pos = self.getEventFirstPosition(e);
+      var pos = self.getEventPositions(e);
+      self.dragOffsets = [];
+      for (var i = 0; i < pos.length; i++) {
+        self.dragOffsets.push({
+          x: self.dragStartPositions[i].pageX - pos[i].pageX,
+          y: self.dragStartPositions[i].pageY - pos[i].pageY
+        });
+      }
 
-      self.dragX = pos.pageX;
-      self.dragY = pos.pageY;
-
-      self.dragOffsetX = self.dragStartX - self.dragX;
-      self.dragOffsetY = self.dragStartY - self.dragY;
-      self.dragTimeOffset = self.pixelOffsetToTimeOffset(self.dragOffsetX);
+      self.dragTimeOffset = self.pixelOffsetToTimeOffset(self.dragOffsets[0].x);
 
       self['drag_' + self.dragType](e);
 
