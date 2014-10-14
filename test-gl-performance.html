@@ -3,15 +3,16 @@
   <head>
     <meta charset='utf-8'/>
     <script src="js/libs/jquery-1.10.2.min.js"></script>
+    <script src="js/libs/stats.min.js"></script>
  
     <script type="text/shader" id="vertex-shader">
-      attribute vec2 position; //the position of the point
-      attribute vec3 color; //the color of the point
+      attribute vec2 position;
+      attribute vec3 color;
  
       varying vec3 vColor;
  
-      void main(void) { //pre-built function
-        gl_Position = vec4(position, 0., 1.); //0. is the z, and 1 is w
+      void main(void) {
+        gl_Position = vec4(position, 0., 1.);
         gl_PointSize = 1.0;
         vColor=color;
       }
@@ -32,6 +33,13 @@
         var CANVAS=$("#your_canvas")[0];
         CANVAS.width=window.innerWidth;
         CANVAS.height=window.innerHeight;
+
+        var stats = new Stats();
+        stats.setMode(0);
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+        document.body.appendChild(stats.domElement);
  
         try {
           var GL = CANVAS.getContext("experimental-webgl", {antialias: true});
@@ -116,26 +124,46 @@
  
         GL.clearColor(0.0, 0.0, 0.0, 0.0);
         GL.viewport(0.0, 0.0, CANVAS.width, CANVAS.height);
-        GL.clear(GL.COLOR_BUFFER_BIT);
- 
-        var start = performance.now();
-        for (var i = 0; i < datasetsnr; i++) {
-          var dataset = datasets[i];
- 
-          GL.bindBuffer(GL.ARRAY_BUFFER, dataset.pointBuffer);
-          GL.enableVertexAttribArray(_position);
-          GL.vertexAttribPointer(_position, 2, GL.FLOAT, false, 0, 0);
-          GL.bindBuffer(GL.ARRAY_BUFFER, dataset.colorBuffer);
-          GL.enableVertexAttribArray(_color);
-          GL.vertexAttribPointer(_color, 3, GL.FLOAT, false, 0, 0);
- 
-          GL.drawArrays(GL.POINTS, 0, datasetpointsnr);
+
+        timings = {
+          time: 0,
+          count: 0
+        };
+
+        function renderFrame() {
+
+          stats.begin();
+          var start = performance.now();
+
+          GL.clear(GL.COLOR_BUFFER_BIT);
+          for (var i = 0; i < datasetsnr; i++) {
+            var dataset = datasets[i];
+
+            GL.bindBuffer(GL.ARRAY_BUFFER, dataset.pointBuffer);
+            GL.enableVertexAttribArray(_position);
+            GL.vertexAttribPointer(_position, 2, GL.FLOAT, false, 0, 0);
+            GL.bindBuffer(GL.ARRAY_BUFFER, dataset.colorBuffer);
+            GL.enableVertexAttribArray(_color);
+            GL.vertexAttribPointer(_color, 3, GL.FLOAT, false, 0, 0);
+
+            GL.drawArrays(GL.POINTS, 0, datasetpointsnr);
+          }
+          GL.flush();
+
+          var end = performance.now();
+          stats.end();
+
+          timings.time += end - start;
+          timings.count++;
+
+          if (timings.count % 100 == 0) {
+            console.log("Avg. JS draw time: " + (timings.time / timings.count));
+          }
+
+          window.requestAnimationFrame(renderFrame, CANVAS);
         }
-        var end = performance.now();
- 
-        console.log("Draw time for " + datasetsnr + " arrays of " + datasetpointsnr + " points = " + (end - start));
- 
-        GL.flush();
+
+        renderFrame();
       });
     </script>
   </head>
