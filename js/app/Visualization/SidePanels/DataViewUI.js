@@ -68,33 +68,41 @@ if (!app.useDojo) {
             source: source.key
           }
         );
-        sourcewidget.addChild(new HorizontalSlider({
-          name: source.key,
-          "class": "pull-right",
-          value: source.value,
-          minimum: min,
-          maximum: max,
-          intermediateChanges: true,
-          style: "width:200px;",
-          onChange: function (value) {
-            Logging.main.log(
-              "DataViewUI.set." + spec.name + "." + source.key,
-              {
-                toString: function () {
-                  return this.column + " = " + this.value + " * " + this.source;
-                },
-                column: spec.name,
-                value: value,
-                source: source.key
-              }
-            );
-            $(sourcewidget.domNode).find('.value').html(value.toPrecision(3));
-            spec.source[source.key] = value;
-            self.dataview.changeCol(spec);
-          }
-        }));
+        if (source.value != null) {
+          sourcewidget.addChild(new HorizontalSlider({
+            name: source.key,
+            "class": "pull-right",
+            value: source.value,
+            minimum: min,
+            maximum: max,
+            intermediateChanges: true,
+            style: "width:200px;",
+            onChange: function (value) {
+              Logging.main.log(
+                "DataViewUI.set." + spec.name + "." + source.key,
+                {
+                  toString: function () {
+                    return this.column + " = " + this.value + " * " + this.source;
+                  },
+                  column: spec.name,
+                  value: value,
+                  source: source.key
+                }
+              );
+              $(sourcewidget.domNode).find('.value').html(value.toPrecision(3));
+              spec.source[source.key] = value;
+              self.dataview.changeCol(spec);
+            }
+          }));
+        }
         $(sourcewidget.domNode).append("<span class='value' style='float: right;'>");
-        $(sourcewidget.domNode).find('.value').html(source.value.toPrecision(3));
+        var label = "";
+        if (source.value === null) {
+          label = "Automatic";
+        } else {
+          label = source.value.toPrecision(3);
+        }
+        $(sourcewidget.domNode).find('.value').html(label);
         colwidget.addChild(sourcewidget);
       },
 

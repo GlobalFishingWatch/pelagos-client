@@ -274,7 +274,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
             value = Object.keys(column.value.source).length - 1;
           }
         }
-        program.gl.uniform1f(program.uniforms['attrmap_' + column.key + '_from_' + srcKey], source.value);
+        program.gl.uniform1f(program.uniforms['attrmap_' + column.key + '_from_' + srcKey], value);
       });
     });
     Object.items(dataView.selections).map(function (item) {
