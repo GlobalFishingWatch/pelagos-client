@@ -395,6 +395,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     printTree: function (args) {
       var self = this;
+      args = args || {};
 
       var printed = {};
 
@@ -445,17 +446,18 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         };
       }
 
+      var indent = args.indent || "";
       var res = "";
-      res += 'Wanted tiles:\n'
-      res += Object.values(self.wantedTiles).filter(filter).map(printTree.bind(self, "  ", 0)).join("\n");
+      res += indent + 'Wanted tiles:\n'
+      res += Object.values(self.wantedTiles).filter(filter).map(printTree.bind(self, indent + "  ", 0)).join("");
 
       if (!args.coveredBy && !args.covers) {
-        res += 'Forgotten tiles:\n'
+        res += indent + 'Forgotten tiles:\n'
         res += Object.values(self.tileCache).filter(function (tile) {
           return !printed[tile.bounds.toBBOX()];
         }).map(
-          printTree.bind(self, "  ", 0)
-        ).join("\n");
+          printTree.bind(self, indent + "  ", 0)
+        ).join("");
       }
 
       return res;
