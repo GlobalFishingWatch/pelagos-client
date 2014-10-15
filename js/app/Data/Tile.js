@@ -106,8 +106,8 @@ define(["app/Class", "app/Events"], function(Class, Events) {
 
     destroy: function () {
       var self = this;
-      if (self.usage == 0) return;
-      self.usage = 0;
+      if (self.usage == -1) return;
+      self.usage = -1;
       self.content.destroy();
       self.removeOverlaps();
       if (self.replacement) {
