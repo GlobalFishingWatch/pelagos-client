@@ -220,6 +220,15 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       return new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
     },
 
+    clear: function () {
+      var self = this;
+
+      self.wantedTiles = {};
+      Object.values(self.tileCache).map(function (tile) {
+        tile.destroy();
+      });
+    },
+
     zoomTo: function (bounds) {
       var self = this;
 
@@ -235,6 +244,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
          * what URL alternatives there are. */
         self.initialZoom = bounds;
         return;
+      }
+
+      if (self.getLoadingTiles().length > 0) {
+        /* Don't keep old tiles when we zoom multiple times in a row or everything gets way too slow... */
+        console.log("CLEAR");
+        self.clear();
       }
 
       var oldBounds = self.bounds;
