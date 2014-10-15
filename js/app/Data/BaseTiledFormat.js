@@ -448,8 +448,11 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
       var indent = args.indent || "";
       var res = "";
-      res += indent + 'Wanted tiles:\n'
-      res += Object.values(self.wantedTiles).filter(filter).map(printTree.bind(self, indent + "  ", 0)).join("");
+      var wantedTiles = Object.values(self.wantedTiles).filter(filter);
+      var rows = wantedTiles.map(function (tile) { return tile.content && tile.content.header && tile.content.header.length || 0; }).reduce(function (a, b) { return a + b }, 0);
+      var loaded = wantedTiles.map(function (tile) { return tile.content.allIsLoaded ? 1 : 0; }).reduce(function (a, b) { return a + b }, 0);
+      res += indent + 'Wanted tiles (Rows: ' + rows + ', Loaded: ' + loaded + '):\n'
+      res += wantedTiles.map(printTree.bind(self, indent + "  ", 0)).join("");
 
       if (!args.coveredBy && !args.covers) {
         res += indent + 'Forgotten tiles:\n'
