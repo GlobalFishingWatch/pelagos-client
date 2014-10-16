@@ -12,6 +12,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
       self.content = undefined; // An instance of Format
 
       self.events = new Events("Data.Tile");
+      self.destroyed = false;
     },
 
     setContent: function (content) {
@@ -106,8 +107,8 @@ define(["app/Class", "app/Events"], function(Class, Events) {
 
     destroy: function () {
       var self = this;
-      if (self.usage == -1) return;
-      self.usage = -1;
+      if (self.destroyed) return;
+      self.destroyed = true;
       self.content.destroy();
       self.removeOverlaps();
       if (self.replacement) {
