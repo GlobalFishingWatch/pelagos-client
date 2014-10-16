@@ -36,7 +36,7 @@ $(LIBS)/require.js:
 	curl -L http://requirejs.org/docs/release/2.1.14/minified/require.js > $@
 
 $(LIBS)/stacktrace.js:
-	curl -L https://rawgithub.com/stacktracejs/stacktrace.js/master/stacktrace.js > $@
+	curl -L https://rawgithub.com/stacktracejs/stacktrace.js/stable/stacktrace.js > $@
 
 $(LIBS)/loggly.tracker.js:
 	curl -L https://raw.githubusercontent.com/loggly/loggly-jslogger/master/src/loggly.tracker.js > $@
