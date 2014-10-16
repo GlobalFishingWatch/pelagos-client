@@ -662,9 +662,15 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       if (self.dragData.offsets.length == 1) {
         self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[0].time, 'temporary-range');
       } else if (self.dragData.offsets.length > 1) {
+        var start = self.dragData.range.windowStart.getTime() + self.dragData.offsets[0].time;
+        var end = self.dragData.range.windowEnd.getTime() + self.dragData.offsets[1].time;
+        if (end - start < self.minWindowSize) {
+          end = start + self.minWindowSize;
+        }
+
         self.setRange(
-          new Date(self.dragData.range.windowStart.getTime() + self.dragData.offsets[0].time),
-          new Date(self.dragData.range.windowEnd.getTime() + self.dragData.offsets[1].time),
+          new Date(start),
+          new Date(end),
           'temporary-range'
         );
       }
