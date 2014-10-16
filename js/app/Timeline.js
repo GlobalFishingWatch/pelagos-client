@@ -325,11 +325,12 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       return new Date(self.visibleStart.getTime() + self.pixelOffsetToTimeOffset(offset));
     },
 
-    pixelOffsetToTimeOffset: function (offset) {
+      pixelOffsetToTimeOffset: function (offset, visibleContextSize) {
       var self = this;
       var pixelWidth = self.lineVisibilityNode.innerWidth();
       var percentOffset = 100.0 * offset / pixelWidth;
-      return percentOffset * self.visibleContextSize / 100.0;
+      if (visibleContextSize == undefined) visibleContextSize = self.visibleContextSize;
+      return percentOffset * visibleContextSize / 100.0;
     },
 
     zoomOut: function (e) {
@@ -582,6 +583,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.dragData = {};
       self.dragData.type = type;
       self.dragData.startPositions = self.getEventPositions(e);
+      self.dragData.startVisibleContextSize = self.visibleContextSize;
       self['dragStart_' + self.dragData.type](e);
       self.eatEvent(e);
     },
@@ -598,7 +600,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
           x: self.dragData.startPositions[i].pageX - self.dragData.currentPositions[i].pageX,
           y: self.dragData.startPositions[i].pageY - self.dragData.currentPositions[i].pageY
         };
-        offsets.time = self.pixelOffsetToTimeOffset(offsets.x);
+        offsets.time = self.pixelOffsetToTimeOffset(offsets.x, self.dragData.startVisibleContextSize);
         self.dragData.offsets.push(offsets);
       }
 
