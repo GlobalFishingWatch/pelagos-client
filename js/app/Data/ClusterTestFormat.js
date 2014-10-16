@@ -28,7 +28,7 @@ define(["app/Class", "app/Events", "app/Data/Format", "app/Data/EmptyFormat"], f
             "latitude":  {"max": 90.0, "min": 0, "type": "Float32"},
             "longitude": {"max": 90.0, "min": 0, "type": "Float32"},
 
-            "rowidx": {"max": self.rowcount-1, "min": 0, "type": "Float32"},
+            "rowidx": {"max": self.rowcount-1, "min": 0, "type": "Float32"}
           },
           "tilesetVersion": "0.1",
           length: self.rowcount
