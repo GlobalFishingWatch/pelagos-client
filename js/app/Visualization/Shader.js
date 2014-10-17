@@ -178,7 +178,9 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
   Shader.compileSelectionsMappingDeclarations = function (dataView) {
     return Object.items(dataView.selections).map(function (item) {
       return range(0, item.value.max_range_count, function (rangeidx) {
-        return item.value.sortcols.map(function (sortcol) {
+        return item.value.sortcols.filter(function (sortcol) {
+          return dataView.source.header.colsByName[sortcol] != undefined;
+        }).map(function (sortcol) {
           return (
             'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower;\n' +
             'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper;');
@@ -190,13 +192,22 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
   Shader.compileSelectionsMapper = function (dataView) {
     return 'void selectionmapper() {\n' +
       Object.items(dataView.selections).map(function (item) {
-        return '  scaled_' + item.key + ' = (\n' +
-          range(0, item.value.max_range_count, function (rangeidx) {
-            return "    (\n" + item.value.sortcols.map(function (sortcol) {
-                return '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower <= ' + sortcol + ' &&\n' +
-                       '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper >= ' + sortcol;
-            }).join(' &&\n') + ")"
-          }).join(' ||\n') + ') ? 1.0 : 0.0;';
+        var cols = item.value.sortcols.filter(function (col) {
+          return dataView.source.header.colsByName[col] != undefined;
+        });
+        var res = '  scaled_' + item.key + ' = ';
+        if (cols.length == 0) {
+          res += '1.0;';
+        } else {
+          res += '(\n' +
+            range(0, item.value.max_range_count, function (rangeidx) {
+              return "    (\n" + cols.map(function (sortcol) {
+                  return '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower <= ' + sortcol + ' &&\n' +
+                         '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper >= ' + sortcol;
+              }).join(' &&\n') + ")"
+            }).join(' ||\n') + ') ? 1.0 : 0.0;';
+        }
+        return res;
       }).join('\n') +
       '\n}\n';
   };
