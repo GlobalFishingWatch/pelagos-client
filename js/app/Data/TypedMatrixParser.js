@@ -177,7 +177,16 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
     headerLoaded: function (data) {
       var self = this;
-      self.events.triggerEvent("header", data);
+
+      if (data.nodata) {
+        self.errorLoading({
+          toString: function () {
+            return 'Could not load ' + this.url + ' due to it being empty';
+          }
+        });
+      } else {
+        self.events.triggerEvent("header", data);
+      }
     },
 
     colLoaded: function (col, colValues) {
@@ -217,6 +226,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       var self = this;
 
       if (!self.request) return;
+      if (self.error) return true;
 
       if (self.request.readyState == 4) {
         /* HTTP reports success with a 200 status. The file protocol
