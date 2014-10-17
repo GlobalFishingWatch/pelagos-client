@@ -18,7 +18,7 @@ void main() {
   gl_Position = lonlat2screen(vec2(_longitude, _latitude), mapMatrix);
   baseColor = rowidxColor(tileidx, rowidx);
 
-  if (_time < startTime || _time > endTime) {
+  if (_filter > 0.0) {
     baseColor = vec4(0, 0, 0, 0);
     gl_PointSize = 0.0;
   } else {
