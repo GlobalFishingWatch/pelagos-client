@@ -113,7 +113,7 @@ if (!app.useDojo) {
         if (selection.sortcols.length != 1) return;
         var sourcename = selection.sortcols[0]
         var source = self.dataview.source.header.colsByName[sourcename];
-        if (!source.choices) return;
+        if (!source || !source.choices) return;
 
         var selectionwidget = new ContentPane({
           content: "<div>" + name + " from " + sourcename + "</div>",
