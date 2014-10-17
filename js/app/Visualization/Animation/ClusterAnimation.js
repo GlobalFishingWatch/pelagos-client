@@ -9,8 +9,15 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
       sigma: {type: "Float32", source: {sigma: 1}, min: 0.0, max: 1.0},
       weight: {type: "Float32", source: {weight: 1}, min: 0.0, max: 1.0},
 
-      time: {type: "Float32", hidden: true, source: {datetime: 1.0}}
+      time: {type: "Float32", hidden: true, source: {datetime: 1.0}},
+
+      filter: {type: "Float32", source: {_: null, timerange: -1.0, active_category: -1.0}}
     },
+
+    selections: $.extend(
+      {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
+      Animation.prototype.selections
+    ),
 
     programSpecs: {
       program: {
