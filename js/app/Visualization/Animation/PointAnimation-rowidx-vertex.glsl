@@ -2,8 +2,6 @@
 #pragma include 'app/Visualization/Animation/mercator.glsl';
 #pragma include 'app/Visualization/Animation/rowidx.glsl';
 
-uniform float startTime;
-uniform float endTime;
 uniform float pointSize;
 
 uniform mat4 mapMatrix;

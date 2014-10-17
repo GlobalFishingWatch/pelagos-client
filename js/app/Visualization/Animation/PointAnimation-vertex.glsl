@@ -1,8 +1,6 @@
 #pragma include 'attrmapper';
 #pragma include 'app/Visualization/Animation/mercator.glsl';
 
-uniform float startTime;
-uniform float endTime;
 uniform float pointSize;
 
 uniform mat4 mapMatrix;

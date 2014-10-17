@@ -232,8 +232,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       program.gl.uniform1f(program.uniforms.pointSize, pointSize*1.0);
       program.gl.uniformMatrix4fv(program.uniforms.mapMatrix, false, self.manager.mapMatrix);
-      program.gl.uniform1f(program.uniforms.startTime, time - timeExtent);
-      program.gl.uniform1f(program.uniforms.endTime, time);
 
       Shader.setMappingUniforms(program, self.data_view);
     },
