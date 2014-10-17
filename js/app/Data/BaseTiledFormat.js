@@ -220,6 +220,15 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       return new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
     },
 
+    clear: function () {
+      var self = this;
+
+      self.wantedTiles = {};
+      Object.values(self.tileCache).map(function (tile) {
+        tile.destroy();
+      });
+    },
+
     zoomTo: function (bounds) {
       var self = this;
 
@@ -235,6 +244,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
          * what URL alternatives there are. */
         self.initialZoom = bounds;
         return;
+      }
+
+      if (self.getLoadingTiles().length > 0) {
+        /* Don't keep old tiles when we zoom multiple times in a row or everything gets way too slow... */
+        console.log("CLEAR");
+        self.clear();
       }
 
       var oldBounds = self.bounds;
@@ -375,13 +390,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     getContent: function () {
       var self = this;
 
-      return self.getDoneTiles().map(function (tile) {
-        return tile.content;
-      });
+      return self.getDoneTiles();
     },
 
-    printTree: function (maxdepth) {
+    printTree: function (args) {
       var self = this;
+      args = args || {};
 
       var printed = {};
 
@@ -396,9 +410,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var length = tile.content && tile.content.header ? ", Rows: " + tile.content.header.length : "";
         var wanted = self.wantedTiles[key] ? ", wanted" : "";
         var error = tile.content.error ? ", error" : "";
-        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + ")";
-        if (maxdepth != undefined && depth > maxdepth) {
+        var tags = tile.content && tile.content.header && tile.content.header.tags ? ", " + tile.content.header.tags.join(", ") : "";
+        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + tags + ")";
+        if (args.maxdepth != undefined && depth > args.maxdepth) {
           res += " ...\n";
+        } else if (again && !args.expand) {
+          res += " (see above)\n";
         } else {
           res += "\n";
 
@@ -418,16 +435,33 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         return res;
       }
 
-      var res = "";
-      res += 'Wanted tiles:\n'
-        res += Object.values(self.wantedTiles).map(printTree.bind(self, "  ", 0)).join("\n");
-      res += 'Forgotten tiles:\n'
+      var filter = function (tile) { return true; };
+      if (args.covers) {
+        filter = function (tile) {
+          return tile.bounds.containsBounds(new Bounds(args.covers))
+        };
+      } else if (args.coveredBy) {
+        filter = function (tile) {
+          return new Bounds(args.coveredBy).containsBounds(tile.bounds)
+        };
+      }
 
-      res += Object.values(self.tileCache).filter(function (tile) {
-        return !printed[tile.bounds.toBBOX()];
-      }).map(
-        printTree.bind(self, "  ", 0)
-      ).join("\n");
+      var indent = args.indent || "";
+      var res = "";
+      var wantedTiles = Object.values(self.wantedTiles).filter(filter);
+      var rows = wantedTiles.map(function (tile) { return tile.content && tile.content.header && tile.content.header.length || 0; }).reduce(function (a, b) { return a + b }, 0);
+      var loaded = wantedTiles.map(function (tile) { return tile.content.allIsLoaded ? 1 : 0; }).reduce(function (a, b) { return a + b }, 0);
+      res += indent + 'Wanted tiles (Rows: ' + rows + ', Loaded: ' + loaded + '):\n'
+      res += wantedTiles.map(printTree.bind(self, indent + "  ", 0)).join("");
+
+      if (!args.coveredBy && !args.covers) {
+        res += indent + 'Forgotten tiles:\n'
+        res += Object.values(self.tileCache).filter(function (tile) {
+          return !printed[tile.bounds.toBBOX()];
+        }).map(
+          printTree.bind(self, indent + "  ", 0)
+        ).join("");
+      }
 
       return res;
     },

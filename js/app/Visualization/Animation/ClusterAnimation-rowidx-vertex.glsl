@@ -4,7 +4,7 @@
 
 uniform float pointSize;
 
-uniform mat4 mapMatrix;
+uniform mat4 googleMercator2webglMatrix;
 
 uniform float tileidx;
 
@@ -16,7 +16,7 @@ varying vec4 baseColor;
 void main() {
   mapper();
 
-  gl_Position = lonlat2screen(vec2(_longitude, _latitude), mapMatrix);
+  gl_Position = lonlat2screen(vec2(_longitude, _latitude), googleMercator2webglMatrix);
   baseColor = rowidxColor(tileidx, rowidx);
 
   if (_filter > 0.0) {

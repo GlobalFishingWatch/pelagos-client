@@ -7,7 +7,14 @@ profile = {
                       "app/Visualization/DataViewUI": true,
                       "app/Visualization/InfoUI": true,
                       "app/Visualization/LoggingUI": true,
-                      "app/Visualization/SidePanels": true};
+                      "app/Visualization/DojoUI": true,
+                      "app/Visualization/SidePanels/AnimationManagerUI": true,
+                      "app/Visualization/SidePanels/DataUI": true,
+                      "app/Visualization/SidePanels/DataViewUI": true,
+                      "app/Visualization/SidePanels/InfoUI": true,
+                      "app/Visualization/SidePanels/LoggingUI": true,
+                      "app/Visualization/SidePanels/SidePanelManager": true
+                     };
       if (specials[mid]) return false;
       return /\.js$/.test(filename);
     }

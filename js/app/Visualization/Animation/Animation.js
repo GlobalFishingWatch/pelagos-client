@@ -164,17 +164,17 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       var tileidx = 0;
       self.data_view.source.getContent().map(function (tile) {
-        self.bindDataViewArrayBuffers(program, tile);
+        self.bindDataViewArrayBuffers(program, tile.content);
 
         program.gl.uniform1f(program.uniforms.tileidx, tileidx);
 
         // -1 since series contains POINT_COUNT in the last item
-        for (var i = 0; i < tile.series.length - 1; i++) {
-          if (tile.series[i+1]-tile.series[i] > 0) {
+        for (var i = 0; i < tile.content.series.length - 1; i++) {
+          if (tile.content.series[i+1]-tile.content.series[i] > 0) {
             program.gl.drawArrays(
               mode,
-              tile.series[i],
-              tile.series[i+1]-tile.series[i]
+              tile.content.series[i],
+              tile.content.series[i+1]-tile.content.series[i]
             );
           }
         }
@@ -194,14 +194,14 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       program.dataViewArrayBuffers = {};
 
       self.data_view.source.getContent().map(function (tile) {
-        if (dataViewArrayBuffers[tile.url]) {
-          program.dataViewArrayBuffers[tile.url] = dataViewArrayBuffers[tile.url];
+        if (dataViewArrayBuffers[tile.content.url]) {
+          program.dataViewArrayBuffers[tile.content.url] = dataViewArrayBuffers[tile.content.url];
         } else {
-          program.dataViewArrayBuffers[tile.url] = {};
+          program.dataViewArrayBuffers[tile.content.url] = {};
 
-          Object.keys(tile.header.colsByName).map(function (name) {
-            program.dataViewArrayBuffers[tile.url][name] = program.gl.createBuffer();
-            Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.url][name], tile.data[name], program);
+          Object.keys(tile.content.header.colsByName).map(function (name) {
+            program.dataViewArrayBuffers[tile.content.url][name] = program.gl.createBuffer();
+            Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.content.url][name], tile.content.data[name], program);
           });
         }
       });
@@ -224,14 +224,20 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       time = time.getTime();
 
       self.data_view.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
+      program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
+      program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
+      program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
 
       // pointSize range [5,20], 21 zoom levels
       var pointSize = Math.max(
         Math.floor( ((20-5) * (self.manager.map.zoom - 0) / (21 - 0)) + 5 ),
-        GeoProjection.getPixelDiameterAtLatitude(self.manager.visualization.state.getValue("resolution") || 1000, self.manager.map.getCenter().lat(), self.manager.map.zoom));
+        ((self.manager.visualization.state.getValue("resolution") || 1000)
+         / GeoProjection.metersPerGoogleMercatorAtLatitude(
+             self.manager.map.getCenter().lat(),
+             self.manager.map.zoom)));
 
       program.gl.uniform1f(program.uniforms.pointSize, pointSize*1.0);
-      program.gl.uniformMatrix4fv(program.uniforms.mapMatrix, false, self.manager.mapMatrix);
+      program.gl.uniformMatrix4fv(program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
 
       Shader.setMappingUniforms(program, self.data_view);
     },

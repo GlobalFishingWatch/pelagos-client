@@ -35,7 +35,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       self.canvasLayer = undefined;
       self.gl = undefined;
       self.pixelsToWebGLMatrix = new Float32Array(16);
-      self.mapMatrix = new Float32Array(16);
+      self.googleMercator2webglMatrix = new Float32Array(16);
 
       async.series([
         self.initMap.bind(self),
@@ -132,11 +132,20 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
     handleMouse: function (e, type) {
       var self = this;
 
-      var offset = self.node.offset();
+      var x, y;
+
+      if (e.pageX != undefined) {
+        var offset = self.node.offset();
+        x = e.pageX - offset.left;
+        y = e.pageY - offset.top;
+      } else {
+        x = e.pixel.x;
+        y = e.pixel.y;
+      }
 
       for (var key in self.animations) {
         var animation = self.animations[key];
-        if (animation.select(e.pageX - offset.left, e.pageY - offset.top, type, true)) {
+        if (animation.select(x, y, type, true)) {
           return animation.data_view;
         }
       }
@@ -211,8 +220,10 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       self.infoPopup = new google.maps.InfoWindow({});
 
-      self.node.mousemove(function (e) { self.handleMouse(e, 'hover'); });
-      self.node.click(function (e) {
+      self.node.mousemove(function (e) {
+        if (!self.indrag) self.handleMouse(e, 'hover');
+      });
+      google.maps.event.addListener(self.map, "click", function(e) {
         self.handleMouseSelection(e, 'selected', KeyModifiers.active.Shift, function (err, data) {
           if (err) {
             self.events.triggerEvent('info-error', err);
@@ -398,13 +409,13 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var mapProjection = self.map.getProjection();
 
       // copy pixel->webgl matrix
-      self.mapMatrix.set(self.pixelsToWebGLMatrix);
+      self.googleMercator2webglMatrix.set(self.pixelsToWebGLMatrix);
 
       var scale = self.canvasLayer.getMapScale();
-      Matrix.scaleMatrix(self.mapMatrix, scale, scale);
+      Matrix.scaleMatrix(self.googleMercator2webglMatrix, scale, scale);
 
       var translation = self.canvasLayer.getMapTranslation();
-      Matrix.translateMatrix(self.mapMatrix, translation.x, translation.y);
+      Matrix.translateMatrix(self.googleMercator2webglMatrix, translation.x, translation.y);
     },
 
     update: function() {

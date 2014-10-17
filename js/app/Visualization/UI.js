@@ -92,9 +92,11 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
       self.loadingNode.hide();
       self.visualization.data.events.on({
         load: function () {
+          self.buttonNodes.loading.addClass("loading-active");
           self.loadingNode.fadeIn();
         },
         all: function () {
+          self.buttonNodes.loading.removeClass("loading-active");
           self.loadingNode.fadeOut();
         },
         error: function (data) {
