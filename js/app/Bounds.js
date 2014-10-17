@@ -167,6 +167,11 @@ define(["app/Class"], function(Class) {
       while (res.right > world.right) {
         res.right -= worldWidth;
       }
+
+      /* Normalize the special case around the dateline so that the
+       * return values from this function are unique */
+      if (res.left == 180) res.left = -180;
+      if (res.right == -180) res.right = 180;
       return res;
     },
 
