@@ -28,12 +28,14 @@ void main() {
     gl_PointSize = 0.0;
     vWeight = 0.0;
   } else {
-    float ps = 0.5;
-    // float radius = ps + _sigma;
-    float radius = ps + 2.5 * _sigma;
+    float ps = 0.01; // In WebGL units
+
+    float webglSigma = latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
+
+    float radius = ps + 2.5 * webglSigma;
     float areaScale = ps*ps / (radius*radius);
 
-    gl_PointSize = pixelsPerWebGlX * latLonDistanceToWebGL(radius, lonlat, googleMercator2webglMatrix);
+    gl_PointSize = pixelsPerWebGlX * radius;
 
     vWeight = areaScale * _weight;
   }
