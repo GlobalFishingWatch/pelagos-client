@@ -71,16 +71,16 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     var msg = match[2];
 
     var lines = src.split('\n');
-      return [].concat(
-        lines.slice(0, line),
-        ['/********************************',
-         ' * ',
-         ' * ' + msg,
-         ' * ',
-         ' ********************************/',
-         ''],
-        lines.slice(line)
-      ).join('\n');
+    return [].concat(
+      lines.slice(0, line),
+      ['/********************************',
+       ' * ',
+       ' * ' + msg,
+       ' * ',
+       ' ********************************/',
+       ''],
+      lines.slice(line)
+    ).join('\n');
   };
 
   Shader.createShaderProgramFromSource = function(gl, vertexSrc, fragmentSrc, attr0) {
@@ -90,7 +90,9 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     gl.compileShader(vertexShader);
 
     if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-      throw Shader.formatError(gl.getShaderInfoLog(vertexShader), vertexSrc);
+      var err = Shader.formatError(gl.getShaderInfoLog(vertexShader), vertexSrc);
+      console.error(err);
+      throw err;
     }
 
     // create fragment shader
@@ -99,7 +101,9 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     gl.compileShader(fragmentShader);
 
     if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-      throw Shader.formatError(gl.getShaderInfoLog(fragmentShader), fragmentSrc);
+      var err = Shader.formatError(gl.getShaderInfoLog(fragmentShader), fragmentSrc);
+      console.error(err);
+      throw err;
     }
 
     // link shaders to create our program
