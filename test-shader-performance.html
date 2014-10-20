@@ -8,7 +8,7 @@
         useDojo: false,
         useBuild: false,
         main: function () {
-          require(["app/Class", "app/Events", "app/Bounds", "app/Visualization/Shader", "app/Data/DataView", "app/Data/TiledBinFormat"], function (Class, Events, Bounds, Shader, DataView, TiledBinFormat) {
+          require(["app/Class", "app/Events", "app/Bounds", "app/Visualization/Shader", "app/Data/DataView", "Stats"], function (Class, Events, Bounds, Shader, DataView, Stats) {
 
             var datasetsnr = 1;
             var datasetpointsnr = 500000;
@@ -32,6 +32,13 @@
               var canvas=$("#your_canvas")[0];
               canvas.width=window.innerWidth;
               canvas.height=window.innerHeight;
+
+              stats = new Stats();
+              stats.setMode(0);
+              stats.domElement.style.position = 'absolute';
+              stats.domElement.style.left = '0px';
+              stats.domElement.style.top = '0px';
+              document.body.appendChild(stats.domElement);
 
               try {
                 var gl = canvas.getContext("experimental-webgl", {antialias: true});
@@ -102,23 +109,47 @@
 
               gl.clearColor(0.0, 0.0, 0.0, 0.0);
               gl.viewport(0.0, 0.0, gl.canvas.width, gl.canvas.height);
-              gl.clear(gl.COLOR_BUFFER_BIT);
 
 
-              var start = performance.now();
+              timings = {
+                time: 0,
+                count: 0
+              };
 
-              datasets.map(function (dataset) {
-                Shader.programBindArray(gl, dataset.latitudeBuffer, gl.program, "latitude", 1, gl.FLOAT);
-                Shader.programBindArray(gl, dataset.longitudeBuffer, gl.program, "longitude", 1, gl.FLOAT);
+              function renderFrame() {
 
-                gl.drawArrays(gl.POINTS, 0, datasetpointsnr);
-              });
+                stats.begin();
+                var start = performance.now();
 
-              var end = performance.now();
+                gl.clear(gl.COLOR_BUFFER_BIT);
 
-              console.log("Draw time: " + (end - start));
 
-              gl.flush();
+                var start = performance.now();
+
+                datasets.map(function (dataset) {
+                  Shader.programBindArray(gl, dataset.latitudeBuffer, gl.program, "latitude", 1, gl.FLOAT);
+                  Shader.programBindArray(gl, dataset.longitudeBuffer, gl.program, "longitude", 1, gl.FLOAT);
+
+                  gl.drawArrays(gl.POINTS, 0, datasetpointsnr);
+                });
+
+                gl.flush();
+
+                var end = performance.now();
+                stats.end();
+
+
+                timings.time += end - start;
+                timings.count++;
+
+                if (timings.count % 100 == 0) {
+                  console.log("Avg. JS draw time: " + (timings.time / timings.count));
+                }
+
+                window.requestAnimationFrame(renderFrame, gl.canvas);
+              }
+
+              renderFrame();
             };
 
             data_view = new DataView(
