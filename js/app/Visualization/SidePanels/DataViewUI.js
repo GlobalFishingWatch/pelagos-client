@@ -9,6 +9,7 @@ if (!app.useDojo) {
     "jQuery",
     "dijit/Fieldset",
     "dijit/form/HorizontalSlider",
+    "dijit/form/MultiSelect",
     "dojox/layout/FloatingPane",
     "dijit/layout/ContentPane",
     "dijit/Menu",
@@ -17,7 +18,7 @@ if (!app.useDojo) {
     "dojo/dom",
     "dojo/parser",
     "dojo/domReady!"
-  ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Menu, MenuItem, popup){
+  ], function(Class, Logging, $, Fieldset, HorizontalSlider, MultiSelect, FloatingPane, ContentPane, Menu, MenuItem, popup){
     return Class({
       name: "DataViewUI",
       initialize: function (dataview) {
@@ -67,40 +68,99 @@ if (!app.useDojo) {
             source: source.key
           }
         );
-        sourcewidget.addChild(new HorizontalSlider({
-          name: source.key,
-          "class": "pull-right",
-          value: source.value,
-          minimum: min,
-          maximum: max,
-          intermediateChanges: true,
-          style: "width:200px;",
-          onChange: function (value) {
-            Logging.main.log(
-              "DataViewUI.set." + spec.name + "." + source.key,
-              {
-                toString: function () {
-                  return this.column + " = " + this.value + " * " + this.source;
-                },
-                column: spec.name,
-                value: value,
-                source: source.key
-              }
-            );
-            $(sourcewidget.domNode).find('.value').html(value.toPrecision(3));
-            spec.source[source.key] = value;
-            self.dataview.changeCol(spec);
-          }
-        }));
+        if (source.value != null) {
+          sourcewidget.addChild(new HorizontalSlider({
+            name: source.key,
+            "class": "pull-right",
+            value: source.value,
+            minimum: min,
+            maximum: max,
+            intermediateChanges: true,
+            style: "width:200px;",
+            onChange: function (value) {
+              Logging.main.log(
+                "DataViewUI.set." + spec.name + "." + source.key,
+                {
+                  toString: function () {
+                    return this.column + " = " + this.value + " * " + this.source;
+                  },
+                  column: spec.name,
+                  value: value,
+                  source: source.key
+                }
+              );
+              $(sourcewidget.domNode).find('.value').html(value.toPrecision(3));
+              spec.source[source.key] = value;
+              self.dataview.changeCol(spec);
+            }
+          }));
+        }
         $(sourcewidget.domNode).append("<span class='value' style='float: right;'>");
-        $(sourcewidget.domNode).find('.value').html(source.value.toPrecision(3));
+        var label = "";
+        if (source.value === null) {
+          label = "Automatic";
+        } else {
+          label = source.value.toPrecision(3);
+        }
+        $(sourcewidget.domNode).find('.value').html(label);
         colwidget.addChild(sourcewidget);
       },
 
+      generateSelectionUI: function (ui, name, selection) {
+        var self = this;
+
+        if (selection.hidden) return;
+        if (selection.sortcols.length != 1) return;
+        var sourcename = selection.sortcols[0]
+        var source = self.dataview.source.header.colsByName[sourcename];
+        if (!source || !source.choices) return;
+
+        var selectionwidget = new ContentPane({
+          content: "<div>" + name + " from " + sourcename + "</div>",
+          style: "padding-top: 0; padding-bottom: 0;"
+        });
+
+        var selectionselect = $("<select multiple='true'>");
+        Object.items(source.choices).map(function (item) {
+          var option = $("<option>");
+          option.text(item.key);
+          option.attr({value:item.value});
+          if (selection.data[sourcename].indexOf(item.value) != -1) {
+            option.attr({selected:'true'});
+          }
+          selectionselect.append(option);
+        })
+        selectionselect.change(function () {
+          selection.clearRanges();
+          var values = selectionselect.val();
+          if (values) {
+            values.map(function (value) {
+              var data = {};
+              data[sourcename] = value;
+              selection.addDataRange(data, data);
+            });
+          } else {
+            var startData = {};
+            var endData = {};
+            startData[sourcename] = -1.0/0.0;
+            endData[sourcename] = 1.0/0.0;
+            selection.addDataRange(startData, endData);
+          }
+        });
+
+        $(selectionwidget.domNode).append(selectionselect);
+
+        ui.addChild(selectionwidget);
+      },
+      
       generateUI: function () {
         var self = this;
 
         var ui = new ContentPane({});
+
+        Object.items(self.dataview.selections).map(function (item) {
+          self.generateSelectionUI(ui, item.key, item.value);
+        });
 
         Object.values(self.dataview.header.colsByName).map(function (spec) {
           if (spec.hidden) return;
@@ -144,12 +204,13 @@ if (!app.useDojo) {
               });
             });
           });
-          Object.items(spec.source).map(function (source) { self.generateSourceUI(colwidget, spec, source); });
+          Object.items(spec.source).map(function (source) {
+            self.generateSourceUI(colwidget, spec, source);
+          });
           ui.addChild(colwidget);
-
-          ui.startup();
         });
 
+        ui.startup();
         self.ui = ui;
       }
     });

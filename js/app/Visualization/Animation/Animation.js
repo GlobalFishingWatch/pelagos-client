@@ -1,18 +1,12 @@
 define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjection", "app/Data/DataView", "jQuery"], function(Class, async, Shader, GeoProjection, DataView, $) {
   var Animation = Class({
     name: "Animation",
-    columns: {
-      /*
-        point: {"type": "Float32", items: [
-          {name: "longitude", source: {longitude: 1.0}},
-          {name: "latitude", source: {latitude: 1.0}}]},
-        color: {"type": "Float32", items: [
-          {name: "red", source: {_: 1.0}},
-          {name: "green", source: {_: 1.0}},
-          {name: "blue", source: {_: 0.0}}]},
-        magnitude: {"type": "Float32", items: [
-          {name: "magnitude", source: {_: 1.0}}]}
-      */
+    columns: {},
+    selections: {
+      selected: undefined,
+      info: undefined,
+      hover: undefined,
+      timerange: {sortcols: ["datetime"]}
     },
 
     programSpecs: {},
@@ -21,7 +15,18 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       var self = this;
 
       self.visible = true;
-      if (args) $.extend(self, args);
+      if (args) {
+        args = $.extend({}, args);
+        if (args.columns) {
+          $.extend(self.columns, args.columns);
+          delete args.columns;
+        }
+        if (args.selections) {
+          $.extend(self.selections, args.selections);
+          delete args.selections;
+        }
+        $.extend(self, args);
+      }
       self.manager = manager;
       self.dataUpdates = 0;
     },
@@ -218,6 +223,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       if (time == undefined) return;
       time = time.getTime();
 
+      self.data_view.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
       program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
       program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
       program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
@@ -232,8 +238,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       program.gl.uniform1f(program.uniforms.pointSize, pointSize*1.0);
       program.gl.uniformMatrix4fv(program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
-      program.gl.uniform1f(program.uniforms.startTime, time - timeExtent);
-      program.gl.uniform1f(program.uniforms.endTime, time);
 
       Shader.setMappingUniforms(program, self.data_view);
     },

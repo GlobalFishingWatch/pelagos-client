@@ -1,4 +1,4 @@
-define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/Animation/Animation"], function(require, Class, Shader, Animation) {
+define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/Animation/Animation", "jQuery"], function(require, Class, Shader, Animation, $) {
   var PointAnimation = Class(Animation, {
     name: "PointAnimation",
 
@@ -11,8 +11,13 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
       alpha: {type: "Float32", source: {_: 1.0}, min: 0.0, max: 1.0},
       magnitude: {type: "Float32", source: {score: 5, _:2}, min: 0.0, max: 10.0},
       time: {type: "Float32", hidden: true, source: {datetime: 1.0}},
-      filter: {type: "Float32", source: {timerange: 1.0}}
+      filter: {type: "Float32", source: {_: null, timerange: -1.0, active_category: -1.0}}
     },
+
+    selections: $.extend(
+      {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
+      Animation.prototype.selections
+    ),
 
     programSpecs: {
       program: {

@@ -4,6 +4,8 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
 
     sortcols: ["series"],
 
+    max_range_count: 1,
+
     initialize: function (args) {
       var self = this;
       self.events = new Events("Selection");
@@ -23,7 +25,7 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
       });
     },
 
-    addRange: function(source, startidx, endidx, replace) {
+    addRange: function(source, startidx, endidx, replace, silent) {
       var self = this;
       var updated = false;
       if (replace && self.header.length != 0) {
@@ -70,8 +72,34 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
           self.header.length++;
         }
       }
-      if (updated) {
+      if (updated && !silent) {
         self.events.triggerEvent("update", {update: "add", source:source, startidx:startidx, endidx:endidx});
+      }
+    },
+
+    addDataRange: function(startData, endData, replace, silent) {
+      var self = this;
+      var updated = false;
+      if (replace && self.header.length != 0) {
+        updated = true;
+        self._clearRanges();
+      }
+      if (startData != undefined && endData != undefined) {
+        updated = true;
+
+        var cols = $.extend({}, startData, endData);
+        self.sortcols.map(function (col) { cols[col] = true; });
+        cols = Object.keys(cols);
+
+        cols.map(function (col) {
+          if (self.data[col] == undefined) self.data[col] = [];
+          self.data[col].push(startData[col]);
+          self.data[col].push(endData[col]);
+        });
+        self.header.length++;
+      }
+      if (updated && !silent) {
+        self.events.triggerEvent("update", {update: "add", startData:startData, endData:endData});
       }
     },
 

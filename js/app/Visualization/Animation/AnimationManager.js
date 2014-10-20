@@ -132,11 +132,20 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
     handleMouse: function (e, type) {
       var self = this;
 
-      var offset = self.node.offset();
+      var x, y;
+
+      if (e.pageX != undefined) {
+        var offset = self.node.offset();
+        x = e.pageX - offset.left;
+        y = e.pageY - offset.top;
+      } else {
+        x = e.pixel.x;
+        y = e.pixel.y;
+      }
 
       for (var key in self.animations) {
         var animation = self.animations[key];
-        if (animation.select(e.pageX - offset.left, e.pageY - offset.top, type, true)) {
+        if (animation.select(x, y, type, true)) {
           return animation.data_view;
         }
       }
@@ -214,7 +223,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       self.node.mousemove(function (e) {
         if (!self.indrag) self.handleMouse(e, 'hover');
       });
-      self.node.click(function (e) {
+      google.maps.event.addListener(self.map, "click", function(e) {
         self.handleMouseSelection(e, 'selected', KeyModifiers.active.Shift, function (err, data) {
           if (err) {
             self.events.triggerEvent('info-error', err);

@@ -27,6 +27,10 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
 
       self.selections = {};
 
+      Object.items(args.selections || {}).map(function (selection) {
+        self.addSelectionCategory(selection.key, selection.value);
+      });
+
       self.source.events.on({
         update: self.handleUpdate,
         error: self.handleError,
@@ -37,17 +41,6 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
         var value = _.cloneDeep(col.value);
         value.name = col.key;
         self.addCol(value);
-      });
-
-      var selections = {
-        selected: undefined,
-        info: undefined,
-        hover: undefined,
-        timerange: {hidden: true}
-      };
-      if (args.selections) _.extend(selections, args.selections);
-      Object.items(selections).map(function (selection) {
-        self.addSelectionCategory(selection.key, selection.value);
       });
     },
 
