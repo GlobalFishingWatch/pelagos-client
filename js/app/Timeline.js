@@ -20,7 +20,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     windowLabelStyle: "stepLabel",
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
-    steps: 20,
+    stepZoom: 0.5,
     snapZoomToTickmarks: false,
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
@@ -36,7 +36,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
        * {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
        */
 
-       {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#ffffff", 'z-index': 0}},
+       {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#999999", 'z-index': 0}},
        {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
        {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
 
@@ -134,6 +134,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       self.node.attr('unselectable', 'on').css('user-select', 'none').on('selectstart', false);
 
       self.lineNode.css({'width': self.hiddenContext * 100.0 + '%'});
+      self.tickmarksNode.css({"height": (100 / self.tickmarksNode.length) + "%"});
 
       self.stepLengthsByName = {};
       prev = undefined;
@@ -445,7 +446,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         var stepWidth = 100.0 * stepSizeInfo.stepLength / self.contextSize;
         stepNode.css({'width': stepWidth + '%'});
 
-        var space = stepNode.innerHeight() / pixelsPerPt;
+        var space = stepNode.innerHeight() / pixelsPerPt - 8; // 2 * 4pt padding, see stylesheet
         var labelSize = Math.min(space, 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize);
         stepNode.find(".quanta-label").css({"font-size": labelSize + "pt", "line-height": labelSize + "pt"});
 
@@ -496,7 +497,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
       self.setVisibleContextFromRange();
 
-      self.stepLength = self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize}));
+      self.stepLength = self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize * self.stepZoom}));
 
       if (self.start == undefined) {
         self.setContextFromVisibleContext();
