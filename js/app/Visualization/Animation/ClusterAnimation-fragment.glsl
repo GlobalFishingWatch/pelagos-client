@@ -19,12 +19,13 @@ void main() {
     dist = max(0., dist);
 
     float c = dist * vWeight;
+/*    float c = dist * 1.0; */
 
     gl_FragColor = vec4(
-      1.0,
-      fudge(0.6*c),
+      fudge(c),
       fudge(0.3*c),
-      fudge(c)
+      fudge(0.1*c),
+      c
     );
   }
 }
