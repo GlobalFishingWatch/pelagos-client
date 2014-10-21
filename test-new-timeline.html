@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <title>VectorVisual</title>
+    <style>
+      .test-timeline {
+        height: 100pt;
+      }
+    </style>
+    <script type="text/javascript">
+      app = {
+        useDojo: true,
+        useBuild: false,
+        main: function () {
+          require(['app/Timeline', 'jQuery'], function (Timeline, $) {
+            $(document).ready(function () {
+              timeline = new Timeline({node: '.test-timeline'});
+            });
+          });
+        }
+      };
+    </script>
+    <script type="text/javascript" src="js/deps.js"></script>
+  </head>
+  <body class="claro">
+    <div class="test-timeline"></div>
+  </body>
+</html>
