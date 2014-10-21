@@ -14,6 +14,10 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
       filter: {type: "Float32", source: {_: null, timerange: -1.0, active_category: -1.0}}
     },
 
+    uniforms: {
+      ps: {min: 0.001, max: 0.05, value: 0.01}
+    },
+
     selections: $.extend(
       {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
       Animation.prototype.selections

@@ -7,6 +7,8 @@ uniform float zoom;
 
 uniform mat4 googleMercator2webglMatrix;
 
+uniform float ps;
+
 varying float vWeight;
 
 float latLonDistanceToWebGL(float distance, vec2 lonlat, mat4 googleMercator2webglMatrix) {
@@ -28,8 +30,6 @@ void main() {
     gl_PointSize = 0.0;
     vWeight = 0.0;
   } else {
-    float ps = 0.01; // In WebGL units
-
     float webglSigma = latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
 
     float radius = ps + 2.5 * webglSigma;
