@@ -2,8 +2,6 @@
 #pragma include 'app/Visualization/Animation/mercator.glsl';
 #pragma include 'app/Visualization/Animation/rowidx.glsl';
 
-uniform float startTime;
-uniform float endTime;
 uniform float pointSize;
 
 uniform mat4 googleMercator2webglMatrix;
@@ -21,7 +19,7 @@ void main() {
   gl_Position = lonlat2screen(vec2(_longitude, _latitude), googleMercator2webglMatrix);
   baseColor = rowidxColor(tileidx, rowidx);
 
-  if (_time < startTime || _time > endTime) {
+  if (_filter > 0.0) {
     gl_PointSize = 0.0;
     vPointSize = 0.0;
     vSigma = 0.0;

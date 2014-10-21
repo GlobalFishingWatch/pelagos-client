@@ -220,6 +220,15 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       return new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
     },
 
+    clear: function () {
+      var self = this;
+
+      self.wantedTiles = {};
+      Object.values(self.tileCache).map(function (tile) {
+        tile.destroy();
+      });
+    },
+
     zoomTo: function (bounds) {
       var self = this;
 
@@ -235,6 +244,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
          * what URL alternatives there are. */
         self.initialZoom = bounds;
         return;
+      }
+
+      if (self.getLoadingTiles().length > 0) {
+        /* Don't keep old tiles when we zoom multiple times in a row or everything gets way too slow... */
+        console.log("CLEAR");
+        self.clear();
       }
 
       var oldBounds = self.bounds;
@@ -380,6 +395,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     printTree: function (args) {
       var self = this;
+      args = args || {};
 
       var printed = {};
 
@@ -430,17 +446,21 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         };
       }
 
+      var indent = args.indent || "";
       var res = "";
-      res += 'Wanted tiles:\n'
-      res += Object.values(self.wantedTiles).filter(filter).map(printTree.bind(self, "  ", 0)).join("\n");
+      var wantedTiles = Object.values(self.wantedTiles).filter(filter);
+      var rows = wantedTiles.map(function (tile) { return tile.content && tile.content.header && tile.content.header.length || 0; }).reduce(function (a, b) { return a + b }, 0);
+      var loaded = wantedTiles.map(function (tile) { return tile.content.allIsLoaded ? 1 : 0; }).reduce(function (a, b) { return a + b }, 0);
+      res += indent + 'Wanted tiles (Rows: ' + rows + ', Loaded: ' + loaded + '):\n'
+      res += wantedTiles.map(printTree.bind(self, indent + "  ", 0)).join("");
 
       if (!args.coveredBy && !args.covers) {
-        res += 'Forgotten tiles:\n'
+        res += indent + 'Forgotten tiles:\n'
         res += Object.values(self.tileCache).filter(function (tile) {
           return !printed[tile.bounds.toBBOX()];
         }).map(
-          printTree.bind(self, "  ", 0)
-        ).join("\n");
+          printTree.bind(self, indent + "  ", 0)
+        ).join("");
       }
 
       return res;

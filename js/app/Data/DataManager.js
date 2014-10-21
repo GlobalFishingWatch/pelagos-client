@@ -85,6 +85,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
         self.addSource(view.source),
         {
           columns: view.columns,
+          uniforms: view.uniforms,
           selections: view.selections
         }
       ));
@@ -173,6 +174,17 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       }
       self.events.triggerEvent(update.update, update);
       self.events.triggerEvent("update", update);
+    },
+
+    printTree: function (args) {
+      var self = this;
+      args = args || {};
+      var indent = args.indent || "";
+      var subargs = _.clone(args);
+      subargs.indent = indent + '  ';
+      return Object.items(self.sources).map(function (item) {
+        return indent + item.key + " (Usage: " + item.value.usage + ")" + '\n' + item.value.source.printTree(subargs);
+      }).join('\n');
     }
   });
 });

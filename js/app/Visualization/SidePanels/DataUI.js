@@ -51,8 +51,22 @@ if (!app.useDojo) {
         $(widget.domNode).find('.value').html(BaseTiledFormat.prototype.tilesPerScreen);
         self.ui.addChild(widget);
 
+        $(self.visualization.animations.stats.domElement).css({
+          position: 'initial',
+          margin: '5pt'
+        });
+        $(self.ui.domNode).append(self.visualization.animations.stats.domElement);
+
+        $(self.ui.domNode).append("<pre class='source-stats'>");
+
         self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
         self.visualization.dojoUI.container.layout();
+
+        self,visualization.data.events.on({
+          update: function () {
+            $(self.ui.domNode).find('.source-stats').text(self.visualization.data.printTree());
+          }
+        });
       }
     });
   });

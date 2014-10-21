@@ -120,6 +120,10 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
         }
       }
       return compareTilesByCol(0);
+    },
+
+    printTree: function (args) {
+      return '';
     }
   });
 
