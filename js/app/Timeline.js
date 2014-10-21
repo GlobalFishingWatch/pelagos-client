@@ -5,6 +5,11 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
   less.sheets.push(lessnode[0]);
   less.refresh(true);
 
+  var temp = $("<div style='position: absolute; left: 0; top: -1pt; width: 10000pt; height: 1pt' >")
+  $("body").append(temp);
+  var pixelsPerPt = temp.innerWidth() / 10000;
+  temp.remove();
+
   return Class({
     name: 'Timeline',
 
@@ -16,7 +21,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
     steps: 20,
-    snapZoomToTickmarks: true,
+    snapZoomToTickmarks: false,
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
 
@@ -440,8 +445,9 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         var stepWidth = 100.0 * stepSizeInfo.stepLength / self.contextSize;
         stepNode.css({'width': stepWidth + '%'});
 
-        var labelSize = 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize;
-        stepNode.find(".quanta-label").css({"font-size": labelSize + "pt"});
+        var space = stepNode.innerHeight() / pixelsPerPt;
+        var labelSize = Math.min(space, 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize);
+        stepNode.find(".quanta-label").css({"font-size": labelSize + "pt", "line-height": labelSize + "pt"});
 
         stepStart = stepSizeInfo.stepEnd;
       }
@@ -490,7 +496,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
       self.setVisibleContextFromRange();
 
-      self.stepLength = self.getPrevStepLength(self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize})));
+      self.stepLength = self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize}));
 
       if (self.start == undefined) {
         self.setContextFromVisibleContext();
