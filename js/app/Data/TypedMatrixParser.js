@@ -9,7 +9,10 @@
    ['tmtx' magic cookie]
    [4 byte header length in bytes]
    [header data]
+   [padding]
    [content data]
+
+   Padding is a padding to start the content data on a 4-byte-boundary.
 
    The header is json encoded and should contain at the very least
 
@@ -272,6 +275,10 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         };
 
         self.offset += self.headerLen;
+
+        // Add the padding to nearest 4-byte-boundary
+        self.offset += (4 - self.headerLen % 4) % 4;
+
         self.headerIsLoaded = true;
         self.headerLoaded(self.header);
 
