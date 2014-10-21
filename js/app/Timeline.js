@@ -112,6 +112,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       self.zoomOutNode = self.node.find('.zoomOut');
       self.leftFrameNode = self.node.find('.leftFrame');
       self.windowNode = self.node.find('.window');
+      self.windowFrameNode = self.node.find('.window .frame');
       self.rightFrameNode = self.node.find('.rightFrame');
       self.startLabel = self.node.find('.startLabel span');
       self.lengthLabel = self.node.find('.lengthLabel span');
@@ -556,13 +557,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       var self = this;
 
       var pos = self.windowNode.offset();
-      pos.width = self.windowNode.outerWidth();
-      pos.right = pos.left + pos.width;
-      pos.borderLeft = parseFloat($(".window").css('border-left-width'));
-      pos.borderRight = parseFloat($(".window").css('border-right-width'));
+      pos.right = pos.left + self.windowNode.outerWidth();
 
-      pos.innerLeft = pos.left + pos.borderLeft;
-      pos.innerRight = pos.right - pos.borderRight;
+      pos.innerLeft = self.windowFrameNode.offset().left;
+      pos.innerRight = pos.innerLeft + self.windowFrameNode.outerWidth();
 
       if (e.pageX >= pos.left && e.pageX <= pos.innerLeft) {
         self.dragStart('windowResizeLeft', e);
