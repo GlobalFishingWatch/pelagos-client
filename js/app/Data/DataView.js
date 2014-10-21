@@ -17,6 +17,8 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
 
     columns: {},
 
+    uniforms: {},
+
     initialize: function (source, args) {
       var self = this;
 
@@ -41,6 +43,11 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
         var value = _.cloneDeep(col.value);
         value.name = col.key;
         self.addCol(value);
+      });
+
+      self.header.uniforms = _.clone(self.uniforms);
+      Object.items(self.header.uniforms).map(function (uniform) {
+        uniform.value.name = uniform.key;
       });
     },
 
@@ -139,6 +146,23 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       });
     },
 
+    changeUniform: function (spec) {
+      var self = this;
+      spec = _.clone(spec);
+
+      self.header.uniforms[spec.name] = spec;
+
+      var e = {
+        update: 'change-uniform',
+        name: spec.name,
+        json: self.toJSON(),
+        header: self.header,
+        string: self.toString()
+      };
+      self.events.triggerEvent(e.update, e);
+      self.events.triggerEvent('view-update', e);
+    },
+
     getAvailableColumns: function (cb) {
       var self = this;
 
@@ -175,6 +199,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       }
       return {
         columns: cols,
+        uniforms: self.uniforms,
         selections: self.selections
       };
     },

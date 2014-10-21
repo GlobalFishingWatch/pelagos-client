@@ -85,6 +85,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
         self.addSource(view.source),
         {
           columns: view.columns,
+          uniforms: view.uniforms,
           selections: view.selections
         }
       ));

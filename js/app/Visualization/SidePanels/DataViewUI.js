@@ -153,6 +153,45 @@ if (!app.useDojo) {
         ui.addChild(selectionwidget);
       },
       
+      generateUniformUI: function(ui, spec) {
+        var self = this;
+
+        var uniformwidget = new ContentPane({
+          content: spec.name,
+          style: "padding-top: 0; padding-bottom: 8px;"
+        });
+        uniformwidget.addChild(new HorizontalSlider({
+          name: spec.name,
+          "class": "pull-right",
+          value: spec.value,
+          minimum: spec.min,
+          maximum: spec.max,
+          intermediateChanges: true,
+          style: "width:200px;",
+          onChange: function (value) {
+            Logging.main.log(
+              "DataViewUI.set." + spec.name,
+              {
+                toString: function () {
+                  return this.column + " = " + this.value;
+                },
+                column: spec.name,
+                value: value,
+              }
+            );
+            $(uniformwidget.domNode).find('.value').html(value.toPrecision(3));
+            spec.value = value;
+            self.dataview.changeUniform(spec);
+          }
+        }));
+        $(uniformwidget.domNode).append("<span class='value' style='float: right;'>");
+        var label = "";
+        label = spec.value.toPrecision(3);
+        $(uniformwidget.domNode).find('.value').html(label);
+
+        ui.addChild(uniformwidget);
+      },
+
       generateUI: function () {
         var self = this;
 
@@ -208,6 +247,10 @@ if (!app.useDojo) {
             self.generateSourceUI(colwidget, spec, source);
           });
           ui.addChild(colwidget);
+        });
+        Object.items(self.dataview.header.uniforms).map(function (spec) {
+          if (spec.hidden) return;
+          self.generateUniformUI(ui, spec.value);
         });
 
         ui.startup();
