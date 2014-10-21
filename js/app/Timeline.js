@@ -94,11 +94,19 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         "    </div>" +
         "  </div>" +
         "</div>" +
+        "<div class='underlay'>" +
+        "  <div class='leftFrame'></div>" +
+        "  <div class='window'>" +
+        "    <div class='frame'></div>" +
+        "  </div>" +
+        "  <div class='rightFrame'></div>" +
+        "</div>" +
         "<a class='zoomIn'><i class='fa fa-plus-square'></i></a>" +
         "<a class='zoomOut'><i class='fa fa-minus-square'></i></a>"
       );
 
       self.overlayNode = self.node.find('.overlay');
+      self.underlayNode = self.node.find('.underlay');
       self.lineVisibilityNode = self.node.find('.line-visibility');
       self.zoomInNode = self.node.find('.zoomIn');
       self.zoomOutNode = self.node.find('.zoomOut');
