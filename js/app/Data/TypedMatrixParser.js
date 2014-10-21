@@ -342,7 +342,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
             var col = self.header.cols[colidx];
 
-            colValues = new (eval(col.typespec.array))(response.slice(self.offset, col.typespec.size * self.header.length))
+            colValues = new (eval(col.typespec.array))(response.slice(self.offset, self.offset + col.typespec.size * self.header.length))
             self.offset += self.header.length * col.typespec.size;
 
             self.colLoaded(col, colValues);
