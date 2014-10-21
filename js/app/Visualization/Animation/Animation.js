@@ -2,6 +2,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
   var Animation = Class({
     name: "Animation",
     columns: {},
+    uniforms: {},
     selections: {
       selected: undefined,
       info: undefined,
@@ -10,6 +11,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     },
 
     programSpecs: {},
+    separateSeries: false,
 
     initialize: function(manager, args) {
       var self = this;
@@ -20,6 +22,10 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
         if (args.columns) {
           $.extend(self.columns, args.columns);
           delete args.columns;
+        }
+        if (args.uniforms) {
+          $.extend(self.uniforms, args.uniforms);
+          delete args.uniforms;
         }
         if (args.selections) {
           $.extend(self.selections, args.selections);
@@ -53,6 +59,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       self.manager.visualization.data.createView({
         source: self.source,
         columns: self.columns,
+        uniforms: self.uniforms,
         selections: self.selections
       }, function (err, data_view) {
         if (err) throw err; // FIXME: Make cb handle cb(err);
@@ -168,17 +175,20 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
         program.gl.uniform1f(program.uniforms.tileidx, tileidx);
 
-        // -1 since series contains POINT_COUNT in the last item
-        for (var i = 0; i < tile.content.series.length - 1; i++) {
-          if (tile.content.series[i+1]-tile.content.series[i] > 0) {
-            program.gl.drawArrays(
-              mode,
-              tile.content.series[i],
-              tile.content.series[i+1]-tile.content.series[i]
-            );
+        if (self.separateSeries) {
+          // -1 since series contains POINT_COUNT in the last item
+          for (var i = 0; i < tile.content.series.length - 1; i++) {
+            if (tile.content.series[i+1]-tile.content.series[i] > 0) {
+              program.gl.drawArrays(
+                mode,
+                tile.content.series[i],
+                tile.content.series[i+1]-tile.content.series[i]
+              );
+            }
           }
+        } else {
+          program.gl.drawArrays(mode, 0, tile.content.header.length);
         }
-
         tileidx++;
       });
     },

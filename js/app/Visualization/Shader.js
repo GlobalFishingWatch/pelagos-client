@@ -279,6 +279,10 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
   };
 
   Shader.setMappingUniforms = function (program, dataView) {
+    Object.values(dataView.header.uniforms).map(function (uniform) {
+      program.gl.uniform1f(program.uniforms[uniform.name], uniform.value);
+    });
+
     Object.items(dataView.header.colsByName).map(function (column) {
       Object.items(column.value.source).map(function (source) {
         var srcKey = source.key;

@@ -2,6 +2,8 @@ define(["app/Class", "app/Visualization/Animation/Animation", "app/Visualization
   var LineAnimation = Class(PointAnimation, {
     name: "LineAnimation",
 
+    separateSeries: true,
+
     drawProgram: function (program) {
       var self = this;
 
