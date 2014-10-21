@@ -423,12 +423,13 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       var stepEnd = stepLength.round(stepLength.add(stepStart));
       var largeStepEnd = self.getNextStepLength(stepLength).round(stepEnd);
       if (largeStepEnd.getTime() > stepStart.getTime()) stepEnd = largeStepEnd;
-      var stepLength = stepEnd - stepStart;
+      var stepLengthMs = stepEnd - stepStart;
 
       return {
         stepStart: stepStart,
         stepEnd: stepEnd,
-        stepLength: stepLength
+        stepLength: stepLengthMs,
+        count: stepLength.divide(stepStart)
       };
     },
 
@@ -442,6 +443,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         var stepSizeInfo = self.calculateStepSize(stepStart, stepLength);
 
         var stepNode = $("<div class='quanta'><div class='quanta-label'><span></span></div><div class='debug'></div></div>");
+        stepNode.addClass(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
         tickmarksNode.append(stepNode);
 
         var label = self.dateToStepLengthLabel({

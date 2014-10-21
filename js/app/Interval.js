@@ -129,35 +129,61 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       return self.keys.filter(function (key) { return self[key] != 0});
     },
 
+    divide: function (other) {
+      var self = this;
+
+      if (other.constructor != Date) {
+        throw "Unable to do " + other.constructor.name + " / Interval";
+      }
+
+      var activeKeys = self.activeKeys();
+      var requiresEpochCalc = activeKeys.length != 1 || (activeKeys[0] != 'years' && activeKeys[0] != 'months');
+
+      // FIXME: Handle the case of years and months set; convert years to months first.
+
+      if (requiresEpochCalc) {
+        return other.getTime() / self.asMilliseconds;
+      } else {
+        var d = self.dateToDict(other);
+
+        var res;
+        self.keys.map(function (key) {
+          if (res != undefined || self[key] == 0) return;
+          res = d[key] / self[key];
+        });
+        return res;
+      }
+    },
+
     round: function (other) {
       var self = this;
 
-      if (other.constructor == Date) {
-        var activeKeys = self.activeKeys();
-        var requiresEpochCalc = activeKeys.length != 1 || (activeKeys[0] != 'years' && activeKeys[0] != 'months');
-
-        // FIXME: Handle the case of years and months set; convert years to months first.
-
-        if (requiresEpochCalc) {
-          return new Date(other.getTime() - other.getTime() % self.asMilliseconds);
-        } else {
-          var d = self.dateToDict(other);
-
-          var filtered = false;
-          self.keys.map(function (key) {
-            if (filtered) {
-              d[key] = 0;
-            } else {
-              if (self[key] == 0) return;
-              d[key] -= d[key] % self[key];
-              filtered = true;
-            }
-          });
-
-          return self.dictToDate(d);
-        }
-      } else {
+      if (other.constructor != Date) {
         throw "Unable to do " + other.constructor.name + " modulo Interval";
+      }
+
+      var activeKeys = self.activeKeys();
+      var requiresEpochCalc = activeKeys.length != 1 || (activeKeys[0] != 'years' && activeKeys[0] != 'months');
+
+      // FIXME: Handle the case of years and months set; convert years to months first.
+
+      if (requiresEpochCalc) {
+        return new Date(other.getTime() - other.getTime() % self.asMilliseconds);
+      } else {
+        var d = self.dateToDict(other);
+
+        var filtered = false;
+        self.keys.map(function (key) {
+          if (filtered) {
+            d[key] = 0;
+          } else {
+            if (self[key] == 0) return;
+            d[key] -= d[key] % self[key];
+            filtered = true;
+          }
+        });
+
+        return self.dictToDate(d);
       }
     },
 
