@@ -1,4 +1,4 @@
-define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/SidePanels", "app/Visualization/UI", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, SidePanels, UI, async, $, Json) {
+define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/DojoUI", "app/Visualization/UI", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, DojoUI, UI, async, $, Json) {
   return Class({
     name: "Visualization",
     paramspec: {
@@ -43,7 +43,7 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
         }
       });
 
-      self.sidePanels = new SidePanels(self);
+      self.dojoUI = new DojoUI(self);
       self.data = new DataManager(self);
       self.animations = new AnimationManager(self);
       self.ui = new UI(self);
@@ -69,19 +69,22 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
     load: function (url, cb) {
       var self = this;
 
-      if (url && url.indexOf("?") >= 0) {
+      if (!url) return cb();
+
+      if (url.indexOf("?") >= 0) {
         self.workspaceUrl = url.split("?")[0];
-        $.get(url, function (data) {
-          data = Json.decode(data);
+      }
+      $.get(url, function (data) {
+        data = Json.decode(data);
+        if (data.state == undefined) {
+          cb();
+        } else {
           for (var name in data.state) {
             self.state.setValue(name, data.state[name]);
           }
           self.animations.load(data.map, cb);
-        }, 'text');
-      } else {
-        self.workspaceUrl = url;
-        cb();
-      }
+        }
+      }, 'text');
     },
 
     save: function (cb) {

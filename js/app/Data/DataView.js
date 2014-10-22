@@ -17,6 +17,8 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
 
     columns: {},
 
+    uniforms: {},
+
     initialize: function (source, args) {
       var self = this;
 
@@ -26,6 +28,10 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       if (args) _.extend(self, args);
 
       self.selections = {};
+
+      Object.items(args.selections || {}).map(function (selection) {
+        self.addSelectionCategory(selection.key, selection.value);
+      });
 
       self.source.events.on({
         update: self.handleUpdate,
@@ -39,19 +45,10 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
         self.addCol(value);
       });
 
-      if (args.selections) {
-        Object.items(args.selections).map(function (selection) {
-          self.addSelectionCategory(selection.key, selection.value);
-        });
-      } else {
-        self.addSelectionCategory("selected");
-        self.addSelectionCategory("info");
-        self.addSelectionCategory("hover");
-      }
-/*
-      self.lastUpdate = undefined;
-      self.updateInterval = setInterval(self.performUpdate.bind(self), 500);
-*/
+      self.header.uniforms = _.clone(self.uniforms);
+      Object.items(self.header.uniforms).map(function (uniform) {
+        uniform.value.name = uniform.key;
+      });
     },
 
     addSelectionCategory: function (name, args) {
@@ -149,13 +146,44 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       });
     },
 
+    changeUniform: function (spec) {
+      var self = this;
+      spec = _.clone(spec);
+
+      self.header.uniforms[spec.name] = spec;
+
+      var e = {
+        update: 'change-uniform',
+        name: spec.name,
+        json: self.toJSON(),
+        header: self.header,
+        string: self.toString()
+      };
+      self.events.triggerEvent(e.update, e);
+      self.events.triggerEvent('view-update', e);
+    },
+
     getAvailableColumns: function (cb) {
       var self = this;
 
       cb(
         null,
-        Object.keys(self.source.header.colsByName).concat(
-          Object.keys(self.selections)));
+        Object.items(
+          self.source.header.colsByName
+        ).filter(function (item) {
+          return !item.value.hidden
+        }).map(function (item) {
+          return item.key;
+        }).concat(
+          Object.items(
+            self.selections
+          ).filter(function (item) {
+            return !item.value.hidden
+          }).map(function (item) {
+            return item.key;
+          })
+        )
+      );
     },
 
     load: function () {
@@ -171,6 +199,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       }
       return {
         columns: cols,
+        uniforms: self.uniforms,
         selections: self.selections
       };
     },

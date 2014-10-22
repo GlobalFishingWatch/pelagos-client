@@ -1,4 +1,4 @@
-define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat"], function(Class, Bounds, _, Events, Format, DataView) {
+define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat", "app/Data/ClusterTestFormat"], function(Class, Bounds, _, Events, Format, DataView) {
   return Class({
     name: "DataManager",
     initialize: function () {
@@ -58,6 +58,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       var self = this;
       var key = source.type + "|" + source.args.url;
       source = self.sources[key];
+      if (source == undefined) return;
 
       source.usage--;
       if (source.usage == 0) {
@@ -84,6 +85,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
         self.addSource(view.source),
         {
           columns: view.columns,
+          uniforms: view.uniforms,
           selections: view.selections
         }
       ));
@@ -123,6 +125,11 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       error.source = source.source;
       self.events.triggerEvent("error", error);
       self.removeSource(source.spec);
+      if (self.getAllLoaded()) {
+        var update = {update: 'all'};
+        self.events.triggerEvent(update.update, update);
+        self.events.triggerEvent("update", update);
+      }
     },
 
     handleTileError: function (source, error) {
@@ -148,21 +155,36 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       self.events.triggerEvent("load", {source: source});
     },
 
+    getAllLoaded: function() {
+      var self = this;
+      return Object.values(self.sources
+        ).map(function (source) { return source.source.allIsLoaded || source.source.error; }
+        ).reduce(function (a, b) { return a && b; }, true);
+    },
+
     handleUpdate: function (source, update) {
       var self = this;
       update = _.clone(update);
       update.source = source;
       self.updateHeader();
       if (update.update == "all") {
-        var allDone = Object.values(self.sources
-          ).map(function (source) { return source.source.allIsLoaded || source.source.error; }
-          ).reduce(function (a, b) { return a && b; });
-        if (!allDone) {
+        if (!self.getAllLoaded()) {
           update.update = 'all-source';
         }
       }
       self.events.triggerEvent(update.update, update);
       self.events.triggerEvent("update", update);
+    },
+
+    printTree: function (args) {
+      var self = this;
+      args = args || {};
+      var indent = args.indent || "";
+      var subargs = _.clone(args);
+      subargs.indent = indent + '  ';
+      return Object.items(self.sources).map(function (item) {
+        return indent + item.key + " (Usage: " + item.value.usage + ")" + '\n' + item.value.source.printTree(subargs);
+      }).join('\n');
     }
   });
 });

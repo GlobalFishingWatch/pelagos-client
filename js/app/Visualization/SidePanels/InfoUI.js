@@ -21,8 +21,8 @@ if (!app.useDojo) {
 
         self.ui = new ContentPane({title: 'Info', content:"<table class='table table-striped table-bordered'><tr><th>No object selected</th></tr></table>", doLayout: false});
 
-        self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
-        self.visualization.sidePanels.container.layout();
+        self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
+        self.visualization.dojoUI.container.layout();
 
 
         self.visualization.animations.events.on({
@@ -37,7 +37,7 @@ if (!app.useDojo) {
         $(self.ui.domNode).html(info.toString());
         $(self.ui.domNode).css({background: color});
 
-        self.visualization.sidePanels.sidebarContainer.selectChild(self.ui, true);
+        self.visualization.dojoUI.sidebarContainer.selectChild(self.ui, true);
       }
     });
   });

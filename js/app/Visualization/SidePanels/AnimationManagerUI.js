@@ -6,7 +6,7 @@ if (!app.useDojo) {
   define([
     "app/Class",
     "app/Logging",
-    "app/Visualization/DataViewUI",
+    "app/Visualization/SidePanels/DataViewUI",
     "app/Visualization/Animation/Animation",
     "jQuery",
     "dijit/Fieldset",
@@ -47,7 +47,10 @@ if (!app.useDojo) {
 
       removeHandler: function (event) {
         var self = this;
-        event.animation.animationManagerWidget.destroy();
+        if (event.animation.animationManagerWidget) {
+          event.animation.animationManagerWidget.destroy();
+        }
+        event.animation.animationManagerWidget = false;
       },
 
       addAnimationDialog: function (domNode) {
@@ -180,13 +183,15 @@ if (!app.useDojo) {
 
         self.animationManager.animations.map(self.generateAnimationUI.bind(self));
 
-        self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
-        self.visualization.sidePanels.container.layout();
-        self.visualization.sidePanels.sidebarContainer.selectChild(self.ui, false);
+        self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
+        self.visualization.dojoUI.container.layout();
+        self.visualization.dojoUI.sidebarContainer.selectChild(self.ui, false);
       },
 
       generateAnimationUI: function (animation) {
         var self = this;
+
+        if (animation.animationManagerWidget != undefined) return;
 
         if (!animation.title) animation.title = animation.toString();
 
@@ -253,6 +258,7 @@ if (!app.useDojo) {
         var widget = new ContentPane({style: "padding-top: 0; padding-bottom: 0px; padding-left: 2px;"});
         widget.addChild(header);
         widget.addChild(content);
+
         animation.animationManagerWidget = widget;
 
         self.ui.addChild(widget);

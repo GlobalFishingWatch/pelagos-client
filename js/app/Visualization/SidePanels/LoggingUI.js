@@ -26,8 +26,8 @@ if (!app.useDojo) {
         self.visualization = visualization;
 
         self.ui = new ContentPane({title: "Logging"});
-        self.visualization.sidePanels.sidebarContainer.addChild(self.ui);
-        self.visualization.sidePanels.container.layout();
+        self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
+        self.visualization.dojoUI.container.layout();
 
         self.updateUI(self.visualization.state.getValue("logging"));
 

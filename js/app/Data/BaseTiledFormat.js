@@ -21,6 +21,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       self.tileCache = {};
       /* The tiles we really want to display. Might not all be loaded yet, or might have replacements... */
       self.wantedTiles = {};
+      self.initialZoom = undefined;
       self.tileIdxCounter = 0;
       self.urlAlternative = 0;
       Format.prototype.initialize.apply(self, arguments);
@@ -48,6 +49,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var url = self.url + "/header";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
+        request.withCredentials = true;
         Ajax.setHeaders(request, self.headers);
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
@@ -66,12 +68,17 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
                 });
                 data.colsByName.rowidx = {
                   "type": "Int32",
-                  typespec: Pack.typemap.byname.Int32
+                  typespec: Pack.typemap.byname.Int32,
+                  hidden: true
                 };
               }
+              self.headerIsLoaded = true;
               var e = {update: "header", header: data};
               self.events.triggerEvent(e.update, e);
               self.events.triggerEvent("update", e);
+              if (self.initialZoom) {
+                self.zoomTo(self.initialZoom);
+              }
             } else {
               self.handleError(Ajax.makeError(request, url, "header"));
             }
@@ -88,13 +95,20 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       self.events.triggerEvent("load");
     },
 
-    getUrl: function () {
+    getUrl: function (key) {
       var self = this;
 
       if (self.header.alternatives == undefined) return self.url;
 
-      self.urlAlternative = (self.urlAlternative + 1) % self.header.alternatives.length;
-      return self.header.alternatives[self.urlAlternative];
+      var alternative;
+      if (key) {
+        alternative = key.hashCode() % self.header.alternatives.length;
+        if (alternative < 0) alternative += self.header.alternatives.length;
+      } else {
+        self.urlAlternative = (self.urlAlternative + 1) % self.header.alternatives.length;
+        alternative = self.urlAlternative;
+      }
+      return self.header.alternatives[alternative];
     },
 
     getSelectionInfo: function(selection, cb) {
@@ -108,6 +122,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var url = self.getUrl() + "/series";
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
+      request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
@@ -205,14 +220,35 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       return new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
     },
 
+    clear: function () {
+      var self = this;
+
+      self.wantedTiles = {};
+      Object.values(self.tileCache).map(function (tile) {
+        tile.destroy();
+      });
+    },
+
     zoomTo: function (bounds) {
       var self = this;
+
       if (self.error) {
         /* Retrow error, to not confuse code that expects either an
          * error or a load event... */
         self.events.triggerEvent("error", self.error);
         return;
       }
+
+      if (!self.headerIsLoaded) {
+        /* Don't start loading tiles before we have a header and know
+         * what URL alternatives there are. */
+        self.initialZoom = bounds;
+        return;
+      }
+
+      /* Don't keep old tiles when we zoom multiple times in a row
+       * or everything gets way too slow... */
+      var findOverlaps = self.getLoadingTiles().length == 0;
 
       var oldBounds = self.bounds;
       self.bounds = bounds;
@@ -226,7 +262,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         if (oldWantedTiles[key] != undefined) {
           wantedTiles[key] = oldWantedTiles[tilebounds.toBBOX()];
         } else {
-          wantedTiles[key] = self.setUpTile(tilebounds);
+            wantedTiles[key] = self.setUpTile(tilebounds, findOverlaps);
           anyNewTiles = true;
         }
         wantedTiles[key].reference();
@@ -280,7 +316,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     },
 */
 
-    setUpTile: function (tilebounds) {
+    setUpTile: function (tilebounds, findOverlaps) {
       var self = this;
       var key = tilebounds.toBBOX();
 
@@ -289,7 +325,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
         tile.idx = self.tileIdxCounter++;
         tile.setContent(self.getTileContent(tile));
-        tile.findOverlaps();
+        if (findOverlaps !== false) tile.findOverlaps();
 
         tile.content.events.on({
           "batch": self.handleBatch.bind(self, tile),
@@ -352,13 +388,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     getContent: function () {
       var self = this;
 
-      return self.getDoneTiles().map(function (tile) {
-        return tile.content;
-      });
+      return self.getDoneTiles();
     },
 
-    printTree: function (maxdepth) {
+    printTree: function (args) {
       var self = this;
+      args = args || {};
 
       var printed = {};
 
@@ -373,9 +408,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var length = tile.content && tile.content.header ? ", Rows: " + tile.content.header.length : "";
         var wanted = self.wantedTiles[key] ? ", wanted" : "";
         var error = tile.content.error ? ", error" : "";
-        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + ")";
-        if (maxdepth != undefined && depth > maxdepth) {
+        var tags = tile.content && tile.content.header && tile.content.header.tags ? ", " + tile.content.header.tags.join(", ") : "";
+        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + tags + ")";
+        if (args.maxdepth != undefined && depth > args.maxdepth) {
           res += " ...\n";
+        } else if (again && !args.expand) {
+          res += " (see above)\n";
         } else {
           res += "\n";
 
@@ -395,16 +433,33 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         return res;
       }
 
-      var res = "";
-      res += 'Wanted tiles:\n'
-        res += Object.values(self.wantedTiles).map(printTree.bind(self, "  ", 0)).join("\n");
-      res += 'Forgotten tiles:\n'
+      var filter = function (tile) { return true; };
+      if (args.covers) {
+        filter = function (tile) {
+          return tile.bounds.containsBounds(new Bounds(args.covers))
+        };
+      } else if (args.coveredBy) {
+        filter = function (tile) {
+          return new Bounds(args.coveredBy).containsBounds(tile.bounds)
+        };
+      }
 
-      res += Object.values(self.tileCache).filter(function (tile) {
-        return !printed[tile.bounds.toBBOX()];
-      }).map(
-        printTree.bind(self, "  ", 0)
-      ).join("\n");
+      var indent = args.indent || "";
+      var res = "";
+      var wantedTiles = Object.values(self.wantedTiles).filter(filter);
+      var rows = wantedTiles.map(function (tile) { return tile.content && tile.content.header && tile.content.header.length || 0; }).reduce(function (a, b) { return a + b }, 0);
+      var loaded = wantedTiles.map(function (tile) { return tile.content.allIsLoaded ? 1 : 0; }).reduce(function (a, b) { return a + b }, 0);
+      res += indent + 'Wanted tiles (Rows: ' + rows + ', Loaded: ' + loaded + '):\n'
+      res += wantedTiles.map(printTree.bind(self, indent + "  ", 0)).join("");
+
+      if (!args.coveredBy && !args.covers) {
+        res += indent + 'Forgotten tiles:\n'
+        res += Object.values(self.tileCache).filter(function (tile) {
+          return !printed[tile.bounds.toBBOX()];
+        }).map(
+          printTree.bind(self, indent + "  ", 0)
+        ).join("");
+      }
 
       return res;
     },
@@ -444,7 +499,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
         self.events.triggerEvent("tile-error", data);
       } else {
-        self.handleError(data);
+        if (self.error) {
+          /* Do not generate multiple errors just because we tried to
+           * load multiple tiles... */
+          self.events.triggerEvent("tile-error", data);
+        } else {
+          self.handleError(data);
+        }
       }
 
       self.handleAllDone();

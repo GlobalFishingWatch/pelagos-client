@@ -1,21 +1,3 @@
-#loading {
-  position: absolute;
-  bottom: 15pt;
-  right: 10pt;
-  width: 40pt;
-  height: 40pt;
-  z-index: 100;
-  background: white;
-  color: #999;
-  font-size: 24pt;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  border: 1px solid black;
-  line-height: 0;
-  padding: 7pt;
-}
-
 .logo {
   position: absolute;
   right: 10pt;
@@ -24,28 +6,10 @@
 
 .main-timeline {
   position: absolute;
-  left: 60pt;
-  right: 60pt;
-  bottom: 15pt;
-  height: 90pt;
-}
-
-#animate-button {
-  position: absolute;
-  background: white;
-  left: 10pt;
-  bottom: 15pt;
-  width: 40pt;
-  height: 40pt;
-}
-
-#save-button {
-  background: white;
-  position: absolute;
-  left: 10pt;
-  bottom: 65pt;
-  width: 40pt;
-  height: 40pt;
+  left: 77.666pt;
+  right: 10pt;
+  bottom: 10pt;
+  height: 75pt;
 }
 
 .AnimationUI {
@@ -62,4 +26,92 @@
 .animations {
   width: 100%;
   height: 100%;
+}
+
+.control_box {
+  width: 75pt;
+  height: 75pt;
+  padding-top: 7.666pt;
+  padding-left: 7.666pt;
+
+  position: absolute;
+  bottom: 10pt;
+  left: 2.333pt;
+  z-index: 5;
+
+  a.balloon {
+    outline:none;
+    text-decoration:none;
+
+    img {
+      border: none;
+    }
+
+    div {
+      z-index: 10;
+      display: none;
+      left: 75pt;
+      bottom: 3pt;
+      padding-top: 7.666pt;
+      padding-left: 7.666pt;
+      min-width: 100pt;
+      border-radius: 6px;
+      -moz-border-radius: 6px;
+      -webkit-border-radius: 6px;
+      -moz-box-shadow: 6px 6px 10px #CCC;
+      -webkit-box-shadow: 6px 6px 10px #CCC;
+      box-shadow: 6px 6px 10px #CCC;
+      white-space: nowrap;
+    }
+
+    &:hover {
+      text-decoration:none;
+      text-outline:none;
+
+      div {
+        display: inline;
+        position: absolute;
+        color: #5b5b5b;
+        border: 1pt solid #888;
+        background: #fff;
+      }
+
+      li {
+        list-style:none;
+      }
+    }
+  }
+
+  .arrow {
+    z-index: 20;
+    position: absolute;
+    bottom: 12pt;
+    left: -11px;
+    background-color: transparent;
+  }
+
+
+  /* icon styles */
+
+  .btn-lg, .btn-xs {
+    width: 24pt;
+    height: 24pt;
+    border: solid 1pt #888888;
+    border-radius: 4pt;
+    margin-bottom: 7.666pt;
+    margin-right: 7.666pt;
+    padding: 0;
+    font-size: 12pt;
+  }
+
+  .fa {
+    color: #5b5b5b;
+  }
+}
+
+.loading-active {
+  border-color: #ff0000 !important;
+  i {
+    color: #ff0000 !important;
+  }
 }

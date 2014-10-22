@@ -31,7 +31,9 @@ define(["app/Class", "app/Events", "app/Data/Format"], function(Class, Events, F
 
     headerLoaded: function () {
       var self = this;
-      self.events.triggerEvent("header", self.header);
+      var e = {update: "header", header: self.header};
+      self.events.triggerEvent(e.update, e);
+      self.events.triggerEvent("update", e);
       if (self.contentTime !== false) {
         if (self.contentTime) {
           setTimeout(self.allLoaded.bind(self), self.contentTime);

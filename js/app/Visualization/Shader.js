@@ -1,6 +1,14 @@
 define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async, $, Ajax) {
   var Shader = Class({name: "Shader"});
 
+  var range = function(lower, upper, fn) {
+    res = [];
+    for (var i = lower; i < upper; i++) {
+      res.push(fn(i));
+    }
+    return res;
+  }
+
   /* Load array data into gl buffers and bind that buffer to a shader
    * program attribute */
   Shader.programLoadArray = function(gl, glbuffer, arraydata, program) {
@@ -53,7 +61,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     async.series([
       function (cb) { $.get(vertexShaderUrl, function (data) { Shader.preprocess(data, context, function (data) { vertexSrc = data; cb(); }); }, "text"); },
       function (cb) { $.get(fragmentShaderUrl, function (data) { Shader.preprocess(data, context, function (data) { fragmentSrc = data; cb(); }); }, "text"); },
-      function (dummy) { cb(Shader.createShaderProgramFromSource(gl, vertexSrc, fragmentSrc)); }
+        function (dummy) { cb(Shader.createShaderProgramFromSource(gl, vertexSrc, fragmentSrc, context.attr0)); }
     ]);
   }
 
@@ -63,26 +71,28 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     var msg = match[2];
 
     var lines = src.split('\n');
-      return [].concat(
-        lines.slice(0, line),
-        ['/********************************',
-         ' * ',
-         ' * ' + msg,
-         ' * ',
-         ' ********************************/',
-         ''],
-        lines.slice(line)
-      ).join('\n');
+    return [].concat(
+      lines.slice(0, line),
+      ['/********************************',
+       ' * ',
+       ' * ' + msg,
+       ' * ',
+       ' ********************************/',
+       ''],
+      lines.slice(line)
+    ).join('\n');
   };
 
-  Shader.createShaderProgramFromSource = function(gl, vertexSrc, fragmentSrc) {
+  Shader.createShaderProgramFromSource = function(gl, vertexSrc, fragmentSrc, attr0) {
     // create vertex shader
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     gl.shaderSource(vertexShader, vertexSrc);
     gl.compileShader(vertexShader);
 
     if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-      throw Shader.formatError(gl.getShaderInfoLog(vertexShader), vertexSrc);
+      var err = Shader.formatError(gl.getShaderInfoLog(vertexShader), vertexSrc);
+      console.error(err);
+      throw err;
     }
 
     // create fragment shader
@@ -91,7 +101,9 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     gl.compileShader(fragmentShader);
 
     if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-      throw Shader.formatError(gl.getShaderInfoLog(fragmentShader), fragmentSrc);
+      var err = Shader.formatError(gl.getShaderInfoLog(fragmentShader), fragmentSrc);
+      console.error(err);
+      throw err;
     }
 
     // link shaders to create our program
@@ -101,6 +113,9 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     program.fragmentSrc = fragmentSrc;
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
+
+    gl.bindAttribLocation(program, 0, attr0);
+
     gl.linkProgram(program);
 
     gl.useProgram(program);
@@ -166,10 +181,14 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
 
   Shader.compileSelectionsMappingDeclarations = function (dataView) {
     return Object.items(dataView.selections).map(function (item) {
-      return item.value.sortcols.map(function (sortcol) {
-        return (
-          'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_lower;\n' +
-          'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_upper;');
+      return range(0, item.value.max_range_count, function (rangeidx) {
+        return item.value.sortcols.filter(function (sortcol) {
+          return dataView.source.header.colsByName[sortcol] != undefined;
+        }).map(function (sortcol) {
+          return (
+            'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower;\n' +
+            'uniform float selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper;');
+        }).join('\n');
       }).join('\n');
     }).join('\n') + '\n';
   };
@@ -177,11 +196,22 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
   Shader.compileSelectionsMapper = function (dataView) {
     return 'void selectionmapper() {\n' +
       Object.items(dataView.selections).map(function (item) {
-        return '  scaled_' + item.key + ' = (\n' +
-          item.value.sortcols.map(function (sortcol) {
-              return '    selectionmap_' + item.key + '_from_' + sortcol + '_lower <= ' + sortcol + ' &&\n' +
-                     '    selectionmap_' + item.key + '_from_' + sortcol + '_upper >= ' + sortcol;
-          }).join(' &&\n') + ') ? 1.0 : 0.0;';
+        var cols = item.value.sortcols.filter(function (col) {
+          return dataView.source.header.colsByName[col] != undefined;
+        });
+        var res = '  scaled_' + item.key + ' = ';
+        if (cols.length == 0) {
+          res += '1.0;';
+        } else {
+          res += '(\n' +
+            range(0, item.value.max_range_count, function (rangeidx) {
+              return "    (\n" + cols.map(function (sortcol) {
+                  return '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower <= ' + sortcol + ' &&\n' +
+                         '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper >= ' + sortcol;
+              }).join(' &&\n') + ")"
+            }).join(' ||\n') + ') ? 1.0 : 0.0;';
+        }
+        return res;
       }).join('\n') +
       '\n}\n';
   };
@@ -249,23 +279,35 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
   };
 
   Shader.setMappingUniforms = function (program, dataView) {
+    Object.values(dataView.header.uniforms).map(function (uniform) {
+      program.gl.uniform1f(program.uniforms[uniform.name], uniform.value);
+    });
+
     Object.items(dataView.header.colsByName).map(function (column) {
       Object.items(column.value.source).map(function (source) {
         var srcKey = source.key;
-        if (srcKey == '_') srcKey = 'const';
-        program.gl.uniform1f(program.uniforms['attrmap_' + column.key + '_from_' + srcKey], source.value);
+        var value = source.value;
+        if (srcKey == '_') {
+          srcKey = 'const';
+          if (value == null) {
+            value = Object.keys(column.value.source).length - 1;
+          }
+        }
+        program.gl.uniform1f(program.uniforms['attrmap_' + column.key + '_from_' + srcKey], value);
       });
     });
     Object.items(dataView.selections).map(function (item) {
       item.value.sortcols.map(function (sortcol) {
-        var lower = undefined;
-        var upper = undefined;
-        if (item.value.data[sortcol].length >= 2) {
-          lower = item.value.data[sortcol][0];
-          upper = item.value.data[sortcol][1];
-        }
-        program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_lower'], lower);
-        program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_upper'], upper);
+        for (var rangeidx = 0; rangeidx < item.value.max_range_count; rangeidx++) {
+          var lower = undefined;
+          var upper = undefined;
+          if (item.value.data[sortcol].length >= 2 * rangeidx) {
+            lower = item.value.data[sortcol][rangeidx * 2];
+            upper = item.value.data[sortcol][rangeidx * 2 + 1];
+          }
+          program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower'], lower);
+          program.gl.uniform1f(program.uniforms['selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper'], upper);
+        };
       });
     });
   }

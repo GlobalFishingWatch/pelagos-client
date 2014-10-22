@@ -126,9 +126,21 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       self.zoomInNode.mousedown(function (e) { self.eatEvent(e); });
       self.zoomOutNode.mousedown(function (e) { self.eatEvent(e); });
       self.windowNode.mousedown(self.windowDragStart.bind(self));
+
       self.node.mousedown(self.dragStart.bind(self, 'moveTimeline'));
       $(document).mousemove(self.drag.bind(self));
       $(document).mouseup(self.dragEnd.bind(self));
+
+
+      self.zoomInNode.on('touchstart', self.zoomIn.bind(self, undefined));
+      self.zoomOutNode.on('touchstart', self.zoomOut.bind(self, undefined));
+      self.zoomInNode.on('touchstart', function (e) { self.eatEvent(e); });
+      self.zoomOutNode.on('touchstart', function (e) { self.eatEvent(e); });
+      self.windowNode.on('touchstart', self.windowDragStart.bind(self));
+
+      self.node.on('touchstart', self.dragStart.bind(self, 'moveTimeline'));
+      $(document).on('touchmove', self.drag.bind(self));
+      $(document).on('touchend', self.dragEnd.bind(self));
 
       self.node.mousewheel(function(event, delta, deltaX, deltaY) {
         if (deltaY > 0) {
@@ -310,11 +322,12 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       return new Date(self.visibleStart.getTime() + self.pixelOffsetToTimeOffset(offset));
     },
 
-    pixelOffsetToTimeOffset: function (offset) {
+      pixelOffsetToTimeOffset: function (offset, visibleContextSize) {
       var self = this;
       var pixelWidth = self.lineVisibilityNode.innerWidth();
       var percentOffset = 100.0 * offset / pixelWidth;
-      return percentOffset * self.visibleContextSize / 100.0;
+      if (visibleContextSize == undefined) visibleContextSize = self.visibleContextSize;
+      return percentOffset * visibleContextSize / 100.0;
     },
 
     zoomOut: function (e) {
@@ -463,6 +476,15 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
         stepStart = stepSizeInfo.stepEnd;
       }
+
+      if (self.dragData != undefined) {
+        self.dragData.startPositions = self.dragData.currentPositions;
+
+        self.dragData.timeOffset = self.offset;
+        self.dragData.range = {};
+        self.dragData.range.windowStart = self.windowStart;
+        self.dragData.range.windowEnd = self.windowEnd;
+      }
     },
 
     recreateTickmarks: function () {
@@ -558,41 +580,58 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     windowDragStart: function (e) {
       var self = this;
 
-      var pos = self.windowNode.offset();
-      pos.right = pos.left + self.windowNode.outerWidth();
+      var winPos = self.windowNode.offset();
+      winPos.right = winPos.left + self.windowNode.outerWidth();
 
-      pos.innerLeft = self.windowFrameNode.offset().left;
-      pos.innerRight = pos.innerLeft + self.windowFrameNode.outerWidth();
+      winPos.innerLeft = self.windowFrameNode.offset().left;
+      winPos.innerRight = winPos.innerLeft + self.windowFrameNode.outerWidth();
 
-      if (e.pageX >= pos.left && e.pageX <= pos.innerLeft) {
+      var pos = self.getEventPositions(e)[0];
+
+      if (pos.pageX >= winPos.left && pos.pageX <= winPos.innerLeft) {
         self.dragStart('windowResizeLeft', e);
-      } else if (e.pageX >= pos.innerRight && e.pageX <= pos.right) {
+      } else if (pos.pageX >= winPos.innerRight && pos.pageX <= winPos.right) {
         self.dragStart('windowResizeRight', e);
       }
     },
 
+    getEventPositions: function (e) {
+      e = e.originalEvent || e;
+      var res = [e];
+      if (e.touches && e.touches.length > 0) {
+        res = e.touches;
+      }
+      return res;
+    },
+
     dragStart: function (type, e) {
       var self = this;
-      self.dragType = type;
-      self.dragStartX = e.pageX;
-      self.dragStartY = e.pageY;
-      self['dragStart_' + self.dragType](e);
+
+      self.dragData = {};
+      self.dragData.type = type;
+      self.dragData.startPositions = self.getEventPositions(e);
+      self.dragData.startVisibleContextSize = self.visibleContextSize;
+      self['dragStart_' + self.dragData.type](e);
       self.eatEvent(e);
     },
 
     drag: function (e) {
       var self = this;
 
-      if (self.dragType == undefined) return;
+      if (self.dragData == undefined) return;
 
-      self.dragX = e.pageX;
-      self.dragY = e.pageY;
+      self.dragData.currentPositions = self.getEventPositions(e);
+      self.dragData.offsets = [];
+      for (var i = 0; i < self.dragData.currentPositions.length; i++) {
+        var offsets = {
+          x: self.dragData.startPositions[i].pageX - self.dragData.currentPositions[i].pageX,
+          y: self.dragData.startPositions[i].pageY - self.dragData.currentPositions[i].pageY
+        };
+        offsets.time = self.pixelOffsetToTimeOffset(offsets.x, self.dragData.startVisibleContextSize);
+        self.dragData.offsets.push(offsets);
+      }
 
-      self.dragOffsetX = self.dragStartX - self.dragX;
-      self.dragOffsetY = self.dragStartY - self.dragY;
-      self.dragTimeOffset = self.pixelOffsetToTimeOffset(self.dragOffsetX);
-
-      self['drag_' + self.dragType](e);
+      self['drag_' + self.dragData.type](e);
 
       self.eatEvent(e);
     },
@@ -600,9 +639,9 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     dragEnd: function (e) {
       var self = this;
 
-      if (self.dragType == undefined) return;
-      self['dragEnd_' + self.dragType](e);
-      self.dragType = undefined;
+      if (self.dragData == undefined) return;
+      self['dragEnd_' + self.dragData.type](e);
+      self.dragData = undefined;
       self.eatEvent(e);
     },
 
@@ -614,7 +653,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     },
     drag_windowResizeLeft: function (e) {
       var self = this;
-      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragTimeOffset);
+      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragData.offsets[0].time);
       self.updateRange();
     },
     dragEnd_windowResizeLeft: function (e) {
@@ -629,7 +668,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     },
     drag_windowResizeRight: function (e) {
       var self = this;
-      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragTimeOffset);
+      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragData.offsets[0].time);
       self.updateRange();
     },
     dragEnd_windowResizeRight: function (e) {
@@ -639,12 +678,29 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
     dragStart_moveTimeline: function (e) {
       var self = this;
+      self.dragData.timeOffset = self.offset;
+      self.dragData.range = {};
+      self.dragData.range.windowStart = self.windowStart;
+      self.dragData.range.windowEnd = self.windowEnd;
       self.events.triggerEvent('user-update-start', {type:'move-timeline'});
-      self.dragStartOffset = self.offset;
     },
     drag_moveTimeline: function (e) {
       var self = this;
-      self.setRangeFromOffset(self.dragStartOffset + self.dragTimeOffset, 'temporary-range');
+      if (self.dragData.offsets.length == 1) {
+        self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[0].time, 'temporary-range');
+      } else if (self.dragData.offsets.length > 1) {
+        var start = self.dragData.range.windowStart.getTime() + self.dragData.offsets[0].time;
+        var end = self.dragData.range.windowEnd.getTime() + self.dragData.offsets[1].time;
+        if (end - start < self.minWindowSize) {
+          end = start + self.minWindowSize;
+        }
+
+        self.setRange(
+          new Date(start),
+          new Date(end),
+          'temporary-range'
+        );
+      }
     },
     dragEnd_moveTimeline: function (e) {
       var self = this;

@@ -66,5 +66,17 @@ define([], function() {
     } catch (e) {};
     return {__jsonclass__: ["Date", value]};
   }
+
+  String.prototype.hashCode = function() {
+    var hash = 0;
+    var str = this;
+    if (str.length == 0) return hash;
+    for (i = 0; i < str.length; i++) {
+        var chr = str.charCodeAt(i);
+        hash = ((hash<<5)-hash)+chr;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+  }
 });
 

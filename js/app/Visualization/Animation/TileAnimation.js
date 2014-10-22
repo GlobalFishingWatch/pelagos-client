@@ -24,7 +24,7 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Sha
 
     updateData: function() {
       var self = this;
-      var tiles = Object.values(self.data_view.source.tiles);
+      var tiles = self.data_view.source.getContent();
 
       self.rawLatLonData = new Float32Array(tiles.length*5*2);
       self.tilecount = tiles.length;
@@ -38,7 +38,7 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Sha
           {lat: tile.bounds.bottom, lon: tile.bounds.left},
           {lat: tile.bounds.top, lon: tile.bounds.left}];
         corners.map(function (corner) {
-          var pixel = GeoProjection.LatLongToPixelXY(corner.lat, corner.lon);
+          var pixel = GeoProjection.lonLatInGoogleMercator(corner);
           self.rawLatLonData[i++] = pixel.x;
           self.rawLatLonData[i++] = pixel.y;
         });
@@ -56,7 +56,7 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Sha
 
       Shader.programBindArray(self.gl, self.pointArrayBuffer, self.programs.program, "worldCoord", 2, self.gl.FLOAT);
 
-      self.gl.uniformMatrix4fv(self.programs.program.uniforms.mapMatrix, false, self.manager.mapMatrix);
+      self.gl.uniformMatrix4fv(self.programs.program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
 
       for (var i = 0; i < self.tilecount; i++) {
         self.gl.drawArrays(self.gl.LINE_STRIP, i*5, 5);

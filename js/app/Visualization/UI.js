@@ -1,4 +1,4 @@
-define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualization/LoggingUI", "app/Visualization/AnimationManagerUI", "async", "jQuery", "app/Visualization/sliders"], function(Class, Timeline, InfoUI, LoggingUI, AnimationManagerUI, async, $) {
+define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelManager", "async", "jQuery"], function(Class, Timeline, SidePanelManager, async, $) {
   return Class({
     name: "UI",
       initialize: function (visualization) {
@@ -10,27 +10,93 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       var self = this;
 
       async.series([
+        self.initButtons.bind(self),
+
         self.initLoadSpinner.bind(self),
         self.initLogo.bind(self),
         self.initTimeline.bind(self),
-        self.initToggleButtons.bind(self),
+        self.initPlayButton.bind(self),
+        self.initLoopButton.bind(self),
         self.initSaveButton.bind(self),
-        self.initDojoUI.bind(self)
+        self.initSidePanels.bind(self)
       ], function () { cb(); });
+    },
+
+    initButtons: function (cb) {
+      var self = this;
+      self.buttonNodes = {};
+
+      var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "arrow.png"]).join("/");
+
+      self.controlButtonsNode = $(''
+        + '<div class="control_box">'
+        + '  <button class="btn btn-default btn-lg" data-name="play"><i class="fa fa-play fa-fw"></i></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share-alt fa-fw"></i></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="loading"><i id="loading" class="fa fa-spinner fa-spin fa-fw"></i></button>'
+        + ''
+        + '  <a class="balloon">'
+        + '  <button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>'
+        + '    <div>'
+        + '      <img class="arrow" src="' + arrowUrl + '">'
+        + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="backward"><i class="fa fa-backward"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="loop"><i class="fa fa-repeat"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="forward"><i class="fa fa-forward"></i></button>'
+        + '      <button class="btn btn-default btn-xs" data-name="end"><i class="fa fa-step-forward"></i></button>'
+        + '    </div>'
+        + '  </a>'
+        + '</div>');
+      self.visualization.node.append(self.controlButtonsNode);
+
+      self.controlButtonsNode.find(".btn").each(function () {
+        var btn = $(this);
+        self.buttonNodes[btn.attr("data-name")] = btn;
+      });
+
+      self.buttonNodes.start.click(function () {
+        self.visualization.state.setValue("time", new Date(self.visualization.data.header.colsByName.datetime.min + self.visualization.state.getValue("timeExtent")));
+      });
+
+      self.buttonNodes.backward.click(function () {
+        var timeExtent = self.visualization.state.getValue("timeExtent");
+        var time = self.visualization.state.getValue("time").getTime();
+        var timePerTimeExtent = self.visualization.state.getValue("length");
+        var timePerAnimationTime = timePerTimeExtent / timeExtent;
+
+        time -= 1000 / timePerAnimationTime;
+        self.visualization.state.setValue("time", new Date(time));
+      });
+
+      self.buttonNodes.forward.click(function () {
+        var timeExtent = self.visualization.state.getValue("timeExtent");
+        var time = self.visualization.state.getValue("time").getTime();
+        var timePerTimeExtent = self.visualization.state.getValue("length");
+        var timePerAnimationTime = timePerTimeExtent / timeExtent;
+
+        time += 1000 / timePerAnimationTime;
+        self.visualization.state.setValue("time", new Date(time));
+      });
+
+      self.buttonNodes.end.click(function () {
+        self.visualization.state.setValue("time", new Date(self.visualization.data.header.colsByName.datetime.max));
+      });
+
+
+      cb();
     },
 
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div id="loading"><img></div>');
-      self.loadingNode.find('img').attr({src: app.paths.script.slice(0, -1).concat('img', 'Ajax-loader.gif').join('/')});
-      self.visualization.node.append(self.loadingNode);
-
+      self.loadingNode = self.buttonNodes.loading.find("i");
+      self.loadingNode.hide();
       self.visualization.data.events.on({
         load: function () {
+          self.buttonNodes.loading.addClass("loading-active");
           self.loadingNode.fadeIn();
         },
         all: function () {
+          self.buttonNodes.loading.removeClass("loading-active");
           self.loadingNode.fadeOut();
         },
         error: function (data) {
@@ -133,7 +199,12 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
             if (end > self.timeline.max) {
               end = self.timeline.max;
               start = new Date(end.getTime() - timeExtent);
-              self.visualization.state.setValue("paused", true);
+              if (self.visualization.state.getValue("loop")) {
+                start = self.timeline.min;
+                end = new Date(start.getTime() + timeExtent);
+              } else {
+                self.visualization.state.setValue("paused", true);
+              }
               adjusted = true;
             }
             if (start < self.timeline.min) {
@@ -166,26 +237,23 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       cb();
     },
 
-    initToggleButtons: function(cb) {
+    initPlayButton: function(cb) {
       var self = this;
 
-      self.animateButtonNode = $('<button name="animate-button" id="animate-button" class="btn btn-xs"><input type="hidden"><i class="fa fa-pause"></i></button>');
-      self.visualization.node.append(self.animateButtonNode);
-
-      self.animateButtonNode.click(function () {
-        val = self.animateButtonNode.find("input").val() == "true";
-        self.animateButtonNode.find("input").val(val ? "false" : "true");
-        self.animateButtonNode.find("input").trigger("change");
+      self.buttonNodes.play.click(function () {
+        val = self.buttonNodes.play.val() == "true";
+        self.buttonNodes.play.val(val ? "false" : "true");
+        self.buttonNodes.play.trigger("change");
       });
-      self.animateButtonNode.find("input").change(function () {
-        self.visualization.state.setValue("paused", self.animateButtonNode.find("input").val() == "true");
+      self.buttonNodes.play.change(function () {
+        self.visualization.state.setValue("paused", self.buttonNodes.play.val() == "true");
       });
       function setValue(value) {
-        self.animateButtonNode.find("input").val(value ? "true" : "false");
+        self.buttonNodes.play.val(value ? "true" : "false");
         if (value) {
-          self.animateButtonNode.find("i").removeClass("fa-pause").addClass("fa-play");
+          self.buttonNodes.play.find("i").removeClass("fa-pause").addClass("fa-play");
         } else {
-          self.animateButtonNode.find("i").removeClass("fa-play").addClass("fa-pause");
+          self.buttonNodes.play.find("i").removeClass("fa-play").addClass("fa-pause");
         }
       }
       self.visualization.state.events.on({paused: function (e) { setValue(e.new_value); }});
@@ -194,15 +262,36 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       cb();
     },
 
+    initLoopButton: function (cb) {
+      var self = this;
+
+      self.buttonNodes.loop.click(function () {
+        val = self.buttonNodes.loop.val() == "true";
+        self.buttonNodes.loop.val(val ? "false" : "true");
+        self.buttonNodes.loop.trigger("change");
+      });
+      self.buttonNodes.loop.change(function () {
+        self.visualization.state.setValue("loop", self.buttonNodes.loop.val() == "true");
+      });
+      function setValue(value) {
+        self.buttonNodes.loop.val(value ? "true" : "false");
+        if (value) {
+          self.buttonNodes.loop.find("i").removeClass("fa-repeat").addClass("fa-long-arrow-right");
+        } else {
+          self.buttonNodes.loop.find("i").removeClass("fa-long-arrow-right").addClass("fa-repeat");
+        }
+      }
+      self.visualization.state.events.on({loop: function (e) { setValue(e.new_value); }});
+      setValue(self.visualization.state.getValue("loop"));
+      cb();
+    },
+
     initSaveButton: function(cb) {
       var self = this;
 
-      self.saveButtonNode = $('<button name="save-button" id="save-button" class="btn btn-xs"><input type="hidden"><i class="fa fa-save"></i></button>')
-      self.visualization.node.append(self.saveButtonNode);
-
-      self.saveButtonNode.click(function () {
+      self.buttonNodes.share.click(function () {
         self.visualization.save(function (url) {
-          url = window.location.toString().split("#")[0] + "#workspace=" + escape(url);
+          url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + encodeURIComponent(url);
 
           var dialog = $('<div class="modal fade" id="share" tabindex="-1" role="dialog" aria-labelledby="shareLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-success"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="shareLabel">Workspace saved</h4></div><div class="modal-body alert">Share this link: <input type="text" class="link" style="width: 300pt"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
           dialog.find('.modal-body .link').val(url);
@@ -217,12 +306,10 @@ define(["app/Class", "app/Timeline", "app/Visualization/InfoUI", "app/Visualizat
       cb();
     },
 
-    initDojoUI: function (cb) {
+    initSidePanels: function (cb) {
       var self = this;
 
-      self.info = new InfoUI(self.visualization);
-      self.animations = new AnimationManagerUI(self.visualization);
-      self.logging = new LoggingUI(self.visualization);
+      self.sidePanels = new SidePanelManager(self.visualization);
       cb();
     }
   });

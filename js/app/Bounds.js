@@ -1,13 +1,22 @@
 /* Bounds code adapted from OpenLayers; Published under the 2-clause
  * BSD license. See license.txt in the OpenLayers distribution.
  *
- * This is a minimalistic subset of the Openlayers.Bounds API. */
+ * This is a minimalistic subset of the Openlayers.Bounds API with a
+ * few small extensions. */
 define(["app/Class"], function(Class) {
-  return Class({
+  var Bounds = Class({
     name: "Bounds",
     initialize: function (left, bottom, right, top) {
       var self = this;
-      if (left.length) {
+      if (left.constructor == Bounds) {
+        self.left = left.left;
+        self.bottom = left.bottom;
+        self.right = left.right;
+        self.top = left.top;
+      } else if (left.length) {
+        if (left.constructor == String) {
+          left = left.split(",");
+        }
         self.left = left[0];
         self.bottom = left[1];
         self.right = left[2];
@@ -158,6 +167,11 @@ define(["app/Class"], function(Class) {
       while (res.right > world.right) {
         res.right -= worldWidth;
       }
+
+      /* Normalize the special case around the dateline so that the
+       * return values from this function are unique */
+      if (res.left == 180) res.left = -180;
+      if (res.right == -180) res.right = 180;
       return res;
     },
 
@@ -185,4 +199,5 @@ define(["app/Class"], function(Class) {
       return {left:self.left, right:self.right, top:self.top, bottom:self.bottom}
     }
   });
+  return Bounds;
 });

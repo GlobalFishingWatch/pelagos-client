@@ -8,6 +8,9 @@ uniform mat4 googleMercator2webglMatrix;
 
 uniform float tileidx;
 
+varying float vPointSize;
+varying float vSigma;
+varying float vWeight;
 varying vec4 baseColor;
 
 void main() {
@@ -17,9 +20,15 @@ void main() {
   baseColor = rowidxColor(tileidx, rowidx);
 
   if (_filter > 0.0) {
-    baseColor = vec4(0, 0, 0, 0);
     gl_PointSize = 0.0;
+    vPointSize = 0.0;
+    vSigma = 0.0;
+    vWeight = 0.0;
+    baseColor = vec4(0, 0, 0, 0);
   } else {
-    gl_PointSize = pointSize * _magnitude;
+    gl_PointSize = sqrt(pointSize * pointSize + pow(_sigma * pointSize * 5., 2.));
+    vPointSize = pointSize;
+    vSigma = _sigma;
+    vWeight = _weight;
   }
 }
