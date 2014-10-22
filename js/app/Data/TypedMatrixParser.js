@@ -178,6 +178,8 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
     headerLoaded: function (data) {
       var self = this;
 
+      if (self.loadingCanceled) return;
+
       if (data.nodata) {
         self.errorLoading({
           toString: function () {
@@ -191,16 +193,21 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
     colLoaded: function (col, colValues) {
       var self = this;
+      if (self.loadingCanceled) return;
       self.events.triggerEvent("col", {column: col, values: colValues});
     },
 
     rowLoaded: function(data) {
       var self = this;
+      if (self.loadingCanceled) return;
       self.events.triggerEvent("row", data);
     },
 
     batchLoaded: function () {
       var self = this;
+
+      if (self.loadingCanceled) return;
+
       var e = {update: "batch"};
       self.events.triggerEvent("batch", e);
       self.events.triggerEvent("update", e);
@@ -208,6 +215,9 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
     allLoaded: function () {
       var self = this;
+
+      if (self.loadingCanceled) return;
+
       self.loadEndTime = new Date();
       var e = {update: "all", timing: self.loadEndTime - self.loadStartTime};
       self.events.triggerEvent("all", e);
@@ -216,6 +226,8 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
     errorLoading: function (exception) {
       var self = this;
+
+      if (self.loadingCanceled) return;
 
       self.error = exception;
       self.error.url = self.url;
@@ -227,6 +239,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
       if (!self.request) return;
       if (self.error) return true;
+      if (self.loadingCanceled) return;
 
       if (self.request.readyState == 4) {
         /* HTTP reports success with a 200 status. The file protocol
