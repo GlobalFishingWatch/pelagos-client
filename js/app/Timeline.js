@@ -16,7 +16,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     zoomSize: 1.2,
     hiddenContext: 2, // total space, as a multiple of visible size
     context: 25, // visible space on each side of the window (in percentage of visible range)
-    stepLabelStyle: "minimal",
+    stepLabelStyle: "names",
     windowLabelStyle: "stepLabel",
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
@@ -58,7 +58,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       new Interval({name: 'hour', hours: 1}),
 //      new Interval({name: 'morning', hours: 3}),
       new Interval({name: 'day', days: 1}),
-//      new Interval({name: 'week', days: 7}),
+      new Interval({name: 'week', days: 7}),
       new Interval({name: 'month', months: 1}),
       new Interval({name: 'year', years: 1}),
       new Interval({name: 'decade', years: 10})
@@ -80,9 +80,9 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         "  <div class='leftFrame'></div>" +
         "  <div class='window'>" +
         "    <div class='frame'>" +
-        "      <div class='startLabel'>&lt; <span></span></div>" +
+        "      <div class='startLabel'><span></span></div>" +
         "      <div class='lengthLabel'><span></span></div>" +
-        "      <div class='endLabel'><span></span> &gt;</div>" +
+        "      <div class='endLabel'><span></span></div>" +
         "    </div>" +
         "  </div>" +
         "  <div class='rightFrame'></div>" +
@@ -237,6 +237,66 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       var self = this;
 
       return self["dateToStepLengthLabel_" + self.stepLabelStyle](args);
+    },
+
+    dateToStepLengthLabel_names: function (args) {
+      var self = this;
+
+      var t = [
+        args.date.getUTCFullYear(),
+        args.date.getUTCMonth(),
+        args.date.getUTCDate() - 1,
+        args.date.getUTCHours(),
+        args.date.getUTCMinutes(),
+        args.date.getUTCSeconds(),
+        args.date.getUTCMilliseconds()
+      ];
+      var s = ['', '-', '-', ' ', ':', ':', '.'];
+      var l = [4, 2, 2, 2, 2, 2, 3];
+
+      var start = 0;
+      if (args.stepLength.cmp(self.stepLengthsByName.second) < 0) {
+        start = 6;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.minute) < 0) {
+        start = 5;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.hour) < 0) {
+        start = 4;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.day) < 0) {
+        start = 3;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.month) < 0) {
+        start = 2;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.year) < 0) {
+        start = 1;
+      }
+
+      t[1] += 1;
+      t[2] += 1;
+
+      for (var i = 0; i < t.length; i++) {
+        t[i] = self.pad(t[i], l[i]);
+      }
+
+      var monthnames = {
+        '01': 'JAN',
+        '02': 'FEB',
+        '03': 'MAR',
+        '04': 'APR',
+        '05': 'MAY',
+        '06': 'JUN',
+        '07': 'JUL',
+        '08': 'AUG',
+        '09': 'SEP',
+        '10': 'OCT',
+        '11': 'NOV',
+        '12': 'DEC'
+      };
+      t[1] = monthnames[t[1]];
+
+      if (args.full) {
+        return _.flatten(_.zip(s.slice(0, start+1), t.slice(0, start+1))).join('');
+      } else {
+        return t[start];
+      }
     },
 
     dateToStepLengthLabel_minimal: function (args) {
