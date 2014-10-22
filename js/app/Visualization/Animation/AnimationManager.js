@@ -23,6 +23,10 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       self.indrag = false;
       self.inPanZoom = false;
+      self.centerChangedNr = 0;
+      self.zoomChangedNr = 0;
+      self.boundsChangedNr = 0;
+      self.boundsChangedRealNr = 0;
     },
 
     init: function (cb) {
@@ -84,8 +88,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       google.maps.event.addListener(self.map, 'center_changed', self.centerChanged.bind(self));
       google.maps.event.addListener(self.map, 'zoom_changed', self.zoomChanged.bind(self));
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
-      google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
-      google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
+      google.maps.event.addListener(self.map, 'dragstart', function () { console.log("DRAG START"); self.indrag = true; });
+      google.maps.event.addListener(self.map, 'dragend', function () { console.log("DRAG END"); self.indrag = false; self.boundsChanged(); });
       cb();
     },
 
@@ -320,6 +324,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
     centerChanged: function() {
       var self = this;
+      self.centerChangedNr++;
       self.inPanZoom = true;
       self.visualization.state.setValue("lat", self.map.getCenter().lat());
       self.visualization.state.setValue("lon", self.map.getCenter().lng());
@@ -329,6 +334,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
     zoomChanged: function() {
       var self = this;
+      self.zoomChangedNr++;
       self.inPanZoom = true;
       self.visualization.state.setValue("zoom", self.map.getZoom());
       self.inPanZoom = false;
@@ -337,7 +343,9 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
     boundsChanged: function() {
       var self = this;
+      self.boundsChangedNr++;
       if (self.indrag) return;
+      self.boundsChangedRealNr++;
       var bounds = self.map.getBounds();
       var ne = bounds.getNorthEast();
       var sw = bounds.getSouthWest();
