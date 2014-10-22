@@ -9,7 +9,10 @@
    ['tmtx' magic cookie]
    [4 byte header length in bytes]
    [header data]
+   [padding]
    [content data]
+
+   Padding is a padding to start the content data on a 4-byte-boundary.
 
    The header is json encoded and should contain at the very least
 
@@ -148,8 +151,8 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       */
 
       self.request.open('GET', self.url, true);
-      self.request.overrideMimeType('text\/plain; charset=x-user-defined');
       self.request.withCredentials = true;
+      self.request.responseType = "arraybuffer";
       for (var key in self.headers) {
         var values = self.headers[key]
         if (typeof(values) == "string") values = [values];
@@ -158,13 +161,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         }
       }
       self.request.send(null);
-      var handleDataCallback = function () {
-        if (!self.handleData()) {
-          setTimeout(handleDataCallback, 500);
-        }
-      }
-      setTimeout(handleDataCallback, 500);
-
+      self.request.onreadystatechange = self.handleData.bind(self);
     },
 
     cancel: function () {
@@ -258,17 +255,18 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         }
       }
 
-      if (!self.request.responseText) return;
+      if (!self.request.response) return;
 
-      var length = self.request.responseText.length;
-      var text = self.request.responseText;
+      var length = self.request.response.byteLength;
+      var response = self.request.response;
+      var dataView = new DataView(response);
 
       if (length < 4+4) return;
       if (self.headerLen == null) {
-        var dataView = new DataView(Pack.stringToArrayBuffer(text, 0, 4+4+1+4));
-        if (text.slice(0, 4) != self.MAGIC_COOKIE) {
+        var cookie = Pack.arrayBufferToString(response.slice(0, 4));
+        if (cookie != self.MAGIC_COOKIE) {
           self.errorLoading({
-            cookie: text.slice(0, 4),
+            cookie: cookie,
             toString: function () {
               return 'Could not load ' + this.url + ' due to incorrect file format. Cookie: [' + this.cookie + ']';
             }
@@ -282,7 +280,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       }
       if (length < self.offset + self.headerLen) return;
       if (!self.headerIsLoaded) {
-        self.header = JSON.parse(text.substr(self.offset, self.headerLen));
+        self.header = JSON.parse(Pack.arrayBufferToString(response.slice(self.offset, self.offset + self.headerLen)));
         self.rowLen = 0;
         self.header.colsByName = {};
         for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
@@ -300,7 +298,10 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         };
 
         self.offset += self.headerLen;
-        self.dataOffset = self.offset;
+
+        // Add the padding to nearest 4-byte-boundary
+        self.offset += (4 - self.headerLen % 4) % 4;
+
         self.headerIsLoaded = true;
         self.headerLoaded(self.header);
 
@@ -330,18 +331,13 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           return true;
         }
       }
-      if (self.responseData == null) {
-        self.responseData = new Uint8ClampedArray(self.rowLen * self.header.length);
-      }
-      Pack.writeStringToArrayBuffer(text, self.offset, undefined, self.responseData, self.offset - self.dataOffset);
 
       if (self.header.orientation == "rowwise") {
-        var dataView = new DataView(self.responseData.buffer);
         for (; self.offset + self.rowLen <= length; self.rowidx++) {
           var row = {};
           for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
             var col = self.header.cols[colidx];
-            var val = dataView[col.typespec.getter](self.offset - self.dataOffset, true);
+            var val = dataView[col.typespec.getter](self.offset, true);
             row[col.name] = val;
             self.offset += col.typespec.size;
           }
@@ -354,12 +350,12 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           self.batchLoaded();
         }
       } else if (self.header.orientation == 'columnwise') {
-        if (length >= self.dataOffset + self.header.length * self.rowLen) {
+        if (length >= self.offset + self.header.length * self.rowLen) {
 
           for (var colidx = 0; colidx < self.header.cols.length; colidx++) {
             var col = self.header.cols[colidx];
 
-            colValues = new (eval(col.typespec.array))(self.responseData.buffer, self.offset - self.dataOffset, self.header.length)
+            colValues = new (eval(col.typespec.array))(response.slice(self.offset, self.offset + col.typespec.size * self.header.length))
             self.offset += self.header.length * col.typespec.size;
 
             self.colLoaded(col, colValues);
