@@ -54,6 +54,10 @@
       font-size: 10pt;
       z-index: 2;
 
+      border-radius: 4pt; 
+      -moz-border-radius: 4pt; 
+      -webkit-border-radius: 4pt; 
+
       .frame {
         width: 100%;
         height: 100%;
@@ -73,26 +77,22 @@
         cursor: initial;
 
         .startLabel {
-          background: white;
           position: absolute;
           left: 0;
           white-space: nowrap;
         }
         .lengthLabel {
           position: absolute;
-          top: 100%;
-          margin-top: -10pt;
+          bottom: 0;
           left: 0;
           right: 0;
           white-space: nowrap;
           text-align: center;
           span {
-            background: white;
             padding: 2pt;
           }
         }
         .endLabel {
-          background: white;
           position: absolute;
           right: 0;
           white-space: nowrap;
@@ -107,6 +107,9 @@
 
     .window {
       background: white;
+      -moz-box-shadow: 3px 3px 13px #000000;
+      -webkit-box-shadow: 3px 3px 13px #000000;
+      box-shadow: 3px 3px 13px #000000;
     }
   }
 
@@ -153,25 +156,29 @@
           position: relative;
           display: inline-block;
           height: 100%;
-          border: 1pt solid white;
-          padding: 4pt;
+          padding: 1pt;
 
-          &.even {
+          .frame {
+            padding: 4pt;
+            height: 100%;
+
+            .debug {
+              display: none;
+            }
+
+            .quanta-label {
+              display: block;
+              color: black;
+              width: 100%;
+              font-weight: bold;
+            }
+          }
+
+          &.even .frame {
             background-color: rgba(128,128,128,0.5);
           }
-          &.odd {
+          &.odd .frame {
             background-color: rgba(0,0,0,0.5);
-          }
-
-          .debug {
-            display: none;
-          }
-
-          .quanta-label {
-            display: block;
-            color: black;
-            width: 100%;
-            font-weight: bold;
           }
         } 
       }

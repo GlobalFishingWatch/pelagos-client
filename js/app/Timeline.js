@@ -36,9 +36,11 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
        * {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
        */
 
-       {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#999999", 'z-index': 0}},
+       {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#ffffff", 'z-index': 0}},
+/*
        {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
        {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
+*/
 
     ],
 
@@ -455,7 +457,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       while (stepStart <= self.end) {
         var stepSizeInfo = self.calculateStepSize(stepStart, stepLength);
 
-        var stepNode = $("<div class='quanta'><div class='quanta-label'><span></span></div><div class='debug'></div></div>");
+        var stepNode = $("<div class='quanta'><div class='frame'><div class='quanta-label'><span></span></div><div class='debug'></div></div></div>");
         stepNode.addClass(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
         tickmarksNode.append(stepNode);
 
