@@ -176,7 +176,7 @@ if (!app.useDojo) {
                   return this.column + " = " + this.value;
                 },
                 column: spec.name,
-                value: value,
+                value: value
               }
             );
             $(uniformwidget.domNode).find('.value').html(value.toPrecision(3));
