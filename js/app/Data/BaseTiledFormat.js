@@ -246,11 +246,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         return;
       }
 
-      if (self.getLoadingTiles().length > 0) {
-        /* Don't keep old tiles when we zoom multiple times in a row or everything gets way too slow... */
-        console.log("CLEAR");
-        self.clear();
-      }
+      /* Don't keep old tiles when we zoom multiple times in a row
+       * or everything gets way too slow... */
+      var findOverlaps = self.getLoadingTiles().length == 0;
 
       var oldBounds = self.bounds;
       self.bounds = bounds;
@@ -264,7 +262,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         if (oldWantedTiles[key] != undefined) {
           wantedTiles[key] = oldWantedTiles[tilebounds.toBBOX()];
         } else {
-          wantedTiles[key] = self.setUpTile(tilebounds);
+            wantedTiles[key] = self.setUpTile(tilebounds, findOverlaps);
           anyNewTiles = true;
         }
         wantedTiles[key].reference();
@@ -318,7 +316,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     },
 */
 
-    setUpTile: function (tilebounds) {
+    setUpTile: function (tilebounds, findOverlaps) {
       var self = this;
       var key = tilebounds.toBBOX();
 
@@ -327,7 +325,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
         tile.idx = self.tileIdxCounter++;
         tile.setContent(self.getTileContent(tile));
-        tile.findOverlaps();
+        if (findOverlaps !== false) tile.findOverlaps();
 
         tile.content.events.on({
           "batch": self.handleBatch.bind(self, tile),
