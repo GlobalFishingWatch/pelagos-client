@@ -70,7 +70,7 @@
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
       app.dirs.lib + "/jquery-1.10.2.min.js",
       app.dirs.lib + "/jquery.mousewheel.js",
-      app.dirs.lib + "/less.min.js",
+      app.dirs.lib + "/less-1.7.4.min.js",
       app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
       app.dirs.lib + "/CanvasLayer.js",
       app.dirs.lib + "/stats.min.js",
