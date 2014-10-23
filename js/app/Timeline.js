@@ -24,6 +24,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     snapZoomToTickmarks: false,
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
+    splitTickmarksOnLargerUnitBoundaries: false, 
 
     backgroundCss: {background: '#ff8888'},
     rangemarks: [
@@ -502,9 +503,11 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
       info.stepEnd = stepLength.round(stepLength.add(info.stepStart));
 
-      info.largeStepLength = self.getNextStepLength(info.stepLength);
-      info.largeStepEnd = info.largeStepLength.round(info.stepEnd);
-      if (info.largeStepEnd.getTime() > info.stepStart.getTime()) info.stepEnd = info.largeStepEnd;
+      if (self.splitTickmarksOnLargerUnitBoundaries) {
+        info.largeStepLength = self.getNextStepLength(info.stepLength);
+        info.largeStepEnd = info.largeStepLength.round(info.stepEnd);
+        if (info.largeStepEnd.getTime() > info.stepStart.getTime()) info.stepEnd = info.largeStepEnd;
+      }
 
       info.stepLengthMs = info.stepEnd - info.stepStart;
       info.count = info.stepLength.divide(info.stepStart);
