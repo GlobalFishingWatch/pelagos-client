@@ -168,7 +168,10 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       // FIXME: Handle the case of years and months set; convert years to months first.
 
       if (requiresEpochCalc) {
-        return new Date(other.getTime() - other.getTime() % self.asMilliseconds);
+        other = other.getTime();
+        var offset = other % self.asMilliseconds;
+        if (other < 0 && offset != 0) offset += self.asMilliseconds; // Handle dates < 1970-01-01 correctly
+        return new Date(other - offset);
       } else {
         var d = self.dateToDict(other);
 
@@ -201,6 +204,15 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       }).map(function (key) {
         return self[key].toString() + " " + key;
       }).join(", ");
+    },
+
+    toJSON: function () {
+      var self = this;
+      var res = {"__jsonclass__":["Interval"]};
+      self.keys.map(function (key) {
+        res[key] = self[key];
+      });
+      return res;
     }
   });
 });

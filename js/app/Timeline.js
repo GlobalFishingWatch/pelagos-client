@@ -495,17 +495,21 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     calculateStepSize: function (stepStart, stepLength) {
       var self = this;
 
-      var stepEnd = stepLength.round(stepLength.add(stepStart));
-      var largeStepEnd = self.getNextStepLength(stepLength).round(stepEnd);
-      if (largeStepEnd.getTime() > stepStart.getTime()) stepEnd = largeStepEnd;
-      var stepLengthMs = stepEnd - stepStart;
-
-      return {
+      var info = {
         stepStart: stepStart,
-        stepEnd: stepEnd,
-        stepLength: stepLengthMs,
-        count: stepLength.divide(stepStart)
+        stepLength: stepLength,
       };
+
+      info.stepEnd = stepLength.round(stepLength.add(info.stepStart));
+
+      info.largeStepLength = self.getNextStepLength(info.stepLength);
+      info.largeStepEnd = info.largeStepLength.round(info.stepEnd);
+      if (info.largeStepEnd.getTime() > info.stepStart.getTime()) info.stepEnd = info.largeStepEnd;
+
+      info.stepLengthMs = info.stepEnd - info.stepStart;
+      info.count = info.stepLength.divide(info.stepStart);
+
+      return info;
     },
 
     recreateTickmarksLevel: function (tickmarksNode, stepLength, fullLabels) {
@@ -516,6 +520,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       var stepStart = self.start;
       while (stepStart <= self.end) {
         var stepSizeInfo = self.calculateStepSize(stepStart, stepLength);
+        if (stepSizeInfo.stepEnd == undefined) throw "ERROR";
 
         var stepNode = $("<div class='quanta'><div class='frame'><div class='quanta-label'><span></span></div><div class='debug'></div></div></div>");
         stepNode.addClass(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
@@ -527,9 +532,9 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
           full: fullLabels
         });
         stepNode.find(".quanta-label span").html(label);
-        stepNode.find(".debug ").html(stepStart.toISOString() + " - " + stepSizeInfo.stepEnd.toISOString());
+        stepNode.find(".debug ").html(JSON.stringify(stepSizeInfo));
 
-        var stepWidth = 100.0 * stepSizeInfo.stepLength / self.contextSize;
+        var stepWidth = 100.0 * stepSizeInfo.stepLengthMs / self.contextSize;
         stepNode.css({'width': stepWidth + '%'});
 
         var space = stepNode.innerHeight() / pixelsPerPt - 8; // 2 * 4pt padding, see stylesheet
