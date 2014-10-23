@@ -525,7 +525,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         var stepSizeInfo = self.calculateStepSize(stepStart, stepLength);
         if (stepSizeInfo.stepEnd == undefined) throw "ERROR";
 
-        var stepNode = $("<div class='quanta'><div class='frame'><div class='quanta-label'><span></span></div><div class='debug'></div></div></div>");
+        var stepNode = $("<div class='quanta'><div class='frame'><div class='quanta-label'><span class='left'></span><span class='right'></span><span class='center'></span>&nbsp;</div><div class='debug'></div></div></div>");
         stepNode.addClass(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
         tickmarksNode.append(stepNode);
 
@@ -539,6 +539,15 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
         var stepWidth = 100.0 * stepSizeInfo.stepLengthMs / self.contextSize;
         stepNode.css({'width': stepWidth + '%'});
+        
+        stepNode.find(".quanta-label span").hide();
+        stepNode.find(".quanta-label span.left").show();
+        if (stepWidth > 50 / self.hiddenContext) {
+          stepNode.find(".quanta-label span.right").show();
+        }
+        if (stepWidth > 100 / self.hiddenContext) {
+          stepNode.find(".quanta-label span.center").show();
+        }
 
         var space = stepNode.innerHeight() / pixelsPerPt - 8; // 2 * 4pt padding, see stylesheet
         var labelSize = Math.min(space, 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize);
