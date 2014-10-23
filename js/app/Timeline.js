@@ -549,7 +549,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
           stepNode.find(".quanta-label span.center").show();
         }
 
-        var space = stepNode.innerHeight() / pixelsPerPt - 8; // 2 * 4pt padding, see stylesheet
+        var space = stepNode.find(".quanta-label").innerHeight() / pixelsPerPt;
         var labelSize = Math.min(space, 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize);
         stepNode.find(".quanta-label").css({"font-size": labelSize + "pt", "line-height": labelSize + "pt"});
 
