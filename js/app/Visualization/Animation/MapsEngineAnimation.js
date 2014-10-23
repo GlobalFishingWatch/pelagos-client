@@ -22,7 +22,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
     initGl: function(gl, cb) {
       var self = this;
 
-      self.layer = new google.maps.visualization.DynamicMapsEngineLayer({layerId:self.source.args.url, suppressInfoWindows:true});
+      self.layer = new google.maps.visualization.MapsEngineLayer({layerId:self.source.args.url, suppressInfoWindows:true});
       self.layer.setMap(self.visible ? self.manager.map : null);
 
       google.maps.event.addListener(self.layer, 'click', self.handleClick.bind(self, 'click'));
