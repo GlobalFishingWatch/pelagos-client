@@ -258,16 +258,25 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       var start = 0;
       if (args.stepLength.cmp(self.stepLengthsByName.second) < 0) {
         start = 6;
+        end = 7;
       } else if (args.stepLength.cmp(self.stepLengthsByName.minute) < 0) {
         start = 5;
+        end = 6;
       } else if (args.stepLength.cmp(self.stepLengthsByName.hour) < 0) {
         start = 4;
+        end = 5;
       } else if (args.stepLength.cmp(self.stepLengthsByName.day) < 0) {
         start = 3;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.month) < 0) {
+        end = 4;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.week) < 0) {
         start = 2;
+        end = 3;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.month) < 0) {
+        start = 1;
+        end = 3;
       } else if (args.stepLength.cmp(self.stepLengthsByName.year) < 0) {
         start = 1;
+        end = 2;
       }
 
       t[1] += 1;
@@ -294,9 +303,9 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       t[1] = monthnames[t[1]];
 
       if (args.full) {
-        return _.flatten(_.zip(s.slice(0, start+1), t.slice(0, start+1))).join('');
+        return _.flatten(_.zip(s.slice(0, end), t.slice(0, end))).join('');
       } else {
-        return t[start];
+        return _.flatten(_.zip([""].concat(s.slice(start + 1, end)), t.slice(start, end))).join('');
       }
     },
 
