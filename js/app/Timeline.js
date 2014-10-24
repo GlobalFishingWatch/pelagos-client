@@ -777,8 +777,16 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       if (self.dragData.offsets.length == 1) {
         self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[0].time, 'temporary-range');
       } else if (self.dragData.offsets.length > 1) {
-        var start = self.dragData.range.windowStart.getTime() + self.dragData.offsets[0].time;
-        var end = self.dragData.range.windowEnd.getTime() + self.dragData.offsets[1].time;
+        var startOffset = self.dragData.offsets[0].time;
+        var endOffset = self.dragData.offsets[1].time;
+        if (self.dragData.startPositions[0] > self.dragData.startPositions[1]) {
+          startOffset = self.dragData.offsets[1].time;
+          endOffset = self.dragData.offsets[0].time;
+        }
+        if (endOffset < startOffset) return;
+
+        var start = self.dragData.range.windowStart.getTime() + startOffset;
+        var end = self.dragData.range.windowEnd.getTime() + endOffset;
         if (end - start < self.minWindowSize) {
           end = start + self.minWindowSize;
         }

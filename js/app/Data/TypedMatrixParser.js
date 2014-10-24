@@ -305,11 +305,11 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         self.headerIsLoaded = true;
         self.headerLoaded(self.header);
 
-        if (self.header.version != 1) {
+        if (self.header.version != 2) {
           self.errorLoading({
             version: self.header.version,
             toString: function () {
-              return 'Could not load ' + this.url + ' due to unsupported file format version. Version: ' + this.version + '. Supported versions: 1.';
+              return 'Could not load ' + this.url + ' due to unsupported file format version. Version: ' + this.version + '. Supported versions: 2.';
             }
           });
           return true;
