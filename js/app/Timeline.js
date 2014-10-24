@@ -1,9 +1,14 @@
-define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], function (Class, Events, $, less) {
+define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangExtensions'], function (Class, Events, Interval, $, less) {
 
   var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('app/Timeline.less') + '" />');
   $('head').append(lessnode);
   less.sheets.push(lessnode[0]);
   less.refresh(true);
+
+  var temp = $("<div style='position: absolute; left: 0; top: -1pt; width: 10000pt; height: 1pt' >")
+  $("body").append(temp);
+  var pixelsPerPt = temp.innerWidth() / 10000;
+  temp.remove();
 
   return Class({
     name: 'Timeline',
@@ -11,14 +16,15 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
     zoomSize: 1.2,
     hiddenContext: 2, // total space, as a multiple of visible size
     context: 25, // visible space on each side of the window (in percentage of visible range)
-    stepLabelStyle: "fullDate",
+    stepLabelStyle: "names",
     windowLabelStyle: "stepLabel",
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
-    steps: 20,
-    snapZoomToTickmarks: true,
+    stepZoom: 0.5,
+    snapZoomToTickmarks: false,
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
+    splitTickmarksOnLargerUnitBoundaries: false, 
 
     backgroundCss: {background: '#ff8888'},
     rangemarks: [
@@ -30,24 +36,34 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
        * {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
        * {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
        */
+
+       {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#ffffff", 'z-index': 0}},
+/*
+       {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
+       {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
+*/
+
     ],
 
-    steplengths: {
-      second: 1000,
-      secfiver: 1000*5,
-      secquarter: 1000*15,
-      minute: 1000*60,
-      fiver: 1000*60*5,
-      quarter: 1000*60*15,
-      hour: 1000*60*60,
-      morning: 1000*60*60*3,
-      day: 1000*60*60*24,
-      week: 1000*60*60*24*7,
-      month: 1000*60*60*24*30,
-      year: 1000*60*60*24*365
-    },
-
-    mainSteplengths: ["second", "minute", "hour", "day", "week", "month", "year"],
+    stepLengths: [
+      new Interval({name: 'second', seconds: 1}),
+/*
+      new Interval({name: 'secfiver', seconds: 5}),
+      new Interval({name: 'secquarter', seconds: 15}),
+*/
+      new Interval({name: 'minute', minutes: 1}),
+/*
+      new Interval({name: 'fiver', minutes: 5}),
+      new Interval({name: 'quarter', minutes: 15}),
+*/
+      new Interval({name: 'hour', hours: 1}),
+//      new Interval({name: 'morning', hours: 3}),
+      new Interval({name: 'day', days: 1}),
+      new Interval({name: 'week', days: 7}),
+      new Interval({name: 'month', months: 1}),
+      new Interval({name: 'year', years: 1}),
+      new Interval({name: 'decade', years: 10})
+    ],
 
     initialize: function (args) {
       var self = this;
@@ -65,31 +81,41 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         "  <div class='leftFrame'></div>" +
         "  <div class='window'>" +
         "    <div class='frame'>" +
-        "      <div class='startLabel'>&lt; <span></span></div>" +
+        "      <div class='startLabel'><span></span></div>" +
         "      <div class='lengthLabel'><span></span></div>" +
-        "      <div class='endLabel'><span></span> &gt;</div>" +
+        "      <div class='endLabel'><span></span></div>" +
         "    </div>" +
         "  </div>" +
         "  <div class='rightFrame'></div>" +
         "</div>" +
         "<div class='line-visibility'>" +
         "  <div class='line'>" +
-        "    <div class='rangemarks'>" +
-        "    </div>" +
-        "    <div class='tickmarks'>" +
+        "    <div class='rangemarks'></div>" +
+        "    <div class='tickmarks-container'>" +
+        "      <div class='tickmarks top'></div>" +
+        "      <div class='tickmarks bottom'></div>" +
         "    </div>" +
         "  </div>" +
+        "</div>" +
+        "<div class='underlay'>" +
+        "  <div class='leftFrame'></div>" +
+        "  <div class='window'>" +
+        "    <div class='frame'></div>" +
+        "  </div>" +
+        "  <div class='rightFrame'></div>" +
         "</div>" +
         "<a class='zoomIn'><i class='fa fa-plus-square'></i></a>" +
         "<a class='zoomOut'><i class='fa fa-minus-square'></i></a>"
       );
 
       self.overlayNode = self.node.find('.overlay');
+      self.underlayNode = self.node.find('.underlay');
       self.lineVisibilityNode = self.node.find('.line-visibility');
       self.zoomInNode = self.node.find('.zoomIn');
       self.zoomOutNode = self.node.find('.zoomOut');
       self.leftFrameNode = self.node.find('.leftFrame');
       self.windowNode = self.node.find('.window');
+      self.windowFrameNode = self.node.find('.window .frame');
       self.rightFrameNode = self.node.find('.rightFrame');
       self.startLabel = self.node.find('.startLabel span');
       self.lengthLabel = self.node.find('.lengthLabel span');
@@ -132,6 +158,17 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       self.node.attr('unselectable', 'on').css('user-select', 'none').on('selectstart', false);
 
       self.lineNode.css({'width': self.hiddenContext * 100.0 + '%'});
+      self.tickmarksNode.css({"height": (100 / self.tickmarksNode.length) + "%"});
+
+      self.stepLengthsByName = {};
+      prev = undefined;
+      self.stepLengths.map(function (stepLength) {
+        stepLength.prev = prev;
+        if (prev) prev.next = stepLength;
+        prev = stepLength;
+        self.stepLengthsByName[stepLength.name] = stepLength;
+      });
+
       self.leftContext = self.context;
       self.rightContext = self.context;
       self.setRange(self.windowStart, self.windowEnd);
@@ -151,13 +188,13 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       var iso = d.toISOString().split('Z')[0].replace('T', ' ');
 
-      if (self.steplength > self.steplengths.month) {
+      if (self.stepLength.cmp(self.stepLengthsByName.month) > 0) {
         return iso.split(' ')[0].split('-').slice(0, -1).join('-')
-      } else if (self.steplength > self.steplengths.day) {
+      } else if (self.stepLength.cmp(self.stepLengthsByName.day) > 0) {
         return iso.split(' ')[0]
-      } else if (self.steplength > self.steplengths.minute) {
+      } else if (self.stepLength.cmp(self.stepLengthsByName.minute) > 0) {
         return iso.split(':').slice(0, -1).join(':');
-      } else if (self.steplength > self.steplengths.second) {
+      } else if (self.stepLength.cmp(self.stepLengthsByName.second) > 0) {
         return iso.split('.')[0];
       } else {
         return iso;
@@ -172,12 +209,12 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
     intervalToLabel: function (i) {
       var self = this;
-      var unitNames = ['year', 'week', 'day', 'hour', 'minute'];
+      var unitNames = ['year', /* 'week', */ 'day', 'hour', 'minute'];
 
       res = [];
 
       unitNames.map(function (unitName) {
-        var unit = self.steplengths[unitName];
+        var unit = self.stepLengthsByName[unitName].asMilliseconds;
         var value = Math.floor(i / unit);
         if (value != 0) {
           var s = value.toString() + " " + unitName;
@@ -197,71 +234,49 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       return res.join(", ");
     },
 
-    dateToSteplengthLabel: function (d) {
+    dateToStepLengthLabel: function (args) {
       var self = this;
 
-      return self["dateToSteplengthLabel_" + self.stepLabelStyle](d);
+      return self["dateToStepLengthLabel_" + self.stepLabelStyle](args);
     },
 
-    dateToSteplengthLabel_fullDate: function (d) {
-      var self = this;
-
-      var iso = d.toISOString().split('Z')[0].replace('T', ' ');
-
-      if (self.steplength >= self.steplengths.month) {
-        return iso.split(' ')[0].split('-').slice(0, -1).join('-')
-      } else if (self.steplength >= self.steplengths.day) {
-        return iso.split(' ')[0]
-      } else if (self.steplength >= self.steplengths.minute) {
-        var res = iso.split(' ')[1].split(':').slice(0, -1).join(':');
-        if (res != '00:00') return res;
-        return iso.split(':').slice(0, -1).join(':');
-      } else if (self.steplength >= self.steplengths.second) {
-        var res = iso.split(' ')[1].split('.')[0];
-        if (res != '00:00:00') return res;
-        return iso.split('.')[0];
-      } else {
-        var res = iso.split(' ')[1]
-        if (res != '000') return res;
-        var res = iso.split(' ')[1]
-        if (res != '00:00:00.000') return res;
-          return iso;
-      }
-    },
-
-    dateToSteplengthLabel_fluid: function (d) {
+    dateToStepLengthLabel_names: function (args) {
       var self = this;
 
       var t = [
-        d.getUTCFullYear(),
-        d.getUTCMonth(),
-        d.getUTCDate() - 1,
-        d.getUTCHours(),
-        d.getUTCMinutes(),
-        d.getUTCSeconds(),
-        d.getUTCMilliseconds()
+        args.date.getUTCFullYear(),
+        args.date.getUTCMonth(),
+        args.date.getUTCDate() - 1,
+        args.date.getUTCHours(),
+        args.date.getUTCMinutes(),
+        args.date.getUTCSeconds(),
+        args.date.getUTCMilliseconds()
       ];
       var s = ['', '-', '-', ' ', ':', ':', '.'];
       var l = [4, 2, 2, 2, 2, 2, 3];
 
       var start = 0;
-      if (self.steplength < self.steplengths.second) {
+      if (args.stepLength.cmp(self.stepLengthsByName.second) < 0) {
         start = 6;
-      } else if (self.steplength < self.steplengths.minute) {
+        end = 7;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.minute) < 0) {
         start = 5;
-      } else if (self.steplength < self.steplengths.hour) {
+        end = 6;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.hour) < 0) {
         start = 4;
-      } else if (self.steplength < self.steplengths.day) {
+        end = 5;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.day) < 0) {
         start = 3;
-      } else if (self.steplength < self.steplengths.month) {
+        end = 4;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.week) < 0) {
         start = 2;
-      } else if (self.steplength < self.steplengths.year) {
+        end = 3;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.month) < 0) {
         start = 1;
-      }
-      var end = start+2;
-
-      while (start > 0 && t[start] == 0) {
-        start--;
+        end = 3;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.year) < 0) {
+        start = 1;
+        end = 2;
       }
 
       t[1] += 1;
@@ -271,45 +286,99 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         t[i] = self.pad(t[i], l[i]);
       }
 
-      return _.flatten(_.zip(s.slice(start, end), t.slice(start, end))).join('');
-   },
+      var monthnames = {
+        '01': 'JAN',
+        '02': 'FEB',
+        '03': 'MAR',
+        '04': 'APR',
+        '05': 'MAY',
+        '06': 'JUN',
+        '07': 'JUL',
+        '08': 'AUG',
+        '09': 'SEP',
+        '10': 'OCT',
+        '11': 'NOV',
+        '12': 'DEC'
+      };
+      t[1] = monthnames[t[1]];
 
-    roundTimeToSteplength: function (d) {
-      var self = this;
-
-      return new Date(d.getTime() - d.getTime() % self.steplength);
+      if (args.full) {
+        return _.flatten(_.zip(s.slice(0, end), t.slice(0, end))).join('');
+      } else {
+        return _.flatten(_.zip([""].concat(s.slice(start + 1, end)), t.slice(start, end))).join('');
+      }
     },
 
-    roundSteplength: function (steplength) {
+    dateToStepLengthLabel_minimal: function (args) {
       var self = this;
 
-      if (steplength < self.steplengths.second / 10) {
-        return Math.pow(10, Math.ceil(Math.log(steplength, 10)));
-      } else if (steplength > self.steplengths.year) {
-        return Math.pow(10, Math.ceil(Math.log(steplength / self.steplengths.year, 10))) * self.steplengths.year;
+      var t = [
+        args.date.getUTCFullYear(),
+        args.date.getUTCMonth(),
+        args.date.getUTCDate() - 1,
+        args.date.getUTCHours(),
+        args.date.getUTCMinutes(),
+        args.date.getUTCSeconds(),
+        args.date.getUTCMilliseconds()
+      ];
+      var s = ['', '-', '-', ' ', ':', ':', '.'];
+      var l = [4, 2, 2, 2, 2, 2, 3];
+
+      var start = 0;
+      if (args.stepLength.cmp(self.stepLengthsByName.second) < 0) {
+        start = 6;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.minute) < 0) {
+        start = 5;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.hour) < 0) {
+        start = 4;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.day) < 0) {
+        start = 3;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.month) < 0) {
+        start = 2;
+      } else if (args.stepLength.cmp(self.stepLengthsByName.year) < 0) {
+        start = 1;
       }
 
-      return Math.min.apply(Math,
-        Object.values(self.steplengths).filter(function (x) {
-          return x > steplength;
-        })
-      );
+      t[1] += 1;
+      t[2] += 1;
+
+      for (var i = 0; i < t.length; i++) {
+        t[i] = self.pad(t[i], l[i]);
+      }
+
+      if (args.full) {
+        return _.flatten(_.zip(s.slice(0, start+1), t.slice(0, start+1))).join('');
+      } else {
+        return t[start];
+      }
     },
 
-    stepToSubsteps: function (steplength) {
+    roundTimeToStepLength: function (d) {
       var self = this;
 
-      if (steplength <= self.steplengths.second) {
-        return 10;
-      } else if (steplength > self.steplengths.year) {
-        return steplength / (Math.pow(10, Math.ceil(Math.log(steplength / self.steplengths.year, 10)) - 1) * self.steplengths.year);
-      }
+      return self.stepLength.round(d);
+    },
 
-      return steplength / Math.max.apply(Math,
-        Object.values(self.steplengths).filter(function (x) {
-          return x < steplength;
-        })
-      );
+    getNextStepLength: function(stepLength) {
+      var self = this;
+      if (stepLength.next) return stepLength.next;
+      if (stepLength.asMilliseconds >= self.stepLengths.slice(-1)[0].asMilliseconds) {
+        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength / self.stepLengthsByName.year.asMilliseconds, 10))) * self.stepLengthsByName.year.asMilliseconds);
+      }
+      return self.stepLengths.filter(function (x) {
+        return x.cmp(stepLength) > 0;
+      })[0];
+    },
+
+    getPrevStepLength: function(stepLength) {
+      var self = this;
+      if (stepLength.prev) return stepLength.prev;
+      if (stepLength.asMilliseconds < self.stepLengths[0].asMilliseconds / 10) {
+        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength.asMilliseconds, 10))));
+      }
+      return self.stepLengths.filter(function (x) {
+        return x.cmp(stepLength) <= 0;
+      }).slice(-1)[0];
     },
 
     eatEvent: function (e) {
@@ -363,18 +432,11 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       }
 
       if (self.snapZoomToTickmarks) {
-        var stepLength = self.roundSteplength(windowSize / self.steps);
-        if (stepLength >= windowSize) {
-          stepLength = stepLength / self.stepToSubsteps(stepLength);
-        }
-        var steps = windowSize / stepLength;
-        
         if (factor > 1) {
-          steps = Math.ceil(steps);
+          windowSize = self.getNextStepLength(new Interval({milliseconds: windowSize})).asMilliseconds;
         } else {
-          steps = Math.floor(steps);
+          windowSize = self.getPrevStepLength(new Interval({milliseconds: windowSize})).asMilliseconds;
         }
-        windowSize = stepLength * steps;
       }
 
       self.start = undefined;
@@ -401,10 +463,15 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       var self = this;
       self.contextSize = self.visibleContextSize * self.hiddenContext;
 
-      self.start = self.roundTimeToSteplength(new Date(self.visibleStart.getTime() - (self.contextSize - self.visibleContextSize) / 2));
+      self.start = self.roundTimeToStepLength(new Date(self.visibleStart.getTime() - (self.contextSize - self.visibleContextSize) / 2));
       self.end = new Date(self.start.getTime() + self.contextSize);
 
       self.offset = self.visibleStart - self.start;
+
+      if (self.dragStartX != undefined) {
+        self.dragStartX = self.dragX;
+        self.dragStartOffset = self.offset;
+      }
 
       self.recreateRangemarks();
       self.recreateTickmarks();
@@ -435,26 +502,68 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       });
     },
 
-    recreateTickmarks: function () {
+    calculateStepSize: function (stepStart, stepLength) {
       var self = this;
 
-      self.tickmarksNode.find('.quanta').remove();
+      var info = {
+        stepStart: stepStart,
+        stepLength: stepLength,
+      };
 
-      self.stepCount = 0;
-      self.stepsEnd = self.start;
-      for (; self.stepsEnd <= self.end; self.stepsEnd = new Date(self.stepsEnd.getTime() + self.steplength)) {
-        self.stepCount++;
-        var stepNode = $("<div class='quanta'><div class='label'><span></span></div></div>");
-        stepNode.find("span").html(self.dateToSteplengthLabel(self.stepsEnd));
-        self.tickmarksNode.append(stepNode);
-        for (var subPos = 0; subPos < self.substeps - 1; subPos++) {
-          self.tickmarksNode.append("<div class='quanta small'></div>");
-        }
+      info.stepEnd = stepLength.round(stepLength.add(info.stepStart));
+
+      if (self.splitTickmarksOnLargerUnitBoundaries) {
+        info.largeStepLength = self.getNextStepLength(info.stepLength);
+        info.largeStepEnd = info.largeStepLength.round(info.stepEnd);
+        if (info.largeStepEnd.getTime() > info.stepStart.getTime()) info.stepEnd = info.largeStepEnd;
       }
-      self.stepsSize = (self.stepsEnd - self.start) / (self.end - self.start)
 
-      self.stepWidth = 100.0 * self.stepsSize / (self.stepCount * self.substeps);
-      self.tickmarksNode.find('.quanta').css({'margin-right': self.stepWidth + '%'});
+      info.stepLengthMs = info.stepEnd - info.stepStart;
+      info.count = info.stepLength.divide(info.stepStart);
+
+      return info;
+    },
+
+    recreateTickmarksLevel: function (tickmarksNode, stepLength, fullLabels) {
+      var self = this;
+
+      tickmarksNode.find('.quanta').remove();
+
+      var stepStart = self.start;
+      while (stepStart <= self.end) {
+        var stepSizeInfo = self.calculateStepSize(stepStart, stepLength);
+        if (stepSizeInfo.stepEnd == undefined) throw "ERROR";
+
+        var stepNode = $("<div class='quanta'><div class='frame'><div class='quanta-label'><span class='left'></span><span class='right'></span><span class='center'></span>&nbsp;</div><div class='debug'></div></div></div>");
+        stepNode.addClass(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
+        tickmarksNode.append(stepNode);
+
+        var label = self.dateToStepLengthLabel({
+          date: stepStart,
+          stepLength: stepLength,
+          full: fullLabels
+        });
+        stepNode.find(".quanta-label span").html(label);
+        stepNode.find(".debug ").html(JSON.stringify(stepSizeInfo));
+
+        var stepWidth = 100.0 * stepSizeInfo.stepLengthMs / self.contextSize;
+        stepNode.css({'width': stepWidth + '%'});
+        
+        stepNode.find(".quanta-label span").hide();
+        stepNode.find(".quanta-label span.left").show();
+        if (stepWidth > 50 / self.hiddenContext) {
+          stepNode.find(".quanta-label span.right").show();
+        }
+        if (stepWidth > 100 / self.hiddenContext) {
+          stepNode.find(".quanta-label span.center").show();
+        }
+
+        var space = stepNode.find(".quanta-label").innerHeight() / pixelsPerPt;
+        var labelSize = Math.min(space, 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize);
+        stepNode.find(".quanta-label").css({"font-size": labelSize + "pt", "line-height": labelSize + "pt"});
+
+        stepStart = stepSizeInfo.stepEnd;
+      }
 
       if (self.dragData != undefined) {
         self.dragData.startPositions = self.dragData.currentPositions;
@@ -464,6 +573,16 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
         self.dragData.range.windowStart = self.windowStart;
         self.dragData.range.windowEnd = self.windowEnd;
       }
+    },
+
+    recreateTickmarks: function () {
+      var self = this;
+
+      var stepLength = self.stepLength;
+      for (var i = 0; i < self.tickmarksNode.length; i++) {
+        self.recreateTickmarksLevel($(self.tickmarksNode[i]), stepLength, i == self.tickmarksNode.length - 1);
+        stepLength = self.getNextStepLength(stepLength);
+      };
     },
 
     setVisibleContextFromRange: function() {
@@ -499,8 +618,7 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
 
       self.setVisibleContextFromRange();
 
-      self.steplength = self.roundSteplength(self.visibleContextSize / self.steps);
-      self.substeps = self.stepToSubsteps(self.steplength);
+      self.stepLength = self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize * self.stepZoom}));
 
       if (self.start == undefined) {
         self.setContextFromVisibleContext();
@@ -551,13 +669,10 @@ define(['app/Class', 'app/Events', 'jQuery', 'less', 'app/LangExtensions'], func
       var self = this;
 
       var winPos = self.windowNode.offset();
-      winPos.width = self.windowNode.outerWidth();
-      winPos.right = winPos.left + winPos.width;
-      winPos.borderLeft = parseFloat($(".window").css('border-left-width'));
-      winPos.borderRight = parseFloat($(".window").css('border-right-width'));
+      winPos.right = winPos.left + self.windowNode.outerWidth();
 
-      winPos.innerLeft = winPos.left + winPos.borderLeft;
-      winPos.innerRight = winPos.right - winPos.borderRight;
+      winPos.innerLeft = self.windowFrameNode.offset().left;
+      winPos.innerRight = winPos.innerLeft + self.windowFrameNode.outerWidth();
 
       var pos = self.getEventPositions(e)[0];
 
