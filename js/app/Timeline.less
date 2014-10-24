@@ -80,8 +80,14 @@
           position: absolute;
           white-space: nowrap;
 
-          span {
+          .startLabel span, .endLabel span {
             padding: 2pt;
+            color: #535151;
+          }
+
+          .lengthLabel span {
+            padding: 2pt;
+            color: #a7a7a7;
           }
         }
 
@@ -110,7 +116,8 @@
     top: -200%;
 
     .window {
-      background: white;
+      /*background: white;*/
+      background: #f8f8f9;
       -moz-box-shadow: 3px 3px 13px #000000;
       -webkit-box-shadow: 3px 3px 13px #000000;
       box-shadow: 3px 3px 13px #000000;
@@ -185,16 +192,42 @@
               .right {
                 float: right;
               }
+
+            }
+          }
+        }
+
+        &.top {
+          .even .frame {
+            background-color: rgba(189,189,189,0.5);
+            .quanta-label {
+              color: #4f4e4e;
             }
           }
 
-          &.even .frame {
-            background-color: rgba(128,128,128,0.5);
+          .odd .frame {
+            background-color: rgba(224,224,224,0.5);
+            .quanta-label {
+              color: #4f4e4e;
+            }
           }
-          &.odd .frame {
-            background-color: rgba(0,0,0,0.5);
+        }
+
+        &.bottom {
+          .even .frame {
+            background-color: rgba(33,32,32,0.5);
+            .quanta-label {
+              color: #c7c6c5;
+            }
           }
-        } 
+
+          .odd .frame {
+            background-color: rgba(66,64,64,0.5);
+            .quanta-label {
+              color: #c7c6c5;
+            }
+          }
+        }  
       }
     }
   }
