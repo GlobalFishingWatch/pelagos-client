@@ -101,6 +101,14 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       });
     },
 
+    mapIdle: function () {
+      var self = this;
+
+      Object.values(self.sources).map (function (source) {
+        source.source.mapIdle();
+      });
+    },
+
     updateHeader: function () {
       var self = this;
       self.header = {colsByName: {}};
