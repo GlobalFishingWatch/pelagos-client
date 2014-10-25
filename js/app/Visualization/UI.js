@@ -154,8 +154,16 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
         if (updating) return;
 
         if (!self.visualization.data.header.colsByName.datetime) return;
-        self.timeline.min = new Date(self.visualization.data.header.colsByName.datetime.min);
-        self.timeline.max = new Date(self.visualization.data.header.colsByName.datetime.max);
+
+        var min_datetime = new Date(self.visualization.data.header.colsByName.datetime.min);
+        var max_datetime = new Date(self.visualization.data.header.colsByName.datetime.max);
+
+        // Do not update if nothing has changed.
+        // NB: Comparing Date objects does not work with == so check that the difference is 0 instead
+        if ((0 == min_datetime - self.timeline.min) && (0 == max_datetime - self.timeline.max)) return;
+
+        self.timeline.min = min_datetime;
+        self.timeline.max = max_datetime;
 
         var rangemarks = self.timeline.rangemarks;
         if (self.timeline.dataRangemark == undefined) {
