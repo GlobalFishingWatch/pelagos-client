@@ -1,6 +1,12 @@
 (function () {
   app.webworker = typeof importScripts != "undefined";
 
+  if (window.location.toString().indexOf("dojo=true") != -1) {
+    app.useDojo = true;
+  } else if (window.location.toString().indexOf("dojo=false") != -1) {
+    app.useDojo = false;
+  }
+
   if (!app.name) {
     if (app.webworker) {
       app.name = 'Webworker';
@@ -21,9 +27,11 @@
       app.paths.script = app.paths.page.concat(app.paths.script);
     }
   }
+  app.paths.root = app.paths.script.slice(0, -1);
 
-  app.paths.build = app.paths.script.slice(0, -1).concat(['js-build']);
+  app.paths.build = app.paths.root.concat(['js-build']);
   app.paths.lib = app.paths.script.concat(['libs']);
+  app.paths.img = app.paths.root.concat(['img']);
   if (app.useBuild) {
     app.paths.shim = app.paths.build;
     app.paths.app = app.paths.build.concat(['app']);

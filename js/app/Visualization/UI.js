@@ -1,4 +1,4 @@
-define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelManager", "async", "jQuery"], function(Class, Timeline, SidePanelManager, async, $) {
+define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelManager", "app/Visualization/BasicSidebar", "async", "jQuery"], function(Class, Timeline, SidePanelManager, BasicSidebar, async, $) {
   return Class({
     name: "UI",
       initialize: function (visualization) {
@@ -318,6 +318,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
       var self = this;
 
       self.sidePanels = new SidePanelManager(self.visualization);
+      self.sideBar = new BasicSidebar(self.visualization);
       cb();
     }
   });
