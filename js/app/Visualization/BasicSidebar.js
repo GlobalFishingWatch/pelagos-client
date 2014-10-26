@@ -115,7 +115,7 @@ if (app.useDojo) {
           '</div>');
 
         node.find(".cmn-toggle").attr({id:"cmn-toggle-" + self.idCounter});
-        node.find("label").attr({for:"cmn-toggle-" + self.idCounter});
+        node.find("label").attr({"for":"cmn-toggle-" + self.idCounter});
         self.idCounter++;
 
         if (!animation.title) animation.title = animation.toString();
