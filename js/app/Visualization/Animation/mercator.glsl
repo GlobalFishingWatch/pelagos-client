@@ -51,3 +51,10 @@ vec4 lonlat2screen(vec2 lonlat, mat4 googleMercator2webglMatrix) {
   }
   return pos;
 }
+
+float latLonDistanceToWebGL(float distance, vec2 lonlat, mat4 googleMercator2webglMatrix) {
+  return length(lonlat2screenspace(vec2(lonlat[0], lonlat[1] + distance),
+                                   googleMercator2webglMatrix)
+                - lonlat2screenspace(lonlat,
+                                     googleMercator2webglMatrix));
+}
