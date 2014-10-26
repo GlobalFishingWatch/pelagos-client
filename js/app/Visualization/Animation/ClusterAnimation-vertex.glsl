@@ -24,7 +24,7 @@ void main() {
     vWeight = 0.0;
     baseColor = vec4(0.0, 0.0, 0.0, 0.0);
   } else {
-    float ps = 0.005; // In WebGL units
+    float ps = 0.01 ; // In WebGL units
 
     float webglSigma = latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
 
@@ -32,7 +32,7 @@ void main() {
     float areaScale = ps*ps / (radius*radius);
 
     gl_PointSize = pixelsPerWebGlX * radius;
-    if (gl_PointSize > 5.0) {gl_PointSize = 5.0;}
+    if (gl_PointSize > 8.0) {gl_PointSize = 8.0;}
 
     vWeight = areaScale * _weight;
 
