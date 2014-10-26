@@ -165,6 +165,9 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     drawProgram: function (program) {
       var self = this;
 
+      if (program.name == "rowidxProgram" && !self.manager.isPaused())
+        return;
+
       self.setGeneralUniforms(program);
 
       var mode = self.getDrawMode(program);

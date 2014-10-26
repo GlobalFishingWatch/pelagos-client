@@ -424,6 +424,11 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       Matrix.translateMatrix(self.googleMercator2webglMatrix, translation.x, translation.y);
     },
 
+    isPaused: function () {
+      var self = this;
+      return self.visualization.state.getValue("paused");
+    },
+
     update: function() {
       var self = this;
 
