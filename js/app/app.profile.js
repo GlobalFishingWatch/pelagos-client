@@ -8,6 +8,7 @@ profile = {
                       "app/Visualization/InfoUI": true,
                       "app/Visualization/LoggingUI": true,
                       "app/Visualization/DojoUI": true,
+                      "app/Visualization/BasicSidebar": true,
                       "app/Visualization/SidePanels/AnimationManagerUI": true,
                       "app/Visualization/SidePanels/DataUI": true,
                       "app/Visualization/SidePanels/DataViewUI": true,
