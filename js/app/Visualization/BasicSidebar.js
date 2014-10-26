@@ -90,7 +90,7 @@ if (app.useDojo) {
 
         self.node.find(".vessel_id .callsign").html(event.callsign || "---");
 
-        self.node.find(".vessel_id .flag").html(event.flag || "---");
+        self.node.find(".vessel_id .flag").html(event.flagstate || "---");
         self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/gfw/flag.png">');
 
         self.node.find(".vessel_id .imo").html(event.imo || "---");
