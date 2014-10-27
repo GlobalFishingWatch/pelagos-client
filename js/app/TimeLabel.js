@@ -41,6 +41,8 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
 
     fullDates: false,
 
+    intervalUnits: ['year', /* 'week', */ 'day', 'hour', 'minute'],
+
     pad: function (n, width, z) {
       z = z || '0';
       n = n + '';
@@ -93,5 +95,32 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
         return _.flatten(_.zip([""].concat(self.separators.slice(index.start + 1, index.end)), dateList.slice(index.start, index.end))).join('');
       }
     },
+
+    formatInterval: function (args) {
+      var self = this;
+
+      res = [];
+      var interval = args.interval;
+
+      self.intervalUnits.map(function (unitName) {
+        var unit = self.intervals[unitName].asMilliseconds;
+        var value = Math.floor(interval / unit);
+        if (value != 0) {
+          var s = value.toString() + " " + unitName;
+          if (value > 1) s += 's';
+          res.push(s);
+        }
+        interval = interval % unit;
+      });
+
+      if (interval > 0) {
+        interval = interval / 1000.0;
+        var s = interval.toString() + " second";
+        if (interval > 1) s += 's';
+        res.push(s);
+      }
+
+      return res.join(", ");
+    }
   });
 });

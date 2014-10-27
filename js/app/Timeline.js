@@ -73,6 +73,8 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       fullDates: false
     }),
 
+    windowLengLabels: new TimeLabel({}),
+
     initialize: function (args) {
       var self = this;
 
@@ -180,42 +182,6 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       self.leftContext = self.context;
       self.rightContext = self.context;
       self.setRange(self.windowStart, self.windowEnd);
-    },
-
-    windowTimesToLabel: function (d) {
-      var self = this;
-
-      return self.windowTimeLabels.formatDate({
-        date: d,
-        stepLength: self.stepLength
-      });
-    },
-
-    intervalToLabel: function (i) {
-      var self = this;
-      var unitNames = ['year', /* 'week', */ 'day', 'hour', 'minute'];
-
-      res = [];
-
-      unitNames.map(function (unitName) {
-        var unit = self.stepLengthsByName[unitName].asMilliseconds;
-        var value = Math.floor(i / unit);
-        if (value != 0) {
-          var s = value.toString() + " " + unitName;
-          if (value > 1) s += 's';
-          res.push(s);
-        }
-        i = i % unit;
-      });
-
-      if (i > 0) {
-        i = i / 1000.0;
-        var s = i.toString() + " second";
-        if (i > 1) s += 's';
-        res.push(s);
-      }
-
-      return res.join(", ");
     },
 
     roundTimeToStepLength: function (d) {
@@ -511,7 +477,9 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
         date: self.windowStart,
         stepLength: self.stepLength
       }));
-      self.lengthLabel.html(self.intervalToLabel(self.windowEnd - self.windowStart));
+      self.lengthLabel.html(self.windowLengLabels.formatInterval({
+        interval: self.windowEnd - self.windowStart
+      }));
       self.endLabel.html(self.windowTimeLabels.formatDate({
         date: self.windowEnd,
         stepLength: self.stepLength
