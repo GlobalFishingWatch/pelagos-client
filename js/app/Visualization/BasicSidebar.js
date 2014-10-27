@@ -48,7 +48,7 @@ if (app.useDojo) {
           '            <td class="vesselclass">---</td>' +
           '          </tr>' +
           '          <tr>' +
-          '            <th>Flag State</th>' +
+          '            <th>Flag</th>' +
           '            <td class="flag">---</td>' +
           '          </tr>' +
           '          <tr>' +

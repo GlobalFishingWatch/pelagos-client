@@ -138,7 +138,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 */
 
 #w {
-	font-family: Arial, Helvetica, sans-serif;
+        font-family: 'Roboto', sans-serif; 
 	background-color: #fcfcfc;
 	width: 14.349%; /* 551px / 3180px */
 	/*min-width: 150px;*/ /* current width of right col on 1024x768 screen */
@@ -164,7 +164,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 }
 
 #drawer_slide img {
-	width: 2.9038112522686%; /* 11px / 551px */
+        width: 23px;
 	min-width: 11px;
 	/*padding: 4.39814814814815% 0 0 4.39814814814815%;*/
 	padding: 1rem 0 0 4.39814814814815%;
@@ -172,7 +172,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 }
 
 #gfw_title {
-	color: #3a3a3c;
+        color: #404041; 
 	font-weight: 400;
 	padding-left: 10.5263%;/* 58px / 551px */
 }
@@ -180,12 +180,13 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 #gfw_title img {
 	vertical-align: middle;
 	padding-right: 4.3557%; /* 24px / 551px */
-	width: 14.5191%; /* 80px / 551px */
+        width: 20%; 
 }
 
 #gfw_logos {
 	padding-top: 2.1296%; /* 45px / 2160px */
 	padding-left: 10.5263%;/* 58px / 551px */
+        text-align: right; /* NEW */
 }
 
 #gfw_logos img.st {
@@ -201,9 +202,13 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 }
 
 #gfw_logos img.oc { /* 117px / 551px*/
-	width: 21.23411978221416%;
 	vertical-align: bottom;
-	padding-right: 8.3845%; /* 46px / 551px */
+}
+
+#gfw_logos img.oc, #gfw_logos img.st, #gfw_logos img.g {
+        width: 30%;
+        vertical-align: bottom;
+        padding-right: 3%; /* NEW and merge styles */
 }
 
 #layers, #vessel_identifiers {
@@ -269,6 +274,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 #layers .switch {
 	display: table-cell;
 	vertical-align: middle;
+        padding-top: 6px;
+        vertical-align: top;
 }
 
 #layers .switch {
@@ -277,7 +284,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 }
 
 #layers .layer-label {
-	color: #6d6e71;
+        color: #6D6E70;
 	font-size: 90%;
 	padding: 2%;
 	width: 65%;
@@ -326,7 +333,7 @@ input.cmn-toggle-round-flat + label:after {
 	top: 0;
 	left: 0;
 	bottom: 0;
-	width: 8px;
+        width: 16px; 
 	-webkit-border-radius: 100%; /*52px;*/
 	-moz-border-radius: 100%;
 	-ms-border-radius: 100%;
@@ -418,6 +425,22 @@ input.cmn-toggle-green:checked + label:after {
 }
 input.cmn-toggle-green + label:after {
 	border-color: #49b050;
+}
+
+#layers h2,
+#vessel_identifiers h2 {
+        color: #404041; 
+}
+
+.vessel_id th {
+        color: #6D6E70;
+        vertical-align: top;
+        padding: 6px 0 0 0; 
+}
+.vessel_id td {
+        color: #939597; 
+        vertical-align: top;
+        padding-left: 5px; 
 }
 
 
