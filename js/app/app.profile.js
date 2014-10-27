@@ -3,6 +3,7 @@ profile = {
   resourceTags: {
     amd: function(filename, mid) {
       var specials = {"app/Condition": true,
+                      "app/Timeline.js": true,
                       "app/Visualization/AnimationManagerUI": true,
                       "app/Visualization/DataViewUI": true,
                       "app/Visualization/InfoUI": true,
