@@ -41,7 +41,8 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
 
     fullDates: false,
 
-    intervalUnits: ['year', /* 'week', */ 'day', 'hour', 'minute'],
+    intervalUnits: ['year', /* 'week', */ 'day', 'hour' /*, 'minute' */],
+    intervalPrecision: 2,
 
     pad: function (n, width, z) {
       z = z || '0';
@@ -103,21 +104,27 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
       var interval = args.interval;
 
       self.intervalUnits.map(function (unitName) {
-        var unit = self.intervals[unitName].asMilliseconds;
-        var value = Math.floor(interval / unit);
-        if (value != 0) {
-          var s = value.toString() + " " + unitName;
-          if (value > 1) s += 's';
-          res.push(s);
+        if (unitName == 'second') {
+          if (interval > 0) {
+            interval = interval / 1000.0;
+            var s = interval.toString() + " second";
+            if (interval > 1) s += 's';
+            res.push(s);
+          }
+        } else {
+          var unit = self.intervals[unitName].asMilliseconds;
+          var value = Math.floor(interval / unit);
+          if (value != 0) {
+            var s = value.toString() + " " + unitName;
+            if (value > 1) s += 's';
+            res.push(s);
+          }
+          interval = interval % unit;
         }
-        interval = interval % unit;
       });
 
-      if (interval > 0) {
-        interval = interval / 1000.0;
-        var s = interval.toString() + " second";
-        if (interval > 1) s += 's';
-        res.push(s);
+      if (self.intervalPrecision != undefined) {
+        res = res.slice(0, self.intervalPrecision);
       }
 
       return res.join(", ");
