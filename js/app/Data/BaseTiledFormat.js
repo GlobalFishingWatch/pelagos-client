@@ -119,7 +119,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         data[key] = selection.data[key][0];
       }
 
-      var url = self.getUrl() + "/series";
+      var url = self.getUrl("series") + "/series";
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
       request.withCredentials = true;
@@ -298,15 +298,23 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       Object.items(oldWantedTiles).map(function (item) {
         item.value.dereference();
       });
+    },
 
-      wantedTileBounds.map(function (tilebounds) {
-        setTimeout(function () {
-          var bbox = tilebounds.toBBOX();
-          if (self.wantedTiles[bbox]) {
-            self.wantedTiles[bbox].load();
-          }
-        }, 0);
-      });
+    // fired by map idle event
+    mapIdle: function () {
+      var self = this;
+
+      // see if we have any tiles waiting to be loaded
+      if (self.wantedTiles == undefined) return;
+      Object.keys(self.wantedTiles).map(function (bbox) {
+        if (!self.wantedTiles[bbox].content.allIsLoaded) {
+            setTimeout(function () {
+              if (self.wantedTiles[bbox]) {
+                self.wantedTiles[bbox].load();
+              }
+            }, 0);
+        }
+       });
     },
 
 /*

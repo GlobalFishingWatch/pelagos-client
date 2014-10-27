@@ -1,6 +1,7 @@
 precision mediump float;
 
 varying float vWeight;
+varying vec4 baseColor;
 
 
 float fudge(float v) {
@@ -9,23 +10,21 @@ float fudge(float v) {
 }
 
 void main() {
-  gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  gl_FragColor = baseColor;
 
-  if (vWeight == 0.0) {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-  } else {
+  if (vWeight > 0.0) {
     float dist = length(gl_PointCoord.xy - vec2(.5,.5));
     dist = 1. - (dist * 2.);
     dist = max(0., dist);
 
     float c = dist * vWeight;
-/*    float c = dist * 1.0; */
 
     gl_FragColor = vec4(
-      fudge(c),
-      fudge(0.3*c),
-      fudge(0.1*c),
-      c
+      fudge(c * baseColor[0]),
+      fudge(c * baseColor[1]),
+      fudge(c * baseColor[2]),
+      c * baseColor[3]
     );
   }
 }
+

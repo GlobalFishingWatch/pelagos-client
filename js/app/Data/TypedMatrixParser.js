@@ -160,8 +160,10 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           self.request.setRequestHeader(key, values[i]);
         }
       }
+      self.request.onload = self.handleData.bind(self);
+      self.request.onerror = self.handleData.bind(self);
       self.request.send(null);
-      self.request.onreadystatechange = self.handleData.bind(self);
+      // self.request.onreadystatechange = self.handleData.bind(self);
     },
 
     cancel: function () {

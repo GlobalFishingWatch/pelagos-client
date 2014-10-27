@@ -17,6 +17,10 @@ define(["app/Class", "app/Events", "app/Data/Format"], function(Class, Events, F
       self.load();
     },
 
+    mapIdle: function () {
+      var self = this;
+    },
+
     _load: function() {
       var self = this;
 

@@ -43,11 +43,23 @@ vec4 lonlat2screen(vec2 lonlat, mat4 googleMercator2webglMatrix) {
 
   if (pos[0] < -1.0) {
     lonlat[0] += 360.0;
-    pos = lonlat2screenspace(lonlat, googleMercator2webglMatrix);
+    vec4 new_pos = lonlat2screenspace(lonlat, googleMercator2webglMatrix);
+
+    if (abs(new_pos[0]) < abs(pos[0]))
+        pos = new_pos;
   }
   if (pos[0] > 1.0) {
     lonlat[0] -= 360.0;
-    pos = lonlat2screenspace(lonlat, googleMercator2webglMatrix);
+    vec4 new_pos = lonlat2screenspace(lonlat, googleMercator2webglMatrix);
+    if (abs(new_pos[0]) < abs(pos[0]))
+        pos = new_pos;
   }
   return pos;
+}
+
+float latLonDistanceToWebGL(float distance, vec2 lonlat, mat4 googleMercator2webglMatrix) {
+  return length(lonlat2screenspace(vec2(lonlat[0], lonlat[1] + distance),
+                                   googleMercator2webglMatrix)
+                - lonlat2screenspace(lonlat,
+                                     googleMercator2webglMatrix));
 }

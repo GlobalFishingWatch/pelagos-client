@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation"], function(Class, Events, Bounds, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
   return Class({
     name: "AnimationManager",
 
@@ -86,6 +86,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
+      google.maps.event.addListener(self.map, 'idle', self.mapIdle.bind(self));
       cb();
     },
 
@@ -348,6 +349,11 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       self.visualization.data.zoomTo(new Bounds(lonmin, latmin, lonmax, latmax));
     },
 
+    mapIdle: function() {
+      var self = this;
+      self.visualization.data.mapIdle();
+    },
+
     canvasResize: function() {
       var self = this;
 
@@ -416,6 +422,11 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       var translation = self.canvasLayer.getMapTranslation();
       Matrix.translateMatrix(self.googleMercator2webglMatrix, translation.x, translation.y);
+    },
+
+    isPaused: function () {
+      var self = this;
+      return self.visualization.state.getValue("paused");
     },
 
     update: function() {

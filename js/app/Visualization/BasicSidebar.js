@@ -90,7 +90,7 @@ if (app.useDojo) {
 
         self.node.find(".vessel_id .callsign").html(event.callsign || "---");
 
-        self.node.find(".vessel_id .flag").html(event.flag || "---");
+        self.node.find(".vessel_id .flag").html(event.flagstate || "---");
         self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/gfw/flag.png">');
 
         self.node.find(".vessel_id .imo").html(event.imo || "---");
@@ -115,7 +115,7 @@ if (app.useDojo) {
           '</div>');
 
         node.find(".cmn-toggle").attr({id:"cmn-toggle-" + self.idCounter});
-        node.find("label").attr({for:"cmn-toggle-" + self.idCounter});
+        node.find("label").attr({"for":"cmn-toggle-" + self.idCounter});
         self.idCounter++;
 
         if (!animation.title) animation.title = animation.toString();

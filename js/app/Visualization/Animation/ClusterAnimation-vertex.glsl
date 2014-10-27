@@ -8,13 +8,8 @@ uniform float zoom;
 uniform mat4 googleMercator2webglMatrix;
 
 varying float vWeight;
+varying vec4 baseColor;
 
-float latLonDistanceToWebGL(float distance, vec2 lonlat, mat4 googleMercator2webglMatrix) {
-  return length(lonlat2screenspace(vec2(lonlat[0], lonlat[1] + distance),
-                                   googleMercator2webglMatrix)
-                - lonlat2screenspace(lonlat,
-                                     googleMercator2webglMatrix));
-}
 
 void main() {
   mapper();
@@ -27,8 +22,9 @@ void main() {
   if (_filter > 0.0) {
     gl_PointSize = 0.0;
     vWeight = 0.0;
+    baseColor = vec4(0.0, 0.0, 0.0, 0.0);
   } else {
-    float ps = 0.01; // In WebGL units
+    float ps = 0.01 ; // In WebGL units
 
     float webglSigma = latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
 
@@ -36,7 +32,16 @@ void main() {
     float areaScale = ps*ps / (radius*radius);
 
     gl_PointSize = pixelsPerWebGlX * radius;
+    if (gl_PointSize > 8.0) {gl_PointSize = 8.0;}
 
     vWeight = areaScale * _weight;
+
+    if (scaled_selected == 1.0)
+        baseColor = vec4(0.0, 0.0, 1.0, 1.0);
+    else if (scaled_hover == 1.0)
+        baseColor = vec4(1.0, 0.0, 1.0, 1.0);
+    else
+        baseColor = vec4(1.0, 0.3, 0.1, 1.0);
   }
 }
+
