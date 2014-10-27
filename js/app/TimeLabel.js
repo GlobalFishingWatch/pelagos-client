@@ -34,8 +34,10 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
       '12': 'DEC'
     },
 
-    // separators: ['', '-', '-', ' ', ':', ':', '.'],
-    separators: ['', ' ', ' ', ' ', ':', ':', '.'],
+    // separators: ['-', '-', ' ', ':', ':', '.'],
+    separators: [' ', ' ', ' ', ':', ':', '.'],
+
+    reverseDates: true,
 
     padWidths: [4, 2, 2, 2, 2, 2, 3],
 
@@ -91,10 +93,23 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
       if (args.fullDates != undefined) fullDates = args.fullDates;
 
       if (fullDates) {
-        return _.flatten(_.zip(self.separators.slice(0, index.end), dateList.slice(0, index.end))).join('');
-      } else {
-        return _.flatten(_.zip([""].concat(self.separators.slice(index.start + 1, index.end)), dateList.slice(index.start, index.end))).join('');
+        index.start = 0;
       }
+
+      var resDateList = dateList.slice(index.start, index.end);
+      var separators = self.separators.slice(index.start, index.end - 1);
+
+      if (self.reverseDates) {
+        var dateLength = 3 - index.start;
+        if (dateLength > 0) {
+          resDateList = [].concat(
+            resDateList.slice(0, dateLength).reverse(),
+            resDateList.slice(dateLength)
+          );
+        }
+      }
+
+      return _.flatten(_.zip([""].concat(separators), resDateList)).join('');
     },
 
     formatInterval: function (args) {
