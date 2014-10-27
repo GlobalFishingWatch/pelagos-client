@@ -16,7 +16,7 @@
 */
 
 define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
-  return Class({
+  Interval = Class({
     name: 'Interval',
 
     keys: ["years", "months", "days", "hours", "minutes", "seconds", "milliseconds"],
@@ -29,8 +29,8 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       if (arg2 != undefined) {
         self.asMilliseconds = arg1 - arg2;
 
-        arg1 = self.dateToDict(arg1);
-        arg2 = self.dateToDict(arg2);
+        arg1 = Interval.dateToDict(arg1);
+        arg2 = Interval.dateToDict(arg2);
 
         self.keys.map(function (key) {
           self[key] = arg1[key] - arg2[key];
@@ -45,43 +45,17 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       }
     },
 
-    dateToDict: function (date) {
-      return {
-        years: date.getUTCFullYear(),
-        months: date.getUTCMonth(),
-        days: date.getUTCDate() - 1, // Use 0-based counting for modulo to work, but Date uses 1-based counting
-        hours: date.getUTCHours(),
-        minutes: date.getUTCMinutes(),
-        seconds: date.getUTCSeconds(),
-        milliseconds: date.getUTCMilliseconds()
-      };
-    },
-
-    dictToDate: function (dict) {
-      return new Date(
-        Date.UTC(
-          dict.years,
-          dict.months,
-          dict.days + 1, // We use 0-based counting for modulo to work, but Date uses 1-based counting
-          dict.hours,
-          dict.minutes,
-          dict.seconds,
-          dict.milliseconds
-        )
-      );
-    },
-
     add: function (other) {
       var self = this;
 
       if (other.constructor == Date) {
-        other = self.dateToDict(other);
+        other = Interval.dateToDict(other);
 
         self.keys.map(function (key) {
           other[key] += self[key];
         });
 
-        return self.dictToDate(other);
+        return Interval.dictToDate(other);
       } else if (other.constructor = self.constructor) {
         other = new self.constructor(other);
         
@@ -102,13 +76,13 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       var self = this;
 
       if (other.constructor == Date) {
-        other = self.dateToDict(other);
+        other = Interval.dateToDict(other);
 
         self.keys.map(function (key) {
           other[key] -= self[key];
         });
         
-        return self.dictToDate(other);
+        return Interval.dictToDate(other);
       } else if (other.constructor = self.constructor) {
         other = new self.constructor(other);
         
@@ -144,7 +118,7 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       if (requiresEpochCalc) {
         return other.getTime() / self.asMilliseconds;
       } else {
-        var d = self.dateToDict(other);
+        var d = Interval.dateToDict(other);
 
         var res;
         self.keys.map(function (key) {
@@ -173,7 +147,7 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
         if (other < 0 && offset != 0) offset += self.asMilliseconds; // Handle dates < 1970-01-01 correctly
         return new Date(other - offset);
       } else {
-        var d = self.dateToDict(other);
+        var d = Interval.dateToDict(other);
 
         var filtered = false;
         self.keys.map(function (key) {
@@ -186,7 +160,7 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
           }
         });
 
-        return self.dictToDate(d);
+        return Interval.dictToDate(d);
       }
     },
 
@@ -215,4 +189,45 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
       return res;
     }
   });
+
+
+  Interval.dateToDict = function (date) {
+    return {
+      years: date.getUTCFullYear(),
+      months: date.getUTCMonth(),
+      days: date.getUTCDate() - 1, // Use 0-based counting for modulo to work, but Date uses 1-based counting
+      hours: date.getUTCHours(),
+      minutes: date.getUTCMinutes(),
+      seconds: date.getUTCSeconds(),
+      milliseconds: date.getUTCMilliseconds()
+    };
+  };
+
+  Interval.dictToDate = function (dict) {
+    return new Date(
+      Date.UTC(
+        dict.years,
+        dict.months,
+        dict.days + 1, // We use 0-based counting for modulo to work, but Date uses 1-based counting
+        dict.hours,
+        dict.minutes,
+        dict.seconds,
+        dict.milliseconds
+      )
+    );
+  };
+
+  Interval.dateToList = function (date) {
+    return [
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate() - 1, // Use 0-based counting for modulo to work, but Date uses 1-based counting
+      date.getUTCHours(),
+      date.getUTCMinutes(),
+      date.getUTCSeconds(),
+      date.getUTCMilliseconds()
+    ];
+  };
+
+  return Interval;
 });

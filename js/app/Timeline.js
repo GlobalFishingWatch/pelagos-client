@@ -1,4 +1,4 @@
-define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangExtensions'], function (Class, Events, Interval, $, less) {
+define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'less', 'app/LangExtensions'], function (Class, Events, Interval, TimeLabel, $, less) {
 
   var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('app/Timeline.less') + '" />');
   $('head').append(lessnode);
@@ -16,15 +16,15 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
     zoomSize: 1.2,
     hiddenContext: 2, // total space, as a multiple of visible size
     context: 25, // visible space on each side of the window (in percentage of visible range)
-    stepLabelStyle: "names",
-    windowLabelStyle: "stepLabel",
     windowStart: new Date('1970-01-01'),
     windowEnd: new Date('1970-01-02'),
     stepZoom: 0.5,
     snapZoomToTickmarks: false,
     minWindowSize: 1000*60*60,
     maxWindowSize: 1000*60*60*24*365,
-    splitTickmarksOnLargerUnitBoundaries: false, 
+    splitTickmarksOnLargerUnitBoundaries: false,
+    showRightLabelAtWidth: undefined,
+    showCenterLabelAtWidth: undefined,
 
     backgroundCss: {background: '#ff8888'},
     rangemarks: [
@@ -64,6 +64,14 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       new Interval({name: 'year', years: 1}),
       new Interval({name: 'decade', years: 10})
     ],
+
+    windowTimeLabels: new TimeLabel({
+      fullDates: true
+    }),
+
+    tickmarkLabels: new TimeLabel({
+      fullDates: false
+    }),
 
     initialize: function (args) {
       var self = this;
@@ -176,35 +184,11 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
     windowTimesToLabel: function (d) {
       var self = this;
-      return self["windowTimesToLabel_" + self.windowLabelStyle](d);
-    },
 
-    windowTimesToLabel_fullDate: function (d) {
-      return d.toISOString().replace("T", " ").replace("Z", "");
-    },
-
-    windowTimesToLabel_stepLabel: function (d) {
-      var self = this;
-
-      var iso = d.toISOString().split('Z')[0].replace('T', ' ');
-
-      if (self.stepLength.cmp(self.stepLengthsByName.month) > 0) {
-        return iso.split(' ')[0].split('-').slice(0, -1).join('-')
-      } else if (self.stepLength.cmp(self.stepLengthsByName.day) > 0) {
-        return iso.split(' ')[0]
-      } else if (self.stepLength.cmp(self.stepLengthsByName.minute) > 0) {
-        return iso.split(':').slice(0, -1).join(':');
-      } else if (self.stepLength.cmp(self.stepLengthsByName.second) > 0) {
-        return iso.split('.')[0];
-      } else {
-        return iso;
-      }
-    },
-
-    pad: function (n, width, z) {
-      z = z || '0';
-      n = n + '';
-      return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+      return self.windowTimeLabels.formatDate({
+        date: d,
+        stepLength: self.stepLength
+      });
     },
 
     intervalToLabel: function (i) {
@@ -232,125 +216,6 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
       }
 
       return res.join(", ");
-    },
-
-    dateToStepLengthLabel: function (args) {
-      var self = this;
-
-      return self["dateToStepLengthLabel_" + self.stepLabelStyle](args);
-    },
-
-    dateToStepLengthLabel_names: function (args) {
-      var self = this;
-
-      var t = [
-        args.date.getUTCFullYear(),
-        args.date.getUTCMonth(),
-        args.date.getUTCDate() - 1,
-        args.date.getUTCHours(),
-        args.date.getUTCMinutes(),
-        args.date.getUTCSeconds(),
-        args.date.getUTCMilliseconds()
-      ];
-      var s = ['', '-', '-', ' ', ':', ':', '.'];
-      var l = [4, 2, 2, 2, 2, 2, 3];
-
-      var start = 0;
-      if (args.stepLength.cmp(self.stepLengthsByName.second) < 0) {
-        start = 6;
-        end = 7;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.minute) < 0) {
-        start = 5;
-        end = 6;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.hour) < 0) {
-        start = 4;
-        end = 5;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.day) < 0) {
-        start = 3;
-        end = 4;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.week) < 0) {
-        start = 2;
-        end = 3;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.month) < 0) {
-        start = 1;
-        end = 3;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.year) < 0) {
-        start = 1;
-        end = 2;
-      }
-
-      t[1] += 1;
-      t[2] += 1;
-
-      for (var i = 0; i < t.length; i++) {
-        t[i] = self.pad(t[i], l[i]);
-      }
-
-      var monthnames = {
-        '01': 'JAN',
-        '02': 'FEB',
-        '03': 'MAR',
-        '04': 'APR',
-        '05': 'MAY',
-        '06': 'JUN',
-        '07': 'JUL',
-        '08': 'AUG',
-        '09': 'SEP',
-        '10': 'OCT',
-        '11': 'NOV',
-        '12': 'DEC'
-      };
-      t[1] = monthnames[t[1]];
-
-      if (args.full) {
-        return _.flatten(_.zip(s.slice(0, end), t.slice(0, end))).join('');
-      } else {
-        return _.flatten(_.zip([""].concat(s.slice(start + 1, end)), t.slice(start, end))).join('');
-      }
-    },
-
-    dateToStepLengthLabel_minimal: function (args) {
-      var self = this;
-
-      var t = [
-        args.date.getUTCFullYear(),
-        args.date.getUTCMonth(),
-        args.date.getUTCDate() - 1,
-        args.date.getUTCHours(),
-        args.date.getUTCMinutes(),
-        args.date.getUTCSeconds(),
-        args.date.getUTCMilliseconds()
-      ];
-      var s = ['', '-', '-', ' ', ':', ':', '.'];
-      var l = [4, 2, 2, 2, 2, 2, 3];
-
-      var start = 0;
-      if (args.stepLength.cmp(self.stepLengthsByName.second) < 0) {
-        start = 6;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.minute) < 0) {
-        start = 5;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.hour) < 0) {
-        start = 4;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.day) < 0) {
-        start = 3;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.month) < 0) {
-        start = 2;
-      } else if (args.stepLength.cmp(self.stepLengthsByName.year) < 0) {
-        start = 1;
-      }
-
-      t[1] += 1;
-      t[2] += 1;
-
-      for (var i = 0; i < t.length; i++) {
-        t[i] = self.pad(t[i], l[i]);
-      }
-
-      if (args.full) {
-        return _.flatten(_.zip(s.slice(0, start+1), t.slice(0, start+1))).join('');
-      } else {
-        return t[start];
-      }
     },
 
     roundTimeToStepLength: function (d) {
@@ -538,10 +403,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         stepNode.addClass(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
         tickmarksNode.append(stepNode);
 
-        var label = self.dateToStepLengthLabel({
+        var label = self.tickmarkLabels.formatDate({
           date: stepStart,
           stepLength: stepLength,
-          full: fullLabels
+          fullDates: fullLabels
         });
         stepNode.find(".quanta-label span").html(label);
         stepNode.find(".debug ").html(JSON.stringify(stepSizeInfo));
@@ -551,10 +416,11 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
         
         stepNode.find(".quanta-label span").hide();
         stepNode.find(".quanta-label span.left").show();
-        if (stepWidth > 50 / self.hiddenContext) {
+
+        if (self.showRightLabelAtWidth != undefined && stepWidth > self.showRightLabelAtWidth / self.hiddenContext) {
           stepNode.find(".quanta-label span.right").show();
         }
-        if (stepWidth > 100 / self.hiddenContext) {
+        if (self.showCenterLabelAtWidth != undefined && stepWidth > self.showCenterLabelAtWidth / self.hiddenContext) {
           stepNode.find(".quanta-label span.center").show();
         }
 
@@ -641,9 +507,15 @@ define(['app/Class', 'app/Events', 'app/Interval', 'jQuery', 'less', 'app/LangEx
 
       self.percentOffset = 100.0 * self.hiddenContext * self.offset / self.contextSize;
       self.lineNode.css({'left': -(self.percentOffset) + '%'});
-      self.startLabel.html(self.windowTimesToLabel(self.windowStart));
+      self.startLabel.html(self.windowTimeLabels.formatDate({
+        date: self.windowStart,
+        stepLength: self.stepLength
+      }));
       self.lengthLabel.html(self.intervalToLabel(self.windowEnd - self.windowStart));
-      self.endLabel.html(self.windowTimesToLabel(self.windowEnd));
+      self.endLabel.html(self.windowTimeLabels.formatDate({
+        date: self.windowEnd,
+        stepLength: self.stepLength
+      }));
     },
 
     setWindowSize: function () {
