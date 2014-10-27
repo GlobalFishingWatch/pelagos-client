@@ -117,8 +117,8 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
         "  <div class='rightFrame'></div>" +
         "</div>" +
         "<div class='zoom'>" +
-        "  <a class='zoomIn'><img src='img/smaller_increments.png'> more increments</a>" +
-        "  <a class='zoomOut'><img src='img/larger_increments.png'> fewer increments</a>" +
+        "  <a class='zoomIn'><img src='" + app.dirs.img + "/smaller_increments.png'> more increments</a>" +
+        "  <a class='zoomOut'><img src='" + app.dirs.img + "/larger_increments.png'> fewer increments</a>" +
         "</div>"
       );
 
