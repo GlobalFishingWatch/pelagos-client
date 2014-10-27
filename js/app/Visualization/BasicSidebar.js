@@ -6,8 +6,9 @@ if (app.useDojo) {
   define([
     "app/Class",
     "app/Logging",
+    "app/CountryCodes",
     "jQuery"
-  ], function(Class, Logging, $){
+  ], function(Class, Logging, CountryCodes, $){
     return Class({
       name: "BasicSidebar",
       initialize: function (visualization) {
@@ -90,8 +91,15 @@ if (app.useDojo) {
 
         self.node.find(".vessel_id .callsign").html(event.callsign || "---");
 
-        self.node.find(".vessel_id .flag").html(event.flagstate || "---");
-        self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/gfw/flag.png">');
+        if (event.flag) {
+          var label = event.flag;
+          if (CountryCodes.codeToName[event.flag] != undefined) label = CountryCodes.codeToName[event.flag];
+
+          self.node.find(".vessel_id .flag").html(label);
+          self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + event.flag.toLowerCase() + '.png">');
+        } else {
+          self.node.find(".vessel_id .flag").html("---");
+        }
 
         self.node.find(".vessel_id .imo").html(event.imo || "---");
         self.node.find(".vessel_id .mmsi").html(event.mmsi || "---");
