@@ -11,6 +11,7 @@
 
 .timeline {
   z-index: 0;
+  font-family: 'Roboto', sans-serif; 
 
   .zoomIn, .zoomOut {
     z-index: 2;
@@ -79,16 +80,15 @@
         .startLabel, .lengthLabel, .endLabel {
           position: absolute;
           white-space: nowrap;
+        }
+        .startLabel span, .endLabel span {
+          padding: 2pt;
+          color: #535151;
+        }
 
-          .startLabel span, .endLabel span {
-            padding: 2pt;
-            color: #535151;
-          }
-
-          .lengthLabel span {
-            padding: 2pt;
-            color: #a7a7a7;
-          }
+        .lengthLabel span {
+          padding: 2pt;
+          color: #a7a7a7;
         }
 
         .startLabel, .endLabel {
@@ -182,7 +182,6 @@
               color: black;
               width: 100%;
               height: 100%;
-              font-weight: bold;
               text-align: center;
               .left {
                 float: left;
