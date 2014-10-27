@@ -66,11 +66,13 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     ],
 
     windowTimeLabels: new TimeLabel({
-      fullDates: true
+      includeDatePrefix: true,
+      fullDates: true,
+      neverJustHours: true
     }),
 
     tickmarkLabels: new TimeLabel({
-      fullDates: false
+      includeDatePrefix: false
     }),
 
     windowLengLabels: new TimeLabel({}),
@@ -372,7 +374,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
         var label = self.tickmarkLabels.formatDate({
           date: stepStart,
           stepLength: stepLength,
-          fullDates: fullLabels
+          includeDatePrefix: fullLabels
         });
         stepNode.find(".quanta-label span").html(label);
         stepNode.find(".debug ").html(JSON.stringify(stepSizeInfo));

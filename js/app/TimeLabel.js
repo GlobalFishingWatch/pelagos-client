@@ -42,6 +42,8 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
     padWidths: [4, 2, 2, 2, 2, 2, 3],
 
     fullDates: false,
+    includeDatePrefix: false,
+    neverJustHours: false,
 
     intervalUnits: ['year', /* 'week', */ 'day', 'hour' /*, 'minute' */],
     intervalPrecision: 2,
@@ -80,6 +82,9 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
       var dateList = Interval.dateToList(args.date);
       var index = self.intervalToIndex(args.stepLength);
 
+      if (self.fullDates) index.end = Math.max(index.end, 3);
+      if (self.neverJustHours && index.end == 4) index.end = 5;
+
       dateList[1] += 1;
       dateList[2] += 1;
 
@@ -89,10 +94,10 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
 
       dateList[1] = self.monthNames[dateList[1]];
 
-      var fullDates = self.fullDates;
-      if (args.fullDates != undefined) fullDates = args.fullDates;
+      var includeDatePrefix = self.includeDatePrefix;
+      if (args.includeDatePrefix != undefined) includeDatePrefix = args.includeDatePrefix;
 
-      if (fullDates) {
+      if (includeDatePrefix) {
         index.start = 0;
       }
 
