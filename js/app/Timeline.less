@@ -13,26 +13,26 @@
   z-index: 0;
   font-family: 'Roboto', sans-serif; 
 
-  .zoomIn, .zoomOut {
+  .zoom {
     z-index: 2;
     position: relative;
     display: block;
     padding: 0;
-    left: 100%;
-    width: 20pt;
-    height: 20pt;
-    margin-left: -15pt;
-
-  }
-
-  .zoomIn {
     top: -300%;
-    margin-top: 5pt;
-  }
 
-  .zoomOut {
-    top: -200%;
-    margin-top: -40pt;
+    .zoomIn, .zoomOut {
+      display: block;
+      color: #4f4e4e;
+      font-size: 7pt;
+      cursor: pointer;
+      &:hover {
+        text-decoration: none;
+      }
+      img {
+        height: 1em;
+        width: 6em;
+      }
+    }
   }
 
   .overlay, .underlay {

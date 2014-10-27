@@ -116,8 +116,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
         "  </div>" +
         "  <div class='rightFrame'></div>" +
         "</div>" +
-        "<a class='zoomIn'><i class='fa fa-plus-square'></i></a>" +
-        "<a class='zoomOut'><i class='fa fa-minus-square'></i></a>"
+        "<div class='zoom'>" +
+        "  <a class='zoomIn'><img src='img/smaller_increments.png'> more increments</a>" +
+        "  <a class='zoomOut'><img src='img/larger_increments.png'> fewer increments</a>" +
+        "</div>"
       );
 
       self.overlayNode = self.node.find('.overlay');
