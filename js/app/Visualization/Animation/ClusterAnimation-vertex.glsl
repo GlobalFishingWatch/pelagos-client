@@ -34,6 +34,9 @@ void main() {
     gl_PointSize = pixelsPerWebGlX * radius;
     if (gl_PointSize > 8.0) {gl_PointSize = 8.0;}
 
+    if (_weight > 1.0)
+        _weight = (log(_weight)/log(4.0)) + 1.0;
+
     vWeight = areaScale * _weight;
 
     if (scaled_selected == 1.0)
