@@ -4,6 +4,10 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
+      mapTypeControlOptions: {
+        position: google.maps.ControlPosition.TOP_LEFT
+      },
+      streetViewControl: false,
       styles: [
         {
           featureType: 'poi',
