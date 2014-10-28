@@ -75,6 +75,11 @@ if (app.useDojo) {
 
         self.node.find("#drawer_slide img").click(function () {
           self.node.toggleClass('collapsed');
+          if (self.node.hasClass('collapsed')) {
+            self.node.find("#drawer_slide img").attr({src: app.dirs.img + '/gfw/gfw_open.png'});
+          } else {
+            self.node.find("#drawer_slide img").attr({src: app.dirs.img + '/gfw/gfw_close.png'});
+          }
         });
 
         self.animationManager.events.on({
