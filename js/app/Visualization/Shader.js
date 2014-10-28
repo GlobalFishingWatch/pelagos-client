@@ -140,6 +140,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     var selectionsMappingDec = Shader.compileSelectionsMappingDeclarations(dataView);
     var selectionsDec = Shader.compileSelectionsDeclarations(dataView);
     var selectionsMapper = Shader.compileSelectionsMapper(dataView);
+    var uniformsDec = Shader.compileUniformsDeclarations(dataView);
 
     var srcCols = Object.keys(dataView.source.header.colsByName);
     var dstCols = Object.keys(dataView.header.colsByName);
@@ -163,6 +164,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     return [
       selectionsMappingDec,
       selectionsDec,
+      uniformsDec,
       srcDec,
       scaledSrcDec,
       dstDec,
@@ -214,6 +216,12 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
         return res;
       }).join('\n') +
       '\n}\n';
+  };
+
+  Shader.compileUniformsDeclarations = function (dataView) {
+    return Object.values(dataView.header.uniforms).map(function (uniform) {
+      return "uniform float " + uniform.name + ";\n";
+    }).join("");
   };
 
   Shader.compileSourceMapper = function(srcColumns) {
