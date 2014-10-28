@@ -168,6 +168,8 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       if (program.name == "rowidxProgram" && !self.manager.isPaused())
         return;
 
+      program.gl.useProgram(program);
+
       self.setGeneralUniforms(program);
 
       var mode = self.getDrawMode(program);
