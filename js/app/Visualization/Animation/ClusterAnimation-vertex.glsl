@@ -39,12 +39,12 @@ void main() {
 
     vWeight = areaScale * _weight;
 
-    if (scaled_selected == 1.0)
-        baseColor = vec4(0.0, 0.0, 1.0, 1.0);
-    else if (scaled_hover == 1.0)
-        baseColor = vec4(1.0, 0.0, 1.0, 1.0);
+    if (_selected == 1.0)
+        baseColor = vec4(selected_red, selected_green, selected_blue, 1.0);
+    else if (_hover == 1.0)
+        baseColor = vec4(hover_red, hover_green, hover_blue, 1.0);
     else
-        baseColor = vec4(1.0, 0.3, 0.1, 1.0);
+        baseColor = vec4(red, green, blue, 1.0);
   }
 }
 

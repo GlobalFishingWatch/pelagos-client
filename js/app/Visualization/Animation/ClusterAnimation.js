@@ -11,7 +11,24 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
 
       time: {type: "Float32", hidden: true, source: {datetime: 1.0}},
 
-      filter: {type: "Float32", source: {_: null, timerange: -1.0, active_category: -1.0}}
+      filter: {type: "Float32", source: {_: null, timerange: -1.0, active_category: -1.0}},
+
+      selected: {type: "Float32", hidden: true, source: {selected: 1.0}},
+      hover: {type: "Float32", hidden: true, source: {hover: 1.0}}
+    },
+
+    uniforms: {
+      red: {value: 1.0, min:0.0, max: 1.0},
+      green: {value: 0.6, min:0.0, max: 1.0},
+      blue: {value: 0.4, min:0.0, max: 1.0},
+
+      selected_red: {value: 1.0, min:0.0, max: 1.0},
+      selected_green: {value: 1.0, min:0.0, max: 1.0},
+      selected_blue: {value: 1.0, min:0.0, max: 1.0},
+
+      hover_red: {value: 0.4, min:0.0, max: 1.0},
+      hover_green: {value: 0.6, min:0.0, max: 1.0},
+      hover_blue: {value: 1.0, min:0.0, max: 1.0}
     },
 
     selections: $.extend(
