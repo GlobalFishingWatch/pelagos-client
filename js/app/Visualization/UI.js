@@ -32,7 +32,6 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
         + '<div class="control_box">'
         + '  <button class="btn btn-default btn-lg" data-name="play"><i class="fa fa-play fa-fw"></i></button>'
         + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share-alt fa-fw"></i></button>'
-        + '  <button class="btn btn-default btn-lg" data-name="loading"><i id="loading" class="fa fa-spinner fa-spin fa-fw"></i></button>'
         + ''
         + '  <a class="balloon">'
         + '  <button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>'
@@ -88,15 +87,15 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = self.buttonNodes.loading.find("i");
+      self.loadingNode = $('<div class="loading" style="padding-left: 30px;"><img src="' + app.dirs.img + '/loader/Loader_30x30.gif"></div>');
+      self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
+
       self.loadingNode.hide();
       self.visualization.data.events.on({
         load: function () {
-          self.buttonNodes.loading.addClass("loading-active");
           self.loadingNode.fadeIn();
         },
         all: function () {
-          self.buttonNodes.loading.removeClass("loading-active");
           self.loadingNode.fadeOut();
         },
         error: function (data) {
