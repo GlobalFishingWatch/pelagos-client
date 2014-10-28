@@ -4,9 +4,9 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     columns: {},
     uniforms: {},
     selections: {
-      selected: undefined,
-      info: undefined,
-      hover: undefined,
+      selected: null,
+      info: null,
+      hover: null,
       timerange: {sortcols: ["datetime"]}
     },
 
