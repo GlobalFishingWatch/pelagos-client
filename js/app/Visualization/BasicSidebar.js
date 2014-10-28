@@ -25,7 +25,7 @@ if (app.useDojo) {
           '    <div id="drawer_slide"><img src="' + app.dirs.img + '/gfw/gfw_close.png"></div>' +
           '  ' +
           '    <div id="gfw_title"><img src="' + app.dirs.img + '/gfw/gfw_logo.png">Global Fishing Watch</div>' +
-          '    <div id="gfw_logos"><img class="oc" src="' + app.dirs.img + '/gfw/oceana_logo.png"><img class="st" src="' + app.dirs.img + '/gfw/st_logo.png"></div>' +
+          '    <div id="gfw_logos"><img class="st" src="' + app.dirs.img + '/gfw/st_logo.png"><img class="oc" src="' + app.dirs.img + '/gfw/oceana_logo.png"><img class="g" src="' + app.dirs.img + '/gfw/google_logo.png"></div>' +
           '' +
           '    <div id="divide"></div>' +
           '' +
