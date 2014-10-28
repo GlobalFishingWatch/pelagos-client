@@ -118,10 +118,14 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
           if (!self.header.colsByName[item.key]) {
             self.header.colsByName[item.key] = _.clone(item.value);
           } else {
-            self.header.colsByName[item.key].min = Math.min(
-              self.header.colsByName[item.key].min, item.value.min);
-            self.header.colsByName[item.key].max = Math.max(
-              self.header.colsByName[item.key].max, item.value.max);
+            if (item.value.min != undefined) {
+              self.header.colsByName[item.key].min = Math.min(
+                self.header.colsByName[item.key].min, item.value.min);
+            }
+            if (item.value.max != undefined) {
+              self.header.colsByName[item.key].max = Math.max(
+                self.header.colsByName[item.key].max, item.value.max);
+            }
           }
         });
       });
