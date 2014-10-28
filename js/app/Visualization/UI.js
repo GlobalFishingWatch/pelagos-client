@@ -27,15 +27,21 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
       self.buttonNodes = {};
 
       var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "arrow.png"]).join("/");
+      var playUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "play.png"]).join("/");
+      var shareUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "share.png"]).join("/");
+
 
       self.controlButtonsNode = $(''
+        
+        
         + '<div class="control_box">'
-        + '  <button class="btn btn-default btn-lg" data-name="play"><i class="fa fa-play fa-fw"></i></button>'
-        + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share-alt fa-fw"></i></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="share"><img src="' + shareUrl + '"></button>'
+        + '  <div class="divide"></div>'        
+        + '  <button class="btn btn-default btn-lg" data-name="play"><img src="' + playUrl + '"></button>'
         + '  <button class="btn btn-default btn-lg" data-name="loading"><i id="loading" class="fa fa-spinner fa-spin fa-fw"></i></button>'
         + ''
         + '  <a class="balloon">'
-        + '  <button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>'
+        + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
         + '    <div>'
         + '      <img class="arrow" src="' + arrowUrl + '">'
         + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
