@@ -101,7 +101,7 @@ if (app.useDojo) {
           if (CountryCodes.codeToName[event.flag] != undefined) label = CountryCodes.codeToName[event.flag];
 
           self.node.find(".vessel_id .flag").html(label);
-          self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + event.flag.toLowerCase() + '.png">');
+          self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + event.flag.toLowerCase() + '.png"><br>');
         } else {
           self.node.find(".vessel_id .flag").html("---");
         }
@@ -109,7 +109,7 @@ if (app.useDojo) {
         self.node.find(".vessel_id .imo").html(event.imo || "---");
         self.node.find(".vessel_id .mmsi").html(event.mmsi || "---");
         self.node.find(".vessel_id .vesselclass").html(event.vesselclass || "---");
-        self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + '/gfw/vessel.png">');
+        self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + '/gfw/vessel.png"><br>');
 
         self.node.find(".vessel_id .vesselname").html(event.vesselname || "---");
       },
