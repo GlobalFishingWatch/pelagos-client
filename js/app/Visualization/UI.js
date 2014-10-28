@@ -212,7 +212,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
             if (end > self.timeline.max) {
               end = self.timeline.max;
               start = new Date(end.getTime() - timeExtent);
-              if (self.visualization.state.getValue("loop")) {
+              if (!self.visualization.state.getValue("paused") && self.visualization.state.getValue("loop")) {
                 start = self.timeline.min;
                 end = new Date(start.getTime() + timeExtent);
               } else {
