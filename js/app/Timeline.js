@@ -21,7 +21,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     stepZoom: 0.5,
     snapZoomToTickmarks: false,
     minWindowSize: 1000*60*60,
-    maxWindowSize: 1000*60*60*24*365,
+    maxWindowSize: 1000*60*60*24*365*2,
     splitTickmarksOnLargerUnitBoundaries: false,
     showRightLabelAtWidth: undefined,
     showCenterLabelAtWidth: undefined,

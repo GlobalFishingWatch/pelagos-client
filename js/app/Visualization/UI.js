@@ -27,14 +27,20 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
       self.buttonNodes = {};
 
       var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "arrow.png"]).join("/");
+      var playUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "play.png"]).join("/");
+      var shareUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "share.png"]).join("/");
+
 
       self.controlButtonsNode = $(''
+        
+        
         + '<div class="control_box">'
-        + '  <button class="btn btn-default btn-lg" data-name="play"><i class="fa fa-play fa-fw"></i></button>'
-        + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share-alt fa-fw"></i></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="share"><img src="' + shareUrl + '"></button>'
+        + '  <div class="divide"></div>'        
+        + '  <button class="btn btn-default btn-lg" data-name="play"><img src="' + playUrl + '"></button>'
         + ''
         + '  <a class="balloon">'
-        + '  <button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>'
+        + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
         + '    <div>'
         + '      <img class="arrow" src="' + arrowUrl + '">'
         + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
@@ -298,7 +304,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
 
       self.buttonNodes.share.click(function () {
         self.visualization.save(function (url) {
-          url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + encodeURIComponent(url);
+          url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
 
           var dialog = $('<div class="modal fade" id="share" tabindex="-1" role="dialog" aria-labelledby="shareLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-success"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="shareLabel">Workspace saved</h4></div><div class="modal-body alert">Share this link: <input type="text" class="link" style="width: 300pt"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
           dialog.find('.modal-body .link').val(url);
