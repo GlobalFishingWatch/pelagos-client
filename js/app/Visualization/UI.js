@@ -93,7 +93,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div class="loading" style="padding-left: 30px;"><img src="' + app.dirs.img + '/loader/Loader_30x30.gif"></div>');
+      self.loadingNode = $('<div class="loading" style="padding-left: 34px;"><img style="width: 20px;" src="' + app.dirs.img + '/loader/Loader_30x30.gif"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
