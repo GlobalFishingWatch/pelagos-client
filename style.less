@@ -1,3 +1,5 @@
+body
+
 .logo {
   position: absolute;
   right: 100pt;
@@ -172,18 +174,23 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 }
 
 #w.collapsed {
-  right: auto;
-  left: 98%;
+  left: 100%;
+
+  #drawer_slide {
+    margin-left: -20pt;
+    box-shadow: -3px 1px 2px #b8bda7;
+  }
 }
 
 #drawer_slide {
+  background-color: #fcfcfc;
+  border-bottom-left-radius: 4pt; 
 }
 
 #drawer_slide img {
         width: 9%;
 	min-width: 11px;
-	/*padding: 4.39814814814815% 0 0 4.39814814814815%;*/
-	padding: 1rem 0 0 4.39814814814815%;
+	margin: 5pt;
         cursor: pointer;
 }
 
