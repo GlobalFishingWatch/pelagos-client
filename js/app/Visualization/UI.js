@@ -299,7 +299,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
 
       self.buttonNodes.share.click(function () {
         self.visualization.save(function (url) {
-          url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + encodeURIComponent(url);
+          url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
 
           var dialog = $('<div class="modal fade" id="share" tabindex="-1" role="dialog" aria-labelledby="shareLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-success"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="shareLabel">Workspace saved</h4></div><div class="modal-body alert">Share this link: <input type="text" class="link" style="width: 300pt"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
           dialog.find('.modal-body .link').val(url);

@@ -75,6 +75,10 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
       if (url.indexOf("?") >= 0) {
         self.workspaceUrl = url.split("?")[0];
       }
+      else {
+        self.workspaceUrl = "/workspace";
+      }
+
       $.get(url, function (data) {
         data = Json.decode(data);
         if (data.state == undefined) {
@@ -93,7 +97,7 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
 
       $.post(self.workspaceUrl, Json.encode(self, "  "), function (data) {
         data = Json.decode(data);
-        cb(self.workspaceUrl + "?id=" + data.id);
+        cb(self.workspaceUrl + "/" + data.id);
       }, 'text');
     }
   });
