@@ -646,6 +646,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       if (touchesNr == 1) {
         self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[self.dragData.startXorder[0]].time, 'temporary-range');
       } else if (touchesNr > 1) {
+        var now = performance.now();
+
+        if (now - self.lastUpdate < 300) return;
+        self.lastUpdate = now;
 
         var startOffset = self.dragData.offsets[self.dragData.startXorder[0]].time;
         var endOffset = self.dragData.offsets[self.dragData.startXorder[1]].time;
