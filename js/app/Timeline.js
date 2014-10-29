@@ -598,10 +598,12 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     },
     drag_windowResizeLeft: function (e) {
       var self = this;
-      self.windowStart = new Date(Math.max(
-        self.dragStartWindowStart.getTime() - self.getFirstPosition(self.dragData.offsets).time,
-        self.visibleStart.getTime()
-      ));
+      self.windowStart = new Date(
+        Math.min(
+          Math.max(
+            self.dragStartWindowStart.getTime() - self.getFirstPosition(self.dragData.offsets).time,
+            self.visibleStart.getTime()),
+          self.windowEnd.getTime() - self.minWindowSize));
       self.updateRange();
     },
     dragEnd_windowResizeLeft: function (e) {
@@ -617,9 +619,12 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     drag_windowResizeRight: function (e) {
       var self = this;
         
-      self.windowEnd = new Date(Math.min(
-        self.dragStartWindowEnd.getTime() - self.getFirstPosition(self.dragData.offsets).time,
-        self.visibleEnd.getTime()));
+      self.windowEnd = new Date(
+        Math.max(
+          Math.min(
+            self.dragStartWindowEnd.getTime() - self.getFirstPosition(self.dragData.offsets).time,
+            self.visibleEnd.getTime()),
+          self.windowStart.getTime() + self.minWindowSize));
       self.updateRange();
     },
     dragEnd_windowResizeRight: function (e) {
