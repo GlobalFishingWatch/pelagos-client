@@ -143,8 +143,15 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
 
       var setRange = function (e) {
         if (updating) return;
-        self.visualization.state.setValue("time", e.end);
-        self.visualization.state.setValue("timeExtent", e.end - e.start);
+        var timeExtent = e.end - e.start;
+
+        if (timeExtent < self.visualization.state.getValue("timeExtent")) {
+          self.visualization.state.setValue("timeExtent", timeExtent);
+          self.visualization.state.setValue("time", e.end);
+        } else {
+          self.visualization.state.setValue("time", e.end);
+          self.visualization.state.setValue("timeExtent", timeExtent);
+        }
       }
 
       self.timeline.events.on({
