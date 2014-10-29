@@ -28,8 +28,8 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
 
       var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "arrow.png"]).join("/");
       var playUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "play.png"]).join("/");
+      var pauseUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "pause.png"]).join("/");
       var shareUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "share.png"]).join("/");
-
 
       self.controlButtonsNode = $(''
         
@@ -37,7 +37,7 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
         + '<div class="control_box">'
         + '  <button class="btn btn-default btn-lg" data-name="share"><img src="' + shareUrl + '"></button>'
         + '  <div class="divide"></div>'        
-        + '  <button class="btn btn-default btn-lg" data-name="play"><img src="' + playUrl + '"></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="play"><img class="paused" src="' + playUrl + '"><img class="playing" src="' + pauseUrl + '"></button>'
         + ''
         + '  <a class="balloon">'
         + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
@@ -264,9 +264,11 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
       function setValue(value) {
         self.buttonNodes.play.val(value ? "true" : "false");
         if (value) {
-          self.buttonNodes.play.find("i").removeClass("fa-pause").addClass("fa-play");
+          self.buttonNodes.play.find(".playing").hide();
+          self.buttonNodes.play.find(".paused").show();
         } else {
-          self.buttonNodes.play.find("i").removeClass("fa-play").addClass("fa-pause");
+          self.buttonNodes.play.find(".playing").show();
+          self.buttonNodes.play.find(".paused").hide();
         }
       }
       self.visualization.state.events.on({paused: function (e) { setValue(e.new_value); }});
