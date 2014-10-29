@@ -529,11 +529,23 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
 
     getEventPositions: function (e) {
       e = e.originalEvent || e;
-      var res = [e];
+      var res = {};
       if (e.touches && e.touches.length > 0) {
-        res = e.touches;
+        for (var i = 0; i < e.touches.length; i++) {
+          res[e.touches[i].identifier.toString()] = e.touches[i];
+        };
+      } else {
+        e.identifier = "pointer";
+        res[e.identifier] = e;
       }
+
       return res;
+    },
+
+    getFirstPosition: function (positions) {
+      for (var key in positions) {
+        return positions[key];
+      }
     },
 
     dragStart: function (type, e) {
@@ -553,14 +565,15 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       if (self.dragData == undefined) return;
 
       self.dragData.currentPositions = self.getEventPositions(e);
-      self.dragData.offsets = [];
-      for (var i = 0; i < self.dragData.currentPositions.length; i++) {
+      self.dragData.offsets = {};
+      for (var id in self.dragData.currentPositions) {
+        if (self.dragData.startPositions[id] == undefined) continue;
         var offsets = {
-          x: self.dragData.startPositions[i].pageX - self.dragData.currentPositions[i].pageX,
-          y: self.dragData.startPositions[i].pageY - self.dragData.currentPositions[i].pageY
+          x: self.dragData.startPositions[id].pageX - self.dragData.currentPositions[id].pageX,
+          y: self.dragData.startPositions[id].pageY - self.dragData.currentPositions[id].pageY
         };
         offsets.time = self.pixelOffsetToTimeOffset(offsets.x, self.dragData.startVisibleContextSize);
-        self.dragData.offsets.push(offsets);
+        self.dragData.offsets[id] = offsets;
       }
 
       self['drag_' + self.dragData.type](e);
@@ -585,7 +598,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     },
     drag_windowResizeLeft: function (e) {
       var self = this;
-      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.dragData.offsets[0].time);
+      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.getFirstPosition(self.dragData.offsets).time);
       self.updateRange();
     },
     dragEnd_windowResizeLeft: function (e) {
@@ -600,7 +613,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     },
     drag_windowResizeRight: function (e) {
       var self = this;
-      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.dragData.offsets[0].time);
+      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.getFirstPosition(self.dragData.offsets).time);
       self.updateRange();
     },
     dragEnd_windowResizeRight: function (e) {
@@ -614,20 +627,28 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       self.dragData.range = {};
       self.dragData.range.windowStart = self.windowStart;
       self.dragData.range.windowEnd = self.windowEnd;
+
+      self.dragData.startXorder = Object.values(
+        self.dragData.startPositions
+      ).sort(function (a, b) {
+        return a.pageX - b.pageX;
+      }).map(function (pos) {
+        return pos.identifier.toString();
+      });
+
       self.events.triggerEvent('user-update-start', {type:'move-timeline'});
     },
     drag_moveTimeline: function (e) {
       var self = this;
-      if (self.dragData.offsets.length == 1) {
-        self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[0].time, 'temporary-range');
-      } else if (self.dragData.offsets.length > 1) {
-        var startOffset = self.dragData.offsets[0].time;
-        var endOffset = self.dragData.offsets[1].time;
-        if (self.dragData.startPositions[0] > self.dragData.startPositions[1]) {
-          startOffset = self.dragData.offsets[1].time;
-          endOffset = self.dragData.offsets[0].time;
-        }
-        if (endOffset < startOffset) return;
+
+      var touchesNr = self.dragData.startXorder.length;
+
+      if (touchesNr == 1) {
+        self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[self.dragData.startXorder[0]].time, 'temporary-range');
+      } else if (touchesNr > 1) {
+
+        var startOffset = self.dragData.offsets[self.dragData.startXorder[0]].time;
+        var endOffset = self.dragData.offsets[self.dragData.startXorder[1]].time;
 
         var start = self.dragData.range.windowStart.getTime() + startOffset;
         var end = self.dragData.range.windowEnd.getTime() + endOffset;
