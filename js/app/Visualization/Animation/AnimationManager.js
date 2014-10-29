@@ -151,7 +151,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       for (var key in self.animations) {
         var animation = self.animations[key];
         if (animation.select(x, y, type, true)) {
-          return animation.data_view;
+          return animation;
         }
       }
       return false;
@@ -160,16 +160,18 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
     handleMouseSelection: function (e, type, raw, cb) {
       var self = this;
 
-      var dataView = self.handleMouse(e, type)
+      var animation = self.handleMouse(e, type);
+      var dataView = animation.data_view;
       if (!dataView) {
         cb(null, null);
       } else {
         if (raw) {
           var data = dataView.selections[type].data;
+          data.layer = animation.title;
           data.toString = function () {
             var content = ["<table class='table table-striped table-bordered'>"];
             Object.keys(data).sort().map(function (key) {
-              if (key == 'toString') return;
+              if (key == 'toString' || key == 'layer') return;
               var value = data[key][0];
               if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
                 value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
@@ -185,8 +187,10 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             var content;
 
             if (err) {
+              err.layer = animation.title;
               cb(err, null);
             } else {
+              data.layer = animation.title;
               data.toString = function () {
                 var content = ["<table class='table table-striped table-bordered'>"];
                 if (data.name) {
@@ -198,7 +202,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
                 }
 
                 Object.keys(data).sort().map(function (key) {
-                  if (key == 'toString' || key == 'name' || key == 'link') return;
+                  if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer') return;
                   if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
                     content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
                   } else {

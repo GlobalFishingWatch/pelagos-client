@@ -36,42 +36,14 @@ if (app.useDojo) {
           '' +
           '    <div id="divide"></div>' +
           '' +
-          '    <div id="vessel_identifiers">' +
-          '      <h2>Vessel Information</h2>' +
-          '      <table class="vessel_id">' +
-          '        <tbody>' +
-          '          <tr>' +
-          '            <th>Name</th>' +
-          '            <td class="vesselname">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>Class</th>' +
-          '            <td class="vesselclass">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>Flag</th>' +
-          '            <td class="flag">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>IMO</th>' +
-          '            <td class="imo">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>MMSI</th>' +
-          '            <td class="mmsi">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>Callsign</th>' +
-          '            <td class="callsign">---</td>' +
-          '          </tr>' +
-          '        </tbody>' +
-          '      </table>' +
-          '    </div>' +
+          '    <div id="vessel_identifiers"></div>' +
           '' +
           '    <div id="codeoutput"></div>' +
           '  </div>' +
           '</div>');
         $('body').append(self.node);
+
+        self.update("none", undefined);
 
         self.node.find("#drawer_slide img").click(function () {
           self.node.toggleClass('collapsed');
@@ -85,7 +57,7 @@ if (app.useDojo) {
         self.animationManager.events.on({
           'add': self.addHandler.bind(self),
           'remove': self.removeHandler.bind(self),
-          'info': self.update.bind(self, "#ffffff"),
+          'info': self.update.bind(self, "none"),
           'info-error': self.update.bind(self, "#ff8888")
         });
 
@@ -94,24 +66,67 @@ if (app.useDojo) {
       update: function (color, event) {
         var self = this;
 
-        self.node.find(".vessel_id .callsign").html(event.callsign || "---");
+        if (!event || event.vesselname) {
+          self.node.find("#vessel_identifiers").html(
+            '      <h2>Vessel Information</h2>' +
+            '      <table class="vessel_id">' +
+            '        <tbody>' +
+            '          <tr>' +
+            '            <th>Name</th>' +
+            '            <td class="vesselname">---</td>' +
+            '          </tr>' +
+            '          <tr>' +
+            '            <th>Class</th>' +
+            '            <td class="vesselclass">---</td>' +
+            '          </tr>' +
+            '          <tr>' +
+            '            <th>Flag</th>' +
+            '            <td class="flag">---</td>' +
+            '          </tr>' +
+            '          <tr>' +
+            '            <th>IMO</th>' +
+            '            <td class="imo">---</td>' +
+            '          </tr>' +
+            '          <tr>' +
+            '            <th>MMSI</th>' +
+            '            <td class="mmsi">---</td>' +
+            '          </tr>' +
+            '          <tr>' +
+            '            <th>Callsign</th>' +
+            '            <td class="callsign">---</td>' +
+            '          </tr>' +
+            '        </tbody>' +
+            '      </table>'
+          );
 
-        if (event.flag) {
-          var label = event.flag;
-          if (CountryCodes.codeToName[event.flag] != undefined) label = CountryCodes.codeToName[event.flag];
+          if (event) {
+            self.node.find(".vessel_id .callsign").html(event.callsign || "---");
 
-          self.node.find(".vessel_id .flag").html(label);
-          self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + event.flag.toLowerCase() + '.png"><br>');
+            if (event.flag) {
+              var label = event.flag;
+              if (CountryCodes.codeToName[event.flag] != undefined) label = CountryCodes.codeToName[event.flag];
+
+              self.node.find(".vessel_id .flag").html(label);
+              self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + event.flag.toLowerCase() + '.png"><br>');
+            } else {
+              self.node.find(".vessel_id .flag").html("---");
+            }
+
+            self.node.find(".vessel_id .imo").html(event.imo || "---");
+            self.node.find(".vessel_id .mmsi").html(event.mmsi || "---");
+            self.node.find(".vessel_id .vesselclass").html(event.vesselclass || "---");
+            self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + '/gfw/vessel.png"><br>');
+
+            self.node.find(".vessel_id .vesselname").html(event.vesselname || "---");
+          }
         } else {
-          self.node.find(".vessel_id .flag").html("---");
+          self.node.find("#vessel_identifiers").html(
+            '<h2>' + event.layer + '</h2>' +
+            event.toString());
+          self.node.find("table").attr({"class": "vessel_id"});
         }
 
-        self.node.find(".vessel_id .imo").html(event.imo || "---");
-        self.node.find(".vessel_id .mmsi").html(event.mmsi || "---");
-        self.node.find(".vessel_id .vesselclass").html(event.vesselclass || "---");
-        self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + '/gfw/vessel.png"><br>');
-
-        self.node.find(".vessel_id .vesselname").html(event.vesselname || "---");
+        self.node.find("#vessel_identifiers").css({background: color});
       },
 
       addHandler: function (event) {

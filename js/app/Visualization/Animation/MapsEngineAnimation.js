@@ -44,6 +44,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
           });
           self.manager.infoPopup.open(self.manager.map);
         } else {
+          info.layer = self.title;
           info.toString = function () {
             return info.infoWindowHtml;
           }
