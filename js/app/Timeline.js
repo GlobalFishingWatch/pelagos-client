@@ -88,6 +88,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
 
       self.node.addClass('timeline');
 
+      /* Note about the one quanta in each tickmarks bar: This is just
+       * to be able to measure its height to calculate the font size
+       * for quanta labels, before we have any real qantas. */
+
       self.node.append(
         "<div class='overlay'>" +
         "  <div class='leftFrame'></div>" +
@@ -104,8 +108,8 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
         "  <div class='line'>" +
         "    <div class='rangemarks'></div>" +
         "    <div class='tickmarks-container'>" +
-        "      <div class='tickmarks top'></div>" +
-        "      <div class='tickmarks bottom'></div>" +
+        "      <div class='tickmarks top'><div class='quanta'><div class='frame'><div class='quanta-label'>&nbsp;</div></div></div></div>" +
+        "      <div class='tickmarks bottom'><div class='quanta'><div class='frame'><div class='quanta-label'>&nbsp;</div></div></div></div>" +
         "    </div>" +
         "  </div>" +
         "</div>" +
@@ -362,44 +366,66 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     recreateTickmarksLevel: function (tickmarksNode, stepLength, fullLabels) {
       var self = this;
 
+      var space = tickmarksNode.find(".quanta-label").innerHeight() / pixelsPerPt;
       tickmarksNode.find('.quanta').remove();
 
       var stepStart = self.start;
+
+      var h = [];
       while (stepStart <= self.end) {
         var stepSizeInfo = self.calculateStepSize(stepStart, stepLength);
         if (stepSizeInfo.stepEnd == undefined) throw "ERROR";
-
-        var stepNode = $("<div class='quanta'><div class='frame'><div class='quanta-label'><span class='left'></span><span class='right'></span><span class='center'></span>&nbsp;</div><div class='debug'></div></div></div>");
-        stepNode.addClass(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
-        tickmarksNode.append(stepNode);
 
         var label = self.tickmarkLabels.formatDate({
           date: stepStart,
           stepLength: stepLength,
           includeDatePrefix: fullLabels
         });
-        stepNode.find(".quanta-label span").html(label);
-        stepNode.find(".debug ").html(JSON.stringify(stepSizeInfo));
-
         var stepWidth = 100.0 * stepSizeInfo.stepLengthMs / self.contextSize;
-        stepNode.css({'width': stepWidth + '%'});
-        
-        stepNode.find(".quanta-label span").hide();
-        stepNode.find(".quanta-label span.left").show();
-
-        if (self.showRightLabelAtWidth != undefined && stepWidth > self.showRightLabelAtWidth / self.hiddenContext) {
-          stepNode.find(".quanta-label span.right").show();
-        }
-        if (self.showCenterLabelAtWidth != undefined && stepWidth > self.showCenterLabelAtWidth / self.hiddenContext) {
-          stepNode.find(".quanta-label span.center").show();
-        }
-
-        var space = stepNode.find(".quanta-label").innerHeight() / pixelsPerPt;
         var labelSize = Math.min(space, 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize);
-        stepNode.find(".quanta-label").css({"font-size": labelSize + "pt", "line-height": labelSize + "pt"});
+
+        var showRightLabel = self.showRightLabelAtWidth != undefined && stepWidth > self.showRightLabelAtWidth / self.hiddenContext;
+        var showCenterLabel = self.showCenterLabelAtWidth != undefined && stepWidth > self.showCenterLabelAtWidth / self.hiddenContext;
+
+        h.push("<div class='quanta ");
+        h.push(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
+        h.push(  "' style='width:"); h.push(stepWidth); h.push("%'>");
+        h.push(  "<div class='frame'>");
+        h.push(    "<div class='quanta-label'>");
+        h.push(      "<span class='left' style='font-size:");
+        h.push(        labelSize);
+        h.push(        "pt; line-height:");
+        h.push(        labelSize);
+        h.push(        "pt;'>");
+        h.push(        label);
+        h.push(      "</span>");
+        if (showRightLabel) {
+          h.push(    "<span class='right' style='font-size:");
+          h.push(      labelSize);
+          h.push(      "pt; line-height:");
+          h.push(      labelSize);
+          h.push(      "pt;'>");
+          h.push(      label);
+          h.push(    "</span>");
+        }
+        if (showCenterLabel) {
+          h.push(    "<span class='center' style='font-size:");
+          h.push(      labelSize);
+          h.push(      "pt; line-height:");
+          h.push(      labelSize);
+          h.push(      "pt;'>");
+          h.push(      label);
+          h.push(    "</span>");
+        }
+        h.push(      "&nbsp;");
+        h.push(    "</div>");
+        h.push(    "<div class='debug'>"); h.push(JSON.stringify(stepSizeInfo)); h.push("</div>");
+        h.push(  "</div>");
+        h.push("</div>");
 
         stepStart = stepSizeInfo.stepEnd;
       }
+      tickmarksNode.append(h.join(""));
 
       if (self.dragData != undefined) {
         self.dragData.startPositions = self.dragData.currentPositions;
