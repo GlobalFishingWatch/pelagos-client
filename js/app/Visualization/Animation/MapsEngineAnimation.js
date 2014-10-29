@@ -35,7 +35,8 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
      * system. But all of this layer is a bit of a hack :) */
     handleClick: function (type, e) {
       var self = this;
-      e.getDetails(function(info) {
+
+      var handleInfo = function(info) {
         if (type == 'rightclick') {
           self.manager.infoPopup.setOptions({
             content: info.infoWindowHtml,
@@ -48,7 +49,13 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
           }
           self.manager.events.triggerEvent('info', info);
         }
-      })
+      };
+
+      if (e.infoWindowHtml && e.latLng) {
+        handleInfo(e);
+      } else {
+        e.getDetails(handleInfo);
+      }
     },
 
     setVisible: function (visible) {
