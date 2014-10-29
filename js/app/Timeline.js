@@ -518,7 +518,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       winPos.innerLeft = self.windowFrameNode.offset().left;
       winPos.innerRight = winPos.innerLeft + self.windowFrameNode.outerWidth();
 
-      var pos = self.getEventPositions(e)[0];
+      var pos = self.getFirstPosition(self.getEventPositions(e));
 
       if (pos.pageX >= winPos.left && pos.pageX <= winPos.innerLeft) {
         self.dragStart('windowResizeLeft', e);
@@ -598,7 +598,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     },
     drag_windowResizeLeft: function (e) {
       var self = this;
-      self.windowStart = new Date(self.dragStartWindowStart.getTime() - self.getFirstPosition(self.dragData.offsets).time);
+      self.windowStart = new Date(Math.max(
+        self.dragStartWindowStart.getTime() - self.getFirstPosition(self.dragData.offsets).time,
+        self.visibleStart.getTime()
+      ));
       self.updateRange();
     },
     dragEnd_windowResizeLeft: function (e) {
@@ -613,7 +616,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     },
     drag_windowResizeRight: function (e) {
       var self = this;
-      self.windowEnd = new Date(self.dragStartWindowEnd.getTime() - self.getFirstPosition(self.dragData.offsets).time);
+        
+      self.windowEnd = new Date(Math.min(
+        self.dragStartWindowEnd.getTime() - self.getFirstPosition(self.dragData.offsets).time,
+        self.visibleEnd.getTime()));
       self.updateRange();
     },
     dragEnd_windowResizeRight: function (e) {
