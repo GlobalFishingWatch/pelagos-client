@@ -161,25 +161,25 @@ if (app.useDojo) {
           node.find("input").removeAttr('checked');
         }
 
-        event.animation.basicSidebarNode = node;
+        animation.basicSidebarNode = node;
         self.node.find(".layer-list").append(node);
 
         if (animation.constructor.prototype.name == "ClusterAnimation") {
-          var slider = $("<div style='margin-top: 5px; margin-left: 43px;'>");
+          var slider = $("<div style='margin-top: 5px; margin-left: 43px; margin-right: 17px;'>");
           self.node.find(".layer-list").append(slider);
 
           function refreshSwatch() {
             var value = slider.slider("value");
 
-            animation.data_view.header.weight._ = value;
-            self.dataview.changeCol(animation.data_view.header.weight);
+            animation.data_view.header.colsByName.weight.source.weight = value;
+            animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
           }
           slider.slider({
             orientation: "horizontal",
             min: 0.0,
             max: 1.0,
-            value: animation.data_view.header.weight._,
-            slide: refreshSwatch,
+            step: 0.01,
+            value: animation.data_view.header.colsByName.weight.source.weight,
             change: refreshSwatch
           });
         }
