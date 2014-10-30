@@ -233,7 +233,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       return new Date(self.visibleStart.getTime() + self.pixelOffsetToTimeOffset(offset));
     },
 
-      pixelOffsetToTimeOffset: function (offset, visibleContextSize) {
+    pixelOffsetToTimeOffset: function (offset, visibleContextSize) {
       var self = this;
       var pixelWidth = self.lineVisibilityNode.innerWidth();
       var percentOffset = 100.0 * offset / pixelWidth;
@@ -587,6 +587,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       self.dragData = {};
       self.dragData.type = type;
       self.dragData.startPositions = self.getEventPositions(e);
+      for (var id in self.dragData.startPositions) {
+        self.dragData.startPositions[id].time = self.pixelPositionToTime(self.dragData.startPositions[id].pageX);
+      }
+
       self.dragData.startVisibleContextSize = self.visibleContextSize;
       self['dragStart_' + self.dragData.type](e);
       self.eatEvent(e);
@@ -671,6 +675,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       self.dragData.range = {};
       self.dragData.range.windowStart = self.windowStart;
       self.dragData.range.windowEnd = self.windowEnd;
+      self.dragData.range.windowSize = self.windowSize;
 
       self.dragData.startXorder = Object.values(
         self.dragData.startPositions
@@ -679,6 +684,18 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       }).map(function (pos) {
         return pos.identifier.toString();
       });
+
+      var touchesNr = self.dragData.startXorder.length;
+
+      if (touchesNr == 1) {
+      } else if (touchesNr > 1) {
+        var left = self.dragData.startXorder[0];
+        var right = self.dragData.startXorder[1];
+
+        self.dragData.timeLeft = self.dragData.startPositions[left].time.getTime();
+        self.dragData.timeRight = self.dragData.startPositions[right].time.getTime();
+        self.dragData.timeWidth = self.dragData.timeRight - self.dragData.timeLeft;
+      }
 
       self.events.triggerEvent('user-update-start', {type:'move-timeline'});
     },
@@ -695,18 +712,28 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
         if (now - self.lastUpdate < 300) return;
         self.lastUpdate = now;
 
-        var startOffset = self.dragData.offsets[self.dragData.startXorder[0]].time;
-        var endOffset = self.dragData.offsets[self.dragData.startXorder[1]].time;
+        var left = self.dragData.startXorder[0];
+        var right = self.dragData.startXorder[1];
 
-        var start = self.dragData.range.windowStart.getTime() + startOffset;
-        var end = self.dragData.range.windowEnd.getTime() + endOffset;
-        if (end - start < self.minWindowSize) {
-          end = start + self.minWindowSize;
+        var pixelLeft = self.dragData.currentPositions[left].pageX;
+        var pixelRight = self.dragData.currentPositions[right].pageX;
+        var pixelWidth = pixelRight - pixelLeft;
+
+        var timePerPixel = self.dragData.timeWidth / pixelWidth;
+
+        var windowPixelLeft = self.windowNode.offset().left;
+        var windowPixelRight = windowPixelLeft + self.windowNode.outerWidth();
+
+        var windowTimeLeft = self.dragData.timeLeft - (pixelLeft - windowPixelLeft) * timePerPixel;
+        var windowTimeRight = self.dragData.timeRight + (windowPixelRight - pixelRight) * timePerPixel;
+
+        if (windowTimeRight - windowTimeLeft < self.minWindowSize) {
+          windowTimeRight = windowTimeLeft + self.minWindowSize;
         }
 
         self.setRange(
-          new Date(start),
-          new Date(end),
+          new Date(windowTimeLeft),
+          new Date(windowTimeRight),
           'temporary-range'
         );
       }
