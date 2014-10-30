@@ -163,6 +163,27 @@ if (app.useDojo) {
 
         event.animation.basicSidebarNode = node;
         self.node.find(".layer-list").append(node);
+
+        if (animation.constructor.prototype.name == "ClusterAnimation") {
+          var slider = $("<div style='margin-top: 5px; margin-left: 43px;'>");
+          self.node.find(".layer-list").append(slider);
+
+          function refreshSwatch() {
+            var value = slider.slider("value");
+
+            animation.data_view.header.weight._ = value;
+            self.dataview.changeCol(animation.data_view.header.weight);
+          }
+          slider.slider({
+            orientation: "horizontal",
+            min: 0.0,
+            max: 1.0,
+            value: animation.data_view.header.weight._,
+            slide: refreshSwatch,
+            change: refreshSwatch
+          });
+        }
+
       },
 
       removeHandler: function (event) {

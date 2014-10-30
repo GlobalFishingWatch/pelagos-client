@@ -56,6 +56,7 @@
     app.dirs.lib + "/bootstrap-3.2.0-dist/css/bootstrap.min.css",
     app.dirs.lib + "/font-awesome-4.2.0/css/font-awesome.min.css",
     app.dirs.lib + "/qunit-1.15.0.css",
+    app.dirs.lib + "/jquery-ui.css",
 
     {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"}
   ]);
@@ -71,7 +72,7 @@
     app.dirs.lib + "/qunit-1.15.0.js",
     app.dirs.lib + "/async.js",
     app.dirs.lib + "/stacktrace.js",
-    app.dirs.lib + "/lodash.js"
+    app.dirs.lib + "/lodash.js",
   ]);
   if (!app.webworker) {
     app.dependencies.scripts = app.dependencies.scripts.concat([
@@ -82,7 +83,8 @@
       app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
       app.dirs.lib + "/CanvasLayer.js",
       app.dirs.lib + "/stats.min.js",
-      app.dirs.lib + "/loggly.tracker.js"
+      app.dirs.lib + "/loggly.tracker.js",
+      app.dirs.lib + "/jquery-ui.js"
     ]);
   }
 

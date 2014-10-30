@@ -1,6 +1,6 @@
 LIBS=js/libs
 
-DEPENDENCIES=$(LIBS)/async.js $(LIBS)/jquery-1.10.2.min.js $(LIBS)/jquery-1.10.2.min.map $(LIBS)/jquery.mousewheel.js $(LIBS)/less.min.js $(LIBS)/lodash.js $(LIBS)/qunit-1.15.0.js $(LIBS)/qunit-1.15.0.css $(LIBS)/require.js $(LIBS)/stacktrace.js $(LIBS)/loggly.tracker.js $(LIBS)/stats.min.js $(LIBS)/bootstrap-3.2.0-dist $(LIBS)/easyXDM $(LIBS)/font-awesome-4.2.0 $(LIBS)/dojo-release-1.10.0-src
+DEPENDENCIES=$(LIBS)/async.js $(LIBS)/jquery-1.10.2.min.js $(LIBS)/jquery-1.10.2.min.map $(LIBS)/jquery.mousewheel.js $(LIBS)/less.min.js $(LIBS)/lodash.js $(LIBS)/qunit-1.15.0.js $(LIBS)/qunit-1.15.0.css $(LIBS)/require.js $(LIBS)/stacktrace.js $(LIBS)/loggly.tracker.js $(LIBS)/stats.min.js $(LIBS)/bootstrap-3.2.0-dist $(LIBS)/easyXDM $(LIBS)/font-awesome-4.2.0 $(LIBS)/dojo-release-1.10.0-src $(LIBS)/jquery-ui.css $(LIBS)/jquery-ui.js
 
 .PHONY: all dependencies js-build clean clean-js-build clean-dependencies
 
@@ -43,6 +43,12 @@ $(LIBS)/loggly.tracker.js:
 
 $(LIBS)/stats.min.js:
 	curl -f -L https://raw.githubusercontent.com/mrdoob/stats.js/master/build/stats.min.js -o $@
+
+$(LIBS)/jquery-ui.css:
+	curl -f -L http://code.jquery.com/ui/1.10.0/themes/smoothness/jquery-ui.css -o $@
+
+$(LIBS)/jquery-ui.js:
+	curl -f -L http://code.jquery.com/ui/1.10.0/jquery-ui.js -o $@
 
 
 $(LIBS)/bootstrap-3.2.0-dist:
