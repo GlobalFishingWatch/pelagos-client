@@ -554,15 +554,22 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
     },
 
     getEventPositions: function (e) {
-      e = e.originalEvent || e;
+      var event = e.originalEvent || e;
       var res = {};
-      if (e.touches && e.touches.length > 0) {
-        for (var i = 0; i < e.touches.length; i++) {
-          res[e.touches[i].identifier.toString()] = e.touches[i];
+      if (event.touches && event.touches.length > 0) {
+        for (var i = 0; i < event.touches.length; i++) {
+          res[event.touches[i].identifier.toString()] = event.touches[i];
         };
       } else {
-        e.identifier = "pointer";
-        res[e.identifier] = e;
+        event.identifier = "pointer";
+        res[event.identifier] = event;
+      }
+
+      if (e.ctrlKey && e.altKey && e.shiftKey) {
+        console.log("Multi-touch test mode enabled.");
+        var offsets = $(".window").offset();
+        var left = {identifier: "left", pageX: offsets.left - 1, pageY: offsets.top + 1};
+        res[left.identifier] = left;
       }
 
       return res;
