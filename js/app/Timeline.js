@@ -77,6 +77,9 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
 
     windowLengLabels: new TimeLabel({}),
 
+
+    /**** External API ****/
+
     initialize: function (args) {
       var self = this;
 
@@ -192,66 +195,44 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       self.setRange(self.windowStart, self.windowEnd);
     },
 
-    roundTimeToStepLength: function (d) {
+    setRangeFromOffset: function (offset, type) {
+      // Type is the type of the event to generate
       var self = this;
+      self.offset = offset;
 
-      return self.stepLength.round(d);
+      self.visibleStart = new Date(self.start.getTime() + self.offset);
+      self.visibleEnd = new Date(self.visibleStart.getTime() + self.visibleContextSize);
+
+      self.windowStart = new Date(self.visibleStart.getTime() + self.visibleContextSize * self.leftContext / 100.0);
+      self.windowEnd = new Date(self.windowStart.getTime() + self.windowSize);
+
+      self.updateRange();
+
+      self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
     },
 
-    getNextStepLength: function(stepLength) {
+    setRange: function (windowStart, windowEnd, type) {
       var self = this;
-      if (stepLength.next) return stepLength.next;
-      if (stepLength.asMilliseconds >= self.stepLengths.slice(-1)[0].asMilliseconds) {
-        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength / self.stepLengthsByName.year.asMilliseconds, 10))) * self.stepLengthsByName.year.asMilliseconds);
+      self.windowStart = windowStart;
+      self.windowEnd = windowEnd;
+      var windowSize = self.windowEnd - self.windowStart
+      if (windowSize != self.windowSize) {
+        self.start = undefined;
+        self.end = undefined;
       }
-      return self.stepLengths.filter(function (x) {
-        return x.cmp(stepLength) > 0;
-      })[0];
-    },
+      self.windowSize = windowSize;
 
-    getPrevStepLength: function(stepLength) {
-      var self = this;
-      if (stepLength.prev) return stepLength.prev;
-      if (stepLength.asMilliseconds < self.stepLengths[0].asMilliseconds / 10) {
-        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength.asMilliseconds, 10))));
+      self.setVisibleContextFromRange();
+
+      self.stepLength = self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize * self.stepZoom}));
+
+      if (self.start == undefined) {
+        self.setContextFromVisibleContext();
       }
-      return self.stepLengths.filter(function (x) {
-        return x.cmp(stepLength) <= 0;
-      }).slice(-1)[0];
-    },
 
-    eatEvent: function (e) {
-      if (e == undefined) return;
-      if (e.preventDefault) e.preventDefault();
-      if (e.stopPropagation) e.stopPropagation();
-    },
+      self.updateRange();
 
-    pixelPositionToTime: function (pos) {
-      var self = this;
-
-      offset = pos - self.lineVisibilityNode.offset().left;
-      return new Date(self.visibleStart.getTime() + self.pixelOffsetToTimeOffset(offset));
-    },
-
-    pixelOffsetToTimeOffset: function (offset, visibleContextSize) {
-      var self = this;
-      var pixelWidth = self.lineVisibilityNode.innerWidth();
-      var percentOffset = 100.0 * offset / pixelWidth;
-      if (visibleContextSize == undefined) visibleContextSize = self.visibleContextSize;
-      return percentOffset * visibleContextSize / 100.0;
-    },
-
-    zoomOut: function (e) {
-      var self = this;
-      self.zoom(self.zoomSize, e && self.pixelPositionToTime(e.pageX));
-      self.eatEvent(e);
-    },
-
-    zoomIn: function (e) {
-      var self = this;
-
-      self.zoom(1 / self.zoomSize, e && self.pixelPositionToTime(e.pageX));
-      self.eatEvent(e);
+      self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
     },
 
     zoom: function (factor, middle) {
@@ -283,19 +264,75 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       self.setRange(new Date(middle.getTime() - windowSize * left / 100.0), new Date(middle.getTime() + windowSize * right / 100.0));
     },
 
-    setRangeFromOffset: function (offset, type) {
+
+    /**** Step size calculations ****/
+
+    roundTimeToStepLength: function (d) {
       var self = this;
-      self.offset = offset;
 
-      self.visibleStart = new Date(self.start.getTime() + self.offset);
-      self.visibleEnd = new Date(self.visibleStart.getTime() + self.visibleContextSize);
+      return self.stepLength.round(d);
+    },
 
-      self.windowStart = new Date(self.visibleStart.getTime() + self.visibleContextSize * self.leftContext / 100.0);
-      self.windowEnd = new Date(self.windowStart.getTime() + self.windowSize);
+    getNextStepLength: function(stepLength) {
+      var self = this;
+      if (stepLength.next) return stepLength.next;
+      if (stepLength.asMilliseconds >= self.stepLengths.slice(-1)[0].asMilliseconds) {
+        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength / self.stepLengthsByName.year.asMilliseconds, 10))) * self.stepLengthsByName.year.asMilliseconds);
+      }
+      return self.stepLengths.filter(function (x) {
+        return x.cmp(stepLength) > 0;
+      })[0];
+    },
 
-      self.updateRange();
+    getPrevStepLength: function(stepLength) {
+      var self = this;
+      if (stepLength.prev) return stepLength.prev;
+      if (stepLength.asMilliseconds < self.stepLengths[0].asMilliseconds / 10) {
+        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength.asMilliseconds, 10))));
+      }
+      return self.stepLengths.filter(function (x) {
+        return x.cmp(stepLength) <= 0;
+      }).slice(-1)[0];
+    },
 
-      self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
+    calculateStepSize: function (stepStart, stepLength) {
+      var self = this;
+
+      var info = {
+        stepStart: stepStart,
+        stepLength: stepLength
+      };
+
+      info.stepEnd = stepLength.round(stepLength.add(info.stepStart));
+
+      if (self.splitTickmarksOnLargerUnitBoundaries) {
+        info.largeStepLength = self.getNextStepLength(info.stepLength);
+        info.largeStepEnd = info.largeStepLength.round(info.stepEnd);
+        if (info.largeStepEnd.getTime() > info.stepStart.getTime()) info.stepEnd = info.largeStepEnd;
+      }
+
+      info.stepLengthMs = info.stepEnd - info.stepStart;
+      info.count = info.stepLength.divide(info.stepStart);
+
+      return info;
+    },
+
+
+    /**** Time/pixel coordinate transforms ****/
+
+    pixelPositionToTime: function (pos) {
+      var self = this;
+
+      offset = pos - self.lineVisibilityNode.offset().left;
+      return new Date(self.visibleStart.getTime() + self.pixelOffsetToTimeOffset(offset));
+    },
+
+    pixelOffsetToTimeOffset: function (offset, visibleContextSize) {
+      var self = this;
+      var pixelWidth = self.lineVisibilityNode.innerWidth();
+      var percentOffset = 100.0 * offset / pixelWidth;
+      if (visibleContextSize == undefined) visibleContextSize = self.visibleContextSize;
+      return percentOffset * visibleContextSize / 100.0;
     },
 
     setContextFromVisibleContext: function() {
@@ -314,6 +351,67 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
 
       self.recreateRangemarks();
       self.recreateTickmarks();
+    },
+
+    setVisibleContextFromRange: function() {
+      var self = this;
+
+      self.visibleContextSize = 100.0 * self.windowSize / (100.0 - self.leftContext - self.rightContext);
+      self.windowSize = self.windowEnd - self.windowStart;
+
+      self.visibleStart = new Date(self.windowStart.getTime() - self.visibleContextSize * self.leftContext / 100.0);
+      self.visibleEnd = new Date(self.windowEnd.getTime() + self.visibleContextSize * self.rightContext / 100.0);
+
+      if (self.start != undefined) {
+        self.offset = self.visibleStart - self.start;
+      }
+    },
+
+
+    /**** Screen update ****/
+
+    updateRange: function () {
+      var self = this;
+
+      if (   self.visibleStart <= self.start 
+          || self.visibleEnd >= self.end) {
+        self.setContextFromVisibleContext();
+      }
+
+      self.setWindowSize();
+
+      self.percentOffset = 100.0 * self.hiddenContext * self.offset / self.contextSize;
+      self.lineNode.css({'left': -(self.percentOffset) + '%'});
+      self.startLabel.html(self.windowTimeLabels.formatDate({
+        date: self.windowStart,
+        stepLength: self.stepLength
+      }));
+      self.lengthLabel.html(self.windowLengLabels.formatInterval({
+        interval: self.windowEnd - self.windowStart
+      }));
+      self.endLabel.html(self.windowTimeLabels.formatDate({
+        date: self.windowEnd,
+        stepLength: self.stepLength
+      }));
+    },
+
+    setWindowSize: function () {
+      var self = this;
+
+      var leftContext = 100.0 * (self.windowStart - self.visibleStart) / self.visibleContextSize;
+      var rightContext = 100.0 * (self.visibleEnd - self.windowEnd) / self.visibleContextSize;
+
+      var window = 100.0 - leftContext - rightContext;
+
+      self.leftFrameNode.css({
+        'width': leftContext + '%'
+      });
+      self.windowNode.css({
+        'width': window + '%'
+      });
+      self.rightFrameNode.css({
+        'width': rightContext + '%'
+      });
     },
 
     recreateRangemarks: function () {
@@ -339,28 +437,6 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
           self.rangemarksNode.append(rangemarkNode);
         }
       });
-    },
-
-    calculateStepSize: function (stepStart, stepLength) {
-      var self = this;
-
-      var info = {
-        stepStart: stepStart,
-        stepLength: stepLength
-      };
-
-      info.stepEnd = stepLength.round(stepLength.add(info.stepStart));
-
-      if (self.splitTickmarksOnLargerUnitBoundaries) {
-        info.largeStepLength = self.getNextStepLength(info.stepLength);
-        info.largeStepEnd = info.largeStepLength.round(info.stepEnd);
-        if (info.largeStepEnd.getTime() > info.stepStart.getTime()) info.stepEnd = info.largeStepEnd;
-      }
-
-      info.stepLengthMs = info.stepEnd - info.stepStart;
-      info.count = info.stepLength.divide(info.stepStart);
-
-      return info;
     },
 
     recreateTickmarksLevel: function (tickmarksNode, stepLength, fullLabels) {
@@ -447,111 +523,14 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       };
     },
 
-    setVisibleContextFromRange: function() {
-      var self = this;
-
-      self.visibleContextSize = 100.0 * self.windowSize / (100.0 - self.leftContext - self.rightContext);
-      self.windowSize = self.windowEnd - self.windowStart;
-
-      self.visibleStart = new Date(self.windowStart.getTime() - self.visibleContextSize * self.leftContext / 100.0);
-      self.visibleEnd = new Date(self.windowEnd.getTime() + self.visibleContextSize * self.rightContext / 100.0);
-
-      if (self.start != undefined) {
-        self.offset = self.visibleStart - self.start;
-      }
-    },
-
     setRangemarks: function (rangemarks) {
       var self = this;
       self.rangemarks = rangemarks;
       self.recreateRangemarks();
     },
 
-    setRange: function (windowStart, windowEnd, type) {
-      var self = this;
-      self.windowStart = windowStart;
-      self.windowEnd = windowEnd;
-      var windowSize = self.windowEnd - self.windowStart
-      if (windowSize != self.windowSize) {
-        self.start = undefined;
-        self.end = undefined;
-      }
-      self.windowSize = windowSize;
 
-      self.setVisibleContextFromRange();
-
-      self.stepLength = self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize * self.stepZoom}));
-
-      if (self.start == undefined) {
-        self.setContextFromVisibleContext();
-      }
-
-      self.updateRange();
-
-      self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
-    },
-
-    updateRange: function () {
-      var self = this;
-
-      if (   self.visibleStart <= self.start 
-          || self.visibleEnd >= self.end) {
-        self.setContextFromVisibleContext();
-      }
-
-      self.setWindowSize();
-
-      self.percentOffset = 100.0 * self.hiddenContext * self.offset / self.contextSize;
-      self.lineNode.css({'left': -(self.percentOffset) + '%'});
-      self.startLabel.html(self.windowTimeLabels.formatDate({
-        date: self.windowStart,
-        stepLength: self.stepLength
-      }));
-      self.lengthLabel.html(self.windowLengLabels.formatInterval({
-        interval: self.windowEnd - self.windowStart
-      }));
-      self.endLabel.html(self.windowTimeLabels.formatDate({
-        date: self.windowEnd,
-        stepLength: self.stepLength
-      }));
-    },
-
-    setWindowSize: function () {
-      var self = this;
-
-      var leftContext = 100.0 * (self.windowStart - self.visibleStart) / self.visibleContextSize;
-      var rightContext = 100.0 * (self.visibleEnd - self.windowEnd) / self.visibleContextSize;
-
-      var window = 100.0 - leftContext - rightContext;
-
-      self.leftFrameNode.css({
-        'width': leftContext + '%'
-      });
-      self.windowNode.css({
-        'width': window + '%'
-      });
-      self.rightFrameNode.css({
-        'width': rightContext + '%'
-      });
-    },
-
-    windowDragStart: function (e) {
-      var self = this;
-
-      var winPos = self.windowNode.offset();
-      winPos.right = winPos.left + self.windowNode.outerWidth();
-
-      winPos.innerLeft = self.windowFrameNode.offset().left;
-      winPos.innerRight = winPos.innerLeft + self.windowFrameNode.outerWidth();
-
-      var pos = self.getFirstPosition(self.getEventPositions(e));
-
-      if (pos.pageX >= winPos.left && pos.pageX <= winPos.innerLeft) {
-        self.dragStart('windowResizeLeft', e);
-      } else if (pos.pageX >= winPos.innerRight && pos.pageX <= winPos.right) {
-        self.dragStart('windowResizeRight', e);
-      }
-    },
+    /**** Utility functions for event handling ****/
 
     getEventPositions: function (e) {
       var event = e.originalEvent || e;
@@ -579,6 +558,28 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       for (var key in positions) {
         return positions[key];
       }
+    },
+
+    eatEvent: function (e) {
+      if (e == undefined) return;
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+    },
+
+
+    /**** Input event handling ****/
+
+    zoomOut: function (e) {
+      var self = this;
+      self.zoom(self.zoomSize, e && self.pixelPositionToTime(e.pageX));
+      self.eatEvent(e);
+    },
+
+    zoomIn: function (e) {
+      var self = this;
+
+      self.zoom(1 / self.zoomSize, e && self.pixelPositionToTime(e.pageX));
+      self.eatEvent(e);
     },
 
     dragStart: function (type, e) {
@@ -627,6 +628,23 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       self.eatEvent(e);
     },
 
+    windowDragStart: function (e) {
+      var self = this;
+
+      var winPos = self.windowNode.offset();
+      winPos.right = winPos.left + self.windowNode.outerWidth();
+
+      winPos.innerLeft = self.windowFrameNode.offset().left;
+      winPos.innerRight = winPos.innerLeft + self.windowFrameNode.outerWidth();
+
+      var pos = self.getFirstPosition(self.getEventPositions(e));
+
+      if (pos.pageX >= winPos.left && pos.pageX <= winPos.innerLeft) {
+        self.dragStart('windowResizeLeft', e);
+      } else if (pos.pageX >= winPos.innerRight && pos.pageX <= winPos.right) {
+        self.dragStart('windowResizeRight', e);
+      }
+    },
 
     dragStart_windowResizeLeft: function (e) {
       var self = this;
