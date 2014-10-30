@@ -560,6 +560,16 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
       }
     },
 
+    getXorder: function (positions) {
+      return Object.values(
+        positions
+      ).sort(function (a, b) {
+        return a.pageX - b.pageX;
+      }).map(function (pos) {
+        return pos.identifier.toString();
+      });
+    },
+
     eatEvent: function (e) {
       if (e == undefined) return;
       if (e.preventDefault) e.preventDefault();
@@ -689,74 +699,86 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'l
 
     dragStart_moveTimeline: function (e) {
       var self = this;
+      var touchesNr = Object.values(self.dragData.startPositions).length;
+
+      if (touchesNr == 1) {
+        self.dragData.type = "moveTimeline_pointer";
+      } else if (touchesNr > 1) {
+        self.dragData.type = "moveTimeline_multiTouch";
+      }
+      self['dragStart_' + self.dragData.type](e);
+    },
+
+    dragStart_moveTimeline_pointer: function (e) {
+      var self = this;
       self.dragData.timeOffset = self.offset;
       self.dragData.range = {};
       self.dragData.range.windowStart = self.windowStart;
       self.dragData.range.windowEnd = self.windowEnd;
       self.dragData.range.windowSize = self.windowSize;
 
-      self.dragData.startXorder = Object.values(
-        self.dragData.startPositions
-      ).sort(function (a, b) {
-        return a.pageX - b.pageX;
-      }).map(function (pos) {
-        return pos.identifier.toString();
-      });
-
-      var touchesNr = self.dragData.startXorder.length;
-
-      if (touchesNr == 1) {
-      } else if (touchesNr > 1) {
-        var left = self.dragData.startXorder[0];
-        var right = self.dragData.startXorder[1];
-
-        self.dragData.timeLeft = self.dragData.startPositions[left].time.getTime();
-        self.dragData.timeRight = self.dragData.startPositions[right].time.getTime();
-        self.dragData.timeWidth = self.dragData.timeRight - self.dragData.timeLeft;
-      }
+      self.dragData.startXorder = self.getXorder(self.dragData.startPositions);
 
       self.events.triggerEvent('user-update-start', {type:'move-timeline'});
     },
-    drag_moveTimeline: function (e) {
+    drag_moveTimeline_pointer: function (e) {
       var self = this;
 
-      var touchesNr = self.dragData.startXorder.length;
-
-      if (touchesNr == 1) {
-        self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[self.dragData.startXorder[0]].time, 'temporary-range');
-      } else if (touchesNr > 1) {
-        var now = performance.now();
-
-        if (now - self.lastUpdate < 300) return;
-        self.lastUpdate = now;
-
-        var left = self.dragData.startXorder[0];
-        var right = self.dragData.startXorder[1];
-
-        var pixelLeft = self.dragData.currentPositions[left].pageX;
-        var pixelRight = self.dragData.currentPositions[right].pageX;
-        var pixelWidth = pixelRight - pixelLeft;
-
-        var timePerPixel = self.dragData.timeWidth / pixelWidth;
-
-        var windowPixelLeft = self.windowNode.offset().left;
-        var windowPixelRight = windowPixelLeft + self.windowNode.outerWidth();
-
-        var windowTimeLeft = self.dragData.timeLeft - (pixelLeft - windowPixelLeft) * timePerPixel;
-        var windowTimeRight = self.dragData.timeRight + (windowPixelRight - pixelRight) * timePerPixel;
-
-        if (windowTimeRight - windowTimeLeft < self.minWindowSize) {
-          windowTimeRight = windowTimeLeft + self.minWindowSize;
-        }
-
-        self.setRange(
-          new Date(windowTimeLeft),
-          new Date(windowTimeRight),
-          'temporary-range'
-        );
-      }
+      self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[self.dragData.startXorder[0]].time, 'temporary-range');
     },
-    dragEnd_moveTimeline: function (e) {
+    dragEnd_moveTimeline_pointer: function (e) {
+      var self = this;
+      self.events.triggerEvent('set-range', {start: self.windowStart, end: self.windowEnd});
+    },
+
+    dragStart_moveTimeline_multiTouch: function (e) {
+      var self = this;
+
+      self.dragData.startXorder = self.getXorder(self.dragData.startPositions);
+
+      var left = self.dragData.startXorder[0];
+      var right = self.dragData.startXorder[1];
+
+      self.dragData.timeLeft = self.dragData.startPositions[left].time.getTime();
+      self.dragData.timeRight = self.dragData.startPositions[right].time.getTime();
+      self.dragData.timeWidth = self.dragData.timeRight - self.dragData.timeLeft;
+
+      self.events.triggerEvent('user-update-start', {type:'move-timeline'});
+    },
+    drag_moveTimeline_multiTouch: function (e) {
+      var self = this;
+
+      var now = performance.now();
+
+      if (now - self.lastUpdate < 300) return;
+      self.lastUpdate = now;
+
+      var left = self.dragData.startXorder[0];
+      var right = self.dragData.startXorder[1];
+
+      var pixelLeft = self.dragData.currentPositions[left].pageX;
+      var pixelRight = self.dragData.currentPositions[right].pageX;
+      var pixelWidth = pixelRight - pixelLeft;
+
+      var timePerPixel = self.dragData.timeWidth / pixelWidth;
+
+      var windowPixelLeft = self.windowNode.offset().left;
+      var windowPixelRight = windowPixelLeft + self.windowNode.outerWidth();
+
+      var windowTimeLeft = self.dragData.timeLeft - (pixelLeft - windowPixelLeft) * timePerPixel;
+      var windowTimeRight = self.dragData.timeRight + (windowPixelRight - pixelRight) * timePerPixel;
+
+      if (windowTimeRight - windowTimeLeft < self.minWindowSize) {
+        windowTimeRight = windowTimeLeft + self.minWindowSize;
+      }
+
+      self.setRange(
+        new Date(windowTimeLeft),
+        new Date(windowTimeRight),
+        'temporary-range'
+      );
+    },
+    dragEnd_moveTimeline_multiTouch: function (e) {
       var self = this;
       self.events.triggerEvent('set-range', {start: self.windowStart, end: self.windowEnd});
     }
