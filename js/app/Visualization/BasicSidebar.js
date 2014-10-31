@@ -102,12 +102,19 @@ if (app.useDojo) {
           if (event) {
             self.node.find(".vessel_id .callsign").html(event.callsign || "---");
 
-            if (event.flag) {
-              var label = event.flag;
-              if (CountryCodes.codeToName[event.flag] != undefined) label = CountryCodes.codeToName[event.flag];
+
+            var flag;
+            if (event.flagstate)
+                flag = event.flagstate;
+            else
+                flag = event.flag;
+
+            if (flag) {
+              var label = flag;
+              if (CountryCodes.codeToName[flag] != undefined) label = CountryCodes.codeToName[flag];
 
               self.node.find(".vessel_id .flag").html(label);
-              self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + event.flag.toLowerCase() + '.png"><br>');
+              self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + flag.toLowerCase() + '.png"><br>');
             } else {
               self.node.find(".vessel_id .flag").html("---");
             }
