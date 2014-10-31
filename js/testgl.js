@@ -1,5 +1,13 @@
 testgl = {};
 
+testgl.argsDefault = {
+  pointsPerDataset: 1000000,
+  datasets: 1,
+  pointSize: 1.0,
+  frames: 100,
+  minFps: 30
+};
+
 testgl.addHeadScript = function(script, cb) {
   if (typeof(script) == "string") script = {url: script};
   var head = document.getElementsByTagName('head')[0];
@@ -31,37 +39,31 @@ testgl.withDocReady = function(fn) {
   });
 }
 
+testgl.shader_vertex_source = [
+  'attribute vec2 position;',
+  'attribute vec3 color;',
+  'uniform float ps;',
+  'varying vec3 vColor;',
+  '',
+  'void main(void) {',
+  '  gl_Position = vec4(position, 0., 1.);',
+  '  gl_PointSize = ps;',
+  '  vColor=color;',
+  '}'
+].join("\n");
+
+testgl.shader_fragment_source = [
+  'precision mediump float;',
+  '',
+  'varying vec3 vColor;',
+  '',
+  'void main(void) {',
+  '  gl_FragColor = vec4(vColor, 0.);',
+  '}'
+].join("\n");
+
 
 testgl.testGl = function(args, cb) {
-  var argsDefault = {
-    pointsPerDataset: 1000000,
-    datasets: 1,
-    pointSize: 1.0,
-    frames: 100,
-    minFps: 30
-  };
-  var shader_vertex_source = [
-    'attribute vec2 position;',
-    'attribute vec3 color;',
-    'uniform float ps;',
-    'varying vec3 vColor;',
-    '',
-    'void main(void) {',
-    '  gl_Position = vec4(position, 0., 1.);',
-    '  gl_PointSize = ps;',
-    '  vColor=color;',
-    '}'
-  ].join("\n");
-
-  var shader_fragment_source = [
-    'precision mediump float;',
-    '',
-    'varying vec3 vColor;',
-    '',
-    'void main(void) {',
-    '  gl_FragColor = vec4(vColor, 0.);',
-    '}'
-  ].join("\n");
 
   function performGlTest(args, cb) {
     var res = {errors: []};
@@ -107,8 +109,8 @@ testgl.testGl = function(args, cb) {
         return shader;
       };
 
-      var shader_vertex=get_shader(shader_vertex_source, GL.VERTEX_SHADER, "VERTEX");
-      var shader_fragment=get_shader(shader_fragment_source, GL.FRAGMENT_SHADER, "FRAGMENT");
+      var shader_vertex=get_shader(testgl.shader_vertex_source, GL.VERTEX_SHADER, "VERTEX");
+      var shader_fragment=get_shader(testgl.shader_fragment_source, GL.FRAGMENT_SHADER, "FRAGMENT");
       if (!shader_vertex || !shader_fragment) return;
 
       var program=GL.createProgram();
@@ -223,7 +225,7 @@ testgl.testGl = function(args, cb) {
   };
 
   testgl.withDocReady(function () {
-    args = $.extend(argsDefault, args);
+    args = $.extend(testgl.argsDefault, args);
 
     performGlTest(args, function (res) {
       if (res.draw && res.draw.fps < args.minFps) {
