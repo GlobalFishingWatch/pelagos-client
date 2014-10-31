@@ -47,6 +47,7 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
 
     intervalUnits: ['year', /* 'week', */ 'day', 'hour' /*, 'minute' */],
     intervalPrecision: 2,
+    intervalPrecisionLimit: 3,
 
     pad: function (n, width, z) {
       z = z || '0';
@@ -124,29 +125,38 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
       var interval = args.interval;
 
       self.intervalUnits.map(function (unitName) {
+        var value;
         if (unitName == 'second') {
-          if (interval > 0) {
-            interval = interval / 1000.0;
-            var s = interval.toString() + " second";
-            if (interval > 1) s += 's';
-            res.push(s);
-          }
+          value = interval / 1000.0;
+          interval = 0;
         } else {
           var unit = self.intervals[unitName].asMilliseconds;
-          var value = Math.floor(interval / unit);
-          if (value != 0) {
-            var s = value.toString() + " " + unitName;
-            if (value > 1) s += 's';
-            res.push(s);
-          }
+          value = Math.floor(interval / unit);
           interval = interval % unit;
         }
+        res.push({
+          value: value,
+          name: unitName
+        });
       });
+
+      var prefix = 0;
+      for (; prefix < res.length; prefix++) {
+        if (res[prefix].value != 0) break;
+      }
+      res = res.slice(prefix);
 
       if (self.intervalPrecision != undefined) {
         res = res.slice(0, self.intervalPrecision);
       }
 
+      res = res.filter(function (item) { return item.value > 0; });
+
+      if (self.intervalPrecisionLimit != undefined) {
+        if (res.length > 1 && (res.length > 2 || res[res.length-2].value >= self.intervalPrecisionLimit)) res = res.slice(0, res.length-1);
+      }
+
+      res = res.map(function (item) { return item.value.toString() + " " + item.name + (item.value > 1 ? 's' : ''); });
       return res.join(", ");
     }
   });
