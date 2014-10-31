@@ -8,7 +8,14 @@
   <body>
 
     <div id="myTest"></div>
-    <script>testGlWidget({result: "#myTest"});</script>
+    <script>testGlWidget({
+      result: "#myTest",
+      pointsPerDataset: 500000,
+      datasets: 1,
+      pointSize: 1.0,
+      frames: 50,
+      minFps: 50
+    });</script>
 
   </body>
 </html>

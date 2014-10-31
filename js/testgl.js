@@ -1,20 +1,22 @@
 
 
 function testGl(args, cb) {
-  if (!args.pointsPerDataset) args.pointsPerDataset = 1000000;
-  if (!args.datasets) args.datasets = 1;
-  if (!args.frames) args.frames = 100;
-
-
+  var argsDefault = {
+    pointsPerDataset: 1000000,
+    datasets: 1,
+    pointSize: 1.0,
+    frames: 100,
+    minFps: 30
+  };
   var shader_vertex_source = [
     'attribute vec2 position;',
     'attribute vec3 color;',
-    '',
+    'uniform float ps;',
     'varying vec3 vColor;',
     '',
     'void main(void) {',
     '  gl_Position = vec4(position, 0., 1.);',
-    '  gl_PointSize = 10.0;',
+    '  gl_PointSize = ps;',
     '  vColor=color;',
     '}'
   ].join("\n");
@@ -25,26 +27,41 @@ function testGl(args, cb) {
     'varying vec3 vColor;',
     '',
     'void main(void) {',
-    '  gl_FragColor = vec4(vColor, 1.);',
+    '  gl_FragColor = vec4(vColor, 0.);',
     '}'
   ].join("\n");
 
   function performGlTest(args, cb) {
     var res = {errors: []};
 
-    var canvas = $("<canvas style='position: absolute; background-color: black;'></canvas>");
+    var canvas = $("<canvas>");
+
+    canvas.css({
+      position: "absolute",
+      left: 0,
+      top: 0
+    });
     $("body").append(canvas);
 
     canvas = canvas[0];
     canvas.width=window.innerWidth;
     canvas.height=window.innerHeight;
 
+    var done = function() {
+      canvas.remove();
+      cb(res);
+    };
+
     try {
       var GL = canvas.getContext("experimental-webgl", {antialias: true});
     } catch (e) {
       res.errors.push("Unable to enable context experimental-webgl");
-      cb(res); return;
+      done(); return;
     } ;
+    if (!GL) {
+      res.errors.push("Unable to enable context experimental-webgl");
+      done(); return;
+    }
 
     function get_shader_program(GL) {
       var get_shader=function(source, type, typeString) {
@@ -53,7 +70,7 @@ function testGl(args, cb) {
         GL.compileShader(shader);
         if (!GL.getShaderParameter(shader, GL.COMPILE_STATUS)) {
           res.errors.push("ERROR IN "+typeString+ " SHADER : " + GL.getShaderInfoLog(shader));
-          cb(res); return;
+          done(); return;
         }
         return shader;
       };
@@ -90,11 +107,16 @@ function testGl(args, cb) {
       dataset.points = new Float32Array(2 * args.pointsPerDataset);
       dataset.color = new Float32Array(3 * args.pointsPerDataset);
       for (var j = 0; j < args.pointsPerDataset; j++) {
-        dataset.points[j*2] = Math.random()-0.5;
-        dataset.points[j*2 + 1] = Math.random()-0.5;
+        dataset.points[j*2] = 2*Math.random()-1.0;
+        dataset.points[j*2 + 1] = 2*Math.random()-1.;
+        dataset.color[j*3] = 0.0;
+        dataset.color[j*3+1] = 0.0;
+        dataset.color[j*3+2] = 0.0;
+/*
         dataset.color[j*3] = Math.random();
         dataset.color[j*3+1] = Math.random();
         dataset.color[j*3+2] = Math.random();
+*/
       }
     }
 
@@ -118,10 +140,14 @@ function testGl(args, cb) {
     GL.clearColor(0.0, 0.0, 0.0, 0.0);
     GL.viewport(0.0, 0.0, canvas.width, canvas.height);
 
+    GL.uniform1f(GL.getUniformLocation(program, "ps"), args.pointSize);
+
     timings = {
       time: 0,
       count: 0
     };
+
+    var wallTimeStart = performance.now();
 
     function renderFrame() {
 
@@ -137,7 +163,6 @@ function testGl(args, cb) {
         GL.bindBuffer(GL.ARRAY_BUFFER, dataset.colorBuffer);
         GL.enableVertexAttribArray(_color);
         GL.vertexAttribPointer(_color, 3, GL.FLOAT, false, 0, 0);
-
         GL.drawArrays(GL.POINTS, 0, args.pointsPerDataset);
       }
       GL.flush();
@@ -152,8 +177,11 @@ function testGl(args, cb) {
       timings.avg = timings.time / timings.count;
 
       if (timings.count >= args.frames) {
+        var wallTimeEnd = performance.now();
+        timings.wallTime = wallTimeEnd - wallTimeStart;
+        timings.fps = 1000 * timings.count / timings.wallTime;
         res.draw = timings;
-        cb(res);
+        done();
       } else {
         window.requestAnimationFrame(renderFrame, canvas);
       }
@@ -166,8 +194,13 @@ function testGl(args, cb) {
 
 
   var performGlTestOnPageLoad = function () {
+    args = $.extend(argsDefault, args);
+
     $(document).ready(function() {
       performGlTest(args, function (res) {
+        if (res.draw && res.draw.fps < args.minFps) {
+          res.errors.push("You're graphics card is too slow.");
+        }
         console.log(res);
 
         cb(res);
@@ -195,6 +228,8 @@ function testGl(args, cb) {
     performGlTestOnPageLoad();
   }
 }
+
+
 
 function testGlWidget(args) {
   testGl(args, function (res) {
