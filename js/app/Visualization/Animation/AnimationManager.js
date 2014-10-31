@@ -51,7 +51,11 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         self.initCanvas.bind(self),
         self.initStats.bind(self),
         self.initMouse.bind(self),
-        self.initUpdates.bind(self)
+        self.initUpdates.bind(self),
+        function (cb) {
+          self.initialized = true;
+          cb();
+        },
       ], cb);
     },
 
@@ -114,8 +118,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       var canvasLayerOptions = {
         map: self.map,
-        resizeHandler: function () { self.canvasResize() },
-        updateHandler: function () { self.update(); },
+        resizeHandler: function () { if (self.initialized) self.canvasResize() },
+        updateHandler: function () { if (self.initialized) self.update(); },
         animate: true
       };
       self.canvasLayer = new CanvasLayer(canvasLayerOptions);
@@ -126,7 +130,12 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         if (failover) {
           window.location = failover;
         } else {
-          $("#loading td").html("<div style='color: red;'><div>Loading failed:</div><div>Your browser does not support WebGL.</div></div>");
+          var dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Loading failed</h4></div><div class="modal-body alert">Your browser does not support WebGL.</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
+          $('body').append(dialog);
+          dialog.modal();
+          dialog.on('hidden.bs.modal', function (e) {
+            dialog.detach();
+          });
         }
         cb({msg: "Your browser does not support WebGL."});
       } else {
