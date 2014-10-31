@@ -1,6 +1,38 @@
+testgl = {};
+
+testgl.addHeadScript = function(script, cb) {
+  if (typeof(script) == "string") script = {url: script};
+  var head = document.getElementsByTagName('head')[0];
+  var tag = document.createElement('script');
+  tag.type = script.type || 'text/javascript';
+  tag.src = script.url;
+  tag.onload = cb;
+  head.appendChild(tag);
+};
+
+testgl.withJQuery = function(fn) {
+  if (typeof($) == "undefined") {
+
+    testgl.addHeadScript("http://code.jquery.com/jquery-1.11.0.min.js", function () {
+      testgl.addHeadScript("http://code.jquery.com/jquery-migrate-1.2.1.min.js", function () {
+        fn();
+      });
+    });
+  } else {
+    fn();
+  }
+};
+
+testgl.withDocReady = function(fn) {
+  testgl.withJQuery(function () {
+    $(document).ready(function() {
+      fn();
+    });
+  });
+}
 
 
-function testGl(args, cb) {
+testgl.testGl = function(args, cb) {
   var argsDefault = {
     pointsPerDataset: 1000000,
     datasets: 1,
@@ -190,53 +222,29 @@ function testGl(args, cb) {
     renderFrame();
   };
 
-
-
-
-  var performGlTestOnPageLoad = function () {
+  testgl.withDocReady(function () {
     args = $.extend(argsDefault, args);
 
-    $(document).ready(function() {
-      performGlTest(args, function (res) {
-        if (res.draw && res.draw.fps < args.minFps) {
-          res.errors.push("You're graphics card is too slow.");
-        }
-        console.log(res);
+    performGlTest(args, function (res) {
+      if (res.draw && res.draw.fps < args.minFps) {
+        res.errors.push("You're graphics card is too slow.");
+      }
+      console.log(res);
 
-        cb(res);
-      });
+      cb(res);
     });
-  }
+  });
+};
 
-  if (typeof($) == "undefined") {
-    var addHeadScript = function(script, cb) {
-      if (typeof(script) == "string") script = {url: script};
-      var head = document.getElementsByTagName('head')[0];
-      var tag = document.createElement('script');
-      tag.type = script.type || 'text/javascript';
-      tag.src = script.url;
-      tag.onload = cb;
-      head.appendChild(tag);
-    }
-
-    addHeadScript("http://code.jquery.com/jquery-1.11.0.min.js", function () {
-      addHeadScript("http://code.jquery.com/jquery-migrate-1.2.1.min.js", function () {
-        performGlTestOnPageLoad();
-      });
+testgl.testGlWidget = function(args) {
+  testgl.withDocReady(function () {
+    $(args.result).html("<h1>Testing your browser...</h1>");
+    testgl.testGl(args, function (res) {
+      if (res.errors.length == 0) {
+        $(args.result).html("<h1 style='color:#00ff00'>Congratulations: Your browser supports WebGL</h1>");
+      } else {
+        $(args.result).html("<h1 style='color:#ff0000'>Unfourtunately, your browser does not support our animation:</h1><div>" + res.errors.join("</div><div>") + "</div>");
+      }
     });
-  } else {
-    performGlTestOnPageLoad();
-  }
-}
-
-
-
-function testGlWidget(args) {
-  testGl(args, function (res) {
-    if (res.errors.length == 0) {
-      $(args.result).html("<h1 style='color:#00ff00'>Congratulations: Your browser supports WebGL</h1>");
-    } else {
-      $(args.result).html("<h1 style='color:#ff0000'>Unfourtunately, your browser does not support our animation:</h1><div>" + res.errors.join("</div><div>") + "</div>");
-    }
   });
 }
