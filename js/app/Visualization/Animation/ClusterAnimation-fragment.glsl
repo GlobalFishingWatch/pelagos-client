@@ -25,6 +25,14 @@ void main() {
       fudge(c * baseColor[2]),
       c * baseColor[3]
     );
+  } else if (vWeight < 0.0) {
+    float dist = length(gl_PointCoord.xy - vec2(.5,.5));
+    dist = 1. - (dist * 2.);
+    if (dist > 0.0) {
+      gl_FragColor = baseColor;
+    } else {
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+    }
   }
 }
 

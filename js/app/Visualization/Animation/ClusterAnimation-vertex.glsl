@@ -23,6 +23,15 @@ void main() {
     gl_PointSize = 0.0;
     vWeight = 0.0;
     baseColor = vec4(0.0, 0.0, 0.0, 0.0);
+  } else if (_weight < 0.0) {
+    gl_PointSize = 1.0;
+    vWeight = _weight;
+    if (_selected == 1.0)
+        baseColor = vec4(selected_red, selected_green, selected_blue, 1.0);
+    else if (_hover == 1.0)
+        baseColor = vec4(hover_red, hover_green, hover_blue, 1.0);
+    else
+        baseColor = vec4(0.0, 0.0, 0.0, 1.0);
   } else {
     float ps = 0.01 ; // In WebGL units
 

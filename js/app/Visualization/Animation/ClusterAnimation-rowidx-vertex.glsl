@@ -28,8 +28,11 @@ void main() {
   if (_filter > 0.0) {
     gl_PointSize = 0.0;
     vWeight = 0.0;
-
     baseColor = vec4(0.0, 0.0, 0.0, 0.0);
+  } else if (_weight < 0.0) {
+    gl_PointSize = 1.0;
+    vWeight = _weight;
+    baseColor = rowidxColor(tileidx, rowidx);
   } else {
     float ps = 0.005; // In WebGL units
 
