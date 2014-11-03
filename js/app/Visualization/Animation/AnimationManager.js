@@ -180,11 +180,12 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       } else {
         if (raw) {
           var data = dataView.selections[type].data;
+          data.layerInstance = animation;
           data.layer = animation.title;
           data.toString = function () {
             var content = ["<table class='table table-striped table-bordered'>"];
             Object.keys(data).sort().map(function (key) {
-              if (key == 'toString' || key == 'layer') return;
+              if (key == 'toString' || key == 'layer' || key == 'layerInstance') return;
               var value = data[key][0];
               if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
                 value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
@@ -200,9 +201,11 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             var content;
 
             if (err) {
+              data.layerInstance = animation;
               err.layer = animation.title;
               cb(err, null);
             } else {
+              data.layerInstance = animation;
               data.layer = animation.title;
               data.toString = function () {
                 var content = ["<table class='table table-striped table-bordered'>"];
@@ -215,7 +218,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
                 }
 
                 Object.keys(data).sort().map(function (key) {
-                  if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer') return;
+                  if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
                   if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
                     content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
                   } else {
@@ -237,6 +240,32 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       if (e.stopPropagation) e.stopPropagation();
     },
 
+    showSeriesAnimation: function (baseAnimation, series) {
+      var self = this;
+
+      if (baseAnimation.seriesAnimation != undefined) {
+        self.removeAnimation(baseAnimation.seriesAnimation);
+        baseAnimation.seriesAnimation = undefined;
+      }
+      if (series != undefined) {
+        self.addAnimation({
+          "args": {
+            "title": baseAnimation.title + " - " + series,
+            "visible": true,
+            "source": {
+              "type": "BinFormat",
+              "args": {
+                "url": baseAnimation.data_view.source.header.alternatives[0] + "-" + series + "/-180,-90,180,90"
+              }
+            }
+          },
+          "type": "LineAnimation"
+        }, function (err, animation) {
+          baseAnimation.seriesAnimation = animation;
+        });
+      }
+    },
+
     initMouse: function(cb) {
       var self = this;
 
@@ -245,6 +274,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       self.node.mousemove(function (e) {
         if (!self.indrag) self.handleMouse(e, 'hover');
       });
+
       google.maps.event.addListener(self.map, "click", function(e) {
         self.handleMouseSelection(e, 'selected', KeyModifiers.active.Shift, function (err, data) {
           if (err) {
@@ -252,6 +282,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
           } else if (data) {
             self.events.triggerEvent('info', data);
           }
+          self.showSeriesAnimation(data.layerInstance, data.series);
         });
       });
       google.maps.event.addListener(self.map, "rightclick", function(e) {
