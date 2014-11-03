@@ -173,7 +173,7 @@ if (app.useDojo) {
         self.node.find(".layer-list").append(node);
 
         if (animation.constructor.prototype.name == "ClusterAnimation") {
-          var slider = $("<div style='margin-top: 5px; margin-left: 43px; margin-right: 17px;'>");
+          var slider = $("<div class=\"intensity-slider\">");
           self.node.find(".layer-list").append(slider);
 
           function refreshSwatch() {
@@ -184,7 +184,7 @@ if (app.useDojo) {
           }
           slider.slider({
             orientation: "horizontal",
-            min: 0.0,
+            min: 0.01,
             max: 1.0,
             step: 0.01,
             value: animation.data_view.header.colsByName.weight.source.weight,

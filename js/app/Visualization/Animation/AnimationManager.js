@@ -250,7 +250,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       if (series != undefined) {
         self.addAnimation({
           "args": {
-            "title": baseAnimation.title + " - " + series,
+            "title": "Vessel Track",
+            "color": "grey",
             "visible": true,
             "source": {
               "type": "BinFormat",
