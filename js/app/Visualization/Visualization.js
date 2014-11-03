@@ -17,7 +17,8 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
       logoimg: {urlname: "logoimg", type: "string"},
       logourl: {urlname: "logourl", type: "string"},
 
-      logging: {default_value: {}, fromurl: UrlValues.jsonFromUrl, tourl: UrlValues.jsonToUrl, urlname: "logging", type: "object"},
+      // logging: {default_value: {"screen": {"rules": ["", "-Data.Format.spec-update", "-Data.Format.update", "-Data.Format.col"]}}, fromurl: UrlValues.jsonFromUrl, tourl: UrlValues.jsonToUrl, urlname: "logging", type: "object"},
+      logging: {default_value: {"screen": {"rules": []}}, fromurl: UrlValues.jsonFromUrl, tourl: UrlValues.jsonToUrl, urlname: "logging", type: "object"},
 
       // httpHeaders: {default_value: {"X-Client-Cache": "true"}}
 
