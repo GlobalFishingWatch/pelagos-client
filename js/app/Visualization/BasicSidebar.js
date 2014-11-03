@@ -110,11 +110,12 @@ if (app.useDojo) {
                 flag = event.flag;
 
             if (flag) {
-              var label = flag;
-              if (CountryCodes.codeToName[flag] != undefined) label = CountryCodes.codeToName[flag];
-
-              self.node.find(".vessel_id .flag").html(label);
-              self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + flag.toLowerCase() + '.png"><br>');
+              if (CountryCodes.codeToName[flag] != undefined) {
+                self.node.find(".vessel_id .flag").html(CountryCodes.codeToName[flag]);
+                self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + flag.toLowerCase() + '.png"><br>');
+              } else {
+                self.node.find(".vessel_id .flag").html(flag);
+              }
             } else {
               self.node.find(".vessel_id .flag").html("---");
             }
