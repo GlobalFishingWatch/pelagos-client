@@ -186,7 +186,9 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
           }
         });
       } else {
-        self.events.triggerEvent("header", data);
+        data.update = "header";
+        self.events.triggerEvent(data.update, data);
+        self.events.triggerEvent("update", data);
       }
     },
 
