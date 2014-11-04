@@ -33,14 +33,21 @@ void main() {
     else
         baseColor = vec4(0.0, 0.0, 0.0, 1.0);
   } else {
-    float ps = 0.01 ; // In WebGL units
+/*    float ps = 0.01 ; // In WebGL units
 
     float webglSigma = latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
 
     float radius = ps + 2.5 * webglSigma;
+    float areaScale = ps*ps / (radius*radius);*/
+
+    float ps = 8.0 ; // In pixels
+
+    float pixelSigma = pixelsPerWebGlX * latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
+
+    float radius = ps + 2.5 * pixelSigma;
     float areaScale = ps*ps / (radius*radius);
 
-    gl_PointSize = pixelsPerWebGlX * radius;
+    gl_PointSize = radius;
     if (gl_PointSize > 8.0) {gl_PointSize = 8.0;}
 
     if (_weight > 1.0)

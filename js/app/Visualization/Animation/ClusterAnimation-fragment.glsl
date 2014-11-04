@@ -14,8 +14,8 @@ void main() {
 
   if (vWeight > 0.0) {
     float dist = length(gl_PointCoord.xy - vec2(.5,.5));
-    dist = 1. - (dist * 2.);
-    dist = max(0., dist);
+    dist = 1. - ((dist - 0.1) * 2.5);
+    dist = min(1.0,max(0., dist));
 
     float c = dist * vWeight;
 

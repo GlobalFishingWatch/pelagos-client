@@ -260,7 +260,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
               }
             }
           },
-          "type": "LineAnimation"
+          "type": "VesselTrackAnimation"
         }, function (err, animation) {
           baseAnimation.seriesAnimation = animation;
         });

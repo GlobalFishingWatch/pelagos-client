@@ -12,13 +12,18 @@ varying vec4 baseColor;
 
 
 void main() {
+  mapper();
 
   vec2 lonlat = vec2(longitude, latitude);
 
   gl_Position = lonlat2screen(lonlat, googleMercator2webglMatrix);
 
-    gl_PointSize = 10.0;
-    vWeight = 1.0;
-    baseColor = vec4(1.0, 0.3, 0.3, 1.0);
+  if (_filter > 0.0) {
+    baseColor = vec4(0, 0, 0, 0);
+    gl_PointSize = 0.0;
+  } else {
+    gl_PointSize = 1.0;
+    baseColor = vec4(0.5, 0.5, 1.0, 1.0);
+  }
 }
 

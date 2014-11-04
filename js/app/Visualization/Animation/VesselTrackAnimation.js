@@ -27,6 +27,14 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
       }
     },
 
+    drawProgram: function (program) {
+      var self = this;
+
+      program.gl.useProgram(program);
+      program.gl.lineWidth(2.5);
+      Animation.prototype.drawProgram.apply(self, arguments);
+    },
+
     getDrawMode: function (program) {
       var self = this;
       return program.gl.LINE_STRIP;
