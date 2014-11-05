@@ -249,6 +249,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         self.removeAnimation(baseAnimation.seriesAnimation);
         baseAnimation.seriesAnimation = undefined;
       }
+
       if (series != undefined) {
         self.addAnimation({
           "args": {
@@ -264,6 +265,10 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
           },
           "type": "VesselTrackAnimation"
         }, function (err, animation) {
+          if (baseAnimation.seriesAnimation != undefined) {
+            self.removeAnimation(baseAnimation.seriesAnimation);
+            baseAnimation.seriesAnimation = undefined;
+          }
           baseAnimation.seriesAnimation = animation;
         });
       }
