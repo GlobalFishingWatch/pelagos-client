@@ -201,7 +201,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             var content;
 
             if (err) {
-              data.layerInstance = animation;
+              err.layerInstance = animation;
               err.layer = animation.title;
               cb(err, null);
             } else {
@@ -243,6 +243,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
     showSeriesAnimation: function (baseAnimation, series) {
       var self = this;
 
+      if (!baseAnimation.data_view.source.header.seriesTilesets) return;
+
       if (baseAnimation.seriesAnimation != undefined) {
         self.removeAnimation(baseAnimation.seriesAnimation);
         baseAnimation.seriesAnimation = undefined;
@@ -282,8 +284,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             self.events.triggerEvent('info-error', err);
           } else if (data) {
             self.events.triggerEvent('info', data);
+            self.showSeriesAnimation(data.layerInstance, data.series);
           }
-          self.showSeriesAnimation(data.layerInstance, data.series);
         });
       });
       google.maps.event.addListener(self.map, "rightclick", function(e) {
