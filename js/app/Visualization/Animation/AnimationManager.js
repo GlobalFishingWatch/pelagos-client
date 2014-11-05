@@ -10,7 +10,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       streetViewControl: false,
       overviewMapControl: true,
       overviewMapControlOptions: {
-        opened: true,
+        opened: true
       },
       styles: [
         {
@@ -55,7 +55,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         function (cb) {
           self.initialized = true;
           cb();
-        },
+        }
       ], cb);
     },
 
