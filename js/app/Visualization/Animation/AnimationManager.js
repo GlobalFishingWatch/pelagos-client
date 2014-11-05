@@ -243,8 +243,6 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
     showSeriesAnimation: function (baseAnimation, series) {
       var self = this;
 
-      if (!baseAnimation.data_view.source.header.seriesTilesets) return;
-
       if (baseAnimation.seriesAnimation != undefined) {
         self.removeAnimation(baseAnimation.seriesAnimation);
         baseAnimation.seriesAnimation = undefined;
@@ -289,7 +287,9 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             self.events.triggerEvent('info-error', err);
           } else if (data) {
             self.events.triggerEvent('info', data);
-            self.showSeriesAnimation(data.layerInstance, data.series);
+            if (data.seriesTileset) {
+              self.showSeriesAnimation(data.layerInstance, data.series);
+            }
           }
         });
       });
