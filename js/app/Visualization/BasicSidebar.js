@@ -122,8 +122,29 @@ if (app.useDojo) {
 
             self.node.find(".vessel_id .imo").html(event.imo || "---");
             self.node.find(".vessel_id .mmsi").html(event.mmsi || "---");
-            self.node.find(".vessel_id .vesselclass").html(event.vesselclass || "---");
-            self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + '/gfw/vessel.png"><br>');
+
+            var classToName = {
+              bulkcarrier: "Bulk carrier",
+              cargo: "Cargo vessel",
+              container: "Container ship",
+              fishing: "Fishing vessel",
+              passenger: "Passenger ship",
+              pleasurecraft: "Pleasure craft",
+              reefer: "Reefer",
+              research: "Research vessel",
+              tanker: "Tanker"
+            };
+
+            if (event.vesselclass) {
+              if (classToName[event.vesselclass] != undefined) {
+                self.node.find(".vessel_id .vesselclass").html(classToName[event.vesselclass]);
+                self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + '/vessels/' + event.vesselclass.toLowerCase() + '.png"><br>');
+              } else {
+                self.node.find(".vessel_id .vesselclass").html(event.vesselclass);
+              }
+            } else {
+              self.node.find(".vessel_id .vesselclass").html("---");
+            }
 
             self.node.find(".vessel_id .vesselname").html(event.vesselname || "---");
           }
