@@ -58,7 +58,7 @@ if (app.useDojo) {
           'add': self.addHandler.bind(self),
           'remove': self.removeHandler.bind(self),
           'info': self.update.bind(self, "none"),
-          'info-error': self.update.bind(self, "#ff8888")
+          'info-error': self.update.bind(self, "#ff0000")
         });
 
       },
@@ -134,7 +134,7 @@ if (app.useDojo) {
           self.node.find("table").attr({"class": "vessel_id"});
         }
 
-        self.node.find("#vessel_identifiers").css({background: color});
+        self.node.find("#vessel_identifiers").css({color: color});
       },
 
       addHandler: function (event) {
