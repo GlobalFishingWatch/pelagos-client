@@ -25,6 +25,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       Format.prototype.initialize.call(self)
       self.source = source;
 
+      self.args = args;
       if (args) _.extend(self, args);
 
       self.selections = {};
@@ -197,11 +198,11 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       for (var name in cols) {
         delete cols[name].typespec;
       }
-      return {
+      return _.extend({}, self.args, {
         columns: cols,
         uniforms: self.uniforms,
         selections: self.selections
-      };
+      });
     },
 
     toString: function () {

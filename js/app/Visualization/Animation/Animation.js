@@ -17,6 +17,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       var self = this;
 
       self.visible = true;
+      self.args = args || {};
       if (args) {
         args = $.extend({}, args);
         if (args.columns) {
@@ -322,7 +323,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       args.visible = self.visible;
       args.source = self.source;
       return {
-        args: args,
+        args: _.extend({}, self.args, args),
         "type": self.name
       };
     }
