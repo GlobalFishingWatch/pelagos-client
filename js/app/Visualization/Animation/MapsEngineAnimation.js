@@ -9,6 +9,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
       var self = this;
 
       self.visible = true;
+      self.args = args;
       if (args) $.extend(self, args);
       self.manager = manager;
     },
@@ -79,7 +80,7 @@ define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/A
     toJSON: function () {
       var self = this;
       return {
-        args: {source: self.source, title: self.title, visible: self.visible},
+        args: _.extend({}, self.args, {source: self.source, title: self.title, visible: self.visible}),
         "type": self.name
       };
     }

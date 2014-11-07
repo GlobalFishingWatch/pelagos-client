@@ -1,4 +1,4 @@
-define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat", "app/Data/ClusterTestFormat"], function(Class, Bounds, _, Events, Format, DataView) {
+define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Logging", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat", "app/Data/ClusterTestFormat"], function(Class, Bounds, _, Events, Format, DataView, Logging) {
   return Class({
     name: "DataManager",
     initialize: function () {
@@ -94,7 +94,11 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
     zoomTo: function (bounds) {
       var self = this;
       if (bounds.length > 0) bounds = new Bounds(bounds);
-      console.log("zoomTo(" + bounds.toBBOX() + ") for " + Object.keys(self.sources).join(", "));
+
+      Logging.main.log("Data.DataManager.zoomTo", {
+        bbox: bounds.toBBOX(),
+        sources: Object.keys(self.sources)
+      });
       self.bounds = bounds;
       Object.values(self.sources).map (function (source) {
         source.source.zoomTo(bounds);

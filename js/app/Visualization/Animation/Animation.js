@@ -17,6 +17,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       var self = this;
 
       self.visible = true;
+      self.args = args || {};
       if (args) {
         args = $.extend({}, args);
         if (args.columns) {
@@ -176,9 +177,10 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
       var tileidx = 0;
       self.data_view.source.getContent().map(function (tile) {
-        self.bindDataViewArrayBuffers(program, tile.content);
-
         program.gl.uniform1f(program.uniforms.tileidx, tileidx);
+        tileidx++;
+
+        if (!self.bindDataViewArrayBuffers(program, tile.content)) return;
 
         if (self.separateSeries) {
           // -1 since series contains POINT_COUNT in the last item
@@ -194,7 +196,6 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
         } else {
           program.gl.drawArrays(mode, 0, tile.content.header.length);
         }
-        tileidx++;
       });
     },
 
@@ -224,10 +225,12 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
 
     bindDataViewArrayBuffers: function(program, tile) {
       var self = this;
+      if (!program.dataViewArrayBuffers[tile.url]) return false;
       program.gl.useProgram(program);
       for (var name in program.dataViewArrayBuffers[tile.url]) {
         Shader.programBindArray(program.gl, program.dataViewArrayBuffers[tile.url][name], program, name, 1, program.gl.FLOAT);
       };
+      return true;
     },
 
     setGeneralUniforms: function (program) {
@@ -320,7 +323,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       args.visible = self.visible;
       args.source = self.source;
       return {
-        args: args,
+        args: _.extend({}, self.args, args),
         "type": self.name
       };
     }
