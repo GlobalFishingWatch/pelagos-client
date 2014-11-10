@@ -144,7 +144,7 @@ if (app.useDojo) {
         var node = $('' +
           '<div class="layer-row">' +
           '  <div class="switch">' +
-          '    <input class="cmn-toggle cmn-toggle-round-flat" type="checkbox">' +
+          '    <input class="cmn-toggle" type="checkbox">' +
           '    <label></label>' +
           '  </div>' +
           '  <div class="layer-label"></div>' +

@@ -304,165 +304,177 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     }
   }
 
-  .cmn-toggle {
+  input.cmn-toggle {
     position: absolute;
     margin-left: -9999px;
     visibility: hidden;
+
+
+    + label {
+      display: block;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+
+      max-width: auto;
+      margin-bottom: 0;
+      font-weight: normal;
+
+      padding: 0; /*2px;*/
+      width: 35px; /*40px;*/
+      height: 16px; /*20px;*/
+      /*background-image: url("img/gfw/toggle_line.png");
+      background-repeat: repeat-x;
+      background-position: center center;*/
+      -webkit-transition: background 0.4s;
+      -moz-transition: background 0.4s;
+      -o-transition: background 0.4s;
+      transition: background 0.4s;
+
+      &:before,
+      &:after {
+        display: block;
+        position: absolute;
+        content: "";
+      }
+
+      &:before {
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        -webkit-transition: background 0.4s;
+        -moz-transition: background 0.4s;
+        -o-transition: background 0.4s;
+        transition: background 0.4s;
+      }
+
+      /* switch color styles */
+      &:after {
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 16px; 
+        -webkit-border-radius: 100%; /*52px;*/
+        -moz-border-radius: 100%;
+        -ms-border-radius: 100%;
+        -o-border-radius: 100%;
+        border-radius: 100%;
+        -webkit-transition: margin 0.4s, background 0.4s;
+        -moz-transition: margin 0.4s, background 0.4s;
+        -o-transition: margin 0.4s, background 0.4s;
+        transition: margin 0.4s, background 0.4s;
+        background-color: #fff; 
+        border: solid .25rem;
+      }
+    }
+
+    &:checked {
+      + label {
+        background-color: transparent;
+        &:after {
+          margin-left: 55%; /*30px;*/ 
+        }
+      }
+    }
+
+    + label,
+    &:checked + label {
+      background-repeat: repeat-x;
+      background-position: center center;
+    }
   }
 
-  .cmn-toggle + label {
-    display: block;
-    position: relative;
-    cursor: pointer;
-    outline: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-
-    max-width: auto;
-    margin-bottom: 0;
-    font-weight: normal;
-  }
-
-  input.cmn-toggle-round-flat + label:before, input.cmn-toggle-round-flat + label:after {
-    display: block;
-    position: absolute;
-    content: "";
-  }
-
-  input.cmn-toggle-round-flat + label:before {
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    -webkit-transition: background 0.4s;
-    -moz-transition: background 0.4s;
-    -o-transition: background 0.4s;
-    transition: background 0.4s;
-  }
-
-  /* switch color styles */
-  input.cmn-toggle-round-flat + label:after {
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 16px; 
-    -webkit-border-radius: 100%; /*52px;*/
-    -moz-border-radius: 100%;
-    -ms-border-radius: 100%;
-    -o-border-radius: 100%;
-    border-radius: 100%;
-    -webkit-transition: margin 0.4s, background 0.4s;
-    -moz-transition: margin 0.4s, background 0.4s;
-    -o-transition: margin 0.4s, background 0.4s;
-    transition: margin 0.4s, background 0.4s;
-  }
-
-  input.cmn-toggle-round-flat:checked + label {
-    background-color: transparent;
-  }
-
-  input.cmn-toggle-round-flat:checked + label:after {
-    margin-left: 55%; /*30px;*/ 
-  }
-
-  input.cmn-toggle-round-flat + label {
-    padding: 0; /*2px;*/
-    width: 35px; /*40px;*/
-    height: 16px; /*20px;*/
-    /*background-image: url("img/gfw/toggle_line.png");
-    background-repeat: repeat-x;
-    background-position: center center;*/
-    -webkit-transition: background 0.4s;
-    -moz-transition: background 0.4s;
-    -o-transition: background 0.4s;
-    transition: background 0.4s;
-  }
-
-  input.cmn-toggle + label, input.cmn-toggle:checked + label {
-    background-repeat: repeat-x;
-    background-position: center center;
-  }
-
-  input.cmn-toggle + label:after {
-    background-color: #fff; 
-    border: solid .25rem;
-  }
 
   /* colors */
   /* heatmap */
-  input.cmn-toggle-orange + label, input.cmn-toggle-orange:checked + label {
-    background-image: url("img/gfw/toggle_line_orange.png");
-  }
-  input.cmn-toggle-orange:checked + label:after {
-    background-color: #ef4323; 
-  }
-  input.cmn-toggle-orange + label:after {
-    border-color: #ef4323;
+  input.cmn-toggle-orange {
+    + label, &checked + label {
+      background-image: url("img/gfw/toggle_line_orange.png");
+    }
+    &checked + label:after {
+      background-color: #ef4323; 
+    }
+    + label:after {
+      border-color: #ef4323;
+    }
   }
   /* oceana */
-  input.cmn-toggle-purple + label, input.cmn-toggle-purple:checked + label {
-    background-image: url("img/gfw/toggle_line_purple.png");
-  }
-  input.cmn-toggle-purple:checked + label:after {
-    background-color: #692897; 
-  }
-  input.cmn-toggle-purple + label:after {
-    border-color: #692897;
+  input.cmn-toggle-purple {
+    + label, &:checked + label {
+      background-image: url("img/gfw/toggle_line_purple.png");
+    }
+    &:checked + label:after {
+      background-color: #692897; 
+    }
+    + label:after {
+      border-color: #692897;
+    }
   }
   /* eez */
-  input.cmn-toggle-blue + label, input.cmn-toggle-blue:checked + label {
-    background-image: url("img/gfw/toggle_line_blue.png");
-  }
-  input.cmn-toggle-blue:checked + label:after {
-    background-color: #4666af; 
-  }
-  input.cmn-toggle-blue + label:after {
-    border-color: #4666af;
+  input.cmn-toggle-blue {
+    + label, &:checked + label {
+      background-image: url("img/gfw/toggle_line_blue.png");
+    }
+    &:checked + label:after {
+      background-color: #4666af; 
+    }
+    + label:after {
+      border-color: #4666af;
+    }
   }
   /* bathymetry */
-  input.cmn-toggle-blue2 + label, input.cmn-toggle-blue2:checked + label {
-    background-image: url("img/gfw/toggle_line_blue2.png");
-  }
-  input.cmn-toggle-blue2:checked + label:after {
-    background-color: #9daed4; 
-  }
-  input.cmn-toggle-blue2 + label:after {
-    border-color: #9daed4;
+  input.cmn-toggle-blue2 {
+    + label, &:checked + label {
+      background-image: url("img/gfw/toggle_line_blue2.png");
+    }
+    &:checked + label:after {
+      background-color: #9daed4; 
+    }
+    + label:after {
+      border-color: #9daed4;
+    }
   }
   /* mpa */
-  input.cmn-toggle-green + label, input.cmn-toggle-green:checked + label {
-    background-image: url("img/gfw/toggle_line_green.png");
-  }
-  input.cmn-toggle-green:checked + label:after {
-    background-color: #4cae4e; 
-  }
-  input.cmn-toggle-green + label:after {
-    border-color: #4cae4e;
+  input.cmn-toggle-green {
+    + label, &:checked + label {
+      background-image: url("img/gfw/toggle_line_green.png");
+    }
+    &:checked + label:after {
+      background-color: #4cae4e; 
+    }
+    + label:after {
+      border-color: #4cae4e;
+    }
   }
   /* world heritage */
-  input.cmn-toggle-green2 + label, input.cmn-toggle-green2:checked + label {
-    background-image: url("img/gfw/toggle_line_green2.png");
+  input.cmn-toggle-green2 {
+    + label, &:checked + label {
+      background-image: url("img/gfw/toggle_line_green2.png");
+    }
+    &:checked + label:after {
+      background-color: #0e5c39; 
+    }
+    + label:after {
+      border-color: #0e5c39;
+    }
   }
-  input.cmn-toggle-green2:checked + label:after {
-    background-color: #0e5c39; 
-  }
-  input.cmn-toggle-green2 + label:after {
-    border-color: #0e5c39;
-  }
-
   /* vessel tracks */
-  input.cmn-toggle-grey + label, input.cmn-toggle-grey:checked + label {
-    background-image: url("img/gfw/toggle_line_grey.png");
+  input.cmn-toggle-grey {
+    + label, &:checked + label {
+      background-image: url("img/gfw/toggle_line_grey.png");
+    }
+    &:checked + label:after {
+      background-color: #757575; 
+    }
+    + label:after {
+      border-color: #757575;
+    }
   }
-  input.cmn-toggle-grey:checked + label:after {
-    background-color: #757575; 
-  }
-  input.cmn-toggle-grey + label:after {
-    border-color: #757575;
-  }
-
 
 
 
