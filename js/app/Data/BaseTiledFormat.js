@@ -412,12 +412,27 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
         var again = printed[key] || false;
         printed[key] = true;
-        var loaded = tile.content.allIsLoaded ? ", loaded" : "";
-        var length = tile.content && tile.content.header ? ", Rows: " + tile.content.header.length : "";
-        var wanted = self.wantedTiles[key] ? ", wanted" : "";
-        var error = tile.content.error ? ", error" : "";
-        var tags = tile.content && tile.content.header && tile.content.header.tags ? ", " + tile.content.header.tags.join(", ") : "";
-        var res = indent + key + "(Idx: " + tile.idx.toString() + ", Usage: " + tile.usage.toString() + loaded + length + error + wanted + tags + ")";
+
+        var flags = [
+          "Idx: " + tile.idx.toString(),
+          "Usage: " + tile.usage.toString()
+        ];
+        if (tile.content.loadingStarted) {
+          if (tile.content.allIsLoaded) {
+            flags.push("loaded");
+          } else {
+            flags.push("receiving");
+          }
+        } else {
+          flags.push("pending");
+        }
+        if (tile.content && tile.content.header) flags.push("Rows: " + tile.content.header.length);
+        if (self.wantedTiles[key]) flags.push("wanted");
+        if (tile.content.error) flags.push("error");
+        if (tile.content && tile.content.header && tile.content.header.tags) flags = flags.concat(tile.content.header.tags);
+
+        var res = indent + key + "(" + flags.join(", ") + ")";
+
         if (args.maxdepth != undefined && depth > args.maxdepth) {
           res += " ...\n";
         } else if (again && !args.expand) {
