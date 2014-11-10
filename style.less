@@ -324,12 +324,10 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       margin-bottom: 0;
       font-weight: normal;
 
-      padding: 0; /*2px;*/
-      width: 35px; /*40px;*/
-      height: 16px; /*20px;*/
-      /*background-image: url("img/gfw/toggle_line.png");
-      background-repeat: repeat-x;
-      background-position: center center;*/
+      padding: 0;
+      width: 35px;
+      height: 5px;
+      border-bottom: 2px solid;
       -webkit-transition: background 0.4s;
       -moz-transition: background 0.4s;
       -o-transition: background 0.4s;
@@ -355,10 +353,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
       /* switch color styles */
       &:after {
-        top: 0;
+        top: -1px;
         left: 0;
         bottom: 0;
-        width: 16px; 
+        width: 10px; 
+        height: 10px;
         -webkit-border-radius: 100%; /*52px;*/
         -moz-border-radius: 100%;
         -ms-border-radius: 100%;
@@ -377,7 +376,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       + label {
         background-color: transparent;
         &:after {
-          margin-left: 55%; /*30px;*/ 
+          margin-left: 25px;
         }
       }
     }
@@ -394,7 +393,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   /* heatmap */
   input.cmn-toggle-orange {
     + label, &checked + label {
-      background-image: url("img/gfw/toggle_line_orange.png");
+      border-color: #ef4323; 
     }
     &checked + label:after {
       background-color: #ef4323; 
@@ -406,7 +405,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   /* oceana */
   input.cmn-toggle-purple {
     + label, &:checked + label {
-      background-image: url("img/gfw/toggle_line_purple.png");
+      border-color: #692897; 
     }
     &:checked + label:after {
       background-color: #692897; 
@@ -418,7 +417,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   /* eez */
   input.cmn-toggle-blue {
     + label, &:checked + label {
-      background-image: url("img/gfw/toggle_line_blue.png");
+      border-color: #4666af; 
     }
     &:checked + label:after {
       background-color: #4666af; 
@@ -430,7 +429,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   /* bathymetry */
   input.cmn-toggle-blue2 {
     + label, &:checked + label {
-      background-image: url("img/gfw/toggle_line_blue2.png");
+      border-color: #9daed4; 
     }
     &:checked + label:after {
       background-color: #9daed4; 
@@ -442,7 +441,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   /* mpa */
   input.cmn-toggle-green {
     + label, &:checked + label {
-      background-image: url("img/gfw/toggle_line_green.png");
+      border-color: #4cae4e;
     }
     &:checked + label:after {
       background-color: #4cae4e; 
@@ -454,7 +453,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   /* world heritage */
   input.cmn-toggle-green2 {
     + label, &:checked + label {
-      background-image: url("img/gfw/toggle_line_green2.png");
+      border-color: #0e5c39;
     }
     &:checked + label:after {
       background-color: #0e5c39; 
@@ -466,7 +465,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   /* vessel tracks */
   input.cmn-toggle-grey {
     + label, &:checked + label {
-      background-image: url("img/gfw/toggle_line_grey.png");
+      border-color: #757575;
     }
     &:checked + label:after {
       background-color: #757575; 
