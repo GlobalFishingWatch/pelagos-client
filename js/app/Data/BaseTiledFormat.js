@@ -119,7 +119,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         data[key] = selection.data[key][0];
       }
 
-      var url = self.getUrl() + "/series";
+      var url = self.getUrl("series") + "/series";
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
       request.withCredentials = true;
