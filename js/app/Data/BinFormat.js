@@ -15,10 +15,6 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
       self.load();
     },
 
-    mapIdle: function () {
-      var self = this;
-    },
-
     headerLoaded: function (data) {
       var self = this;
       self.header = data;

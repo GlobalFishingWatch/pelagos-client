@@ -157,6 +157,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 #w {
   position: absolute;
+  pointer-events: none;
   right: 15px;
   width: 14.349%; /* 551px / 3180px */
   min-width: 225px;
@@ -183,10 +184,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   }
 
   #expand-button {
+    pointer-events: auto;
     margin-left: -20pt;
   }
 
   .border {
+    pointer-events: auto;
     width: 100%;
     max-height: 100%;
     overflow: auto;
@@ -400,10 +403,10 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     /* colors */
     /* heatmap */
     input.cmn-toggle-orange {
-      + label, &checked + label {
+      + label, &:checked + label {
         border-color: #ef4323; 
       }
-      &checked + label:after {
+      &:checked + label:after {
         background-color: #ef4323; 
       }
       + label:after {
@@ -522,6 +525,10 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       margin-top: 5px;
       margin-bottom: 5px;
     }
+  }
+
+  .vesselclass img {
+    height: 11px;
   }
 }
 
