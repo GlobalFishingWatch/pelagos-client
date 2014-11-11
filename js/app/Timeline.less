@@ -10,6 +10,7 @@
 }
 
 .timeline {
+  cursor: pointer;
   z-index: 0;
   font-family: 'Roboto', sans-serif; 
 
@@ -77,14 +78,13 @@
       cursor: col-resize;
 
       .frame {
-        cursor: initial;
+        cursor: pointer;
 
         .startLabel, .lengthLabel, .endLabel {
           position: absolute;
           white-space: nowrap;
         }
         .startLabel span, .endLabel span {
-          padding: 2pt;
           color: #535151;
         }
 
@@ -95,10 +95,11 @@
 
         .startLabel, .endLabel {
           font-size: 12.75pt;
+          top: 3pt;
         }
 
         .startLabel {
-          left: 0;
+          left: 10px;
         }
         .lengthLabel {
           bottom: 0;
@@ -107,7 +108,7 @@
           text-align: center;
         }
         .endLabel {
-          right: 0;
+          right: 10px;
         }
       }
     }
@@ -154,8 +155,8 @@
       .tickmarks-container {
         position: absolute;
         width: 100%;
-        height: 60%;
-        top: 20%;
+        height: 50%;
+        top: 30%;
         z-index: 1;
       }
 
@@ -199,6 +200,7 @@
         }
 
         &.top {
+          height: 60% !important;
           .even .frame {
             background-color: rgba(189,189,189,0.5);
             .quanta-label {
@@ -215,6 +217,12 @@
         }
 
         &.bottom {
+          height: 40% !important;
+
+          .quanta .frame {
+            padding: 1px;
+          }
+
           .even .frame {
             background-color: rgba(33,32,32,0.5);
             .quanta-label {

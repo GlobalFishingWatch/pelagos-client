@@ -98,7 +98,6 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
-      google.maps.event.addListener(self.map, 'idle', self.mapIdle.bind(self));
       cb();
     },
 
@@ -407,11 +406,6 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var latmax = ne.lat();
       var lonmax = ne.lng();
       self.visualization.data.zoomTo(new Bounds(lonmin, latmin, lonmax, latmax));
-    },
-
-    mapIdle: function() {
-      var self = this;
-      self.visualization.data.mapIdle();
     },
 
     canvasResize: function() {

@@ -20,38 +20,47 @@ if (app.useDojo) {
         self.idCounter = 0;
 
         self.node = $('' +
-          '<div id="w">' +
-          '  <div id="content">' +
-          '    <div id="drawer_slide"><img src="' + app.dirs.img + '/gfw/gfw_close.png"></div>' +
+          '<div id="w" class="expanded">' +
+          '  <div id="expand-button"><img src="' + app.dirs.img + '/gfw/gfw_open.png"></div>' +
+          '  <div class="border">' +
+          '    <div id="content">' +
+          '      <div id="collapse-button"><img src="' + app.dirs.img + '/gfw/gfw_close.png"></div>' +
           '  ' +
-          '    <div id="gfw_title"><img src="' + app.dirs.img + '/gfw/gfw_logo.png">Global Fishing Watch</div>' +
-          '    <div id="gfw_logos"><img class="st" src="' + app.dirs.img + '/gfw/st_logo.png"><img class="oc" src="' + app.dirs.img + '/gfw/oceana_logo.png"><img class="g" src="' + app.dirs.img + '/gfw/google_logo.png"></div>' +
+          '      <div id="gfw_title"><img src="' + app.dirs.img + '/gfw/gfw_logo.png">Global Fishing Watch</div>' +
+          '      <div id="gfw_logos"><img class="st" src="' + app.dirs.img + '/gfw/st_logo.png"><img class="oc" src="' + app.dirs.img + '/gfw/oceana_logo.png"><img class="g" src="' + app.dirs.img + '/gfw/google_logo.png"></div>' +
           '' +
-          '    <div id="divide"></div>' +
+          '      <div id="divide"></div>' +
           '' +
-          '    <div id="layers">' +
-          '      <h2>Layers</h2>' +
-          '      <form class="layer-list"></form>' +
+          '      <div id="layers">' +
+          '        <h2>Layers</h2>' +
+          '        <form class="layer-list"></form>' +
+          '      </div>' +
+          '' +
+          '      <div id="divide"></div>' +
+          '' +
+          '      <div id="vessel_identifiers"></div>' +
+          '' +
+          '      <div id="codeoutput"></div>' +
           '    </div>' +
-          '' +
-          '    <div id="divide"></div>' +
-          '' +
-          '    <div id="vessel_identifiers"></div>' +
-          '' +
-          '    <div id="codeoutput"></div>' +
           '  </div>' +
           '</div>');
         $('body').append(self.node);
 
         self.update("none", undefined);
 
-        self.node.find("#drawer_slide img").click(function () {
-          self.node.toggleClass('collapsed');
-          if (self.node.hasClass('collapsed')) {
-            self.node.find("#drawer_slide img").attr({src: app.dirs.img + '/gfw/gfw_open.png'});
-          } else {
-            self.node.find("#drawer_slide img").attr({src: app.dirs.img + '/gfw/gfw_close.png'});
-          }
+        self.node.find("#collapse-button img").click(function () {
+          self.node.css({left:self.node.offset().left + "px"});
+          self.node.animate({left:"100%"}, undefined, undefined, function () {
+            self.node.addClass('collapsed');
+            self.node.removeClass('expanded');
+          });
+        });
+
+        self.node.find("#expand-button img").click(function () {
+          self.node.removeClass('collapsed');
+          self.node.addClass('expanded');
+          self.node.css({right: "-" + self.node.width() + "px", left: "auto"});
+          self.node.animate({right: "15px"});
         });
 
         self.animationManager.events.on({
@@ -165,7 +174,7 @@ if (app.useDojo) {
         var node = $('' +
           '<div class="layer-row">' +
           '  <div class="switch">' +
-          '    <input class="cmn-toggle cmn-toggle-round-flat" type="checkbox">' +
+          '    <input class="cmn-toggle" type="checkbox">' +
           '    <label></label>' +
           '  </div>' +
           '  <div class="layer-label"></div>' +
