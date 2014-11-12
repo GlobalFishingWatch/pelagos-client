@@ -1,4 +1,4 @@
-define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelManager", "app/Visualization/BasicSidebar", "async", "jQuery"], function(Class, Timeline, SidePanelManager, BasicSidebar, async, $) {
+define(["app/Class", "app/Timeline", "app/UrlValues", "async", "jQuery"], function(Class, Timeline, UrlValues, async, $) {
   return Class({
     name: "UI",
       initialize: function (visualization) {
@@ -6,7 +6,18 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
       self.visualization = visualization;
     },
 
-    init: function (cb) {
+    init1: function (cb) {
+      if (UrlValues.getParameter("edit") == "true") {
+        require(["app/Visualization/DojoUI"], function (DojoUI) {
+          self.visualization.dojoUI = new DojoUI(self.visualization);
+          cb();
+        });
+      } else {
+        cb();
+      }
+    },
+
+    init2: function (cb) {
       var self = this;
 
       async.series([
@@ -331,9 +342,17 @@ define(["app/Class", "app/Timeline", "app/Visualization/SidePanels/SidePanelMana
     initSidePanels: function (cb) {
       var self = this;
 
-      self.sidePanels = new SidePanelManager(self.visualization);
-      self.sideBar = new BasicSidebar(self.visualization);
-      cb();
+      if (UrlValues.getParameter("edit") == "true") {
+        require(["app/Visualization/SidePanels/SidePanelManager"], function (SidePanelManager) {
+          self.sidePanels = new SidePanelManager(self.visualization);
+          cb();
+        });
+      } else {
+        require(["app/Visualization/BasicSidebar"], function (BasicSidebar) {
+          self.sideBar = new BasicSidebar(self.visualization);
+          cb();
+        });
+      }
     }
   });
 });

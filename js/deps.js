@@ -6,6 +6,7 @@
   } else if (window.location.toString().indexOf("dojo=false") != -1) {
     app.useDojo = false;
   }
+  if (app.useDojo == undefined) app.useDojo = true;
 
   if (!app.name) {
     if (app.webworker) {
