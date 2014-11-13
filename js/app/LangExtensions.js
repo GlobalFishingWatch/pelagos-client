@@ -78,5 +78,30 @@ define([], function() {
     }
     return hash;
   }
+
+  JSON.oldStringify = JSON.stringify;
+  JSON.stringify = function (obj, replacer) {
+    return JSON.oldStringify(obj, function (key, value) {
+      if (replacer) value = replacer(key, value);
+      if (typeof(value) == "number") {
+        if (value == 1/0) return {__jsonclass__: ["Number", "Infinity"]};
+        if (value == -1/0) return {__jsonclass__: ["Number", "-Infinity"]};
+        if (value != value) return {__jsonclass__: ["Number", "NaN"]};
+      }
+      return value;
+    });
+  }
+
+  JSON.oldParse = JSON.parse;
+  JSON.parse = function (text, reviver) {
+    return JSON.oldParse(text, function (key, value) {
+      if (value != null && value.__jsonclass__ && value.__jsonclass__.length > 1 && value.__jsonclass__[0] == "Number") {
+        value = Number(value.__jsonclass__[1]);
+      }
+      if (reviver) value = reviver(key, value);
+      return value;
+    });
+  }
+
 });
 
