@@ -1,4 +1,4 @@
-define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/DojoUI", "app/Visualization/UI", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, DojoUI, UI, async, $, Json) {
+define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/UI", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, UI, async, $, Json) {
   return Class({
     name: "Visualization",
     paramspec: {
@@ -45,15 +45,22 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
         }
       });
 
-      self.dojoUI = new DojoUI(self);
-      self.data = new DataManager(self);
-      self.animations = new AnimationManager(self);
-      self.ui = new UI(self);
-
       async.series([
-        self.data.init.bind(self.data),
-        self.animations.init.bind(self.animations),
-        self.ui.init.bind(self.ui),
+        function (cb) {
+          self.ui = new UI(self);
+          self.ui.init1(cb);
+        },
+        function (cb) {
+          self.data = new DataManager(self);
+          self.data.init(cb);
+        },
+        function (cb) {
+          self.animations = new AnimationManager(self);
+          self.animations.init(cb);
+        },
+        function (cb) {
+          self.ui.init2(cb);
+        },
         function (cb) {
           self.load(UrlValues.getParameter("workspace"), cb);
         }
