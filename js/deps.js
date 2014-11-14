@@ -53,40 +53,51 @@
   app.dependencies.scripts = app.dependencies.scripts || [];
   app.packages = app.packages || [];
 
-  app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-    app.dirs.lib + "/bootstrap-3.2.0-dist/css/bootstrap.min.css",
-    app.dirs.lib + "/font-awesome-4.2.0/css/font-awesome.min.css",
-    app.dirs.lib + "/qunit-1.15.0.css",
-    app.dirs.lib + "/jquery-ui.css",
-
-    {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"}
-  ]);
-  if (app.useDojo) {
+  if (app.useBuild) {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-      app.dirs.dojo + "/dijit/themes/claro/claro.css",
-
-      app.dirs.dojo + "/dojox/layout/resources/FloatingPane.css",
-      app.dirs.dojo + "/dojox/layout/resources/ResizeHandle.css"
+      app.dirs.build + "/deps.css",
+      {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"}
     ]);
-  }
-  app.dependencies.scripts = app.dependencies.scripts.concat([
-    app.dirs.lib + "/qunit-1.15.0.js",
-    app.dirs.lib + "/async.js",
-    app.dirs.lib + "/stacktrace.js",
-    app.dirs.lib + "/lodash.js",
-  ]);
-  if (!app.webworker) {
     app.dependencies.scripts = app.dependencies.scripts.concat([
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-      app.dirs.lib + "/jquery-1.10.2.min.js",
-      app.dirs.lib + "/jquery.mousewheel.js",
-      app.dirs.lib + "/less.min.js",
-      app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
-      app.dirs.lib + "/CanvasLayer.js",
-      app.dirs.lib + "/stats.min.js",
-      app.dirs.lib + "/loggly.tracker.js",
-      app.dirs.lib + "/jquery-ui.js"
+      app.dirs.build + "/deps.js"
     ]);
+  } else {
+    app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
+      app.dirs.lib + "/bootstrap-3.2.0-dist/css/bootstrap.min.css",
+      app.dirs.lib + "/font-awesome-4.2.0/css/font-awesome.min.css",
+      app.dirs.lib + "/qunit-1.15.0.css",
+      app.dirs.lib + "/jquery-ui.css",
+
+      {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"}
+    ]);
+    if (app.useDojo) {
+      app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
+        app.dirs.dojo + "/dijit/themes/claro/claro.css",
+
+        app.dirs.dojo + "/dojox/layout/resources/FloatingPane.css",
+        app.dirs.dojo + "/dojox/layout/resources/ResizeHandle.css"
+      ]);
+    }
+    app.dependencies.scripts = app.dependencies.scripts.concat([
+      app.dirs.lib + "/qunit-1.15.0.js",
+      app.dirs.lib + "/async.js",
+      app.dirs.lib + "/stacktrace.js",
+      app.dirs.lib + "/lodash.js",
+    ]);
+    if (!app.webworker) {
+      app.dependencies.scripts = app.dependencies.scripts.concat([
+        {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
+        app.dirs.lib + "/jquery-1.10.2.min.js",
+        app.dirs.lib + "/jquery.mousewheel.js",
+        app.dirs.lib + "/less.min.js",
+        app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
+        app.dirs.lib + "/CanvasLayer.js",
+        app.dirs.lib + "/stats.min.js",
+        app.dirs.lib + "/loggly.tracker.js",
+        app.dirs.lib + "/jquery-ui.js"
+      ]);
+    }
   }
 
   app.packages = app.packages.concat([
