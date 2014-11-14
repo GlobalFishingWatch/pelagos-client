@@ -151,7 +151,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
       */
 
       self.request.open('GET', self.url, true);
-      self.request.withCredentials = true;
+//      self.request.withCredentials = true;
       self.request.responseType = "arraybuffer";
       for (var key in self.headers) {
         var values = self.headers[key]
