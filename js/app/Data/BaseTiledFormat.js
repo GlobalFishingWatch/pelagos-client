@@ -216,14 +216,16 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var tilewidth = bounds.getWidth() * 2;
       var tileheight = bounds.getHeight() * 2;
 
-      if (tilewidth > self.world.getWidth() || tileheight > self.world.getHeight()) {
-        return undefined;
-      } 
-
       var tileleft = tilewidth * Math.floor(bounds.left / tilewidth);
       var tilebottom = tileheight * Math.floor(bounds.bottom / tileheight);
 
-      return new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
+      var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
+
+      if (self.world.containsBounds(res)) {
+        return res;
+      } else {
+        return undefined;
+      }
     },
 
     clear: function () {
