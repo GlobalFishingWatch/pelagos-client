@@ -126,8 +126,36 @@ define([
 
           self.node.find(".vessel_id .imo").html(event.imo || "---");
           self.node.find(".vessel_id .mmsi").html(event.mmsi || "---");
-          self.node.find(".vessel_id .vesselclass").html(event.vesselclass || "---");
-          self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + '/gfw/vessel.png"><br>');
+
+          var classes = {
+            "transport/bulkcarrier": {name: "Bulk carrier", icon: "/vessels/bulkcarrier.png"},
+            "transport/cargo": {name: "Cargo vessel", icon: "/vessels/cargo.png"},
+            "transport/cargo/container": {name: "Container ship", icon: "/vessels/container.png"},
+            "transport/tanker": {name: "Tanker", icon: "/vessels/tanker.png"},
+            "fishing": {name: "Fishing vessel", icon: "/vessels/fishing.png"},
+            "transport/passenger": {name: "Passenger ship", icon: "/vessels/passenger.png"},
+            "pleasurecraft": {name: "Pleasure craft", icon: "/vessels/pleasurecraft.png"},
+            "reefer": {name: "Reefer", icon: "/vessels/reefer.png"},
+            "fishing/research": {name: "Research vessel", icon: "/vessels/research.png"},
+          };
+
+          var getClass = function(name) {
+            if (classes[name]) return classes[name];
+            if (name.indexOf('/') != -1) return getClass(name.slice(0, name.lastIndexOf("/")))
+            return undefined;
+          }
+
+          if (event.vesselclass) {
+            var cls = getClass(event.vesselclass);
+            if (cls) {
+              self.node.find(".vessel_id .vesselclass").html(cls.name);
+              self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + cls.icon + '"><br>');
+            } else {
+              self.node.find(".vessel_id .vesselclass").html(event.vesselclass);
+            }
+          } else {
+            self.node.find(".vessel_id .vesselclass").html("---");
+          }
 
           self.node.find(".vessel_id .vesselname").html(event.vesselname || "---");
         }
