@@ -132,22 +132,29 @@ if (app.useDojo) {
             self.node.find(".vessel_id .imo").html(event.imo || "---");
             self.node.find(".vessel_id .mmsi").html(event.mmsi || "---");
 
-            var classToName = {
-              bulkcarrier: "Bulk carrier",
-              cargo: "Cargo vessel",
-              container: "Container ship",
-              fishing: "Fishing vessel",
-              passenger: "Passenger ship",
-              pleasurecraft: "Pleasure craft",
-              reefer: "Reefer",
-              research: "Research vessel",
-              tanker: "Tanker"
+            var classes = {
+              "transport/bulkcarrier": {name: "Bulk carrier", icon: "/vessels/bulkcarrier.png"},
+              "transport/cargo": {name: "Cargo vessel", icon: "/vessels/cargo.png"},
+              "transport/cargo/container": {name: "Container ship", icon: "/vessels/container.png"},
+              "transport/tanker": {name: "Tanker", icon: "/vessels/tanker.png"},
+              "fishing": {name: "Fishing vessel", icon: "/vessels/fishing.png"},
+              "transport/passenger": {name: "Passenger ship", icon: "/vessels/passenger.png"},
+              "pleasurecraft": {name: "Pleasure craft", icon: "/vessels/pleasurecraft.png"},
+              "reefer": {name: "Reefer", icon: "/vessels/reefer.png"},
+              "fishing/research": {name: "Research vessel", icon: "/vessels/research.png"},
             };
 
+            var getClass = function(name) {
+              if (classes[name]) return classes[name];
+              if (name.indexOf('/') != -1) return getClass(name.slice(0, name.lastIndexOf("/")))
+              return undefined;
+            }
+
             if (event.vesselclass) {
-              if (classToName[event.vesselclass] != undefined) {
-                self.node.find(".vessel_id .vesselclass").html(classToName[event.vesselclass]);
-                self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + '/vessels/' + event.vesselclass.toLowerCase() + '.png"><br>');
+              var cls = getClass(event.vesselclass);
+              if (cls) {
+                self.node.find(".vessel_id .vesselclass").html(cls.name);
+                self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + cls.icon + '"><br>');
               } else {
                 self.node.find(".vessel_id .vesselclass").html(event.vesselclass);
               }
