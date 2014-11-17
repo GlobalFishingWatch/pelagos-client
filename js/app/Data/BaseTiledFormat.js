@@ -100,14 +100,20 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
       if (self.header.alternatives == undefined) return self.url;
 
+      if (key == "series") self.header.alternatives[self.header.alternatives.length-1];
+
       var alternative;
       if (key) {
-        alternative = key.hashCode() % self.header.alternatives.length;
-        if (alternative < 0) alternative += self.header.alternatives.length;
+        alternative = key.hashCode();
       } else {
-        self.urlAlternative = (self.urlAlternative + 1) % self.header.alternatives.length;
-        alternative = self.urlAlternative;
+        alternative = ++self.urlAlternative;
       }
+
+      var available = self.header.alternatives.length;
+      // Decrement because we want to use the last item for series info exlusively
+      if (available > 1) available--;
+      alternative = alternative % available;
+      if (alternative < 0) alternative += available;
       return self.header.alternatives[alternative];
     },
 
