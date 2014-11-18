@@ -181,8 +181,14 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
       if (data.nodata) {
         self.errorLoading({
+          url: self.url,
+          complete_ancestor: data.complete_ancestor,
           toString: function () {
-            return 'Could not load ' + this.url + ' due to it being empty';
+            if (this.complete_ancestor) {
+              return 'Could not load ' + self.url + ' due to it being covered by ' + this.complete_ancestor;
+            } else {
+              return 'Could not load ' + self.url + ' due to it being empty';
+            }
           }
         });
       } else {

@@ -441,7 +441,11 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
           res += "\n";
 
           if (tile.replacement) {
-            res += indent + "  Replaced by:\n";
+            if (tile.replacement_is_known_complete) {
+              res += indent + "  Replaced by known complete ancestor:\n";
+            } else {
+              res += indent + "  Replaced by nearest ancestor:\n";
+            }
             res += printTree(indent + "    ", depth+1, tile.replacement);
           }
 
@@ -513,11 +517,16 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     handleTileError: function (tile, data) {
       var self = this;
       data.tile = tile;
-      var bounds = self.extendTileBounds(tile.bounds);
+      var bounds;
+      if (data.complete_ancestor) {
+        bounds = new Bounds(data.complete_ancestor);
+      } else {
+        bounds = self.extendTileBounds(tile.bounds);
+      }
 
       if (bounds) {
         var replacement = self.setUpTile(bounds);
-        tile.replace(replacement);
+        tile.replace(replacement, data.complete_ancestor != undefined);
         replacement.content.load();
 
         self.events.triggerEvent("tile-error", data);
