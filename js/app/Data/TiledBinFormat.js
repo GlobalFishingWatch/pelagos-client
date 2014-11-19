@@ -16,7 +16,12 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Bi
 
     getTileContent: function (tile) {
       var self = this;
-      var content = new BinFormat({url:self.getUrl(tile.bounds.toBBOX()) + "/" + tile.bounds.toBBOX()});
+      var base = self.getUrl(
+        tile.bounds.toBBOX(),
+        self.fallbackLevel);
+      var content = new BinFormat({
+        url: base + "/" + tile.bounds.toBBOX()
+      });
       content.setHeaders(self.headers);
       return content;
     },

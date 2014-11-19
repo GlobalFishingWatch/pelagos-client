@@ -17,10 +17,10 @@ define(["app/Class"], function(Class) {
         if (left.constructor == String) {
           left = left.split(",");
         }
-        self.left = left[0];
-        self.bottom = left[1];
-        self.right = left[2];
-        self.top = left[3];
+        self.left = parseFloat(left[0]);
+        self.bottom = parseFloat(left[1]);
+        self.right = parseFloat(left[2]);
+        self.top = parseFloat(left[3]);
       } else {
         self.left = left;
         self.bottom = bottom;

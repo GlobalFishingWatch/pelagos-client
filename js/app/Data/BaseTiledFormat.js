@@ -31,6 +31,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     world: new Bounds(-180, -90, 180, 90),
 
+    retries: 10,
+    retryTimeout: 2000,
+
     setHeaders: function (headers) {
       var self = this;
       self.headers = headers || {};
@@ -95,20 +98,40 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       self.events.triggerEvent("load");
     },
 
-    getUrl: function (key) {
+    getUrlFallbackLevels: function() {
+      var self = this;
+      if (self.header.urls) return self.header.urls.length;
+      return 1;
+    },
+
+    getUrl: function (key, fallbackLevel) {
       var self = this;
 
-      if (self.header.alternatives == undefined) return self.url;
-
-      var alternative;
-      if (key) {
-        alternative = key.hashCode() % self.header.alternatives.length;
-        if (alternative < 0) alternative += self.header.alternatives.length;
+      var urls;
+      if (self.header.urls) {
+        fallbackLevel = fallbackLevel || 0;
+        urls = self.header.urls[fallbackLevel];
+      } else if (self.header.alternatives) {
+        urls = self.header.alternatives;
       } else {
-        self.urlAlternative = (self.urlAlternative + 1) % self.header.alternatives.length;
-        alternative = self.urlAlternative;
+        return self.url;
       }
-      return self.header.alternatives[alternative];
+
+      if (key == "series") urls[urls.length-1];
+
+      var idx;
+      if (key) {
+        idx = key.hashCode();
+      } else {
+        idx = ++self.urlAlternative;
+      }
+
+      var available = urls.length;
+      // Decrement because we want to use the last item for series info exlusively
+      if (available > 1) available--;
+      idx = idx % available;
+      if (idx < 0) idx += available;
+      return urls[idx];
     },
 
     getSelectionInfo: function(selection, cb) {
@@ -210,14 +233,16 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var tilewidth = bounds.getWidth() * 2;
       var tileheight = bounds.getHeight() * 2;
 
-      if (tilewidth > self.world.getWidth() || tileheight > self.world.getHeight()) {
-        return undefined;
-      } 
-
       var tileleft = tilewidth * Math.floor(bounds.left / tilewidth);
       var tilebottom = tileheight * Math.floor(bounds.bottom / tileheight);
 
-      return new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
+      var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
+
+      if (self.world.containsBounds(res)) {
+        return res;
+      } else {
+        return undefined;
+      }
     },
 
     clear: function () {
@@ -316,6 +341,18 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     },
 */
 
+    setUpTileContent: function (tile) {
+      var self = this;
+
+      tile.setContent(self.getTileContent(tile));
+      tile.content.events.on({
+        "batch": self.handleBatch.bind(self, tile),
+        "all": self.handleFullTile.bind(self, tile),
+        "error": self.handleTileError.bind(self, tile),
+        scope: self
+      });
+    },
+
     setUpTile: function (tilebounds, findOverlaps) {
       var self = this;
       var key = tilebounds.toBBOX();
@@ -324,15 +361,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         var tile = new Tile(self, tilebounds);
 
         tile.idx = self.tileIdxCounter++;
-        tile.setContent(self.getTileContent(tile));
         if (findOverlaps !== false) tile.findOverlaps();
 
-        tile.content.events.on({
-          "batch": self.handleBatch.bind(self, tile),
-          "all": self.handleFullTile.bind(self, tile),
-          "error": self.handleTileError.bind(self, tile),
-          scope: self
-        });
+        self.setUpTileContent(tile);
+
         tile.events.on({
           "destroy": self.handleTileRemoval.bind(self, tile),
           scope: self
@@ -433,7 +465,11 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
           res += "\n";
 
           if (tile.replacement) {
-            res += indent + "  Replaced by:\n";
+            if (tile.replacement_is_known_complete) {
+              res += indent + "  Replaced by known complete ancestor:\n";
+            } else {
+              res += indent + "  Replaced by nearest ancestor:\n";
+            }
             res += printTree(indent + "    ", depth+1, tile.replacement);
           }
 
@@ -481,9 +517,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     handleAllDone: function (tile) {
       var self = this;
-      var allDone = Object.values(self.tileCache
-        ).map(function (tile) { return tile.content.allIsLoaded || tile.content.error; }
-        ).reduce(function (a, b) { return a && b; });
+      var allDone = Object.values(
+        self.tileCache
+      ).map(function (tile) {
+        return !tile.retryTimeout && (tile.content.allIsLoaded || tile.content.error);
+      }).reduce(function (a, b) {
+        return a && b;
+      });
 
       if (allDone) {
         var e = {update: "all", tile: tile};
@@ -505,25 +545,46 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     handleTileError: function (tile, data) {
       var self = this;
       data.tile = tile;
-      var bounds = self.extendTileBounds(tile.bounds);
 
-      if (bounds) {
-        var replacement = self.setUpTile(bounds);
-        tile.replace(replacement);
-        replacement.content.load();
-
-        self.events.triggerEvent("tile-error", data);
+      if (data.status == 503 && tile.retry < self.retries - 1) {
+        console.log("retry " + tile.bounds.toBBOX());
+        tile.retryTimeout = setTimeout(function () {
+          tile.retryTimeout = undefined;
+          tile.retry++;
+          self.setUpTileContent(tile);
+          tile.content.load();
+        }, self.retryTimeout);
+      } else if (data.status == 404 && tile.fallbackLevel < self.getUrlFallbackLevels() - 1) {
+        tile.retry = 0;
+        tile.fallbackLevel++;
+        self.setUpTileContent(tile);
+        tile.content.load();
       } else {
-        if (self.error) {
-          /* Do not generate multiple errors just because we tried to
-           * load multiple tiles... */
+        var bounds;
+        if (data.complete_ancestor) {
+          bounds = new Bounds(data.complete_ancestor);
+        } else {
+          bounds = self.extendTileBounds(tile.bounds);
+        }
+
+        if (bounds) {
+          var replacement = self.setUpTile(bounds);
+          tile.replace(replacement, data.complete_ancestor != undefined);
+          replacement.content.load();
+
           self.events.triggerEvent("tile-error", data);
         } else {
-          self.handleError(data);
+          if (self.error) {
+            /* Do not generate multiple errors just because we tried to
+             * load multiple tiles... */
+            self.events.triggerEvent("tile-error", data);
+          } else {
+            self.handleError(data);
+          }
         }
-      }
 
-      self.handleAllDone();
+        self.handleAllDone();
+      }
     },
 
     handleError: function (originalEvent) {

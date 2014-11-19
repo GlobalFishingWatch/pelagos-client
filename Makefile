@@ -72,11 +72,17 @@ $(LIBS)/dojo-release-1.10.0-src:
 	cd $(LIBS); tar -xvzf dojo-release-1.10.0-src.tar.gz
 	cd $(LIBS); rm dojo-release-1.10.0-src.tar.gz
 
-js-build: js-build/build-succeded
+js-build: js-build/deps.js js-build/deps.css js-build/build-succeded
 
 js-build/build-succeded: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release
 	touch $@
+
+js-build/deps.js: $(LIBS)/qunit-1.15.0.js $(LIBS)/async.js $(LIBS)/stacktrace.js $(LIBS)/lodash.js $(LIBS)/jquery-1.10.2.min.js $(LIBS)/jquery.mousewheel.js $(LIBS)/less.min.js $(LIBS)/bootstrap-3.2.0-dist/js/bootstrap.min.js $(LIBS)/CanvasLayer.js $(LIBS)/stats.min.js $(LIBS)/loggly.tracker.js $(LIBS)/jquery-ui.js
+	cat $^ > $@
+
+js-build/deps.css: $(LIBS)/bootstrap-3.2.0-dist/css/bootstrap.min.css $(LIBS)/font-awesome-4.2.0/css/font-awesome.min.css $(LIBS)/qunit-1.15.0.css $(LIBS)/jquery-ui.css $(LIBS)/dojo-release-1.10.0-src/dijit/themes/claro/claro.css $(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/FloatingPane.css $(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/ResizeHandle.css
+	cat $^ > $@
 
 clean-js-build:
 	rm -rf js-build

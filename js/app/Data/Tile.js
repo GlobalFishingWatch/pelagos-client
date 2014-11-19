@@ -6,8 +6,12 @@ define(["app/Class", "app/Events"], function(Class, Events) {
       self.manager = manager;
       self.bounds = bounds;
 
+      self.fallbackLevel = 0;
+      self.retry = 0;
+      self.retryTimeout = undefined;
       self.overlaps = [];
       self.replacement = undefined;
+      self.replacement_is_known_complete = undefined;
       self.usage = 0;
       self.content = undefined; // An instance of Format
 
@@ -73,7 +77,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
       self.removeOverlaps();
     },
 
-    replace: function (replacement) {
+    replace: function (replacement, known_complete) {
       var self = this;
       if (replacement) {
         replacement.reference();
@@ -85,6 +89,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
         self.replacement.dereference();
       }
       self.replacement = replacement;
+      self.replacement_is_known_complete = known_complete;
     },
 
     reference: function () {
