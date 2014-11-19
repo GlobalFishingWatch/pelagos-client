@@ -18,7 +18,7 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Bi
       var self = this;
       var base = self.getUrl(
         tile.bounds.toBBOX(),
-        self.fallbackLevel);
+        tile.fallbackLevel);
       var content = new BinFormat({
         url: base + "/" + tile.bounds.toBBOX()
       });
