@@ -6,6 +6,9 @@ define(["app/Class", "app/Events"], function(Class, Events) {
       self.manager = manager;
       self.bounds = bounds;
 
+      self.fallbackLevel = 0;
+      self.retry = 0;
+      self.retryTimeout = undefined;
       self.overlaps = [];
       self.replacement = undefined;
       self.replacement_is_known_complete = undefined;
