@@ -1,6 +1,6 @@
 define(["app/Class", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation"], function(Class, Animation, PointAnimation) {
-  var LineAnimation = Class(PointAnimation, {
-    name: "LineAnimation",
+  var LineStripAnimation = Class(PointAnimation, {
+    name: "LineStripAnimation",
 
     separateSeries: true,
 
@@ -17,11 +17,11 @@ define(["app/Class", "app/Visualization/Animation/Animation", "app/Visualization
     getDrawMode: function (program) {
       var self = this;
 
-      return program.gl.LINES;
+      return program.gl.LINE_STRIP;
     }
   });
-  Animation.animationClasses.LineAnimation = LineAnimation;
+  Animation.animationClasses.LineStripAnimation = LineStripAnimation;
 
-  return LineAnimation;
+  return LineStripAnimation;
 });
 
