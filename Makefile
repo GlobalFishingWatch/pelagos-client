@@ -4,7 +4,7 @@ DEPENDENCIES=$(LIBS)/async.js $(LIBS)/jquery-1.10.2.min.js $(LIBS)/jquery-1.10.2
 
 .PHONY: all dependencies js-build clean clean-js-build clean-dependencies
 
-all: js-build dependencies
+all: js-build
 
 dependencies: $(DEPENDENCIES)
 
@@ -72,7 +72,10 @@ $(LIBS)/dojo-release-1.10.0-src:
 	cd $(LIBS); tar -xvzf dojo-release-1.10.0-src.tar.gz
 	cd $(LIBS); rm dojo-release-1.10.0-src.tar.gz
 
-js-build: js-build/deps.js js-build/deps.css js-build/build-succeded
+js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/build-succeded
+
+js-build-mkdir:
+	mkdir -p js-build
 
 js-build/build-succeded: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release
