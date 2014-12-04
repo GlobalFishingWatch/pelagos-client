@@ -256,7 +256,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             "source": {
               "type": "BinFormat",
               "args": {
-                "url": baseAnimation.data_view.source.header.alternatives[0] + "-" + series + "/-180,-90,180,90"
+                "url": baseAnimation.data_view.source.header.urls[1][0] + "-" + series + "/-180,-90,180,90"
               }
             }
           },
