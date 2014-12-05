@@ -48,17 +48,9 @@ define(["app/Class"], function(Class) {
       return [this.left, this.bottom, this.right, this.top];
     },
 
-    valueToStr: function (v) {
-        var sign = v < 0 ? "-" : "+";
-        var abs_v = Math.abs(v);
-        var leading_zero = abs_v < 100 ? abs_v < 10 ? "00" : "0" : "";
-        return sign + leading_zero + Math.abs(v).toFixed(5);
-    },
-
     toBBOX: function () {
       var self = this;
-      return self.valueToStr(self.left) + "," + self.valueToStr(self.bottom) + ","
-        + self.valueToStr(self.right) + "," + self.valueToStr(self.top);
+      return self.left + "," + self.bottom + "," + self.right + "," + self.top;
     },
 
     contains: function(x, y, inclusive) {
