@@ -156,8 +156,8 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
 
     var mapper =
       'void mapper() {\n' +
-      '  selectionmapper();\n' +
       '  sourcemapper();\n' +
+      '  selectionmapper();\n' +
       '  attrmapper();\n' +
       '}\n';
 
@@ -208,8 +208,8 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
           res += '(\n' +
             range(0, item.value.max_range_count, function (rangeidx) {
               return "    (\n" + cols.map(function (sortcol) {
-                  return '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower <= ' + sortcol + ' &&\n' +
-                         '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper >= ' + sortcol;
+                  return '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_lower <= scaled_' + sortcol + ' &&\n' +
+                         '      selectionmap_' + item.key + '_from_' + sortcol + '_' + rangeidx + '_upper >= scaled_' + sortcol;
               }).join(' &&\n') + ")"
             }).join(' ||\n') + ') ? 1.0 : 0.0;';
         }
