@@ -117,8 +117,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         return self.url;
       }
 
-      if (key == "series") urls[urls.length-1];
-
       var idx;
       if (key) {
         idx = key.hashCode();
@@ -127,8 +125,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       }
 
       var available = urls.length;
-      // Decrement because we want to use the last item for series info exlusively
-      if (available > 1) available--;
       idx = idx % available;
       if (idx < 0) idx += available;
       return urls[idx];
@@ -142,7 +138,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         data[key] = selection.data[key][0];
       }
 
-      var url = self.getUrl("series") + "/series";
+      var url = self.url + "/series";
+
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
       request.withCredentials = true;

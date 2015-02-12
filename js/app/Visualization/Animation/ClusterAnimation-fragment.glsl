@@ -12,7 +12,7 @@ float fudge(float v) {
 void main() {
   gl_FragColor = baseColor;
 
-  if (vWeight > 0.0) {
+  if (vWeight >= 0.0) {
     float dist = length(gl_PointCoord.xy - vec2(.5,.5));
     dist = 1. - ((dist - 0.1) * 2.5);
     dist = min(1.0,max(0., dist));
