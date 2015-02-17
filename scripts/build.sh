@@ -30,9 +30,9 @@ mkdir easyXDM
   rm easyXDM-2.4.19.3.zip
 )
 
-wget https://fortawesome.github.io/Font-Awesome/assets/font-awesome-4.2.0.zip
-unzip -o font-awesome-4.2.0.zip
-rm font-awesome-4.2.0.zip
+wget https://fortawesome.github.io/Font-Awesome/assets/font-awesome-4.3.0.zip
+unzip -o font-awesome-4.3.0.zip
+rm font-awesome-4.3.0.zip
 
 wget https://raw.github.com/less/less.js/master/dist/less-1.7.4.min.js
 wget https://raw.github.com/lodash/lodash/2.4.1/dist/lodash.js
