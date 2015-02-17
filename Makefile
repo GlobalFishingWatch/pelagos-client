@@ -40,7 +40,7 @@ $(LIBS)/async.js:
 
 $(LIBS)/jquery-1.10.2.min.js:
 	curl -f -L http://code.jquery.com/jquery-1.10.2.min.js -o $@
-	curl -f -L http://code.jquery.com/jquery-1.10.2.min.map -o $@
+	curl -f -L http://code.jquery.com/jquery-1.10.2.min.map -o $(LIBS)/jquery-1.10.2.min.map
 
 $(LIBS)/jquery.mousewheel.js:
 	curl -f -L https://raw.githubusercontent.com/brandonaaron/jquery-mousewheel/master/jquery.mousewheel.js -o $@
