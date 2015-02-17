@@ -82,7 +82,7 @@ $(LIBS)/bootstrap-3.2.0-dist/js/bootstrap.min.js $(LIBS)/bootstrap-3.2.0-dist/cs
 	cd $(LIBS); rm bootstrap-3.2.0-dist.zip
 
 $(LIBS)/easyXDM/easyXDM.min.js:
-	mkdir $(LIBS)/easyXDM
+	mkdir -p $(LIBS)/easyXDM
 	cd $(LIBS)/easyXDM; curl -f -L -O https://github.com/oyvindkinsey/easyXDM/releases/download/2.4.19/easyXDM-2.4.19.3.zip
 	cd $(LIBS)/easyXDM; unzip -o easyXDM-2.4.19.3.zip
 	cd $(LIBS)/easyXDM; rm easyXDM-2.4.19.3.zip
