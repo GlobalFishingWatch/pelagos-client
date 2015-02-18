@@ -105,6 +105,9 @@ js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-buil
 js-build-mkdir:
 	mkdir -p js-build
 
+$(LIBS)/dojo-release-1.10.0-src/dijit/themes/claro/claro.css \
+$(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/FloatingPane.css \
+$(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/ResizeHandle.css \
 js-build/build-succeded: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release
 	touch $@
