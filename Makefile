@@ -19,9 +19,9 @@ CSSDEPS= \
   $(LIBS)/font-awesome-4.3.0/css/font-awesome.min.css \
   $(LIBS)/qunit-1.15.0.css \
   $(LIBS)/jquery-ui.css \
-  $(LIBS)/dojo-release-1.10.0-src/dijit/themes/claro/claro.css \
-  $(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/FloatingPane.css \
-  $(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/ResizeHandle.css
+  js-build/dijit/themes/claro/claro.css \
+  js-build/dojox/layout/resources/FloatingPane.css \
+  js-build/dojox/layout/resources/ResizeHandle.css \
 
 DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/require.js \
@@ -92,9 +92,6 @@ $(LIBS)/font-awesome-4.3.0/css/font-awesome.min.css:
 	cd $(LIBS); unzip -o font-awesome-4.3.0.zip
 	cd $(LIBS); rm font-awesome-4.3.0.zip
 
-$(LIBS)/dojo-release-1.10.0-src/dijit/themes/claro/claro.css \
-$(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/FloatingPane.css \
-$(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/ResizeHandle.css \
 $(LIBS)/dojo-release-1.10.0-src/util/buildscripts/build.sh:
 	cd $(LIBS); curl -f -L -O http://download.dojotoolkit.org/release-1.10.0/dojo-release-1.10.0-src.tar.gz
 	cd $(LIBS); tar -xvzf dojo-release-1.10.0-src.tar.gz
@@ -105,9 +102,9 @@ js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-buil
 js-build-mkdir:
 	mkdir -p js-build
 
-$(LIBS)/dojo-release-1.10.0-src/dijit/themes/claro/claro.css \
-$(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/FloatingPane.css \
-$(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/ResizeHandle.css \
+js-build/dijit/themes/claro/claro.css \
+js-build/dojox/layout/resources/FloatingPane.css \
+js-build/dojox/layout/resources/ResizeHandle.css \
 js-build/build-succeded: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release
 	touch $@
@@ -116,7 +113,7 @@ js-build/deps.js: $(JSDEPS)
 	cat $^ > $@
 
 js-build/deps.css: $(CSSDEPS)
-	cat $^ > $@
+	cat $^ | sed -e "s+../fonts/fontawesome+../js/libs/font-awesome-4.3.0/fonts/fontawesome+g" > $@
 
 clean-js-build:
 	rm -rf js-build
