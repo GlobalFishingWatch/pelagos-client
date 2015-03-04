@@ -71,7 +71,7 @@ define([
     update: function (color, event) {
       var self = this;
 
-      if (!event || event.vesselname) {
+      if (!event || event.vesselname || event.mmsi || event.imo || event.callsign) {
         self.node.find("#vessel_identifiers").html(
           '      <h2>Vessel Information</h2>' +
           '      <table class="vessel_id">' +
@@ -159,6 +159,12 @@ define([
           }
 
           self.node.find(".vessel_id .vesselname").html(event.vesselname || "---");
+
+          if (event.link) {
+            var link = $("<a target='_new'>");
+            link.attr({href: event.link});
+            self.node.find("h2").wrapInner(link);
+          }
         }
       } else {
         self.node.find("#vessel_identifiers").html(
