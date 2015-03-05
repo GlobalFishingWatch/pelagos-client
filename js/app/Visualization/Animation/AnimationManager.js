@@ -162,81 +162,14 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       for (var key in self.animations) {
         var animation = self.animations[key];
+        if (animation.data_view) {
+          animation.data_view.selections[type].rawInfo = KeyModifiers.active.Shift;
+        }
         if (animation.select(x, y, type, true)) {
           return animation;
         }
       }
       return false;
-    },
-
-    handleMouseSelection: function (e, type, raw, cb) {
-      var self = this;
-
-      var animation = self.handleMouse(e, type);
-      var dataView = animation.data_view;
-      if (!dataView) {
-        cb(null, null);
-      } else {
-        if (raw) {
-          var data = dataView.selections[type].data;
-          data.layerInstance = animation;
-          data.layer = animation.title;
-          data.toString = function () {
-            var content = ["<table class='table table-striped table-bordered'>"];
-            Object.keys(data).sort().map(function (key) {
-              if (key == 'toString' || key == 'layer' || key == 'layerInstance') return;
-              var value = data[key][0];
-              if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
-                value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
-              }
-              content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
-            });
-            content.push("</table>");
-            return content.join('\n');
-          };
-          cb(null, data);
-        } else {
-          dataView.getSelectionInfo(type, function (err, data) {
-            var content;
-
-            if (err) {
-              err.layerInstance = animation;
-              err.layer = animation.title;
-              cb(err, null);
-            } else {
-              data.layerInstance = animation;
-              data.layer = animation.title;
-              data.toString = function () {
-                var content = ["<table class='table table-striped table-bordered'>"];
-                if (data.name) {
-                  var name = data.name;
-                  if (data.link) {
-                    name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                  }
-                  content.push("<tr><th colspan='2'>" + name + "</th><tr>");
-                }
-
-                Object.keys(data).sort().map(function (key) {
-                  if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
-                  if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                    content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                  } else {
-                    content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
-                  }
-                });
-
-                content.push("</table>");
-
-                return content.join('\n');
-              };
-              cb(null, data);
-            }
-          });
-
-        }
-      }
-      if (e.preventDefault) e.preventDefault();
-      if (e.stopPropagation) e.stopPropagation();
     },
 
     showSeriesAnimation: function (baseAnimation, series) {
@@ -281,30 +214,17 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       });
 
       google.maps.event.addListener(self.map, "click", function(e) {
-        self.handleMouseSelection(e, 'selected', KeyModifiers.active.Shift, function (err, data) {
-          if (err) {
-            self.events.triggerEvent('info-error', err);
-          } else if (data) {
-            self.events.triggerEvent('info', data);
-            if (data.seriesTileset) {
-              self.showSeriesAnimation(data.layerInstance, data.series);
-            }
-          }
-        });
+        self.handleMouse(e, 'selected');
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
       });
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;
         
-        self.handleMouseSelection(e, 'info', KeyModifiers.active.Shift, function (err, data) {
-          if (err) data = err;
-          if (!data) return;
-          self.infoPopup.setOptions({
-            content: data.toString(),
-            position: e.latLng
-          });
-          self.infoPopup.open(self.map);
-        });
+        self.handleMouse(e, 'info');
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
       });
       cb();
     },
@@ -332,11 +252,108 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             animationInstance.addingToManager = false;
             self.animations.push(animationInstance);
             self.triggerUpdate();
+            if (animationInstance.data_view) {
+              animationInstance.data_view.events.on({
+                "selection-add": self.handleSelectionUpdate.bind(
+                  self, animationInstance),
+              });
+            }
             self.events.triggerEvent("add", {animation: animationInstance});
           }
           cb(null, animationInstance);
         });
       });
+    },
+
+    handleInfo: function (animation, selectionEvent, err, data) {
+      var self = this;
+      var dataView = animation.data_view;
+      var type = selectionEvent.category;
+      if (type == 'hover') {
+      } else if (type == 'info') {
+        if (err) data = err;
+        if (!data) return;
+
+        self.infoPopup.setOptions({
+          content: data.toString(),
+          position: {lat: dataView.selections[selectionEvent.category].data.latitude[0],
+                     lng: dataView.selections[selectionEvent.category].data.longitude[0]}
+        });
+        self.infoPopup.open(self.map);
+      } else {
+        if (err) {
+          self.events.triggerEvent('info-error', err);
+        } else if (data) {
+          self.events.triggerEvent('info', data);
+          if (data.seriesTileset) {
+            self.showSeriesAnimation(data.layerInstance, data.series);
+          }
+        }
+      }
+    },
+
+    handleSelectionUpdate: function (animation, selectionEvent, type) {
+      var self = this;
+      var dataView = animation.data_view;
+      var type = selectionEvent.category;
+
+      if (dataView.selections[type].rawInfo) {
+        var data = dataView.selections[type].data;
+        data.layerInstance = animation;
+        data.layer = animation.title;
+        data.toString = function () {
+          var content = ["<table class='table table-striped table-bordered'>"];
+          Object.keys(data).sort().map(function (key) {
+            if (key == 'toString' || key == 'layer' || key == 'layerInstance') return;
+            var value = data[key][0];
+            if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
+              value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
+            }
+            content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
+          });
+          content.push("</table>");
+          return content.join('\n');
+        };
+        self.handleInfo(animation, selectionEvent, null, data);
+      } else {
+        dataView.getSelectionInfo(type, function (err, data) {
+          var content;
+
+          if (err) {
+            err.layerInstance = animation;
+            err.layer = animation.title;
+            self.handleInfo(animation, selectionEvent, err, null);
+          } else {
+            data.layerInstance = animation;
+            data.layer = animation.title;
+            data.toString = function () {
+              var content = ["<table class='table table-striped table-bordered'>"];
+              if (data.name) {
+                var name = data.name;
+                if (data.link) {
+                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
+                }
+                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+              }
+
+              Object.keys(data).sort().map(function (key) {
+                if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
+                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
+                } else {
+                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+                }
+              });
+
+              content.push("</table>");
+
+              return content.join('\n');
+            };
+            self.handleInfo(animation, selectionEvent, null, data);
+          }
+        });
+
+      }
     },
 
     addAnimation: function (animation, cb) {
