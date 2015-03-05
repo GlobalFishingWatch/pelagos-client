@@ -269,8 +269,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var self = this;
       var dataView = animation.data_view;
       var type = selectionEvent.category;
-      if (type == 'hover') {
-      } else if (type == 'info') {
+      if (type == 'info') {
         if (err) data = err;
         if (!data) return;
 
@@ -296,6 +295,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var self = this;
       var dataView = animation.data_view;
       var type = selectionEvent.category;
+
+      if (type == 'hover') return;
 
       if (dataView.selections[type].rawInfo) {
         var data = dataView.selections[type].data;
