@@ -145,6 +145,21 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       }
     },
 
+    search: function(query, cb) {
+      var self = this;
+
+      searchers = [];
+      for (var key in self.animations) {
+        var animation = self.animations[key];
+        if (animation.search) {
+          searchers.push(animation.search.bind(animation));
+        }
+      }
+
+      async.concat(searchers, function (searcher, cb) {
+        searcher(query, cb);
+      }, cb);
+    },
 
     handleMouse: function (e, type) {
       var self = this;

@@ -311,6 +311,27 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       return rowidx;
     },
 
+    search: function (query, cb) {
+      var self = this;
+      if (self.data_view && self.data_view.source.search) {
+        self.data_view.source.search(query, function (err, res) {
+          if (err) {
+            cb(err, res)
+          } else {
+            cb(
+              err,
+              res.map(function (item) {
+                item.animation = self;
+                return item;
+              })
+            );
+          }
+        });
+      } else {
+        cb(null, []);
+      }
+    },
+
     toString: function () {
       var self = this;
       return self.name + ": " + self.data_view;

@@ -159,6 +159,32 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       request.send(JSON.stringify(data));
     },
 
+    search: function(query, cb) {
+      var self = this;
+
+      var data = {query: query};
+      var url = self.url + "/search";
+
+      var request = new XMLHttpRequest();
+      request.open('POST', url, true);
+      request.withCredentials = true;
+      Ajax.setHeaders(request, self.headers);
+
+      request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+          if (Ajax.isSuccess(request, url)) {
+            var data = JSON.parse(request.responseText);
+            cb(null, data);
+          } else {
+            var e = Ajax.makeError(request, url, "search results from ");
+            e.source = self;
+            cb(e, null);
+          }
+        }
+      };
+      request.send(JSON.stringify(data));
+    },
+
     tileParamsForRegion: function(bounds) {
       var self = this;
       var origBounds = bounds;
