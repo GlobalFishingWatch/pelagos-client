@@ -120,6 +120,7 @@ define([
       if (!event || event.vesselname || event.mmsi || event.imo || event.callsign) {
         self.node.find("#vessel_identifiers").html(
           '      <h2>Vessel Information</h2>' +
+          '      <span class="download"></span>' +
           '      <table class="vessel_id">' +
           '        <tbody>' +
           '          <tr>' +
@@ -211,6 +212,13 @@ define([
             link.attr({href: event.link});
             self.node.find("h2").wrapInner(link);
           }
+
+          var link = $('<a target="_new">Download as KML</a>');
+          link.attr({
+            href: event.layerInstance.data_view.source.url + "/export/" + event.series.toString()
+          });
+          self.node.find(".download").append(link);
+
         }
       } else {
         self.node.find("#vessel_identifiers").html(
