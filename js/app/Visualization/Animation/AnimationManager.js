@@ -187,15 +187,17 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       return false;
     },
 
-    showSeriesAnimation: function (baseAnimation, series) {
+    showSelectionAnimation: function (baseAnimation, selection) {
       var self = this;
 
-      if (baseAnimation.seriesAnimation != undefined) {
-        self.removeAnimation(baseAnimation.seriesAnimation);
-        baseAnimation.seriesAnimation = undefined;
+      if (baseAnimation.selectionAnimation != undefined) {
+        self.removeAnimation(baseAnimation.selectionAnimation);
+        baseAnimation.selectionAnimation = undefined;
       }
 
-      if (series != undefined) {
+      if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
+        var selectionValue = selection.data.series[0];
+        if (selection.data.seriesgroup != undefined) selectionValue = selection.data.seriesgroup[0];
         self.addAnimation({
           "args": {
             "title": "Vessel Track",
@@ -204,17 +206,17 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             "source": {
               "type": "BinFormat",
               "args": {
-                "url": baseAnimation.data_view.source.header.urls[1][0] + "-" + series + "/-180,-90,180,90"
+                "url": baseAnimation.data_view.source.header.urls[1][0] + "-" + selectionValue + "/-180,-90,180,90"
               }
             }
           },
           "type": "VesselTrackAnimation"
         }, function (err, animation) {
-          if (baseAnimation.seriesAnimation != undefined) {
-            self.removeAnimation(baseAnimation.seriesAnimation);
-            baseAnimation.seriesAnimation = undefined;
+          if (baseAnimation.selectionAnimation != undefined) {
+            self.removeAnimation(baseAnimation.selectionAnimation);
+            baseAnimation.selectionAnimation = undefined;
           }
-          baseAnimation.seriesAnimation = animation;
+          baseAnimation.selectionAnimation = animation;
         });
       }
     },
@@ -300,7 +302,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         } else if (data) {
           self.events.triggerEvent('info', data);
           if (data.seriesTileset) {
-            self.showSeriesAnimation(data.layerInstance, data.series);
+            self.showSelectionAnimation(data.layerInstance, dataView.selections[selectionEvent.category]);
           }
         }
       }
