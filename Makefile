@@ -9,6 +9,7 @@ JSDEPS= \
   $(LIBS)/jquery.mousewheel.js \
   $(LIBS)/less.min.js \
   $(LIBS)/bootstrap-3.2.0-dist/js/bootstrap.min.js \
+  $(LIBS)/CanvasLayer.js \
   $(LIBS)/stats.min.js \
   $(LIBS)/loggly.tracker.js \
   $(LIBS)/jquery-ui.js
@@ -74,6 +75,7 @@ $(LIBS)/jquery-ui.css:
 $(LIBS)/jquery-ui.js:
 	curl -f -L http://code.jquery.com/ui/1.10.0/jquery-ui.js -o $@
 
+$(LIBS)/CanvasLayer.js:
 
 $(LIBS)/bootstrap-3.2.0-dist/js/bootstrap.min.js $(LIBS)/bootstrap-3.2.0-dist/css/bootstrap.min.css:
 	cd $(LIBS); curl -f -L -O https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip
