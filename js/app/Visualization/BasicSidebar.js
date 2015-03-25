@@ -217,7 +217,9 @@ define([
           link.attr({
             href: event.layerInstance.data_view.source.url + "/export/" + event.series.toString()
           });
-          self.node.find(".download").append(link);
+          /* TODO: add this back in once the tile server fully supports it
+            self.node.find(".download").append(link);
+          */
 
         }
       } else {
