@@ -15,3 +15,5 @@ Vagrantfile
 release
 js-build
 js/libs
+
+.idea
