@@ -197,7 +197,7 @@ define([
             var cls = getClass(event.vesselclass);
             if (cls) {
               self.node.find(".vessel_id .vesselclass").html(cls.name);
-              self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + cls.icon + '"><br>');
+              /* self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + cls.icon + '"><br>');*/
             } else {
               self.node.find(".vessel_id .vesselclass").html(event.vesselclass);
             }
