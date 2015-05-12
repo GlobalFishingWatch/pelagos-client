@@ -9,7 +9,6 @@ JSDEPS= \
   $(LIBS)/jquery.mousewheel.js \
   $(LIBS)/less.min.js \
   $(LIBS)/bootstrap-3.2.0-dist/js/bootstrap.min.js \
-  $(LIBS)/CanvasLayer.js \
   $(LIBS)/stats.min.js \
   $(LIBS)/loggly.tracker.js \
   $(LIBS)/jquery-ui.js
