@@ -187,6 +187,18 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       return false;
     },
 
+    hideSelectionAnimations: function () {
+      var self = this;
+
+      for (var key in self.animations) {
+        var animation = self.animations[key];
+        if (animation.selectionAnimation != undefined) {
+          self.removeAnimation(animation.selectionAnimation);
+          animation.selectionAnimation = undefined;
+        }
+      }
+    },
+
     showSelectionAnimation: function (baseAnimation, selection) {
       var self = this;
 
@@ -299,10 +311,12 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       } else {
         if (err) {
           self.events.triggerEvent('info-error', err);
-        } else if (data) {
+        } else {
           self.events.triggerEvent('info', data);
-          if (data.seriesTileset) {
+          if (data && data.seriesTileset) {
             self.showSelectionAnimation(data.layerInstance, dataView.selections[selectionEvent.category]);
+          } else {
+            self.hideSelectionAnimations();
           }
         }
       }
@@ -315,7 +329,11 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       if (type == 'hover') return;
 
-      if (dataView.selections[type].rawInfo) {
+      if (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined) {
+        var data = {};
+        data.toString = function () { return ""; };
+        self.handleInfo(animation, selectionEvent, null, undefined);
+      } else if (dataView.selections[type].rawInfo) {
         var data = dataView.selections[type].data;
         data.layerInstance = animation;
         data.layer = animation.title;
