@@ -298,20 +298,27 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var self = this;
       var dataView = animation.data_view;
       var type = selectionEvent.category;
+      var info = {};
+      var selectionData = dataView.selections[selectionEvent.category].data;
+      for (var key in selectionData) {
+        info[key] = selectionData[key][0];
+      }
+
       if (type == 'info') {
         if (err) data = err;
         if (!data) return;
 
         self.infoPopup.setOptions({
           content: data.toString(),
-          position: {lat: dataView.selections[selectionEvent.category].data.latitude[0],
-                     lng: dataView.selections[selectionEvent.category].data.longitude[0]}
+          position: {lat: info.latitude,
+                     lng: info.longitude}
         });
         self.infoPopup.open(self.map);
       } else {
         if (err) {
           self.events.triggerEvent('info-error', err);
         } else {
+          data.selection = info;
           self.events.triggerEvent('info', data);
           if (data && data.seriesTileset) {
             self.showSelectionAnimation(data.layerInstance, dataView.selections[selectionEvent.category]);

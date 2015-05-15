@@ -214,8 +214,12 @@ define([
           }
 
           var link = $('<a target="_new">Download as KML</a>');
+
+          var key = event.selection.series;
+          if (event.selection.seriesgroup != undefined) key = event.selection.seriesgroup;
+
           link.attr({
-            href: event.layerInstance.data_view.source.url + "/export/" + event.series.toString()
+            href: event.layerInstance.data_view.source.url + "/export/" + key.toString()
           });
           self.node.find(".download").append(link);
 
