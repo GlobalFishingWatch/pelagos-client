@@ -7,7 +7,6 @@ The tileset schema consists of a stack of schemas:
 * The tileset header
   * The animation column mapper configuration
 * The workspace specification
-* Generic columns schema
 * The animation specific schemas
   * Configuration options for workspace file
   * Column schemas
@@ -214,21 +213,28 @@ sortcols contains one or more data source column names. The selection can repres
 
 data and header contains values representing a current selection. It is recommended to generate these values by loading the workspace, changing the selections and then saving the workspace.
 
-# Generic column schema
-* timestamp
+# Generic column specification
+
+* series - track id for track drawing animations
+* timestamp - timestamp for the "timerange" selection
 
 # ClusterAnimation
-* latitude
-* longitude
-* sigma
-* weight
-* filter
-* red
-* green
-* blue
-* selected_red
-* selected_green
-* selected_blue
-* hover_red
-* hover_green
-* hover_blu
+
+* filter - 0 or below to draw point, above 0 hides point
+* latitude - coordinate for point in wgs84
+* longitude - coordinate for point in wgs84
+* sigma - standard deviation of points inside a cluster represented by a single point in meters.
+* weight - luminosity of point, between 0 and 1
+* red - between 0 and 1, color for top luminosity
+* green - between 0 and 1, color for top luminosity
+* blue - between 0 and 1, color for top luminosity
+* selected_red - between 0 and 1, color for top luminosity for selected points
+* selected_green - between 0 and 1, color for top luminosity for selected points
+* selected_blue - between 0 and 1, color for top luminosity for selected points
+* hover_red - between 0 and 1, color for top luminosity for points hovered over
+* hover_green - between 0 and 1, color for top luminosity for points hovered over
+* hover_blu - between 0 and 1, color for top luminosity for points hovered over
+
+## Standard configuration
+
+If points are to be grouped in larger units than single tracks e.g. all tracks for the same vessel, it is recommended to add a column caled seriesgroup with a unique value for each such vessel.
