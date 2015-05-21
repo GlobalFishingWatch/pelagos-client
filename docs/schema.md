@@ -7,6 +7,7 @@ The tileset schema consists of a stack of schemas:
 * The tileset header
   * The animation column mapper configuration
 * The workspace specification
+* Generic columns schema
 * The animation specific schemas
   * Configuration options for workspace file
   * Column schemas
@@ -109,25 +110,125 @@ A workspace is a JSON file loadable from a URL. If the URL contains a query ?id=
           ]
         },
 
-        /* Overlay animation confirguration. For more information see the documentation for each animation type. */
-        "animations": [
-          {
-            "title": "My animation"
-            "type": "MapsEngineAnimation"
-            "args": {
-              "color": "green", 
-              "source": {
-                "args": {
-                  "url": "06136759344167181854-01329948687802613844"
-                }, 
-                "type": "BinFormat"
-              }, 
-              "visible": true, 
-              "hideremovebtn": true, 
-            }, 
-          }
-        ]
+        /* Overlay animation confirguration. See below. */
+        "animations": []
       }
     }
 
-# The column schemas
+## Animaton configuration
+
+Each animation definition contains a title, a type and a set of arguments. The arguments contain at least a source definition, with a source type and loader arguments.
+
+    {
+      "title": "My animation"
+      "type": "MyAnimationClass"
+      "visible": true, /* Visibility checkbox status */
+      "args": {
+        /* Source configuration, see below */
+        "source": {}
+        }
+
+        /* Not all animation classes supports these. See below for specification. */
+        "uniforms": {},
+        "columns": {},
+        "selections": {}
+      }
+    }
+
+### Animation source configuration
+
+The animation data source can be either a tileset:
+
+    {
+      "type": "TiledBinFormat",
+      "args": {
+        "url": "http://myproject.appspot.com/tile/mytileset"
+      }
+    }
+
+or a single tile file:
+
+    {
+      "type": "BinFormat"
+      "args": {
+        "url": "http://myproject.appspot.com/file.bin"
+      }
+    }
+
+### Uniforms
+Uniforms are simple slider values input to the animation. They are defined as a mapping from names to min-max-current specifications. Each animation defines what uniforms it needs and possible value ranges.
+
+    "uniforms": {
+      "blue": {
+        "value": 0.4, 
+        "max": 1, 
+        "min": 0
+      }
+    }
+
+### Columns
+Column specifications map data source columns and selections to animation columns. Each column consist of a name, a type, a min value and a max value that each needs to correspond to the requirements of the animation class, and a source polynomial.
+
+The source polynomial is represented as a mapping from source column names and selection names to values. The values represent the constant factors in front of each source variable in the polynomial. The special source name "_" represents the constant term in the polynomial. For example the polynomial weight = 0.4*speed + 0.4*size+0.2*1 is represented as
+
+    "columns": {
+      "weight": {
+        "type": "Float32", 
+        "source": {
+          "speed": 0.4,
+          "size": 0.4,
+          "_": 0.2
+        }, 
+        "max": 1, 
+        "min": 0
+      }
+    }
+
+There is also a special "magic" constant value null, that represents the number of variable polynomial terms. This is intended to easily represent logical and. For example the logical expression not (timerange and active_category) can be represented using the polynomial filter = -1*timerange + -1*active_category + 2 (with 0 = False and 1 = True):
+
+    "columns": {
+      "filter": {
+        "type": "Float32"
+        "source": {
+          "timerange": -1, 
+          "active_category": -1, 
+          "_": null
+        }
+      }, 
+    }
+
+### Selections
+Selections represent ways the user can select subsets of points to highlight them or query information about them. The set of available  selections is hard-coded to info,hover,selected,timerange and active_category. These represent points queried for information by a right-click, points hovered over with the mouse, points selected  by a left click, points currently in view based on the timeslider and points selected by a point category filter respectively.
+
+Selection are defined as:
+
+    "selections": {
+      "selected": {
+        "header": {"length": 0}, 
+        "data": {"seriesgroup": []}, 
+        "sortcols": ["seriesgroup"]
+      }
+    }
+
+sortcols contains one or more data source column names. The selection can represent a range of input data whose values lie between two extremes for each sortcol. Even a range where the upper and lower bound are the same can contain multiple points, if not all data source columns are listed in sortcols.
+
+data and header contains values representing a current selection. It is recommended to generate these values by loading the workspace, changing the selections and then saving the workspace.
+
+# Generic column schema
+* timestamp
+
+# ClusterAnimation
+* latitude
+* longitude
+* sigma
+* weight
+* filter
+* red
+* green
+* blue
+* selected_red
+* selected_green
+* selected_blue
+* hover_red
+* hover_green
+* hover_blu
