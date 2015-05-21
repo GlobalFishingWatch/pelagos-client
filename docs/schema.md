@@ -1,18 +1,18 @@
 # Tileset schema
 
-The tileset schema consists of a stack of schemas:
+The workspace is the highest configuration item for the system. It represents the whole state of what the user is currently viewing. The workspace defines a set of animations. Each animation has a data source and some configuratation. A data source for an animation can either be a single tile file given by its URL or a tileset directory following the tileset URL structure, given as a base URL.
+
+This schema document describes the schemas for each part in this stack:
 
 * Tile binary file format (documented [here](https://github.com/SkyTruth/data-visualization-tools/blob/master/js/app/Data/TypedMatrixParser.js))
 * The tileset URL structure
 * The tileset header
-  * The animation column mapper configuration
 * The workspace specification
+  * Animation configuration
 * The animation specific schemas
   * Configuration options for workspace file
   * Column schemas
 
-
-A data source for an animation can either be a single tile file (given by its URL), or a tileset with header following the tileset URL structure, given as a base URL.
 
 # The tileset URL structure
 ## Header
@@ -115,6 +115,8 @@ A workspace is a JSON file loadable from a URL. If the URL contains a query ?id=
     }
 
 ## Animaton configuration
+
+Animations represents layers of data overlaid on the basemap. Each animation visualizes some source data. There is no hard-coded schema for source data. Instead, the animation configuration dynamically maps source data to the values needed by the visualization. The user may also dynamically change this mapping using sliders or buttons in the editing UI or a custom UI.
 
 Each animation definition contains a title, a type and a set of arguments. The arguments contain at least a source definition, with a source type and loader arguments.
 
