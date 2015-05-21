@@ -4,12 +4,11 @@ Run the following from teh top-level directory:
 
     make
 
-# Apps
-Apps are available in the apps directory. To invoke an app, access an url like this:
+# Accessing the app
 
-    http://localhost/apps/vectorvisual/index.html#workspace=/path/to/workspace
+    http://localhost/index.html?workspace=/path/to/workspace
 
-where /path/to/workspace is an URL to a JSON file containing a workspace definition.
+where /path/to/workspace is an URL to a JSON file containing a workspace definition. For more information about this check out [the workspace schema](https://github.com/SkyTruth/data-visualization-tools/blob/master/docs/schema.md)
 
 # Libraries
 
