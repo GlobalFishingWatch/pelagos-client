@@ -15,15 +15,31 @@ The tileset schema consists of a stack of schemas:
 A data source for an animation can either be a single tile file (given by its URL), or a tileset with header following the tileset URL structure, given as a base URL.
 
 # The tileset URL structure
+## Header
 A tileset always has a header file under the base url:
 
     http://myproject.appspot.com/tile/mytileset/header
 
-This file can the specify a set of new base url:s to use for tile fetches as well as track queries.
+## Fallback URLS
+The header file can the specify a set of new base url:s to use for tile fetches as well as track queries.
 
 The base urls are specified as a list of fallback levels. For each level there can be multiple urls, used in a round-robin fashion. The client starts by trying to load a tile using the lowest fallback level. If a request returns a 404 error, the next higher fallback level is attempted, until all are exhausted.
 
 This allows you to deploy a pre-generated set of tiles for low zoom levels to a static serving host, while dynamically filling in that set for the higher zoom levels.
+
+## Tiles
+Tiles are loaded from under any of the provided fallback urls by adding the tile bounding box:
+
+    http://myproject.appspot.com/tile/mytileset/135,-11.25,157.5,0
+
+For information on the exact details of how bounds are calculated, look at [tileParamsForRegion()](https://github.com/SkyTruth/data-visualization-tools/blob/master/js/app/Data/BaseTiledFormat.js#L188).
+
+## Series lookup
+Whenever a user does a selection, a POST is made to
+
+    http://myproject.appspot.com/tile/mytileset/series
+
+with selection information. It should return a JSON structure that will be rendered as an information table for the user.
 
 # The tileset header
 The tileset header specifies how to load tiles, and what columns to expect.
