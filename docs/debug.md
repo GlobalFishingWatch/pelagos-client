@@ -1,4 +1,5 @@
-= Logging =
+# Logging
+
 Add this to workspace to activate logging
 
     "state": {
@@ -18,7 +19,7 @@ Zoomto event:
 
     Logging.default.setRules({"screen": {"rules": ["Data.BaseTiledFormat.zoomTo"]}});
 
-== Rule semantics ==
+## Rule semantics
 
 A ruleset is a mapping from a logging destination to a configuration.
 The configuration contains a rule list. Each item in the list is a
@@ -27,7 +28,7 @@ by '-'. More specific rules (longer paths) override more generic rules
 (shorter paths).
 
 
-= Tiles =
+# Tiles
 To debug tile loading:
 
     visualization.data.sources["TiledBinFormat|http://localhost:8000/tiles/tiledata3"].source.printTree()
