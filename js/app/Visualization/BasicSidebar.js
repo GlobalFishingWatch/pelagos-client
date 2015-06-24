@@ -91,7 +91,7 @@ define([
                       row.find(".callsign").html(info.callsign);
                       row.find('a').attr({href: "javascript: void(0);"});
                       row.find('a').click(function () {
-                        info.animation.data_view.selections.selected.addDataRange({series:info.series}, {series:info.series}, true);
+                        info.animation.data_view.selections.selected.addDataRange(info, info, true);
                         dialog.modal('hide');
                       });
 

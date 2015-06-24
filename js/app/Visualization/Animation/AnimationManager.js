@@ -336,7 +336,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       if (type == 'hover') return;
 
-      if (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined) {
+      if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
+          && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
         var data = {};
         data.toString = function () { return ""; };
         self.handleInfo(animation, selectionEvent, null, undefined);
