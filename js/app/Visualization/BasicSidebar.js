@@ -15,16 +15,13 @@ define([
 
       self.idCounter = 0;
 
-      self.node = $('' +
+      $('body').append('<img class="logo" src="' + app.dirs.img + '/gfw/logo-white.png">');
+      self.node = $('' +        
         '<div id="w" class="expanded">' +
         '  <div id="expand-button"><img src="' + app.dirs.img + '/gfw/gfw_open.png"></div>' +
         '  <div class="border">' +
         '    <div id="content">' +
         '      <div id="collapse-button"><img src="' + app.dirs.img + '/gfw/gfw_close.png"></div>' +
-        '  ' +
-        '      <div id="gfw_title"><img src="' + app.dirs.img + '/gfw/gfw_logo.png">Global Fishing Watch</div>' +
-        '' +
-        '      <div id="divide"></div>' +
         '' +
         '      <div id="layers">' +
         '        <h2>Layers</h2>' +
