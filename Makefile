@@ -34,6 +34,12 @@ all: js-build
 
 dependencies: $(DEPENDENCIES)
 
+$(DEPENDENCIES): $(LIBS)/.empty
+
+$(LIBS)/.empty:
+	mkdir -p $(LIBS)
+	touch $(LIBS)/.empty
+
 $(LIBS)/async.js:
 	curl -f -L https://raw.githubusercontent.com/caolan/async/master/lib/async.js -o $@
 
@@ -118,6 +124,6 @@ clean-js-build:
 	rm -rf js-build
 
 clean-dependencies:
-	rm -rf $(DEPENDENCIES)
+	rm -rf js/libs
 
 clean: clean-js-build clean-dependencies

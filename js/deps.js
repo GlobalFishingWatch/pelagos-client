@@ -92,7 +92,7 @@
         app.dirs.lib + "/jquery.mousewheel.js",
         app.dirs.lib + "/less.min.js",
         app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
-        app.dirs.lib + "/CanvasLayer.js",
+        app.dirs.script + "/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
         app.dirs.lib + "/stats.min.js",
         app.dirs.lib + "/loggly.tracker.js",
         app.dirs.lib + "/jquery-ui.js"

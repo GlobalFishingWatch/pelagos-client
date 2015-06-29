@@ -187,6 +187,18 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       return false;
     },
 
+    hideSelectionAnimations: function () {
+      var self = this;
+
+      for (var key in self.animations) {
+        var animation = self.animations[key];
+        if (animation.selectionAnimation != undefined) {
+          self.removeAnimation(animation.selectionAnimation);
+          animation.selectionAnimation = undefined;
+        }
+      }
+    },
+
     showSelectionAnimation: function (baseAnimation, selection) {
       var self = this;
 
@@ -286,23 +298,32 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var self = this;
       var dataView = animation.data_view;
       var type = selectionEvent.category;
+      var info = {};
+      var selectionData = dataView.selections[selectionEvent.category].data;
+      for (var key in selectionData) {
+        info[key] = selectionData[key][0];
+      }
+
       if (type == 'info') {
         if (err) data = err;
         if (!data) return;
 
         self.infoPopup.setOptions({
           content: data.toString(),
-          position: {lat: dataView.selections[selectionEvent.category].data.latitude[0],
-                     lng: dataView.selections[selectionEvent.category].data.longitude[0]}
+          position: {lat: info.latitude,
+                     lng: info.longitude}
         });
         self.infoPopup.open(self.map);
       } else {
         if (err) {
           self.events.triggerEvent('info-error', err);
-        } else if (data) {
+        } else {
+          data.selection = info;
           self.events.triggerEvent('info', data);
-          if (data.seriesTileset) {
+          if (data && data.seriesTileset) {
             self.showSelectionAnimation(data.layerInstance, dataView.selections[selectionEvent.category]);
+          } else {
+            self.hideSelectionAnimations();
           }
         }
       }
@@ -315,7 +336,12 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
       if (type == 'hover') return;
 
-      if (dataView.selections[type].rawInfo) {
+      if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
+          && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
+        var data = {};
+        data.toString = function () { return ""; };
+        self.handleInfo(animation, selectionEvent, null, undefined);
+      } else if (dataView.selections[type].rawInfo) {
         var data = dataView.selections[type].data;
         data.layerInstance = animation;
         data.layer = animation.title;

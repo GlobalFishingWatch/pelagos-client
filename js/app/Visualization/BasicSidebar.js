@@ -15,16 +15,13 @@ define([
 
       self.idCounter = 0;
 
-      self.node = $('' +
+      $('body').append('<img class="logo" src="' + app.dirs.img + '/gfw/logo-white.png">');
+      self.node = $('' +        
         '<div id="w" class="expanded">' +
         '  <div id="expand-button"><img src="' + app.dirs.img + '/gfw/gfw_open.png"></div>' +
         '  <div class="border">' +
         '    <div id="content">' +
         '      <div id="collapse-button"><img src="' + app.dirs.img + '/gfw/gfw_close.png"></div>' +
-        '  ' +
-        '      <div id="gfw_title"><img src="' + app.dirs.img + '/gfw/gfw_logo.png">Global Fishing Watch</div>' +
-        '' +
-        '      <div id="divide"></div>' +
         '' +
         '      <div id="layers">' +
         '        <h2>Layers</h2>' +
@@ -91,7 +88,7 @@ define([
                       row.find(".callsign").html(info.callsign);
                       row.find('a').attr({href: "javascript: void(0);"});
                       row.find('a').click(function () {
-                        info.animation.data_view.selections.selected.addDataRange({series:info.series}, {series:info.series}, true);
+                        info.animation.data_view.selections.selected.addDataRange(info, info, true);
                         dialog.modal('hide');
                       });
 
@@ -214,8 +211,12 @@ define([
           }
 
           var link = $('<a target="_new">Download as KML</a>');
+
+          var key = event.selection.series;
+          if (event.selection.seriesgroup != undefined) key = event.selection.seriesgroup;
+
           link.attr({
-            href: event.layerInstance.data_view.source.url + "/export/" + event.series.toString()
+            href: event.layerInstance.data_view.source.url + "/export/" + key.toString()
           });
           /* TODO: add this back in once the tile server fully supports it
             self.node.find(".download").append(link);
