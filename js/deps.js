@@ -1,32 +1,15 @@
 (function () {
-  app.webworker = typeof importScripts != "undefined";
-
-  if (window.location.toString().indexOf("dojo=true") != -1) {
-    app.useDojo = true;
-  } else if (window.location.toString().indexOf("dojo=false") != -1) {
-    app.useDojo = false;
-  }
-  if (app.useDojo == undefined) app.useDojo = true;
-
   if (!app.name) {
-    if (app.webworker) {
-      app.name = 'Webworker';
-    } else {
-      app.name = 'Main';
-    }
+    app.name = 'Main';
   }
 
   app.paths = app.paths || {};
 
-  if (app.webworker) {
-    app.paths.script = location.toString().split("/").slice(0, -1);
-  } else {
-    app.paths.page = window.location.pathname.split("/").slice(0, -1);
-    var depsUrl = document.querySelector('script[src$="deps.js"]').getAttribute('src');
-    app.paths.script = depsUrl.split("/").slice(0, -1);
-    if (app.paths.script[0] != "" && depsUrl.indexOf('://') == -1) {
-      app.paths.script = app.paths.page.concat(app.paths.script);
-    }
+  app.paths.page = window.location.pathname.split("/").slice(0, -1);
+  var depsUrl = document.querySelector('script[src$="deps.js"]').getAttribute('src');
+  app.paths.script = depsUrl.split("/").slice(0, -1);
+  if (app.paths.script[0] != "" && depsUrl.indexOf('://') == -1) {
+    app.paths.script = app.paths.page.concat(app.paths.script);
   }
   app.paths.root = app.paths.script.slice(0, -1);
 
@@ -69,35 +52,28 @@
       app.dirs.lib + "/qunit-1.15.0.css",
       app.dirs.lib + "/jquery-ui.css",
 
-      {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"}
-    ]);
-    if (app.useDojo) {
-      app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-        app.dirs.dojo + "/dijit/themes/claro/claro.css",
+      {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"},
 
-        app.dirs.dojo + "/dojox/layout/resources/FloatingPane.css",
-        app.dirs.dojo + "/dojox/layout/resources/ResizeHandle.css"
-      ]);
-    }
+      app.dirs.dojo + "/dijit/themes/claro/claro.css",
+
+      app.dirs.dojo + "/dojox/layout/resources/FloatingPane.css",
+      app.dirs.dojo + "/dojox/layout/resources/ResizeHandle.css"
+    ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
       app.dirs.lib + "/qunit-1.15.0.js",
       app.dirs.lib + "/async.js",
       app.dirs.lib + "/stacktrace.js",
       app.dirs.lib + "/lodash.js",
+      {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
+      app.dirs.lib + "/jquery-1.10.2.min.js",
+      app.dirs.lib + "/jquery.mousewheel.js",
+      app.dirs.lib + "/less.min.js",
+      app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
+      app.dirs.script + "/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
+      app.dirs.lib + "/stats.min.js",
+      app.dirs.lib + "/loggly.tracker.js",
+      app.dirs.lib + "/jquery-ui.js"
     ]);
-    if (!app.webworker) {
-      app.dependencies.scripts = app.dependencies.scripts.concat([
-        {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-        app.dirs.lib + "/jquery-1.10.2.min.js",
-        app.dirs.lib + "/jquery.mousewheel.js",
-        app.dirs.lib + "/less.min.js",
-        app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
-        app.dirs.script + "/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
-        app.dirs.lib + "/stats.min.js",
-        app.dirs.lib + "/loggly.tracker.js",
-        app.dirs.lib + "/jquery-ui.js"
-      ]);
-    }
   }
 
   app.packages = app.packages.concat([
@@ -114,13 +90,8 @@
     {name: 'app', location:app.dirs.app, main: 'main'}
   ]);
 
-  if (app.useDojo) {
-    app.dependencies.scripts.push(app.dirs.script + "/dojoconfig.js");
-    app.dependencies.scripts.push(app.dirs.dojo + "/dojo/dojo.js");
-  } else {
-    app.dependencies.scripts.push(app.dirs.lib + "/require.js");
-    app.dependencies.scripts.push(app.dirs.script + "/requirejsconfig.js");
-  }
+  app.dependencies.scripts.push(app.dirs.script + "/dojoconfig.js");
+  app.dependencies.scripts.push(app.dirs.dojo + "/dojo/dojo.js");
 
 
   /* Code to load the above dependencies */
@@ -198,10 +169,6 @@
     }
   }
 
-  if (app.webworker) {
-    asyncmap(app.dependencies.scripts, addImportScript, main);
-  } else {
-    app.dependencies.stylesheets.map(addHeadStylesheet);
-    asyncmap(app.dependencies.scripts, addHeadScript, main);
-  }
+  app.dependencies.stylesheets.map(addHeadStylesheet);
+  asyncmap(app.dependencies.scripts, addHeadScript, main);
 })();

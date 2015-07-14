@@ -23,7 +23,6 @@ CSSDEPS= \
   js-build/dojox/layout/resources/ResizeHandle.css \
 
 DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
-  $(LIBS)/require.js \
   $(LIBS)/easyXDM/easyXDM.min.js \
   $(LIBS)/dojo-release-1.10.0-src/util/buildscripts/build.sh
 
@@ -61,9 +60,6 @@ $(LIBS)/qunit-1.15.0.js:
 
 $(LIBS)/qunit-1.15.0.css:
 	curl -f -L http://code.jquery.com/qunit/qunit-1.15.0.css -o $@
-
-$(LIBS)/require.js:
-	curl -f -L http://requirejs.org/docs/release/2.1.14/minified/require.js -o $@
 
 $(LIBS)/stacktrace.js:
 	curl -f -L https://rawgithub.com/stacktracejs/stacktrace.js/stable/stacktrace.js -o $@

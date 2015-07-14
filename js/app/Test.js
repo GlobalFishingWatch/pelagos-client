@@ -8,8 +8,7 @@ define(
     "app/Test/Data/TypedMatrixParser",
     "app/Test/Data/BinFormat",
     "app/Test/Data/TiledEmptyFormat",
-    "app/Test/Data/DataView",
-    "app/Test/Webworker"
+    "app/Test/Data/DataView"
   ], function(
     Class,
     QUnit,
@@ -19,8 +18,7 @@ define(
     TypedMatrixParser,
     BinFormat,
     TiledEmptyFormat,
-    DataView,
-    Webworker
+    DataView
   ) {
   return Class({
     name: "Test",
@@ -34,7 +32,6 @@ define(
       new BinFormat();
       new TiledEmptyFormat();
       new DataView();
-      new Webworker();
     }
   });
 });
