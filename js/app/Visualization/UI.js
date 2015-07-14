@@ -6,6 +6,7 @@ define([
   "app/Visualization/DojoUI",
   "app/Visualization/SidePanels/SidePanelManager",
   "app/Visualization/BasicSidebar",
+  "app/Visualization/Search",
   "async",
   "jQuery"],
 function (
@@ -14,8 +15,9 @@ function (
   UrlValues,
   KeyModifiers,
   DojoUI,
-    SidePanelManager,
-    BasicSidebar,
+  SidePanelManager,
+  BasicSidebar,
+  Search,
   async,
   $) {
   return Class({
@@ -43,7 +45,8 @@ function (
         self.initPlayButton.bind(self),
         self.initLoopButton.bind(self),
         self.initSaveButton.bind(self),
-        self.initSidePanels.bind(self)
+        self.initSidePanels.bind(self),
+        self.initSearch.bind(self)
       ], function () { cb(); });
     },
 
@@ -367,6 +370,13 @@ function (
 
       self.sidePanels = new SidePanelManager(self.visualization);
       self.sideBar = new BasicSidebar(self.visualization);
+      cb();
+    },
+
+    initSearch: function (cb) {
+      var self = this;
+
+      self.search = new Search(self.visualization);
       cb();
     }
   });
