@@ -179,8 +179,6 @@ define([
       self.animationManager.animations.map(self.generateAnimationUI.bind(self));
 
       self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
-      self.visualization.dojoUI.container.layout();
-      self.visualization.dojoUI.sidebarContainer.selectChild(self.ui, false);
     },
 
     generateAnimationUI: function (animation) {

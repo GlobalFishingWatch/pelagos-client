@@ -1,20 +1,34 @@
-define(["app/Class", "app/Timeline", "app/UrlValues", "async", "jQuery"], function(Class, Timeline, UrlValues, async, $) {
+define([
+  "app/Class",
+  "app/Timeline",
+  "app/UrlValues",
+  "app/Visualization/KeyModifiers",
+  "app/Visualization/DojoUI",
+  "app/Visualization/SidePanels/SidePanelManager",
+  "app/Visualization/BasicSidebar",
+  "async",
+  "jQuery"],
+function (
+  Class,
+  Timeline,
+  UrlValues,
+  KeyModifiers,
+  DojoUI,
+    SidePanelManager,
+    BasicSidebar,
+  async,
+  $) {
   return Class({
     name: "UI",
-      initialize: function (visualization) {
+    initialize: function (visualization) {
       var self = this;
       self.visualization = visualization;
     },
 
     init1: function (cb) {
-      if (UrlValues.getParameter("edit") == "true") {
-        require(["app/Visualization/DojoUI"], function (DojoUI) {
-          self.visualization.dojoUI = new DojoUI(self.visualization);
-          cb();
-        });
-      } else {
-        cb();
-      }
+      var self = this;
+      self.visualization.dojoUI = new DojoUI(self.visualization);
+      cb();
     },
 
     init2: function (cb) {
@@ -342,17 +356,18 @@ define(["app/Class", "app/Timeline", "app/UrlValues", "async", "jQuery"], functi
     initSidePanels: function (cb) {
       var self = this;
 
-      if (UrlValues.getParameter("edit") == "true") {
-        require(["app/Visualization/SidePanels/SidePanelManager"], function (SidePanelManager) {
-          self.sidePanels = new SidePanelManager(self.visualization);
-          cb();
-        });
-      } else {
-        require(["app/Visualization/BasicSidebar"], function (BasicSidebar) {
-          self.sideBar = new BasicSidebar(self.visualization);
-          cb();
-        });
-      }
+      // Toggle edit mode
+      $(document).on({
+        keyup: function (e) {
+          if (KeyModifiers.nameById[e.keyCode] == 'E' && KeyModifiers.active.Alt && KeyModifiers.active.Ctrl) {
+            self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
+          }
+        }
+      });
+
+      self.sidePanels = new SidePanelManager(self.visualization);
+      self.sideBar = new BasicSidebar(self.visualization);
+      cb();
     }
   });
 });

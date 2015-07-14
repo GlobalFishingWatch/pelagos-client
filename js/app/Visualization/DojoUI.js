@@ -16,17 +16,28 @@ define([
 
       self.visualization = visualization;
 
-      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar'});
-      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center'});
+      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
+      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none;'});
       self.container.addChild(self.animationsContainer);
-
-      self.sidebarContainer = new AccordionContainer({region: 'right', splitter:true});
-      self.container.addChild(self.sidebarContainer);
 
       self.visualization.node.append(self.container.domNode);
       self.visualization.node = $(self.animationsContainer.domNode);
 
       self.container.startup();
+
+      self.sidebarContainer = new AccordionContainer({region: 'right', splitter:true});
+
+      if (self.visualization.state.getValue('edit')) {
+        self.container.addChild(self.sidebarContainer);
+      }    
+      self.visualization.state.events.on({'edit': function (data) {
+        if (data.new_value) {
+          self.container.addChild(self.sidebarContainer);
+        } else {
+          self.container.removeChild(self.sidebarContainer);
+        }
+      }});
+
     }
   });
 });

@@ -64,6 +64,11 @@ define([
         'info-error': self.update.bind(self, "#ff0000")
       });
 
+      self.node.toggle(!self.visualization.state.getValue('edit'));
+      self.visualization.state.events.on({'edit': function (data) {        
+        self.node.toggle(!data.new_value);
+      }});
+
       $(document).on({
         keyup: function (e) {
           if (KeyModifiers.nameById[e.keyCode] == 'F' && KeyModifiers.active.Alt && KeyModifiers.active.Ctrl) {
