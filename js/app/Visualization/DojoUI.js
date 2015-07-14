@@ -17,7 +17,7 @@ define([
       self.visualization = visualization;
 
       self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
-      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none;'});
+      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
       self.container.addChild(self.animationsContainer);
 
       self.visualization.node.append(self.container.domNode);
