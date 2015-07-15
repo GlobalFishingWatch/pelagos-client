@@ -16,10 +16,10 @@ define([
 ], function(Class, Logging, BaseTiledFormat, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Menu, MenuItem, popup){
   return Class({
     name: "DataUI",
-    initialize: function (visualization) {
+    initialize: function (sidePanels) {
       var self = this;
 
-      self.visualization = visualization;
+      self.sidePanels = sidePanels;
 
       self.ui = new ContentPane({title: "Data"});
 
@@ -39,27 +39,27 @@ define([
           value = Math.round(value);
           $(widget.domNode).find('.value').html(value.toPrecision(3));
           BaseTiledFormat.prototype.tilesPerScreen = value;
-          self.visualization.data.zoomTo(self.visualization.data.bounds);
+          self.sidePanels.ui.visualization.data.zoomTo(self.sidePanels.ui.visualization.data.bounds);
         }
       }));
       $(widget.domNode).append("<span class='value' style='float: right;'>");
       $(widget.domNode).find('.value').html(BaseTiledFormat.prototype.tilesPerScreen);
       self.ui.addChild(widget);
 
-      $(self.visualization.animations.stats.domElement).css({
+      $(self.sidePanels.ui.visualization.animations.stats.domElement).css({
         position: 'initial',
         margin: '5pt'
       });
-      $(self.ui.domNode).append(self.visualization.animations.stats.domElement);
+      $(self.ui.domNode).append(self.sidePanels.ui.visualization.animations.stats.domElement);
 
       $(self.ui.domNode).append("<pre class='source-stats'>");
 
-      self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
-      self.visualization.dojoUI.container.layout();
+      self.sidePanels.sidebarContainer.addChild(self.ui);
+      self.sidePanels.sidebarContainer.layout();
 
       self,visualization.data.events.on({
         update: function () {
-          $(self.ui.domNode).find('.source-stats').text(self.visualization.data.printTree());
+          $(self.ui.domNode).find('.source-stats').text(self.sidePanels.ui.visualization.data.printTree());
         }
       });
     }

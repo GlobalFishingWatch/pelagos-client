@@ -15,20 +15,20 @@ define([
 ], function(Class, Logging, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Menu, MenuItem, popup){
   return Class({
     name: "LoggingUI",
-    initialize: function (visualization) {
+    initialize: function (sidePanels) {
       var self = this;
 
-      self.visualization = visualization;
+      self.sidePanels = sidePanels;
 
       self.ui = new ContentPane({title: "Logging"});
-      self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
-      self.visualization.dojoUI.container.layout();
+      self.sidePanels.sidebarContainer.addChild(self.ui);
+      self.sidePanels.sidebarContainer.layout();
 
-      self.updateUI(self.visualization.state.getValue("logging"));
+      self.updateUI(self.sidePanels.ui.visualization.state.getValue("logging"));
 
-      self.visualization.state.events.on({
+      self.sidePanels.ui.visualization.state.events.on({
         logging: function () {
-          self.updateUI(self.visualization.state.getValue("logging"));
+          self.updateUI(self.sidePanels.ui.visualization.state.getValue("logging"));
         }
       });
     },
@@ -59,7 +59,7 @@ define([
                 var newRules = $.extend({}, rules);
                 newRules[dst.key] = $.extend({}, newRules[dst.key]);
                 newRules[dst.key].rules.push('-' + key); 
-                self.visualization.state.setValue("logging", newRules);
+                self.sidePanels.ui.visualization.state.setValue("logging", newRules);
               }
             });
             ruleSelect.addChild(item);
@@ -123,7 +123,7 @@ define([
               }
             });
 
-            self.visualization.state.setValue("logging", newRules);
+            self.sidePanels.ui.visualization.state.setValue("logging", newRules);
 
           });
 
@@ -135,7 +135,7 @@ define([
               return x != rule;
             });
 
-            self.visualization.state.setValue("logging", newRules);
+            self.sidePanels.ui.visualization.state.setValue("logging", newRules);
           })
           destinationWidget.addChild(sourceWidget);
         });

@@ -22,12 +22,13 @@ define([
 ], function(Class, Logging, DataViewUI, Animation, $, Fieldset, BorderContainer, AccordionContainer, FloatingPane, ContentPane, Menu, MenuItem, TooltipDialog, Select, TextBox, Button, popup){
   return Class({
     name: "VisualizationUI",
-    initialize: function (visualization) {
+    initialize: function (sidePanels) {
       var self = this;
 
-      self.visualization = visualization;
-      self.animationManager = visualization.animations;
-      self.animationManager.events.on({
+      self.sidePanels = sidePanels;
+      self.visualization = self.sidePanels.ui.visualization;
+      self.animations = self.sidePanels.ui.visualization.animations;
+      self.animations.events.on({
         add: self.addHandler.bind(self),
         remove: self.removeHandler.bind(self)
       });
@@ -51,8 +52,8 @@ define([
     addAnimationDialog: function (domNode) {
       var self = this;
 
-      self.animationManager.visualization.data.listSources(function (sources) {
-        self.animationManager.visualization.data.listSourceTypes(function (sourceTypes) {
+      self.visualization.data.listSources(function (sources) {
+        self.visualization.data.listSourceTypes(function (sourceTypes) {
 
           var dialog = new TooltipDialog({title: "Add animation:"});
 
@@ -97,7 +98,7 @@ define([
               if (!source) {
                 source = {type:sourcetypeselect.get('value'), args: {url:urlbox.get('value')}};
               }
-              self.animationManager.addAnimation({type:type, args: {source: source}}, function (err, animation) {});
+              self.animations.addAnimation({type:type, args: {source: source}}, function (err, animation) {});
               dialog.onExecute();
             }
           });
@@ -136,7 +137,7 @@ define([
 
       self.ui = new ContentPane({title: 'Layers', content:"", doLayout: false});
 
-      var state = self.animationManager.visualization.state;
+      var state = self.visualization.state;
       if (!state.getValue('title')) {
         state.setValue('title', "VectorVisual");
       }
@@ -176,9 +177,9 @@ define([
       });
       self.ui.addChild(header);
 
-      self.animationManager.animations.map(self.generateAnimationUI.bind(self));
+      self.animations.animations.map(self.generateAnimationUI.bind(self));
 
-      self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
+      self.sidePanels.sidebarContainer.addChild(self.ui);
     },
 
     generateAnimationUI: function (animation) {
@@ -226,7 +227,7 @@ define([
         visible.removeAttr('checked');
       }
       remove.click(function () {
-        self.animationManager.removeAnimation(animation);
+        self.animations.removeAnimation(animation);
       });
       title.click(function () {
         title.find('.input').show();

@@ -3,10 +3,11 @@ define([
   "app/Timeline",
   "app/UrlValues",
   "app/Visualization/KeyModifiers",
-  "app/Visualization/DojoUI",
   "app/Visualization/SidePanels/SidePanelManager",
   "app/Visualization/BasicSidebar",
   "app/Visualization/Search",
+  "dijit/layout/BorderContainer",
+  "dijit/layout/ContentPane",
   "async",
   "jQuery"],
 function (
@@ -14,10 +15,11 @@ function (
   Timeline,
   UrlValues,
   KeyModifiers,
-  DojoUI,
   SidePanelManager,
   BasicSidebar,
   Search,
+  BorderContainer,
+  ContentPane,
   async,
   $) {
   return Class({
@@ -29,7 +31,18 @@ function (
 
     init1: function (cb) {
       var self = this;
-      self.visualization.dojoUI = new DojoUI(self.visualization);
+
+      var self = this;
+
+      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
+      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
+      self.container.addChild(self.animationsContainer);
+
+      self.visualization.node.append(self.container.domNode);
+      self.visualization.node = $(self.animationsContainer.domNode);
+
+      self.container.startup();
+
       cb();
     },
 
@@ -38,7 +51,6 @@ function (
 
       async.series([
         self.initButtons.bind(self),
-
         self.initLoadSpinner.bind(self),
         self.initLogo.bind(self),
         self.initTimeline.bind(self),
@@ -359,7 +371,6 @@ function (
     initSidePanels: function (cb) {
       var self = this;
 
-      // Toggle edit mode
       $(document).on({
         keyup: function (e) {
           if (KeyModifiers.nameById[e.keyCode] == 'E' && KeyModifiers.active.Alt && KeyModifiers.active.Ctrl) {
@@ -368,7 +379,7 @@ function (
         }
       });
 
-      self.sidePanels = new SidePanelManager(self.visualization);
+      self.sidePanels = new SidePanelManager(self);
       self.sideBar = new BasicSidebar(self.visualization);
       cb();
     },

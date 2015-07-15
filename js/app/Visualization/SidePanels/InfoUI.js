@@ -9,18 +9,18 @@ define([
 ], function(Class, Logging, $, ContentPane){
   return Class({
     name: "InfoUI",
-    initialize: function (visualization) {
+    initialize: function (sidePanels) {
       var self = this;
 
-      self.visualization = visualization;
+      self.sidePanels = sidePanels;
 
       self.ui = new ContentPane({title: 'Info', content:"<table class='table table-striped table-bordered'><tr><th>No object selected</th></tr></table>", doLayout: false});
 
-      self.visualization.dojoUI.sidebarContainer.addChild(self.ui);
-      self.visualization.dojoUI.container.layout();
+      self.sidePanels.sidebarContainer.addChild(self.ui);
+      self.sidePanels.sidebarContainer.layout();
 
 
-      self.visualization.animations.events.on({
+      self.sidePanels.ui.visualization.animations.events.on({
         'info': self.update.bind(self, "#ffffff"),
         'info-error': self.update.bind(self, "#ff8888")
       });
@@ -32,7 +32,7 @@ define([
       $(self.ui.domNode).html(info.toString());
       $(self.ui.domNode).css({background: color});
 
-      self.visualization.dojoUI.sidebarContainer.selectChild(self.ui, true);
+      self.sidePanels.sidebarContainer.selectChild(self.ui, true);
     }
   });
 });
