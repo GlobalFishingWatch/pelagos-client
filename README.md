@@ -17,3 +17,9 @@ External libraries are placed under `js/libs`. All visualization and data loadin
 # Example data
 
 Example data is available in the data branch of this repo. NOTE: Do not merge between the data branch and the master branch - they are entierly separate.
+
+
+# Testing
+
+    sudo npm install testem -g
+    xvfb-run testem -l Chromium ci
