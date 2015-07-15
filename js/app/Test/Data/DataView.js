@@ -23,7 +23,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat", "app/Da
           cb();
         },
         error: function (e) {
-          QUnit.ok(false, e);
+          QUnit.ok(false, e.toString());
           cb();
         }
       });

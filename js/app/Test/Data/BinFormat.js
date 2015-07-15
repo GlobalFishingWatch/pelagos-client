@@ -16,7 +16,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat"], functi
           cb();
         },
         error: function (e) {
-          QUnit.ok(false, e);
+          QUnit.ok(false, e.toString());
           cb();
         }
       });
