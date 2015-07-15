@@ -1,9 +1,5 @@
-language: node_js
-node_js:
-  - "0.12"
-
 install:
-  - sudo apt-get install -qq xvfb chromium-browser
+  - sudo apt-get install -qq xvfb chromium-browser nodejs npm
   - sudo npm install testem -g
 
 script:
