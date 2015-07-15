@@ -1,4 +1,5 @@
 install:
+  - curl -sL https://deb.nodesource.com/setup | sudo bash -
   - sudo apt-get install -qq xvfb chromium-browser nodejs npm
   - sudo npm install testem -g
 
