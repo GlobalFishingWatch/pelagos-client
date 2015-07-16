@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/SkyTruth/pelagos-client.svg?branch=master)](https://travis-ci.org/SkyTruth/pelagos-client)
+
 # Build
 
 Run the following from teh top-level directory:
