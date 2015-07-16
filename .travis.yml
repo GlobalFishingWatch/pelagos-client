@@ -6,4 +6,4 @@ install:
 
 script:
   - make
-  - xvfb-run testem -l Chromium ci
+  - xvfb-run testem -l Chromium ci --timeout 60
