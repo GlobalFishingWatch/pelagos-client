@@ -5,4 +5,5 @@ install:
   - sudo npm install testem -g
 
 script:
+  - make
   - xvfb-run testem -l Chromium ci

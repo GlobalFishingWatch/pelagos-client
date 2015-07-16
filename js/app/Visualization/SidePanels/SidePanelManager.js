@@ -4,7 +4,7 @@ define([
   "app/Visualization/SidePanels/LoggingUI",
   "app/Visualization/SidePanels/AnimationManagerUI",
   "app/Visualization/SidePanels/DataUI",
-  "dijit/layout/AccordionContainer",
+  "dijit/layout/AccordionContainer"
 ], function(Class, InfoUI, LoggingUI, AnimationManagerUI, DataUI, AccordionContainer){
   return Class({
     name: "InfoUI",

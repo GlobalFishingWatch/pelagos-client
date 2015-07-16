@@ -140,7 +140,7 @@ define([
             "transport/passenger": {name: "Passenger ship", icon: "/vessels/passenger.png"},
             "pleasurecraft": {name: "Pleasure craft", icon: "/vessels/pleasurecraft.png"},
             "reefer": {name: "Reefer", icon: "/vessels/reefer.png"},
-            "fishing/research": {name: "Research vessel", icon: "/vessels/research.png"},
+            "fishing/research": {name: "Research vessel", icon: "/vessels/research.png"}
           };
 
           var getClass = function(name) {

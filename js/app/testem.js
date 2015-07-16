@@ -1,7 +1,9 @@
-define(["QUnit", '/testem.js', 'app/Test'], function (QUnit, testem, Test) {
+define(["QUnit", 'app/Test'], function (QUnit, Test) {
   return function () {
-    $(document).ready(function () {
-      apptest = new Test();
+    require(['/testem.js'], function (testem) {
+      $(document).ready(function () {
+        apptest = new Test();
+      });
     });
   };
 });
