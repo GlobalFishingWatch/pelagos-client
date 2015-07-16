@@ -1,8 +1,8 @@
 install:
-  - curl -sL https://deb.nodesource.com/setup | sudo bash -
-  - sudo apt-get update
-  - sudo apt-get install -qq xvfb chromium-browser nodejs
-  - sudo npm install testem -g
+  - curl -sL https://deb.nodesource.com/setup | sudo bash - > install-log || cat install-log
+  - sudo apt-get update > install-log || cat install-log
+  - sudo apt-get install -qq xvfb chromium-browser nodejs > install-log || cat install-log
+  - sudo npm install testem -g > install-log || cat install-log
 
 script:
   - make
