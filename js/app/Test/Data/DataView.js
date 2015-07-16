@@ -7,10 +7,12 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat", "app/Da
 
       p = new BinFormat({url:require.toUrl("app/Test/Data/foo.bin")});
       p.sortcols = ['foo'];
-      dv = new DataView(p, {columns: {
-        foo: {type: "Int32", items: [{name: "foo", source: {foo: 1}}]},
-        bar: {type: "Int32", items: [{name: "bar", source: {bar: 1}}]},
-        selected: {type: "Int32", items: [{name: "selected", source: {selected: 1}}]}
+      dv = new DataView(p, {
+        columns: {
+          foo: {type: "Int32", items: [{name: "foo", source: {foo: 1}}]},
+          bar: {type: "Int32", items: [{name: "bar", source: {bar: 1}}]}},
+        selections: {
+          selected: {type: "Int32", items: [{name: "selected", source: {selected: 1}}]}
         }});
       dv.events.on({
         all: function () {

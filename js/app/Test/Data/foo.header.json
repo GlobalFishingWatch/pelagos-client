@@ -1,1 +1,1 @@
-{"test": 4711, "colsByName": {"foo": {"gazonk": 3}}}
+{"test": 4711, "colsByName": {"foo": {"gazonk": 3, "min": 4, "max": 6}, "bar": {"min": 8, "max": 10}}}
