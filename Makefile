@@ -107,7 +107,7 @@ js-build-mkdir:
 	mkdir -p js-build
 
 js-build/build-succeded: $(DEPENDENCIES)
-	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release > build-log || { cat build-log; exit 1; }
+	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release --bin node > build-log || { cat build-log; exit 1; }
 	touch $@
 
 js-build/deps.js: $(JSDEPS)
