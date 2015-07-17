@@ -1,8 +1,23 @@
 [![Build Status](https://travis-ci.org/SkyTruth/pelagos-client.svg?branch=master)](https://travis-ci.org/SkyTruth/pelagos-client)
 
+# About
+
+Pelagos Client is a stand-alone web application for visualizing large time series datasets on top of a zoomable world map. A datasets can be provided either as a single static file, a tree of tile files or by a dynamic tile generation server with an optional static cache.
+
+Features:
+
+* WebGL data rendering allowing large dataset and fast rendering
+* Map pan and zoom
+* Timeslider to pan and zoom in time to any time range
+* Multiple data layers
+* Mouse-over and selection information for objects
+* Dynamic data mapping UI
+* Data styling using GLSL shader language
+* Optional search UI (requires server side query handling code)
+
 # Build
 
-Run the following from teh top-level directory:
+Run the following from the top-level directory:
 
     make
 
