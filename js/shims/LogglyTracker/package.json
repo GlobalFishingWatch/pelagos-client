@@ -9,6 +9,6 @@
             "url": "https://www.gnu.org/licenses/gpl-3.0.txt"
         }
     ],
-    "homepage": "https://github.com/SkyTruth/data-visualization-tools",
+    "homepage": "https://github.com/SkyTruth/pelagos-client",
     "dojoBuild": "LogglyTracker.profile.js"
 }

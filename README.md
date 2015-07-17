@@ -10,7 +10,7 @@ Run the following from teh top-level directory:
 
     http://localhost/index.html?workspace=/path/to/workspace
 
-where /path/to/workspace is an URL to a JSON file containing a workspace definition. For more information about this check out [the workspace schema](https://github.com/SkyTruth/data-visualization-tools/blob/master/docs/schema.md)
+where /path/to/workspace is an URL to a JSON file containing a workspace definition. For more information about this check out [the workspace schema](https://github.com/SkyTruth/pelagos-client/blob/master/docs/schema.md)
 
 # Libraries
 

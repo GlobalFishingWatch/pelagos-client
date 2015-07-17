@@ -4,7 +4,7 @@ The workspace is the highest configuration item for the system. It represents th
 
 This schema document describes the schemas for each part in this stack:
 
-* Tile binary file format (documented [here](https://github.com/SkyTruth/data-visualization-tools/blob/master/js/app/Data/TypedMatrixParser.js))
+* Tile binary file format (documented [here](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/TypedMatrixParser.js))
 * The tileset URL structure
 * The tileset header
 * The workspace specification
@@ -32,7 +32,7 @@ Tiles are loaded from under any of the provided fallback urls by adding the tile
 
     http://myproject.appspot.com/tile/mytileset/135,-11.25,157.5,0
 
-For information on the exact details of how bounds are calculated, look at [tileParamsForRegion()](https://github.com/SkyTruth/data-visualization-tools/blob/master/js/app/Data/BaseTiledFormat.js#L188).
+For information on the exact details of how bounds are calculated, look at [tileParamsForRegion()](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/BaseTiledFormat.js#L188).
 
 ## Series lookup
 Whenever a user does a selection, a POST is made to
