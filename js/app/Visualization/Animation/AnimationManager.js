@@ -8,10 +8,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         position: google.maps.ControlPosition.TOP_LEFT
       },
       streetViewControl: false,
-      overviewMapControl: true,
-      overviewMapControlOptions: {
-        opened: true
-      },
+      overviewMapControl: false,
       styles: [
         {
           featureType: 'poi',
