@@ -96,7 +96,7 @@ $(LIBS)/font-awesome/css/font-awesome.min.css:
 	cd $(LIBS); curl -f -L -O http://fontawesome.io/assets/font-awesome-4.4.0.zip
 	cd $(LIBS); unzip -o font-awesome-4.4.0.zip
 	cd $(LIBS); rm font-awesome-4.4.0.zip
-        cd $(LIBS); mv font-awesome-4.3.0 font-awesome
+	cd $(LIBS); mv font-awesome-4.3.0 font-awesome
 
 $(LIBS)/dojo-release-1.10.0-src/util/buildscripts/build.sh:
 	cd $(LIBS); curl -f -L -O http://download.dojotoolkit.org/release-1.10.0/dojo-release-1.10.0-src.tar.gz
