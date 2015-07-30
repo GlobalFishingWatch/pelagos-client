@@ -48,7 +48,7 @@
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       app.dirs.lib + "/bootstrap-3.2.0-dist/css/bootstrap.min.css",
-      app.dirs.lib + "/font-awesome-4.3.0/css/font-awesome.min.css",
+      app.dirs.lib + "/font-awesome/css/font-awesome.min.css",
       app.dirs.lib + "/qunit-1.15.0.css",
       app.dirs.lib + "/jquery-ui.css",
 
