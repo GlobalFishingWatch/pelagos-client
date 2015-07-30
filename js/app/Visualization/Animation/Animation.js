@@ -120,6 +120,9 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       self.data_view.source.events.on({
         "update": self.triggerDataUpdate.bind(self)
       });
+      self.data_view.selections.events.on({
+        "update": self.manager.triggerUpdate.bind(self.manager)
+      });
       self.data_view.events.on({
         "update": self.manager.triggerUpdate.bind(self.manager)
       });
@@ -243,7 +246,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
       if (time == undefined) return;
       time = time.getTime();
 
-      self.data_view.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
+      self.data_view.selections.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
       program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
       program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
       program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
@@ -309,7 +312,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     select: function (x, y, type, replace) {
       var self = this;
       var rowidx = self.getRowidxAtPos(x, y);
-      self.data_view.addSelectionRange(type, rowidx, rowidx, replace);
+      self.data_view.selections.addSelectionRange(type, rowidx, rowidx, replace);
       return rowidx;
     },
 

@@ -175,7 +175,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       for (var key in self.animations) {
         var animation = self.animations[key];
         if (animation.data_view) {
-          animation.data_view.selections[type].rawInfo = KeyModifiers.active.Shift;
+          animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
         if (animation.select(x, y, type, true)) {
           return animation;
@@ -296,7 +296,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var dataView = animation.data_view;
       var type = selectionEvent.category;
       var info = {};
-      var selectionData = dataView.selections[selectionEvent.category].data;
+      var selectionData = dataView.selections.selections[selectionEvent.category].data;
       for (var key in selectionData) {
         info[key] = selectionData[key][0];
       }
@@ -318,7 +318,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
           data.selection = info;
           self.events.triggerEvent('info', data);
           if (data && data.seriesTileset) {
-            self.showSelectionAnimation(data.layerInstance, dataView.selections[selectionEvent.category]);
+            self.showSelectionAnimation(data.layerInstance, dataView.selections.selections[selectionEvent.category]);
           } else {
             self.hideSelectionAnimations();
           }
@@ -338,8 +338,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         var data = {};
         data.toString = function () { return ""; };
         self.handleInfo(animation, selectionEvent, null, undefined);
-      } else if (dataView.selections[type].rawInfo) {
-        var data = dataView.selections[type].data;
+      } else if (dataView.selections.selections[type].rawInfo) {
+        var data = dataView.selections.selections[type].data;
         data.layerInstance = animation;
         data.layer = animation.title;
         data.toString = function () {

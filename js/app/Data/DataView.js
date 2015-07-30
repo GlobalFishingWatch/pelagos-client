@@ -1,4 +1,4 @@
-define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "app/Data/GeoProjection", "lodash"], function(Class, Format, Selection, Pack, GeoProjection, _) {
+define(["app/Class", "app/Data/Format", "app/Data/SelectionManager", "app/Data/Pack", "app/Data/GeoProjection", "lodash"], function(Class, Format, SelectionManager, Pack, GeoProjection, _) {
   return Class(Format, {
     name: "DataView",
 
@@ -28,11 +28,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       self.args = args;
       if (args) _.extend(self, args);
 
-      self.selections = {};
-
-      Object.items(args.selections || {}).map(function (selection) {
-        self.addSelectionCategory(selection.key, selection.value);
-      });
+      self.selections = new SelectionManager(self.source, {selections:args.selections});
 
       Object.items(self.columns).map(function (col) {
         var value = _.cloneDeep(col.value);
@@ -44,34 +40,6 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       Object.items(self.header.uniforms).map(function (uniform) {
         uniform.value.name = uniform.key;
       });
-    },
-
-    addSelectionCategory: function (name, args) {
-      var self = this;
-      args = _.clone(args || {});
-      if (!args.sortcols) args.sortcols = self.source.sortcols.slice(0, 1);
-      self.selections[name] = new Selection(args);
-      self.selections[name].events.on({
-        update: function (e) {
-          e = _.clone(e);
-          e.category = name;
-          e.update = "selection-" + e.update;
-          self.events.triggerEvent(e.update, e);
-          self.events.triggerEvent("update", e);
-        }
-      });
-    },
-
-    addSelectionRange: function (type, startidx, endidx, replace) {
-      var self = this;
-      if (!self.selections[type]) return;
-      self.selections[type].addRange(self.source, startidx, endidx, replace);
-      self.events.triggerEvent('spec-update', {json: self.toJSON(), string: self.toString()});
-    },
-
-    getSelectionInfo: function (name, cb) {
-      var self = this;
-      self.source.getSelectionInfo(self.selections[name], cb);
     },
 
     _changeCol: function(update, spec) {
@@ -152,7 +120,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
           return item.key;
         }).concat(
           Object.items(
-            self.selections
+            self.selections.selections
           ).filter(function (item) {
             return !item.value.hidden
           }).map(function (item) {
@@ -171,7 +139,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       return _.extend({}, self.args, {
         columns: cols,
         uniforms: self.uniforms,
-        selections: self.selections
+        selections: self.selections.selections
       });
     },
 
