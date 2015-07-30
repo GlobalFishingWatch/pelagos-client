@@ -34,12 +34,6 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
         self.addSelectionCategory(selection.key, selection.value);
       });
 
-      self.source.events.on({
-        update: self.handleUpdate,
-        error: self.handleError,
-        scope: self
-      });
-
       Object.items(self.columns).map(function (col) {
         var value = _.cloneDeep(col.value);
         value.name = col.key;
@@ -63,7 +57,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
           e.category = name;
           e.update = "selection-" + e.update;
           self.events.triggerEvent(e.update, e);
-          self.events.triggerEvent("view-update", e);
+          self.events.triggerEvent("update", e);
         }
       });
     },
@@ -78,25 +72,6 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
     getSelectionInfo: function (name, cb) {
       var self = this;
       self.source.getSelectionInfo(self.selections[name], cb);
-    },
-
-    handleUpdate: function (update) {
-      var self = this;
-
-      self.header.length = self.source.header.length;
-      self.seriescount = self.source.seriescount;
-
-      update.json = self.toJSON();
-      update.string = self.toString();
-      update.header = self.header;
-
-      self.events.triggerEvent(update.update, update);
-      self.events.triggerEvent("update", update);
-    },
-
-    handleError: function (error) {
-      var self = this;
-      self.events.triggerEvent("error", error);
     },
 
     _changeCol: function(update, spec) {
@@ -142,7 +117,7 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
           string: self.toString()
         };
         self.events.triggerEvent(e.update, e);
-        self.events.triggerEvent('update', e);
+        self.events.triggerEvent('view-update', e);
         cb();
       });
     },
