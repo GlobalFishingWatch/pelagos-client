@@ -15,7 +15,7 @@ JSDEPS= \
 
 CSSDEPS= \
   $(LIBS)/bootstrap-3.2.0-dist/css/bootstrap.min.css \
-  $(LIBS)/font-awesome-4.3.0/css/font-awesome.min.css \
+  $(LIBS)/font-awesome/css/font-awesome.min.css \
   $(LIBS)/qunit-1.15.0.css \
   $(LIBS)/jquery-ui.css \
   js-build/dijit/themes/claro/claro.css \
@@ -92,10 +92,11 @@ $(LIBS)/easyXDM/easyXDM.min.js:
 	cd $(LIBS)/easyXDM; unzip -o easyXDM-2.4.19.3.zip
 	cd $(LIBS)/easyXDM; rm easyXDM-2.4.19.3.zip
 
-$(LIBS)/font-awesome-4.3.0/css/font-awesome.min.css:
-	cd $(LIBS); curl -f -L -O http://fontawesome.io/assets/font-awesome-4.3.0.zip
-	cd $(LIBS); unzip -o font-awesome-4.3.0.zip
-	cd $(LIBS); rm font-awesome-4.3.0.zip
+$(LIBS)/font-awesome/css/font-awesome.min.css:
+	cd $(LIBS); curl -f -L -O http://fontawesome.io/assets/font-awesome-4.4.0.zip
+	cd $(LIBS); unzip -o font-awesome-4.4.0.zip
+	cd $(LIBS); rm font-awesome-4.4.0.zip
+        cd $(LIBS); mv font-awesome-4.3.0 font-awesome
 
 $(LIBS)/dojo-release-1.10.0-src/util/buildscripts/build.sh:
 	cd $(LIBS); curl -f -L -O http://download.dojotoolkit.org/release-1.10.0/dojo-release-1.10.0-src.tar.gz
