@@ -15,7 +15,7 @@ JSDEPS= \
 
 CSSDEPS= \
   $(LIBS)/bootstrap-3.2.0-dist/css/bootstrap.min.css \
-  $(LIBS)/font-awesome-4.3.0/css/font-awesome.min.css \
+  $(LIBS)/font-awesome/css/font-awesome.min.css \
   $(LIBS)/qunit-1.15.0.css \
   $(LIBS)/jquery-ui.css \
   $(LIBS)/dojo-release-1.10.0-src/dijit/themes/claro/claro.css \
@@ -88,10 +88,12 @@ $(LIBS)/easyXDM/easyXDM.min.js:
 	cd $(LIBS)/easyXDM; unzip -DD -qq -o easyXDM-2.4.19.3.zip
 	cd $(LIBS)/easyXDM; rm easyXDM-2.4.19.3.zip
 
-$(LIBS)/font-awesome-4.3.0/css/font-awesome.min.css:
-	cd $(LIBS); curl --silent -f -L -O http://fontawesome.io/assets/font-awesome-4.3.0.zip
-	cd $(LIBS); unzip -DD -qq -o font-awesome-4.3.0.zip
-	cd $(LIBS); rm font-awesome-4.3.0.zip
+$(LIBS)/font-awesome/css/font-awesome.min.css:
+	cd $(LIBS); rm -rf font-awesome*
+	cd $(LIBS); curl --silent -f -L -O http://fontawesome.io/assets/font-awesome-4.4.0.zip
+	cd $(LIBS); unzip -o font-awesome-4.4.0.zip
+	cd $(LIBS); rm font-awesome-4.4.0.zip
+	cd $(LIBS); mv font-awesome-4.4.0 font-awesome
 
 $(LIBS)/dojo-release-1.10.0-src/dijit/themes/claro/claro.css \
 $(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/FloatingPane.css \
@@ -110,7 +112,7 @@ js-build/build-succeded: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release --bin node > build-log || { cat build-log; exit 1; }
 	touch $@
 
-js-build/deps.js: $(JSDEPS)
+js-build/deps.js: $(JSDEPS) js/CanvasLayer.js
 	cat $^ > $@
 
 js-build/deps.css: $(CSSDEPS)
