@@ -116,7 +116,7 @@ js-build/build-succeded: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release
 	touch $@
 
-js-build/deps.js: $(JSDEPS)
+js-build/deps.js: $(JSDEPS) js/CanvasLayer.js
 	cat $^ > $@
 
 js-build/deps.css: $(CSSDEPS)
