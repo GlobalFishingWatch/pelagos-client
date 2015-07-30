@@ -93,6 +93,7 @@ $(LIBS)/easyXDM/easyXDM.min.js:
 	cd $(LIBS)/easyXDM; rm easyXDM-2.4.19.3.zip
 
 $(LIBS)/font-awesome/css/font-awesome.min.css:
+	cd $(LIBS); rm -rf ont-awesome*
 	cd $(LIBS); curl -f -L -O http://fontawesome.io/assets/font-awesome-4.4.0.zip
 	cd $(LIBS); unzip -o font-awesome-4.4.0.zip
 	cd $(LIBS); rm font-awesome-4.4.0.zip
