@@ -162,11 +162,6 @@ define(["app/Class", "app/Data/Format", "app/Data/Selection", "app/Data/Pack", "
       );
     },
 
-    load: function () {
-      var self = this;
-      self.source.load();
-    },
-
     toJSON: function () {
       var self = this;
       var cols = _.cloneDeep(self.header.colsByName);

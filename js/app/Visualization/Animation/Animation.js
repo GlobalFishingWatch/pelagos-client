@@ -84,11 +84,11 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
           self.initGlPrograms(cb);
         }
 
-        self.data_view.events.on({
+        self.data_view.source.events.on({
           error: self.handleError.bind(self),
           "header": handleHeader
         });
-        self.data_view.load();
+        self.data_view.source.load();
       });
     },
 
@@ -118,7 +118,7 @@ define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjectio
     initUpdates: function(cb) {
       var self = this;
       self.data_view.source.events.on({
-        "update": self.triggerDataUpdate.bind(self),
+        "update": self.triggerDataUpdate.bind(self)
       });
       self.data_view.events.on({
         "update": self.manager.triggerUpdate.bind(self.manager)
