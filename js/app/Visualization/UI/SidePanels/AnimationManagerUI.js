@@ -1,7 +1,7 @@
 define([
   "app/Class",
   "app/Logging",
-  "app/Visualization/SidePanels/DataViewUI",
+  "app/Visualization/UI/SidePanels/DataViewUI",
   "app/Visualization/Animation/Animation",
   "jQuery",
   "dijit/Fieldset",
