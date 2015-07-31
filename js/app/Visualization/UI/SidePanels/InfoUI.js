@@ -29,7 +29,7 @@ define([
     update: function (color, info) {
       var self = this;
 
-      $(self.ui.domNode).html(info.toString());
+      $(self.ui.domNode).html(info && info.toString() || '');
       $(self.ui.domNode).css({background: color});
 
       self.sidePanels.sidebarContainer.selectChild(self.ui, true);
