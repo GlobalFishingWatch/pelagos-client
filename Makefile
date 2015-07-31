@@ -89,8 +89,8 @@ $(LIBS)/easyXDM/easyXDM.min.js:
 	cd $(LIBS)/easyXDM; rm easyXDM-2.4.19.3.zip
 
 $(LIBS)/font-awesome/css/font-awesome.min.css:
-	cd $(LIBS); rm -rf ont-awesome*
-	cd $(LIBS); curl -f -L -O http://fontawesome.io/assets/font-awesome-4.4.0.zip
+	cd $(LIBS); rm -rf font-awesome*
+	cd $(LIBS); curl --silent -f -L -O http://fontawesome.io/assets/font-awesome-4.4.0.zip
 	cd $(LIBS); unzip -o font-awesome-4.4.0.zip
 	cd $(LIBS); rm font-awesome-4.4.0.zip
 	cd $(LIBS); mv font-awesome-4.4.0 font-awesome
@@ -112,7 +112,7 @@ js-build/build-succeded: $(DEPENDENCIES)
 	cd $(LIBS)/dojo-release-1.10.0-src/util/buildscripts; ./build.sh --dojoConfig ../../../../main.profile.js --release --bin node > build-log || { cat build-log; exit 1; }
 	touch $@
 
-js-build/deps.js: $(JSDEPS)
+js-build/deps.js: $(JSDEPS) js/CanvasLayer.js
 	cat $^ > $@
 
 js-build/deps.css: $(CSSDEPS)
