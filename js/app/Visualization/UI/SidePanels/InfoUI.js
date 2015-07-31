@@ -32,7 +32,9 @@ define([
       $(self.ui.domNode).html(info && info.toString() || '');
       $(self.ui.domNode).css({background: color});
 
-      self.sidePanels.sidebarContainer.selectChild(self.ui, true);
+      if (self.sidePanels.ui.visualization.state.getValue('edit')) {
+        self.sidePanels.sidebarContainer.selectChild(self.ui, true);
+      }
     }
   });
 });
