@@ -315,7 +315,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         if (err) {
           self.events.triggerEvent('info-error', err);
         } else {
-          data.selection = info;
+	  if (data) data.selection = info;
           self.events.triggerEvent('info', data);
           if (data && data.seriesTileset) {
             self.showSelectionAnimation(data.layerInstance, dataView.selections[selectionEvent.category]);
@@ -357,7 +357,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         };
         self.handleInfo(animation, selectionEvent, null, data);
       } else {
-        dataView.getSelectionInfo(type, function (err, data) {
+        dataView.selections.getSelectionInfo(type, function (err, data) {
           var content;
 
           if (err) {
