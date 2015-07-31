@@ -279,8 +279,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             self.animations.push(animationInstance);
             self.triggerUpdate();
             if (animationInstance.data_view) {
-              animationInstance.data_view.events.on({
-                "selection-add": self.handleSelectionUpdate.bind(
+              animationInstance.data_view.selections.events.on({
+                "add": self.handleSelectionUpdate.bind(
                   self, animationInstance)
               });
             }
