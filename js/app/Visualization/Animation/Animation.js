@@ -1,4 +1,4 @@
-define(["app/Class", "async", "app/Visualization/Shader", "app/Data/GeoProjection", "app/Data/DataView", "jQuery"], function(Class, async, Shader, GeoProjection, DataView, $) {
+define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/GeoProjection", "app/Data/DataView", "jQuery"], function(Class, async, Shader, GeoProjection, DataView, $) {
   var Animation = Class({
     name: "Animation",
     columns: {},
