@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
   return Class({
     name: "AnimationManager",
 
@@ -175,7 +175,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       for (var key in self.animations) {
         var animation = self.animations[key];
         if (animation.data_view) {
-          animation.data_view.selections[type].rawInfo = KeyModifiers.active.Shift;
+          animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
         if (animation.select(x, y, type, true)) {
           return animation;
@@ -279,8 +279,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
             self.animations.push(animationInstance);
             self.triggerUpdate();
             if (animationInstance.data_view) {
-              animationInstance.data_view.events.on({
-                "selection-add": self.handleSelectionUpdate.bind(
+              animationInstance.data_view.selections.events.on({
+                "add": self.handleSelectionUpdate.bind(
                   self, animationInstance)
               });
             }
@@ -296,7 +296,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var dataView = animation.data_view;
       var type = selectionEvent.category;
       var info = {};
-      var selectionData = dataView.selections[selectionEvent.category].data;
+      var selectionData = dataView.selections.selections[selectionEvent.category].data;
       for (var key in selectionData) {
         info[key] = selectionData[key][0];
       }
@@ -315,10 +315,10 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         if (err) {
           self.events.triggerEvent('info-error', err);
         } else {
-          data.selection = info;
+	  if (data) data.selection = info;
           self.events.triggerEvent('info', data);
           if (data && data.seriesTileset) {
-            self.showSelectionAnimation(data.layerInstance, dataView.selections[selectionEvent.category]);
+            self.showSelectionAnimation(data.layerInstance, dataView.selections.selections[selectionEvent.category]);
           } else {
             self.hideSelectionAnimations();
           }
@@ -338,8 +338,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         var data = {};
         data.toString = function () { return ""; };
         self.handleInfo(animation, selectionEvent, null, undefined);
-      } else if (dataView.selections[type].rawInfo) {
-        var data = dataView.selections[type].data;
+      } else if (dataView.selections.selections[type].rawInfo) {
+        var data = dataView.selections.selections[type].data;
         data.layerInstance = animation;
         data.layer = animation.title;
         data.toString = function () {
@@ -357,7 +357,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         };
         self.handleInfo(animation, selectionEvent, null, data);
       } else {
-        dataView.getSelectionInfo(type, function (err, data) {
+        dataView.selections.getSelectionInfo(type, function (err, data) {
           var content;
 
           if (err) {

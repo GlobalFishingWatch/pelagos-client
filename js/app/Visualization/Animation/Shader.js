@@ -144,7 +144,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
 
     var srcCols = Object.keys(dataView.source.header.colsByName);
     var dstCols = Object.keys(dataView.header.colsByName);
-    var selCols = Object.keys(dataView.selections);
+    var selCols = Object.keys(dataView.selections.selections);
 
     var sourceMapper = Shader.compileSourceMapper(dataView.source.header.colsByName);
 
@@ -176,13 +176,13 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
   };
 
   Shader.compileSelectionsDeclarations = function (dataView) {
-    return Object.items(dataView.selections).map(function (item) {
+    return Object.items(dataView.selections.selections).map(function (item) {
       return 'float scaled_' + item.key + ';';
     }).join('\n') + '\n';
   };
 
   Shader.compileSelectionsMappingDeclarations = function (dataView) {
-    return Object.items(dataView.selections).map(function (item) {
+    return Object.items(dataView.selections.selections).map(function (item) {
       return range(0, item.value.max_range_count, function (rangeidx) {
         return item.value.sortcols.filter(function (sortcol) {
           return dataView.source.header.colsByName[sortcol] != undefined;
@@ -197,7 +197,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
 
   Shader.compileSelectionsMapper = function (dataView) {
     return 'void selectionmapper() {\n' +
-      Object.items(dataView.selections).map(function (item) {
+      Object.items(dataView.selections.selections).map(function (item) {
         var cols = item.value.sortcols.filter(function (col) {
           return dataView.source.header.colsByName[col] != undefined;
         });
@@ -304,7 +304,7 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
         program.gl.uniform1f(program.uniforms['attrmap_' + column.key + '_from_' + srcKey], value);
       });
     });
-    Object.items(dataView.selections).map(function (item) {
+    Object.items(dataView.selections.selections).map(function (item) {
       item.value.sortcols.map(function (sortcol) {
         for (var rangeidx = 0; rangeidx < item.value.max_range_count; rangeidx++) {
           var lower = undefined;
