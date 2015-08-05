@@ -192,7 +192,7 @@ define([
 
       var ui = new ContentPane({});
 
-      Object.items(self.dataview.selections).map(function (item) {
+      Object.items(self.dataview.selections.selections).map(function (item) {
         self.generateSelectionUI(ui, item.key, item.value);
       });
 

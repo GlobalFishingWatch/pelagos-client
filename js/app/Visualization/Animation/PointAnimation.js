@@ -1,4 +1,4 @@
-define(["require", "app/Class", "app/Visualization/Shader", "app/Visualization/Animation/Animation", "jQuery"], function(require, Class, Shader, Animation, $) {
+define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation", "jQuery"], function(require, Class, Shader, Animation, $) {
   var PointAnimation = Class(Animation, {
     name: "PointAnimation",
 

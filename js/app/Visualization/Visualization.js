@@ -1,4 +1,4 @@
-define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/UI", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, UI, async, $, Json) {
+define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/UI/UIManager", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, UIManager, async, $, Json) {
   return Class({
     name: "Visualization",
     paramspec: {
@@ -47,7 +47,7 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
 
       async.series([
         function (cb) {
-          self.ui = new UI(self);
+          self.ui = new UIManager(self);
           self.ui.init1(cb);
         },
         function (cb) {

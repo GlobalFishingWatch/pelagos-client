@@ -3,18 +3,14 @@ profile = {
   resourceTags: {
     amd: function(filename, mid) {
       var specials = {"app/Condition": true,
-                      "app/Timeline.js": true,
-                      "app/Visualization/AnimationManagerUI": true,
-                      "app/Visualization/DataViewUI": true,
-                      "app/Visualization/InfoUI": true,
-                      "app/Visualization/LoggingUI": true,
-                      "app/Visualization/BasicSidebar": true,
-                      "app/Visualization/SidePanels/AnimationManagerUI": true,
-                      "app/Visualization/SidePanels/DataUI": true,
-                      "app/Visualization/SidePanels/DataViewUI": true,
-                      "app/Visualization/SidePanels/InfoUI": true,
-                      "app/Visualization/SidePanels/LoggingUI": true,
-                      "app/Visualization/SidePanels/SidePanelManager": true
+                      "app/Visualization/UI/Timeline.js": true,
+                      "app/Visualization/UI/BasicSidebar": true,
+                      "app/Visualization/UI/SidePanels/AnimationManagerUI": true,
+                      "app/Visualization/UI/SidePanels/DataUI": true,
+                      "app/Visualization/UI/SidePanels/DataViewUI": true,
+                      "app/Visualization/UI/SidePanels/InfoUI": true,
+                      "app/Visualization/UI/SidePanels/LoggingUI": true,
+                      "app/Visualization/UI/SidePanels/SidePanelManager": true
                      };
       if (specials[mid]) return false;
       return /\.js$/.test(filename);

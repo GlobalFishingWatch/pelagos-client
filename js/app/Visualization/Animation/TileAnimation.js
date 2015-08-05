@@ -1,4 +1,4 @@
-define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Shader", "app/Visualization/Animation/Animation"], function(require, Class, GeoProjection, Shader, Animation) {
+define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, GeoProjection, Shader, Animation) {
   var TileAnimation = Class(Animation, {
     name: "TileAnimation",
 

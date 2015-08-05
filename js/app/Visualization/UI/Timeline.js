@@ -1,6 +1,6 @@
-define(['app/Class', 'app/Events', 'app/Interval', 'app/TimeLabel', 'jQuery', 'less', 'app/LangExtensions'], function (Class, Events, Interval, TimeLabel, $, less) {
+define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLabel', 'jQuery', 'less', 'app/LangExtensions'], function (Class, Events, Interval, TimeLabel, $, less) {
 
-  var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('app/Timeline.less') + '" />');
+  var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('app/Visualization/UI/Timeline.less') + '" />');
   $('head').append(lessnode);
   less.sheets.push(lessnode[0]);
   less.refresh(true);
