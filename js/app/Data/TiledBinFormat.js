@@ -2,9 +2,9 @@
   tm = new TiledBinFormat({url:"http://127.0.0.1:8000/tiles"});
 
   tm.events.on({
-      "tile-error": function (data) { console.log("tile-error: " + data.exception + " @ " + data.tile.bounds.toBBOX()); },
-      "batch": function (data) { console.log("batch: " + data.tile.bounds.toBBOX()); },
-      "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toBBOX()); },
+      "tile-error": function (data) { console.log("tile-error: " + data.exception + " @ " + data.tile.bounds.toString()); },
+      "batch": function (data) { console.log("batch: " + data.tile.bounds.toString()); },
+      "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toString()); },
       "all": function () { console.log("all"); }
   });
   tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
@@ -17,10 +17,10 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Bi
     getTileContent: function (tile) {
       var self = this;
       var base = self.getUrl(
-        tile.bounds.toBBOX(),
+        tile.bounds.toString(),
         tile.fallbackLevel);
       var content = new BinFormat({
-        url: base + "/" + tile.bounds.toBBOX()
+        url: base + "/" + tile.bounds.toString()
       });
       content.setHeaders(self.headers);
       return content;

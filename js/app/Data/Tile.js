@@ -73,7 +73,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
 
     allLoaded: function () {
       var self = this;
-      Logging.main.log("Data.BaseTiledFormat.Tile.allLOaded", {tile:self.bounds.toBBOX(), toString: function () { return this.tile; }});
+      Logging.main.log("Data.BaseTiledFormat.Tile.allLOaded", {tile:self.bounds.toString(), toString: function () { return this.tile; }});
       self.removeOverlaps();
     },
 

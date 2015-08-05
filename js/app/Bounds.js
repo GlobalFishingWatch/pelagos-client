@@ -146,6 +146,13 @@ define(["app/Class"], function(Class) {
     },
 
     /* Extensions on top of what OpenLayers support */
+    containsObj: function (obj, partial, inclusive) {
+      return self.containsBounds(obj, partial, inclusive);
+    },
+    intersectsObj: function (obj, options) {
+      return self.intersectsBounds(obj, options);
+    },
+
     /* Move right and left edges whole revolutions around the globe so
      * that they are within world bounds. */
     rewrapDateLine: function(world) {

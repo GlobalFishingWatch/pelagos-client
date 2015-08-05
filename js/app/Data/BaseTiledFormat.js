@@ -2,15 +2,15 @@
   tm = new BaseTiledFormat({url:"http://127.0.0.1:8000/tiles"});
 
   tm.events.on({
-      "tile-error": function (data) { console.log("tile-error: " + data.exception + " @ " + data.tile.bounds.toBBOX()); },
-      "batch": function (data) { console.log("batch: " + data.tile.bounds.toBBOX()); },
-      "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toBBOX()); },
+      "tile-error": function (data) { console.log("tile-error: " + data.exception + " @ " + data.tile.bounds.toString()); },
+      "batch": function (data) { console.log("batch: " + data.tile.bounds.toString()); },
+      "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toString()); },
       "all": function () { console.log("all"); }
   });
   tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
 */
 
-define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Format, Tile, Pack, Logging, Ajax, _) {
+define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/TileBounds", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Format, Tile, TileBounds, Pack, Logging, Ajax, _) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
     initialize: function() {
@@ -185,89 +185,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       request.send(JSON.stringify(data));
     },
 
-    tileParamsForRegion: function(bounds) {
-      var self = this;
-      var origBounds = bounds;
-      bounds = bounds.unwrapDateLine(self.world);
-
-      var res = {
-        bounds: origBounds,
-        unwrappedBounds: bounds,
-        width: bounds.getWidth(),
-        height: bounds.getHeight(),
-        worldwidth: self.world.getWidth(),
-        worldheight: self.world.getHeight(),
-
-        toString: function () {
-          return "\n" + Object.items(this
-            ).filter(function (item) { return item.key != "toString" && item.key != "stack"; }
-            ).map(function (item) { return "  " + item.key + "=" + item.value.toString(); }
-            ).join("\n") + "\n";
-        }
-      };
-
-      res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(self.tilesPerScreen)), 2));
-      
-      res.tilewidth = res.worldwidth / Math.pow(2, res.level);
-      res.tileheight = res.worldheight / Math.pow(2, res.level);
-
-      res.tileleft = res.tilewidth * Math.floor(bounds.left / res.tilewidth);
-      res.tileright = res.tilewidth * Math.ceil(bounds.right / res.tilewidth);
-      res.tilebottom = res.tileheight * Math.floor(bounds.bottom / res.tileheight);
-      res.tiletop = res.tileheight * Math.ceil(bounds.top / res.tileheight);
-
-      res.tilesx = (res.tileright - res.tileleft) / res.tilewidth;
-      res.tilesy = (res.tiletop - res.tilebottom) / res.tileheight;
-
-      return res;
-    },
-
-    tileBoundsForRegion: function(bounds) {
-      /* Returns a list of tile bounds covering a region. */
-
-      var self = this;
-
-      var params = self.tileParamsForRegion(bounds);
-      Logging.main.log("Data.BaseTiledFormat.tileBoundsForRegion", params);
-
-      res = [];
-      for (var x = 0; x < params.tilesx; x++) {
-        for (var y = 0; y < params.tilesy; y++) {
-          res.push(new Bounds(
-            params.tileleft + x * params.tilewidth,
-            params.tilebottom + y * params.tileheight,
-            params.tileleft + (x+1) * params.tilewidth,
-            params.tilebottom + (y+1) * params.tileheight
-          ).rewrapDateLine(self.world));
-        }
-      }
-
-      return res;
-    },
-
-    extendTileBounds: function (bounds) {
-     /* Returns the first larger tile bounds enclosing the tile bounds
-      * sent in. Note: Parameter bounds must be for a tile, as returned
-      * by a previous call to tileBoundsForRegion or
-      * extendTileBounds. */
-
-      var self = this;
-
-      var tilewidth = bounds.getWidth() * 2;
-      var tileheight = bounds.getHeight() * 2;
-
-      var tileleft = tilewidth * Math.floor(bounds.left / tilewidth);
-      var tilebottom = tileheight * Math.floor(bounds.bottom / tileheight);
-
-      var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
-
-      if (self.world.containsBounds(res)) {
-        return res;
-      } else {
-        return undefined;
-      }
-    },
-
     clear: function () {
       var self = this;
 
@@ -301,14 +218,14 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var oldBounds = self.bounds;
       self.bounds = bounds;
 
-      var wantedTileBounds = self.tileBoundsForRegion(bounds);
+      var wantedTileBounds = TileBounds.tileBoundsForRegion(bounds, self.tilesPerScreen);
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
       var anyNewTiles = false;
       wantedTileBounds.map(function (tilebounds) {
-        var key = tilebounds.toBBOX();
+        var key = tilebounds.toString();
         if (oldWantedTiles[key] != undefined) {
-          wantedTiles[key] = oldWantedTiles[tilebounds.toBBOX()];
+          wantedTiles[key] = oldWantedTiles[tilebounds.toString()];
         } else {
             wantedTiles[key] = self.setUpTile(tilebounds, findOverlaps);
           anyNewTiles = true;
@@ -333,8 +250,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
           var existingWantedTiles = this.newWantedTiles.filter(function (bbox) {
               return self.oldWantedTiles.indexOf(bbox) != -1
           }).join(", ");
-          var oldBounds = self.oldBounds != undefined ? self.oldBounds.toBBOX() : "undefined";
-          var newBounds = self.newBounds != undefined ? self.newBounds.toBBOX() : "undefined";
+          var oldBounds = self.oldBounds != undefined ? self.oldBounds.toString() : "undefined";
+          var newBounds = self.newBounds != undefined ? self.newBounds.toString() : "undefined";
           return oldBounds + " -> " + newBounds + ":\n  Added: " + newWantedTiles + "\n  Removed: " + oldWantedTiles + "\n  Kept: " + existingWantedTiles + "\n";
         }
       });
@@ -348,10 +265,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       });
 
       wantedTileBounds.map(function (tilebounds) {
+        tilebounds = tilebounds.toString();
         setTimeout(function () {
-          var bbox = tilebounds.toBBOX();
-          if (self.wantedTiles[bbox]) {
-            self.wantedTiles[bbox].load();
+          if (self.wantedTiles[tilebounds]) {
+            self.wantedTiles[tilebounds].load();
           }
         }, 0);
       });
@@ -378,7 +295,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
     setUpTile: function (tilebounds, findOverlaps) {
       var self = this;
-      var key = tilebounds.toBBOX();
+      var key = tilebounds.toString();
 
       if (!self.tileCache[key]) {
         var tile = new Tile(self, tilebounds);
@@ -401,7 +318,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     handleTileRemoval: function (tile) {
       var self = this;
 
-      delete self.tileCache[tile.bounds.toBBOX()];
+      delete self.tileCache[tile.bounds.toString()];
       e = {update: "tile-removal", tile: tile};
       self.events.triggerEvent(e.update, e);
       self.events.triggerEvent("update", e);
@@ -455,7 +372,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var printTree = function (indent, depth, tile) {
         depth = depth || 0;
 
-        var key = tile.bounds.toBBOX();
+        var key = tile.bounds.toString();
 
         var again = printed[key] || false;
         printed[key] = true;
@@ -510,11 +427,11 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var filter = function (tile) { return true; };
       if (args.covers) {
         filter = function (tile) {
-          return tile.bounds.containsBounds(new Bounds(args.covers))
+          return tile.bounds.containsObj(new Bounds(args.covers))
         };
       } else if (args.coveredBy) {
         filter = function (tile) {
-          return new Bounds(args.coveredBy).containsBounds(tile.bounds)
+          return new Bounds(args.coveredBy).containsObj(tile.bounds)
         };
       }
 
@@ -529,7 +446,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       if (!args.coveredBy && !args.covers) {
         res += indent + 'Forgotten tiles:\n'
         res += Object.values(self.tileCache).filter(function (tile) {
-          return !printed[tile.bounds.toBBOX()];
+          return !printed[tile.bounds.toString()];
         }).map(
           printTree.bind(self, indent + "  ", 0)
         ).join("");
@@ -570,7 +487,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       data.tile = tile;
 
       if (data.status == 503 && tile.retry < self.retries - 1) {
-        console.log("retry " + tile.bounds.toBBOX());
+        console.log("retry " + tile.bounds.toString());
         tile.retryTimeout = setTimeout(function () {
           tile.retryTimeout = undefined;
           tile.retry++;
@@ -587,7 +504,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         if (data.complete_ancestor) {
           bounds = new Bounds(data.complete_ancestor);
         } else {
-          bounds = self.extendTileBounds(tile.bounds);
+          bounds = TileBounds.extendTileBounds(tile.bounds);
         }
 
         if (bounds) {
