@@ -18,3 +18,7 @@ js/libs
 
 #pycharm
 .idea
+
+.#*
+#*
+*.pyc
