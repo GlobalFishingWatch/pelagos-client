@@ -6,35 +6,26 @@
 define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Timerange) {
   var SpaceTime = Class({
     name: "SpaceTime",
-    initialize: function (timeRange, bounds) {
+    initialize: function () {
       var self = this;
-      if (timeRange.constructor == SpaceTime) {
-        self.timeRange = timeRange.timeRange;
-        self.bounds = timeRange.bounds;
-      } else if (timeRange.length) {
-        if (timeRange.constructor == String) {
-          timeRange = timeRange.split(";");
-        }
-        self.timeRange = new Timerange(timeRange[0]);
-        self.bounds = new Bounds(timeRange[1]);
-      } else {
-        self.timeRange = new Timerange(timeRange);
-        self.bounds = new Bounds(bounds);
-      }
+      self.timerange = null;
+      self.bounds = null;
+
+      self.udate.apply(self, arguments);
     },
 
     clone: function() {
       var self = this;
-      return new self.constructor(self.timeRange, self.bounds);
+      return new self.constructor(self);
     },
 
     toArray: function() {
-      return [this.timeRange.toArray(), this.bounds.toArray()];
+      return [this.timerange.toArray(), this.bounds.toArray()];
     },
 
     toString: function () {
       var self = this;
-      return self.timeRange.ToString() + ";" + self.toString();
+      return self.timerange.ToString() + ";" + self.toString();
     },
 
     containsObj:function(spaceTime, partial, inclusive) {
@@ -44,8 +35,8 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
       if (inclusive == undefined) {
         inclusive = true;
       }
-return (   this.timeRange.containsObj(spaceTime.timeRange, partial, inclusive)
-        && this.bounds.containsObj(spaceTime.bounds, partial, inclusive));
+      return (   this.timerange.containsObj(spaceTime.timerange, partial, inclusive)
+              && this.bounds.containsObj(spaceTime.bounds, partial, inclusive));
     },
 
     intersectsObj:function(range, options) {
@@ -57,14 +48,88 @@ return (   this.timeRange.containsObj(spaceTime.timeRange, partial, inclusive)
       if (options.inclusive == null) {
         options.inclusive = true;
       }
-      return (   this.timeRange.intersectsObj(spaceTime.timeRange, options)
+      return (   this.timerange.intersectsObj(spaceTime.timerange, options)
               && this.bounds.intersectsObj(spaceTime.bounds, options));
+    },
+
+    getBounds: function () {
+      return this.bounds;
+    },
+
+    getTimerange: function () {
+      return this.timerange;
+    },
+
+    getSpacetime: function () {
+      return this;
+    },
+
+    update: function () {
+      /* Usages:
+
+         update("TIMERANGE;BOUNDS")
+         update([TIMERANGE, BOUNDS]);
+         update(obj, obj, ...)
+
+         Where obj is a SpaceTime, Timerange or Bounds object or
+         {timerange:TIMERANGE, bounds:BOUNDS}.
+       */
+      var self = this;
+
+      var updateOne = function (obj) {
+        var timerange = undefined;
+        var bounds = undefined;
+
+        if (obj.length !== undefined) {
+          if (typeof(obj) == "string") {
+            obj = obj.split(";");
+          }
+          timerange = obj[0];
+          bounds = obj[1];
+        } else {
+          if (obj.getBounds != undefined) {
+            bounds = obj.getBounds();
+          } else if (obj.bounds) {
+            bounds = obj.bounds;
+          }
+
+          if (obj.getTimerange != undefined) {
+            timerange = obj.getTimerange();
+          } else if (obj.timerange) {
+            timerange = obj.timerange;
+          }
+        }
+
+        if (timerange) timerange = new Timerange(timerange);
+        if (bounds) bounds = new Bounds(bounds);
+
+        if (timerange !== undefined) {
+          if (timerange === null || self.timerange === null) {
+            self.timerange = timerange;
+          } else {
+            self.timerange.update(timerange);
+          }
+        }
+
+        if (bounds !== undefined) {
+          if (bounds === null || self.bounds === null) {
+            self.bounds = bounds;
+          } else {
+            self.bounds.update(bounds);
+          }
+        }
+      };
+
+      for (var i = 0; i < arguments.length; i++) {
+        updateOne(arguments[i]);
+      }
     },
 
     toJSON: function () {
       var self = this;
-      return {timeRange:self.timeRange.rfcstring(), bounds:self.bounds.rfcstring()}
+      return {timerange:self.timerange.rfcstring(), bounds:self.bounds.rfcstring()}
     }
   });
-  return Timerange;
+
+  return SpaceTime;
 });

@@ -6,26 +6,18 @@
 define(["app/Class"], function(Class) {
   var Timerange = Class({
     name: "Timerange",
-    initialize: function (start, end) {
+    initialize: function () {
       var self = this;
-      if (start.constructor == Timerange) {
-        self.start = start.start;
-        self.end = start.end;
-      } else if (start.length) {
-        if (start.constructor == String) {
-          start = start.split(",");
-        }
-        self.start = new Date(start[0]);
-        self.end = new Date(start[1]);
-      } else {
-        self.start = new Date(start);
-        self.end = new Date(end);
-      }
+
+      self.start = null;
+      self.end = null;
+
+      self.update.apply(self, arguments);
     },
 
     clone: function() {
       var self = this;
-      return new self.constructor(self.start, self.end);
+      return new self.constructor(self);
     },
 
     getLength: function () {
@@ -99,6 +91,55 @@ define(["app/Class"], function(Class) {
         intersects = (inStart || inEnd);
       }
       return intersects;
+    },
+
+    getTimerange: function () { return this; },
+
+    update: function () {
+      /* Usages:
+
+         update("START,END")
+         update([start, end]);
+         update(obj, obj, ...);
+       */
+
+      var self = this;
+
+      var updateOne = function (obj) {
+        var start = undefined;
+        var end = undefined;
+
+        if (obj.length !== undefined) {
+          if (typeof(obj) == "string") {
+            obj = obj.split(",");
+          }
+          start = obj[0];
+          end = obj[1];
+        } else {
+          if (obj.getTimerange != undefined) obj = obj.getTimerange();
+
+          if (obj.start !== undefined) {
+            start = obj.start;
+          }
+          if (obj.end !== undefined) {
+            end = obj.end;
+          }
+        }
+
+        if (start) { start = new Date(start); }
+        if (end) { end = new Date(end); }
+
+        if (start !== undefined) {
+          self.start = start;
+        }
+        if (end !== undefined) {
+          self.end = end;
+        }
+      };
+
+      for (var i = 0; i < arguments.length; i++) {
+        updateOne(arguments[i]);
+      }
     },
 
     toJSON: function () {

@@ -463,7 +463,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var lonmin = sw.lng();
       var latmax = ne.lat();
       var lonmax = ne.lng();
-      self.visualization.data.zoomTo(new Bounds(lonmin, latmin, lonmax, latmax));
+      self.visualization.data.zoomTo(new Bounds([lonmin, latmin, lonmax, latmax]));
     },
 
     canvasResize: function() {

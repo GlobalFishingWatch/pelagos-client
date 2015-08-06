@@ -7,7 +7,7 @@
       "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toString()); },
       "all": function () { console.log("all"); }
   });
-  tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
+  tm.zoomTo(new Bounds([0, 0, 11.25, 11.25]));
 */
 
 define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/BinFormat"], function(Class, Format, BaseTiledFormat, BinFormat) {

@@ -7,7 +7,7 @@
       "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toString()); },
       "all": function () { console.log("all"); }
   });
-  tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
+  tm.zoomTo(new Bounds([0, 0, 11.25, 11.25]));
 */
 
 define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/TileBounds", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Format, Tile, TileBounds, Pack, Logging, Ajax, _) {
@@ -28,8 +28,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     },
 
     tilesPerScreen: 16,
-
-    world: new Bounds(-180, -90, 180, 90),
 
     retries: 10,
     retryTimeout: 2000,
@@ -218,7 +216,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var oldBounds = self.bounds;
       self.bounds = bounds;
 
-      var wantedTileBounds = TileBounds.tileBoundsForRegion(bounds, self.tilesPerScreen);
+      var wantedTileBounds = TileBounds.tileBounds(bounds, self.tilesPerScreen);
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
       var anyNewTiles = false;

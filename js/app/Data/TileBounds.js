@@ -1,10 +1,10 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Format, Tile, Pack, Logging, Ajax, _) {
+define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Timerange, SpaceTime, Format, Tile, Pack, Logging, Ajax, _) {
   var TileBounds = Class({name: "TileBounds"});
 
-  TileBounds.world = new Bounds(-180, -90, 180, 90);
+  TileBounds.world = new Bounds([-180, -90, 180, 90]);
 
   TileBounds.tileParamsForRegion = function(bounds, tilesPerScreen) {
-    var origBounds = bounds;
+    var origBounds = new Bounds(bounds);
     bounds = bounds.unwrapDateLine(TileBounds.world);
 
     var res = {
@@ -60,11 +60,74 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     return res;
   },
 
-  TileBounds.extendTileBounds = function (bounds) {
+  TileBounds.tileParamsForRange = function(range) {
+    var range = new Timerange(range);
+
+    var res = {
+      range: range,
+      length: range.getLength(),
+
+      toString: function () {
+        return "\n" + Object.items(this
+          ).filter(function (item) { return item.key != "toString" && item.key != "stack"; }
+          ).map(function (item) { return "  " + item.key + "=" + item.value.toString(); }
+          ).join("\n") + "\n";
+      }
+    };
+
+    res.tilestart = new Date(range.start.getUTCFullYear(), range.start.getUTCMonth(), 1);
+    res.tileend = new Date(range.end.getUTCFullYear(), range.end.getUTCMonth() + 1, 1);
+
+    return res;
+  },
+
+
+  TileBounds.tileBoundsForRange = function(bounds, tilesPerScreen) {
+    /* Returns a list of tile bounds covering a region. */
+
+    var params = TileBounds.tileParamsForRange(bounds, tilesPerScreen);
+    Logging.main.log("Data.BaseTiledFormat.tileBoundsForRange", params);
+
+    res = [];
+    for (var t = params.tilestart; t < params.tileend; t = new Date(t.getUTCFullYear(), t.getUTCMonth() + 1)) {
+      res.push(new TimeRange(
+        t, new Date(t.getUTCFullYear(), t.getUTCMonth() + 1)));
+    }
+
+    return res;
+  },
+
+  TileBounds.tileBounds = function(bounds, tilesPerScreen) {
+    var sets = [];
+
+    if (bounds.getTimerange) {
+      sets.push(TileBounds.tileBoundsForRange(bounds, tilesPerScreen));
+    }
+    if (bounds.getBounds) {
+      sets.push(TileBounds.tileBoundsForRegion(bounds, tilesPerScreen));
+    }
+
+    var flatten = function(set1, set2) {
+      var res = [];
+      for (var i1 = 0; i1 < set1.length; i1++) {
+        for (var i2 = 0; i2 < set2.length; i2++) {
+          var item = set1[i1].clone();
+          item.update(set2[i2]);
+          res.push(item);
+        }
+      }
+      return res;
+    }   
+
+    return sets.reduce(flatten, [bounds]);
+  },
+
+  TileBounds.extendTileBounds = function (obj) {
    /* Returns the first larger tile bounds enclosing the tile bounds
     * sent in. Note: Parameter bounds must be for a tile, as returned
-    * by a previous call to tileBoundsForRegion or
-    * extendTileBounds. */
+    * by a previous call to tileBounds or extendTileBounds. */
+
+    bounds = new Bounds(obj);
 
     var tilewidth = bounds.getWidth() * 2;
     var tileheight = bounds.getHeight() * 2;
@@ -75,6 +138,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
 
     if (TileBounds.world.containsObj(res)) {
+      obj = new obj.clone();
+      obj.update(res);
       return res;
     } else {
       return undefined;
