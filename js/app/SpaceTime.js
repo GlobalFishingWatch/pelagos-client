@@ -11,7 +11,7 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
       self.timerange = null;
       self.bounds = null;
 
-      self.udate.apply(self, arguments);
+      self.update.apply(self, arguments);
     },
 
     clone: function() {
@@ -25,7 +25,7 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
 
     toString: function () {
       var self = this;
-      return self.timerange.ToString() + ";" + self.toString();
+      return self.timerange.toString() + ";" + self.bounds.toString();
     },
 
     containsObj:function(spaceTime, partial, inclusive) {
@@ -39,7 +39,7 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
               && this.bounds.containsObj(spaceTime.bounds, partial, inclusive));
     },
 
-    intersectsObj:function(range, options) {
+    intersectsObj:function(spaceTime, options) {
       self = this;
       if (typeof options === "boolean") {
         options =  {inclusive: options};

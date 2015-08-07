@@ -135,9 +135,11 @@ define(["app/Class"], function(Class) {
 
     /* Extensions on top of what OpenLayers support */
     containsObj: function (obj, partial, inclusive) {
+      var self = this;
       return self.containsBounds(obj, partial, inclusive);
     },
     intersectsObj: function (obj, options) {
+      var self = this;
       return self.intersectsBounds(obj, options);
     },
 

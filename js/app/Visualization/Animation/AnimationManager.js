@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, Timerange, SpaceTime, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
   return Class({
     name: "AnimationManager",
 
@@ -263,6 +263,8 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         lat: self.panZoom,
         lon: self.panZoom,
         zoom: self.panZoom,
+        time: self.dataNeedsChanged,
+        timeExtent:self.dataNeedsChanged,
         scope: self
       });
       cb();
@@ -455,7 +457,13 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
     boundsChanged: function() {
       var self = this;
+
       if (self.indrag) return;
+      self.dataNeedsChanged();
+    },
+
+    dataNeedsChanged: function() {
+      var self = this;
       var bounds = self.map.getBounds();
       var ne = bounds.getNorthEast();
       var sw = bounds.getSouthWest();
@@ -463,7 +471,15 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var lonmin = sw.lng();
       var latmax = ne.lat();
       var lonmax = ne.lng();
-      self.visualization.data.zoomTo(new Bounds([lonmin, latmin, lonmax, latmax]));
+      var bounds = new Bounds([lonmin, latmin, lonmax, latmax]);
+
+      var start = self.visualization.state.getValue("time");
+      if (start == undefined) return;
+
+      var end = new Date(start.getTime() + self.visualization.state.getValue("timeExtent"));
+      var range = new Timerange([start, end]);
+
+      self.visualization.data.zoomTo(new SpaceTime(range, bounds));
     },
 
     canvasResize: function() {

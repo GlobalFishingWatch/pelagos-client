@@ -96,7 +96,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       if (bounds.length > 0) bounds = new Bounds(bounds);
 
       Logging.main.log("Data.DataManager.zoomTo", {
-        bbox: bounds.toBBOX(),
+        bbox: bounds.toString(),
         sources: Object.keys(self.sources)
       });
       self.bounds = bounds;

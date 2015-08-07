@@ -56,7 +56,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
     findOverlaps: function () {
       var self = this;
       self.overlaps = Object.values(self.manager.tileCache).filter(function (tile) {
-        return tile.bounds.intersectsBounds(self.bounds);
+        return tile.bounds.intersectsObj(self.bounds);
       });
       self.overlaps.map(function (tile) {
         tile.reference();

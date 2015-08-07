@@ -31,7 +31,7 @@ define(["app/Class"], function(Class) {
 
     toString: function () {
       var self = this;
-      return self.start.rfcstring() + "," + self.rfcstring();
+      return self.start.rfcstring() + "," + self.end.rfcstring();
     },
 
     contains: function(t, inclusive) {
@@ -54,7 +54,7 @@ define(["app/Class"], function(Class) {
         inclusive = true;
       }
       var start  = this.contains(range.start, inclusive);
-      var end = this.contains(range.end, bounds.bottom, inclusive);
+      var end = this.contains(range.end, inclusive);
 
       return (partial) ? (start || end)
                        : (start && end);
