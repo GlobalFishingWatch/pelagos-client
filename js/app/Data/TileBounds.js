@@ -75,8 +75,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       }
     };
 
-    res.tilestart = new Date(range.start.getFullYear(), range.start.getMonth(), 1);
-    res.tileend = new Date(range.end.getFullYear(), range.end.getMonth() + 1, 1);
+    res.tilestart = new Date(Date.UTC(range.start.getUTCFullYear(), range.start.getUTCMonth(), 1));
+    res.tileend = new Date(Date.UTC(range.end.getUTCFullYear(), range.end.getUTCMonth() + 1, 1));
 
     return res;
   },
@@ -89,9 +89,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     Logging.main.log("Data.BaseTiledFormat.tileBoundsForRange", params);
 
     res = [];
-    for (var t = params.tilestart; t < params.tileend; t = new Date(t.getFullYear(), t.getMonth() + 1, 1)) {
+    for (var t = params.tilestart; t < params.tileend; t = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1))) {
       res.push(new Timerange([
-        t, new Date(t.getFullYear(), t.getMonth() + 1, 1)]));
+        t, new Date(Date.UTC(t.getUTCFullYear(), t.getMonth() + 1, 1))]));
     }
 
     return res;
