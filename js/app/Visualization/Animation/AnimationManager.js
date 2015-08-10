@@ -473,10 +473,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       var lonmax = ne.lng();
       var bounds = new Bounds([lonmin, latmin, lonmax, latmax]);
 
-      var start = self.visualization.state.getValue("time");
-      if (start == undefined) return;
+      var end = self.visualization.state.getValue("time");
+      if (end == undefined) return;
 
-      var end = new Date(start.getTime() + self.visualization.state.getValue("timeExtent"));
+      var start = new Date(end.getTime() - self.visualization.state.getValue("timeExtent"));
       var range = new Timerange([start, end]);
 
       self.visualization.data.zoomTo(new SpaceTime(range, bounds));

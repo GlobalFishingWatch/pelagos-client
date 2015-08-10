@@ -48,12 +48,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     res = [];
     for (var x = 0; x < params.tilesx; x++) {
       for (var y = 0; y < params.tilesy; y++) {
-        res.push(new Bounds(
+        res.push(new Bounds([
           params.tileleft + x * params.tilewidth,
           params.tilebottom + y * params.tileheight,
           params.tileleft + (x+1) * params.tilewidth,
           params.tilebottom + (y+1) * params.tileheight
-        ).rewrapDateLine(TileBounds.world));
+        ]).rewrapDateLine(TileBounds.world));
       }
     }
 
@@ -100,11 +100,16 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
   TileBounds.tileBounds = function(bounds, tilesPerScreen) {
     var sets = [];
 
+    var addSet = function(set) {
+      tilesPerScreen = Math.ceil(tilesPerScreen / set.length);
+      sets.push(set);
+    };
+
     if (bounds.getTimerange) {
-      sets.push(TileBounds.tileBoundsForRange(bounds, tilesPerScreen));
+      addSet(TileBounds.tileBoundsForRange(bounds, tilesPerScreen));
     }
     if (bounds.getBounds) {
-      sets.push(TileBounds.tileBoundsForRegion(bounds, tilesPerScreen));
+      addSet(TileBounds.tileBoundsForRegion(bounds, tilesPerScreen));
     }
 
     var flatten = function(set1, set2) {
