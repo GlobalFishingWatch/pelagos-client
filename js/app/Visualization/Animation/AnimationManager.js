@@ -317,11 +317,6 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         } else {
 	  if (data) data.selection = info;
           self.events.triggerEvent('info', data);
-          if (data && data.seriesTileset) {
-            self.showSelectionAnimation(data.layerInstance, dataView.selections.selections[selectionEvent.category]);
-          } else {
-            self.hideSelectionAnimations();
-          }
         }
       }
     },
@@ -338,62 +333,70 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
         var data = {};
         data.toString = function () { return ""; };
         self.handleInfo(animation, selectionEvent, null, undefined);
-      } else if (dataView.selections.selections[type].rawInfo) {
-        var data = dataView.selections.selections[type].data;
-        data.layerInstance = animation;
-        data.layer = animation.title;
-        data.toString = function () {
-          var content = ["<table class='table table-striped table-bordered'>"];
-          Object.keys(data).sort().map(function (key) {
-            if (key == 'toString' || key == 'layer' || key == 'layerInstance') return;
-            var value = data[key][0];
-            if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
-              value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
-            }
-            content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
-          });
-          content.push("</table>");
-          return content.join('\n');
-        };
-        self.handleInfo(animation, selectionEvent, null, data);
+        if (dataView.source.header.seriesTilesets) {
+          self.hideSelectionAnimations();
+        }
       } else {
-        dataView.selections.getSelectionInfo(type, function (err, data) {
-          var content;
-
-          if (err) {
-            err.layerInstance = animation;
-            err.layer = animation.title;
-            self.handleInfo(animation, selectionEvent, err, null);
-          } else {
-            data.layerInstance = animation;
-            data.layer = animation.title;
-            data.toString = function () {
-              var content = ["<table class='table table-striped table-bordered'>"];
-              if (data.name) {
-                var name = data.name;
-                if (data.link) {
-                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                }
-                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+        if (dataView.source.header.seriesTilesets) {
+          self.showSelectionAnimation(animation, dataView.selections.selections[type]);
+        }
+        if (dataView.selections.selections[type].rawInfo) {
+          var data = dataView.selections.selections[type].data;
+          data.layerInstance = animation;
+          data.layer = animation.title;
+          data.toString = function () {
+            var content = ["<table class='table table-striped table-bordered'>"];
+            Object.keys(data).sort().map(function (key) {
+              if (key == 'toString' || key == 'layer' || key == 'layerInstance') return;
+              var value = data[key][0];
+              if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
+                value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
               }
+              content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
+            });
+            content.push("</table>");
+            return content.join('\n');
+          };
+          self.handleInfo(animation, selectionEvent, null, data);
+        } else {
+          dataView.selections.getSelectionInfo(type, function (err, data) {
+            var content;
 
-              Object.keys(data).sort().map(function (key) {
-                if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
-                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                } else {
-                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+            if (err) {
+              err.layerInstance = animation;
+              err.layer = animation.title;
+              self.handleInfo(animation, selectionEvent, err, null);
+            } else {
+              data.layerInstance = animation;
+              data.layer = animation.title;
+              data.toString = function () {
+                var content = ["<table class='table table-striped table-bordered'>"];
+                if (data.name) {
+                  var name = data.name;
+                  if (data.link) {
+                    name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
+                  }
+                  content.push("<tr><th colspan='2'>" + name + "</th><tr>");
                 }
-              });
 
-              content.push("</table>");
+                Object.keys(data).sort().map(function (key) {
+                  if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
+                  if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                    content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
+                  } else {
+                    content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+                  }
+                });
 
-              return content.join('\n');
-            };
-            self.handleInfo(animation, selectionEvent, null, data);
-          }
-        });
+                content.push("</table>");
 
+                return content.join('\n');
+              };
+              self.handleInfo(animation, selectionEvent, null, data);
+            }
+          });
+
+        }
       }
     },
 
