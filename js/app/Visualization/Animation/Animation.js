@@ -69,7 +69,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
         var handleHeader = function () {
           self.gl = gl;
 
-          self.data_view.events.un({
+          self.data_view.source.events.un({
             "header": handleHeader
           });
 
