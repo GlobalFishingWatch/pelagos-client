@@ -188,21 +188,23 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       var self = this;
 
       for (var key in self.animations) {
-        var animation = self.animations[key];
-        if (animation.selectionAnimation != undefined) {
-          self.removeAnimation(animation.selectionAnimation);
-          animation.selectionAnimation = undefined;
-        }
+        self.hideSelectionAnimation(self.animations[key]);
       }
     },
 
-    showSelectionAnimation: function (baseAnimation, selection) {
+    hideSelectionAnimation: function (baseAnimation) {
       var self = this;
 
       if (baseAnimation.selectionAnimation != undefined) {
         self.removeAnimation(baseAnimation.selectionAnimation);
         baseAnimation.selectionAnimation = undefined;
       }
+    },
+
+    showSelectionAnimation: function (baseAnimation, selection) {
+      var self = this;
+
+      self.hideSelectionAnimation(baseAnimation);
 
       if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
         var selectionValue = selection.data.series[0];
@@ -221,11 +223,12 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
           },
           "type": "VesselTrackAnimation"
         }, function (err, animation) {
-          if (baseAnimation.selectionAnimation != undefined) {
-            self.removeAnimation(baseAnimation.selectionAnimation);
-            baseAnimation.selectionAnimation = undefined;
+          self.hideSelectionAnimation(baseAnimation);
+          if (err) {
+            self.removeAnimation(animation);
+          } else {
+            baseAnimation.selectionAnimation = animation;
           }
-          baseAnimation.selectionAnimation = animation;
         });
       }
     },
