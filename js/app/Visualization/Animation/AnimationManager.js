@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
   return Class({
     name: "AnimationManager",
 
@@ -203,33 +203,53 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
 
     showSelectionAnimation: function (baseAnimation, selection) {
       var self = this;
+      var baseHeader = baseAnimation.data_view.source.header;
+
+      if (!baseHeader.seriesTilesets) return;
 
       self.hideSelectionAnimation(baseAnimation);
 
       if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
+        var seriesTileset = baseHeader.seriesTilesets;
+
+        if (seriesTileset === true) {
+          seriesTileset = {
+            "args": {
+              "title": "Vessel Track",
+              "color": "grey",
+              "visible": true,
+              "source": {
+                "type": "BinFormat",
+                "args": {
+                  "url": "%(header.urls.1.0)s-%(selectionValue)s/-180,-90,180,90"
+                }
+              }
+            },
+            "type": "VesselTrackAnimation"
+          };
+        }
+
         var selectionValue = selection.data.series[0];
         if (selection.data.seriesgroup != undefined) selectionValue = selection.data.seriesgroup[0];
-        self.addAnimation({
-          "args": {
-            "title": "Vessel Track",
-            "color": "grey",
-            "visible": true,
-            "source": {
-              "type": "BinFormat",
-              "args": {
-                "url": baseAnimation.data_view.source.header.urls[1][0] + "-" + selectionValue + "/-180,-90,180,90"
-              }
-            }
-          },
-          "type": "VesselTrackAnimation"
-        }, function (err, animation) {
-          self.hideSelectionAnimation(baseAnimation);
-          if (err) {
-            self.removeAnimation(animation);
-          } else {
-            baseAnimation.selectionAnimation = animation;
-          }
+
+        seriesTileset = new ObjectTemplate(seriesTileset).eval({
+          url: baseAnimation.data_view.source.url,
+          selectionValue: selectionValue,
+          header: baseAnimation.data_view.source.header,
+          selection: selection
         });
+
+        self.addAnimation(
+          seriesTileset,
+          function (err, animation) {
+            self.hideSelectionAnimation(baseAnimation);
+            if (err) {
+              self.removeAnimation(animation);
+            } else {
+              baseAnimation.selectionAnimation = animation;
+            }
+          }
+        );
       }
     },
 
@@ -340,9 +360,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
           self.hideSelectionAnimations();
         }
       } else {
-        if (dataView.source.header.seriesTilesets) {
-          self.showSelectionAnimation(animation, dataView.selections.selections[type]);
-        }
+        self.showSelectionAnimation(animation, dataView.selections.selections[type]);
         if (dataView.selections.selections[type].rawInfo) {
           var data = dataView.selections.selections[type].data;
           data.layerInstance = animation;
