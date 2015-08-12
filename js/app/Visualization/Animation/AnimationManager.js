@@ -137,8 +137,16 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
       } else {
         self.gl.enable(self.gl.BLEND);
         self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE);
-        self.canvasResize();
-        cb();
+
+        var onAdd = function () {
+          if (!self.canvasLayer.isAdded_) {
+            setTimeout(onAdd, 1);
+          } else {
+            self.canvasResize();
+            cb();
+          }
+        }
+        onAdd();
       }
     },
 
