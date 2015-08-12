@@ -389,7 +389,7 @@ define(["app/Class", "app/Events", "app/Bounds", "async", "app/Logging", "app/Vi
               }
 
               Object.keys(data).sort().map(function (key) {
-                if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
+                if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance' || key == 'selection') return;
                 if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
                   content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
                 } else {
