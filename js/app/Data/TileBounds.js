@@ -91,7 +91,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     res = [];
     for (var t = params.tilestart; t < params.tileend; t = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1))) {
       res.push(new Timerange([
-        t, new Date(Date.UTC(t.getUTCFullYear(), t.getMonth() + 1, 1))]));
+        t, new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1))]));
     }
 
     return res;
