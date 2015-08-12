@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, Timerange, SpaceTime, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, Timerange, SpaceTime, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
   return Class({
     name: "AnimationManager",
 
@@ -137,8 +137,16 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       } else {
         self.gl.enable(self.gl.BLEND);
         self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE);
-        self.canvasResize();
-        cb();
+
+        var onAdd = function () {
+          if (!self.canvasLayer.isAdded_) {
+            setTimeout(onAdd, 1);
+          } else {
+            self.canvasResize();
+            cb();
+          }
+        }
+        onAdd();
       }
     },
 
@@ -188,45 +196,68 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       var self = this;
 
       for (var key in self.animations) {
-        var animation = self.animations[key];
-        if (animation.selectionAnimation != undefined) {
-          self.removeAnimation(animation.selectionAnimation);
-          animation.selectionAnimation = undefined;
-        }
+        self.hideSelectionAnimation(self.animations[key]);
       }
     },
 
-    showSelectionAnimation: function (baseAnimation, selection) {
+    hideSelectionAnimation: function (baseAnimation) {
       var self = this;
 
       if (baseAnimation.selectionAnimation != undefined) {
         self.removeAnimation(baseAnimation.selectionAnimation);
         baseAnimation.selectionAnimation = undefined;
       }
+    },
+
+    showSelectionAnimation: function (baseAnimation, selection) {
+      var self = this;
+      var baseHeader = baseAnimation.data_view.source.header;
+
+      if (!baseHeader.seriesTilesets) return;
+
+      self.hideSelectionAnimation(baseAnimation);
 
       if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
+        var seriesTileset = baseHeader.seriesTilesets;
+
+        if (seriesTileset === true) {
+          seriesTileset = {
+            "args": {
+              "title": "Vessel Track",
+              "color": "grey",
+              "visible": true,
+              "source": {
+                "type": "BinFormat",
+                "args": {
+                  "url": "%(header.urls.1.0)s-%(selectionValue)s/-180,-90,180,90"
+                }
+              }
+            },
+            "type": "VesselTrackAnimation"
+          };
+        }
+
         var selectionValue = selection.data.series[0];
         if (selection.data.seriesgroup != undefined) selectionValue = selection.data.seriesgroup[0];
-        self.addAnimation({
-          "args": {
-            "title": "Vessel Track",
-            "color": "grey",
-            "visible": true,
-            "source": {
-              "type": "BinFormat",
-              "args": {
-                "url": baseAnimation.data_view.source.header.urls[1][0] + "-" + selectionValue + "/-180,-90,180,90"
-              }
-            }
-          },
-          "type": "VesselTrackAnimation"
-        }, function (err, animation) {
-          if (baseAnimation.selectionAnimation != undefined) {
-            self.removeAnimation(baseAnimation.selectionAnimation);
-            baseAnimation.selectionAnimation = undefined;
-          }
-          baseAnimation.selectionAnimation = animation;
+
+        seriesTileset = new ObjectTemplate(seriesTileset).eval({
+          url: baseAnimation.data_view.source.url,
+          selectionValue: selectionValue,
+          header: baseAnimation.data_view.source.header,
+          selection: selection
         });
+
+        self.addAnimation(
+          seriesTileset,
+          function (err, animation) {
+            self.hideSelectionAnimation(baseAnimation);
+            if (err) {
+              self.removeAnimation(animation);
+            } else {
+              baseAnimation.selectionAnimation = animation;
+            }
+          }
+        );
       }
     },
 
@@ -319,11 +350,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
         } else {
 	  if (data) data.selection = info;
           self.events.triggerEvent('info', data);
-          if (data && data.seriesTileset) {
-            self.showSelectionAnimation(data.layerInstance, dataView.selections.selections[selectionEvent.category]);
-          } else {
-            self.hideSelectionAnimations();
-          }
         }
       }
     },
@@ -340,62 +366,73 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
         var data = {};
         data.toString = function () { return ""; };
         self.handleInfo(animation, selectionEvent, null, undefined);
-      } else if (dataView.selections.selections[type].rawInfo) {
-        var data = dataView.selections.selections[type].data;
-        data.layerInstance = animation;
-        data.layer = animation.title;
-        data.toString = function () {
-          var content = ["<table class='table table-striped table-bordered'>"];
-          Object.keys(data).sort().map(function (key) {
-            if (key == 'toString' || key == 'layer' || key == 'layerInstance') return;
-            var value = data[key][0];
-            if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
-              value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
-            }
-            content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
-          });
-          content.push("</table>");
-          return content.join('\n');
-        };
-        self.handleInfo(animation, selectionEvent, null, data);
+        if (dataView.source.header.seriesTilesets) {
+          self.hideSelectionAnimations();
+        }
       } else {
-        dataView.selections.getSelectionInfo(type, function (err, data) {
-          var content;
-
-          if (err) {
-            err.layerInstance = animation;
-            err.layer = animation.title;
-            self.handleInfo(animation, selectionEvent, err, null);
-          } else {
-            data.layerInstance = animation;
-            data.layer = animation.title;
-            data.toString = function () {
-              var content = ["<table class='table table-striped table-bordered'>"];
-              if (data.name) {
-                var name = data.name;
-                if (data.link) {
-                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                }
-                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+        self.showSelectionAnimation(animation, dataView.selections.selections[type]);
+        if (dataView.selections.selections[type].rawInfo) {
+          var data = dataView.selections.selections[type].data;
+          data.layerInstance = animation;
+          data.layer = animation.title;
+          data.toString = function () {
+            var content = ["<table class='table table-striped table-bordered'>"];
+            Object.keys(data).sort().map(function (key) {
+              if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance' || key == 'selection') return;
+              var value = data[key][0];
+              if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
+                value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
               }
+              if (typeof(value)=="string" && value.indexOf("://") != -1) {
+                content.push("<tr><th colspan='2'><a target='_new' href='" + value +  "'>" + key + "</a></th></tr>");
+              } else {
+                content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
+              }
+            });
+            content.push("</table>");
+            return content.join('\n');
+          };
+          self.handleInfo(animation, selectionEvent, null, data);
+        } else {
+          dataView.selections.getSelectionInfo(type, function (err, data) {
+            var content;
 
-              Object.keys(data).sort().map(function (key) {
-                if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
-                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                } else {
-                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+            if (err) {
+              err.layerInstance = animation;
+              err.layer = animation.title;
+              self.handleInfo(animation, selectionEvent, err, null);
+            } else {
+              data.layerInstance = animation;
+              data.layer = animation.title;
+              data.toString = function () {
+                var content = ["<table class='table table-striped table-bordered'>"];
+                if (data.name) {
+                  var name = data.name;
+                  if (data.link) {
+                    name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
+                  }
+                  content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+>>>>>>> ee24dc5fdb8ace2bb31915f892f35a9b1cd3f981
                 }
-              });
 
-              content.push("</table>");
+                Object.keys(data).sort().map(function (key) {
+                  if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
+                  if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                    content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
+                  } else {
+                    content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+                  }
+                });
 
-              return content.join('\n');
-            };
-            self.handleInfo(animation, selectionEvent, null, data);
-          }
-        });
+                content.push("</table>");
 
+                return content.join('\n');
+              };
+              self.handleInfo(animation, selectionEvent, null, data);
+            }
+          });
+
+        }
       }
     },
 
