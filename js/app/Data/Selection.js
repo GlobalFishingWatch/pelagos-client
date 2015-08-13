@@ -110,6 +110,19 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
       self.events.triggerEvent("update", {update:"clear"});
     },
 
+    retriggerSelectionEvent: function () {
+      var self = this;
+      if (self.header.length > 0) {
+        var startData = {};
+        var endData = {};
+        for (var key in self.data) {
+          startData[key] = self.data[key][0];
+          endData[key] = self.data[key][1];
+        }
+        self.events.triggerEvent("update", {update: "add", startData:startData, endData:endData});
+      }
+    },
+
     checkRow: function (source, rowidx) {
       var self = this;
       for (var i = 0; i < self.header.length; i++) {

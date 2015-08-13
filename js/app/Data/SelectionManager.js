@@ -41,9 +41,20 @@ define(["app/Class", "app/Events", "app/Data/Selection", "lodash"], function(Cla
       self.events.triggerEvent('update', {update: 'range', category: type});
     },
 
+    retriggerSelectionEvents: function () {
+      var self = this;
+      Object.values(self.selections).map(function (selection) {
+        selection.retriggerSelectionEvent();
+      });
+    },
+
     getSelectionInfo: function (name, cb) {
       var self = this;
-      self.source.getSelectionInfo(self.selections[name], cb);
+      if (self.source.getSelectionInfo) {
+        self.source.getSelectionInfo(self.selections[name], cb);
+      } else {
+        cb("No selection information available for " + self.source.toString());
+      }
     }
   });
 });

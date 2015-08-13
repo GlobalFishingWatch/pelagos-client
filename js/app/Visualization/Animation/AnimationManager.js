@@ -254,6 +254,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
             if (err) {
               self.removeAnimation(animation);
             } else {
+              animation.selectionAnimationFor = baseAnimation;
               baseAnimation.selectionAnimation = animation;
             }
           }
@@ -314,6 +315,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
                 "add": self.handleSelectionUpdate.bind(
                   self, animationInstance)
               });
+              animationInstance.data_view.selections.retriggerSelectionEvents();
             }
             self.events.triggerEvent("add", {animation: animationInstance});
           }
@@ -357,7 +359,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       var dataView = animation.data_view;
       var type = selectionEvent.category;
 
-      if (type == 'hover') return;
+      if (type != 'selected' && type != 'info') return;
 
       if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
           && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
@@ -652,7 +654,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
     toJSON: function () {
       var self = this;
 
-      return {animations:self.animations, options:self.mapOptions};
+      return {animations: self.animations.filter(function (animation) {
+                return animation.selectionAnimationFor == undefined;
+              }),
+              options: self.mapOptions};
     }
   });
 });
