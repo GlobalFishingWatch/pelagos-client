@@ -410,7 +410,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
                     name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
                   }
                   content.push("<tr><th colspan='2'>" + name + "</th><tr>");
->>>>>>> ee24dc5fdb8ace2bb31915f892f35a9b1cd3f981
                 }
 
                 Object.keys(data).sort().map(function (key) {
