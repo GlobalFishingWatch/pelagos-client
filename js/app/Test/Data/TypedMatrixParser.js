@@ -26,29 +26,26 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/TypedMatrixParser",
 */
 
     "Parse generated data": function (cb) {
-      QUnit.expect(6);
+      QUnit.expect(5);
 
       var p = new TypedMatrixParser(require.toUrl("app/Test/Data/foo.bin"));
-      var rowidx = 0;
       p.events.on({
         header: function (data) {
           QUnit.equal(data.test, 4711, "Support for extra header values");
           QUnit.equal(data.colsByName.foo.gazonk, 3, "Support for extra column attributes");
           QUnit.equal(data.colsByName.foo.max, 6, "Support for column min/max values");
         },
-        row: function (data) {
-          if (rowidx == 2) {
-            QUnit.equal(data.foo, 6, "First value matches");
-            QUnit.equal(data.bar, 10, "Other value matches");
+        col: function (data) {
+          if (data.column.name == "foo") {
+            QUnit.equal(data.values[2], 6, "First value matches");
           }
-          rowidx++;
         },
         all: function () {
           QUnit.ok(true, "Parsed data");
           cb();
         },
         error: function (e) {
-          QUnit.ok(false, e);
+          QUnit.ok(false, e.toString());
           cb();
         }
       });

@@ -11,7 +11,8 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat", "app/Da
         foo: {type: "Int32", items: [{name: "foo", source: {foo: 1}}]},
         bar: {type: "Int32", items: [{name: "bar", source: {bar: 1}}]},
         selected: {type: "Int32", items: [{name: "selected", source: {selected: 1}}]}
-        }});
+      },
+      selections: {selected: {}}});
       dv.events.on({
         all: function () {
           dv.selections.selected.addRange(p, [0, 1], [0, 1]);
