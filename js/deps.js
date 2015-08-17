@@ -1,12 +1,16 @@
 (function () {
   app.webworker = typeof importScripts != "undefined";
 
-  if (window.location.toString().indexOf("dojo=true") != -1) {
-    app.useDojo = true;
-  } else if (window.location.toString().indexOf("dojo=false") != -1) {
+  if (app.webworker) {
     app.useDojo = false;
+  } else {
+    if (window.location.toString().indexOf("dojo=true") != -1) {
+      app.useDojo = true;
+    } else if (window.location.toString().indexOf("dojo=false") != -1) {
+      app.useDojo = false;
+    }
+    if (app.useDojo == undefined) app.useDojo = true;
   }
-  if (app.useDojo == undefined) app.useDojo = true;
 
   if (!app.name) {
     if (app.webworker) {
