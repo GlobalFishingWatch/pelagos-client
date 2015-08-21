@@ -29,3 +29,6 @@ def close():
     driver.close()
     httpd.shutdown()
     
+
+if __name__ == "__main__":
+    open()
