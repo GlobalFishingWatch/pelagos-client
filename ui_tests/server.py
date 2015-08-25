@@ -4,7 +4,9 @@ import threading
 import selenium.webdriver
 import os.path
 import time
-from selenium.common.exceptions import NoSuchElementException
+import selenium.common.exceptions
+import selenium.webdriver.common.desired_capabilities
+import datetime
 
 httpds = None
 server = None
@@ -26,13 +28,16 @@ def open():
     print "Serving HTTP on", sa[0], "port", sa[1], "..."
 
     server = threading.Thread(target=httpd.serve_forever).start()
-
-    driver = selenium.webdriver.Firefox()
+    capabilities = selenium.webdriver.common.desired_capabilities.DesiredCapabilities.FIREFOX
+    capabilities['loggingPrefs'] = {'browser': 'ALL'}
+    driver = selenium.webdriver.Firefox(capabilities=capabilities)
 
 
 def close():
+    for line in driver.get_log("browser"):
+        if line['level'] != 'DEBUG':
+            print "%s: %s: %s" % (datetime.datetime.utcfromtimestamp(line['timestamp']/1000.0).strftime("%Y-%m-%d %H:%M:%S"), line['level'], line['message'])
     try:
-        #driver.close()
         driver.quit()
     finally:
         httpd.shutdown()
@@ -58,7 +63,7 @@ def wait_for_load():
 def is_element_present(what):
     try:
         driver.find_element_by_xpath(what)
-    except NoSuchElementException:
+    except selenium.common.exceptions.NoSuchElementException:
         return False
     return True
 
