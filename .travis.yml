@@ -10,3 +10,10 @@ script:
   - make
   - xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 60
   - xvfb-run -s "-screen 0 1280x1024x24" nosetests -w ui_tests
+  - cp *.png travis-data
+
+before_script:
+  - scripts/travis-checkout-data.sh
+
+after_script:
+  - scripts/travis-upload-data.sh
