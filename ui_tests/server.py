@@ -45,7 +45,6 @@ def wait_for(cond, max=60):
             if cond():
                 break
         except Exception, e:
-            print "XXXXXXXXXXXXXXXXXXXXXXXXX", e
             pass
         time.sleep(1)
     else:
