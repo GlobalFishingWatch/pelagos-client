@@ -3,7 +3,9 @@ install:
   - sudo apt-get update > install-log || { cat install-log; exit 1; }
   - sudo apt-get install -qq xvfb chromium-browser nodejs > install-log || { cat install-log; exit 1; }
   - sudo npm install testem -g > install-log || { cat install-log; exit 1; }
+  - sudo pip install -r requirements.txt
 
 script:
   - make
-  - xvfb-run testem -l Chromium ci --timeout 60
+  - xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 60
+  - xvfb-run -s "-screen 0 1280x1024x24" nosetests -w ui_tests
