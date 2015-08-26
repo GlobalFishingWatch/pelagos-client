@@ -28,9 +28,11 @@ def open():
     print "Serving HTTP on", sa[0], "port", sa[1], "..."
 
     server = threading.Thread(target=httpd.serve_forever).start()
-    capabilities = selenium.webdriver.common.desired_capabilities.DesiredCapabilities.FIREFOX
+    capabilities = selenium.webdriver.common.desired_capabilities.DesiredCapabilities.CHROME
     capabilities['loggingPrefs'] = {'browser': 'ALL'}
-    driver = selenium.webdriver.Firefox(capabilities=capabilities)
+    options = selenium.webdriver.ChromeOptions()
+    options.arguments.append("--ignore-gpu-blacklist")
+    driver = selenium.webdriver.Chrome(desired_capabilities=capabilities, chrome_options=options)
 
 
 def close():
