@@ -1,7 +1,7 @@
 install:
   - curl -sL https://deb.nodesource.com/setup | sudo bash - > install-log 2>&1 || { cat install-log; exit 1; }
   - sudo apt-get update > install-log 2>&1 || { cat install-log; exit 1; }
-  - sudo apt-get install -qq xvfb chromium-browser chromium-chromedriver nodejs libglapi-mesa libosmesa6 mesa-utils > install-log 2>&1 || { cat install-log; exit 1; }
+  - sudo apt-get install -qq xvfb chromium-browser nodejs libglapi-mesa libosmesa6 mesa-utils > install-log 2>&1 || { cat install-log; exit 1; }
   - sudo npm install testem -g > install-log 2>&1 || { cat install-log; exit 1; }
   - sudo pip install -r requirements.txt > install-log  2>&1 || { cat install-log; exit 1; }
   - sudo pip chromedriver_installer --install-option="--chromedriver-version=2.10" > install-log  2>&1 || { cat install-log; exit 1; }
