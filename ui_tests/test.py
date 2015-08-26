@@ -30,7 +30,6 @@ class HomeTest(unittest.TestCase):
             server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="imo"]'))
 
             self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="136"]'))
-            self.failUnless(False)
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
