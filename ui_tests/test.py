@@ -34,3 +34,30 @@ class HomeTest(unittest.TestCase):
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
             raise
+
+    def test_timeslider(self):
+        driver = server.driver
+        try:
+            driver.set_window_size(1280, 776)
+            driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
+            time.sleep(5)
+
+            def verifyHover(x, y, seriesgroup):
+                actions = ActionChains(driver)
+                actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), x, y)
+                actions.perform()
+                return driver.execute_script("return visualization.animations.animations[0].data_view.selections.selections.hover.data.seriesgroup[0]") == seriesgroup
+
+            def moveTimeslider(offset):
+                actions = ActionChains(driver)
+                actions.drag_and_drop_by_offset(driver.find_element_by_xpath('//div[@class="main-timeline timeline"]//div[@class="window"]'), offset, 0)
+                actions.perform()
+
+            self.assertTrue(verifyHover(756,74,136), "Seriesgroup not present at x,y")
+            moveTimeslider(-272)
+            self.assertFalse(verifyHover(756,74,136), "Seriesgroup present at x,y when timeslider has moved")
+
+        except:
+            name = os.path.realpath("ui_tests.test.test_home.png")
+            driver.get_screenshot_as_file(name)
+            raise

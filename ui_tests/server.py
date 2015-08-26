@@ -72,4 +72,6 @@ def is_element_present(what):
 
 if __name__ == "__main__":
     open()
-    print "Server running..."
+
+    import code
+    code.InteractiveConsole(locals=locals()).interact()
