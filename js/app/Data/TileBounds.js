@@ -57,7 +57,11 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       }
     }
 
-    return res;
+    return {
+      set: res,
+      tilesPerScreen: 1,
+      params: params
+    }
   },
 
   TileBounds.tileParamsForRange = function(range) {
@@ -94,15 +98,19 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
         t, new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1))]));
     }
 
-    return res;
+    return {
+      set: res,
+      tilesPerScreen: Math.ceil(tilesPerScreen / (params.length / 1000 / 60 / 60 / 24 / 31)),
+      params: params
+    };
   },
 
   TileBounds.tileBounds = function(bounds, tilesPerScreen) {
     var sets = [];
 
     var addSet = function(set) {
-      tilesPerScreen = Math.ceil(tilesPerScreen / set.length);
-      sets.push(set);
+      tilesPerScreen = set.tilesPerScreen;
+      sets.push(set.set);
     };
 
     if (bounds.getTimerange) {
