@@ -8,7 +8,7 @@ git config --global user.email "travis@travis-ci.org"
 git config --global user.name "Travis"
 
 git add -f .
-git commit -m "Data from travis build $TRAVIS_BUILD_NUMBER"
+git commit --allow-empty -m "Data from travis build $TRAVIS_BUILD_NUMBER"
 git push -fq origin travis-data > /dev/null
 
 git config --global user.email $user_email
