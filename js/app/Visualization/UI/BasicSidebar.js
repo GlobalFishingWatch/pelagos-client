@@ -243,7 +243,7 @@ define([
           max: 1.0,
           step: 0.01,
           value: animation.data_view.header.colsByName.weight.source.weight,
-          change: refreshSwatch
+          slide: refreshSwatch
         });
       }
 
