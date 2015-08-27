@@ -71,7 +71,15 @@ def is_element_present(what):
 
 
 if __name__ == "__main__":
-    open()
-
     import code
-    code.InteractiveConsole(locals=locals()).interact()
+
+    open()
+    try:
+        driver.set_window_size(1280, 776)
+        driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
+
+        console = code.InteractiveConsole(locals=locals())
+        console.push("import readline")
+        console.interact()
+    finally:
+        close()
