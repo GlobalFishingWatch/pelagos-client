@@ -13,24 +13,25 @@ def generate_tile(outdir, bounds):
 
     bbox = bounds.get_bbox()
     data = []
-    for idx in xrange(0, 100):
+    points = 100
+    for idx in xrange(0, points):
         data.append({
                 "seriesgroup": series_group,
                 "series": last_series,
                 "longitude": bbox.lonmin,
-                "latitude": idx * (bbox.latmax - bbox.latmin) / 100.0 + bbox.latmin,
-                "datetime": idx * 1000. * 60. * 60. * 24. * 30. / 100.,
-                "weight": 1.0,
+                "latitude": idx * (bbox.latmax - bbox.latmin) / float(points) + bbox.latmin,
+                "datetime": idx * 1000. * 60. * 60. * 24. * 30. / float(points),
+                "weight": 20.0,
                 "sigma": 0.0})
     last_series += 1
-    for idx in xrange(0, 100):
+    for idx in xrange(0, points):
         data.append({
                 "seriesgroup": series_group,
                 "series": last_series,
-                "longitude": idx * (bbox.lonmax - bbox.lonmin) / 100.0 + bbox.lonmin,
+                "longitude": idx * (bbox.lonmax - bbox.lonmin) / float(points) + bbox.lonmin,
                 "latitude": bbox.latmin,
-                "datetime": idx * 1000. * 60. * 60. * 24. * 30. / 100.,
-                "weight": 1.0,
+                "datetime": idx * 1000. * 60. * 60. * 24. * 30. / float(points),
+                "weight": 20.0,
                 "sigma": 0.0})
     last_series += 1
 

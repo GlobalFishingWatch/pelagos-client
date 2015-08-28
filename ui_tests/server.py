@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import SimpleHTTPServer
 import BaseHTTPServer
 import threading
@@ -7,6 +9,7 @@ import time
 import selenium.common.exceptions
 import selenium.webdriver.common.desired_capabilities
 import datetime
+import generate_test_tileset
 
 httpds = None
 server = None
@@ -19,6 +22,8 @@ class HTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 def open():
     global httpd, server, driver
+
+    generate_test_tileset.generate_tileset(os.path.join(os.path.dirname(__file__), 'data/testtiles'), levels=3)
 
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
