@@ -133,30 +133,43 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
-      var data = {};
-      for (var key in selection.data) {
-        data[key] = selection.data[key][0];
-      }
+        var getSelectionInfo = function (fallbackLevel, withCredentials) {
+        var url = self.getUrl("selection-info", fallbackLevel) + "/info";
 
-      var url = self.url + "/series";
-
-      var request = new XMLHttpRequest();
-      request.open('POST', url, true);
-      request.withCredentials = true;
-      Ajax.setHeaders(request, self.headers);
-      request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-          if (Ajax.isSuccess(request, url)) {
-            var data = JSON.parse(request.responseText);
-            cb(null, data);
-          } else {
-            var e = Ajax.makeError(request, url, "selection information from ");
-            e.source = self;
-            cb(e, null);
-          }
+        var cols = ['series']
+        if (self.header.infoUsesSelection) {
+          cols = selection.sortcols
         }
+        cols.map(function (col) {
+          url += "/" + col + "/" + selection.data[col][0].toString();
+        });
+
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.withCredentials = withCredentials;
+        Ajax.setHeaders(request, self.headers);
+        request.onreadystatechange = function() {
+          if (request.readyState === 4) {
+            if (Ajax.isSuccess(request, url)) {
+              var data = JSON.parse(request.responseText);
+              cb(null, data);
+            } else {
+              if (request.status == 0 && withCredentials) {
+                getSelectionInfo(fallbackLevel, false);
+              } else if (fallbackLevel + 1 < self.getUrlFallbackLevels()) {
+                getSelectionInfo(fallbackLevel + 1, true);
+              } else {
+                var e = Ajax.makeError(request, url, "selection information from ");
+                e.source = self;
+                cb(e, null);
+              }
+            }
+          }
+        };
+        request.send();
       };
-      request.send(JSON.stringify(data));
+
+      getSelectionInfo(0, true);
     },
 
     search: function(query, cb) {
