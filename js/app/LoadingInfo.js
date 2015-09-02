@@ -10,6 +10,9 @@ define(["app/Class", "app/Events"], function(Class, Events) {
 
     add: function (key, value) {
       var self = this;
+      if (value === undefined) {
+        value = true;
+      }
       var isFirst = !self.isLoading();
       self.data[key] = value;
       var data = {key:key, value:value};
