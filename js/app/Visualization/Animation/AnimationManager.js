@@ -228,9 +228,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
               "color": "grey",
               "visible": true,
               "source": {
-                "type": "BinFormat",
+                "type": "TiledBinFormat",
                 "args": {
-                  "url": "%(header.urls.1.0)s-%(selectionValue)s/-180,-90,180,90"
+                  "url": "%(versioned_url)s/sub/%(query)s"
                 }
               }
             },
@@ -243,7 +243,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
 
         seriesTileset = new ObjectTemplate(seriesTileset).eval({
           url: baseAnimation.data_view.source.url,
+          versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
           selectionValue: selectionValue,
+          query: baseAnimation.data_view.source.getSelectionQuery(selection),
           header: baseAnimation.data_view.source.header,
           selection: selection
         });
