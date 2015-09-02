@@ -171,15 +171,13 @@ define([
 
           var link = $('<a target="_new">Download as KML</a>');
 
-          var key = event.selection.series;
-          if (event.selection.seriesgroup != undefined) key = event.selection.seriesgroup;
-
           link.attr({
-            href: event.layerInstance.data_view.source.url + "/export/" + key.toString()
+              href: (event.layerInstance.data_view.source.getUrl('export', -1) +
+                   "/export" +
+                   event.layerInstance.data_view.source.getSelectionQuery(
+                     event.layerInstance.data_view.selections.selections[event.category]))
           });
-          /* TODO: add this back in once the tile server fully supports it
-            self.node.find(".download").append(link);
-          */
+          self.node.find(".download").append(link);
 
         }
       } else {

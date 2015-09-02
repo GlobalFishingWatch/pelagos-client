@@ -111,7 +111,11 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
 
       var urls;
       if (self.header.urls) {
-        fallbackLevel = fallbackLevel || 0;
+        if (fallbackLevel == -1) {
+          fallbackLevel = self.header.urls.length - 1;
+        } else if (!fallbackLevel) {
+          fallbackLevel = 0;
+        }
         urls = self.header.urls[fallbackLevel];
       } else if (self.header.alternatives) {
         urls = self.header.alternatives;
@@ -132,20 +136,29 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       return urls[idx];
     },
 
+    getSelectionQuery: function(selection, cols) {
+      var self = this;
+
+      var url = "";
+      if (cols === undefined) {
+        cols = selection.sortcols;
+      }
+      cols.map(function (col) {
+        url += "/" + col + "/" + selection.data[col][0].toString();
+      });
+      return url;
+    },
+
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
-        var getSelectionInfo = function (fallbackLevel, withCredentials) {
-        var url = self.getUrl("selection-info", fallbackLevel) + "/info";
-
-        var cols = ['series']
-        if (self.header.infoUsesSelection) {
-          cols = selection.sortcols
-        }
-        cols.map(function (col) {
-          url += "/" + col + "/" + selection.data[col][0].toString();
-        });
-
+      var getSelectionInfo = function (fallbackLevel, withCredentials) {
+        /* FIXME: self.header.infoUsesSelection is a workaround for
+           current info database that doesn't contain seriesgroup
+           values. This should be removed in the future. */
+        var url = (self.getUrl("selection-info", fallbackLevel) +
+                   "/info" +
+                   self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']));
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;

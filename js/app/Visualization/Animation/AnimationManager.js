@@ -349,7 +349,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         if (err) {
           self.events.triggerEvent('info-error', err);
         } else {
-	  if (data) data.selection = info;
+          if (data) {
+            data.category = selectionEvent.category;
+            data.selection = info;
+          }
           self.events.triggerEvent('info', data);
         }
       }
