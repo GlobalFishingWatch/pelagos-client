@@ -143,10 +143,11 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       if (cols === undefined) {
         cols = selection.sortcols;
       }
+      res = [];
       cols.map(function (col) {
-        url += "/" + col + "/" + selection.data[col][0].toString();
+        res.push(encodeURIComponent(col) + "=" + encodeURIComponent(selection.data[col][0].toString()));
       });
-      return url;
+      return res.join(',');
     },
 
     getSelectionInfo: function(selection, cb) {
@@ -157,8 +158,9 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
            current info database that doesn't contain seriesgroup
            values. This should be removed in the future. */
         var url = (self.getUrl("selection-info", fallbackLevel) +
-                   "/info" +
-                   self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']));
+                   "/sub/" +
+                   self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']) +
+                   "/info");
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;

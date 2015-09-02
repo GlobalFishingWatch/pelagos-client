@@ -173,9 +173,10 @@ define([
 
           link.attr({
               href: (event.layerInstance.data_view.source.getUrl('export', -1) +
-                   "/export" +
+                   "/sub/" +
                    event.layerInstance.data_view.source.getSelectionQuery(
-                     event.layerInstance.data_view.selections.selections[event.category]))
+                     event.layerInstance.data_view.selections.selections[event.category]) +
+                   "/export")
           });
           self.node.find(".download").append(link);
 
