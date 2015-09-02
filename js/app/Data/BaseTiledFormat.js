@@ -10,7 +10,7 @@
   tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
 */
 
-define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Format, Tile, Pack, Logging, Ajax, _) {
+define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, LoadingInfo, Bounds, Format, Tile, Pack, Logging, Ajax, _) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
     initialize: function() {
@@ -54,8 +54,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         request.open('GET', url, true);
         request.withCredentials = true;
         Ajax.setHeaders(request, self.headers);
+        LoadingInfo.default.add(url, true);
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
+            LoadingInfo.default.remove(url);
             if (Ajax.isSuccess(request, url)) {
               var data = JSON.parse(request.responseText);
 
@@ -148,8 +150,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
+        LoadingInfo.default.add(url, true);
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
+            LoadingInfo.default.remove(url);
             if (Ajax.isSuccess(request, url)) {
               var data = JSON.parse(request.responseText);
               cb(null, data);
@@ -182,9 +186,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       request.open('POST', url, true);
       request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
-
+      LoadingInfo.default.add(url, true);
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
+          LoadingInfo.default.remove(url);
           if (Ajax.isSuccess(request, url)) {
             var data = JSON.parse(request.responseText);
             cb(null, data);

@@ -93,7 +93,7 @@
    decoding.
 */
 
-define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Class, Events, Pack, Logging) {
+define(["app/Class", "app/Events", "app/LoadingInfo", "app/Data/Pack", "app/Logging"], function (Class, Events, LoadingInfo, Pack, Logging) {
   return Class({
     name: "TypedMatrixParser",
     MAGIC_COOKIE: 'tmtx',
@@ -150,6 +150,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
         }
       */
 
+      LoadingInfo.default.add(self.url);
       self.request.open('GET', self.url, true);
 //      self.request.withCredentials = true;
       self.request.responseType = "arraybuffer";
@@ -169,6 +170,7 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
     cancel: function () {
       var self = this;
 
+      LoadingInfo.default.remove(self.url);
       if (self.loadingCanceled) return;
       self.loadingCanceled = true;
       if (self.request) self.request.abort();
@@ -243,6 +245,10 @@ define(["app/Class", "app/Events", "app/Data/Pack", "app/Logging"], function (Cl
 
     handleData: function() {
       var self = this;
+
+      if (self.request.readyState == 4) {
+        LoadingInfo.default.remove(self.url);
+      }
 
       if (!self.request) return;
       if (self.error) return true;
