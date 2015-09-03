@@ -48,11 +48,20 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
         return;
       }
 
-      if (typeof XMLHttpRequest != "undefined") {
+      if (typeof XMLHttpRequest == "undefined") {
+        self.handleError({
+          toString: function () {
+            return "XMLHttpRequest not supported";
+          }
+        });
+        return;
+      }
+
+      var doLoad = function (withCredentials) {
         var url = self.url + "/header";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
-        request.withCredentials = true;
+        request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
         LoadingInfo.default.add(url, true);
         request.onreadystatechange = function() {
@@ -85,18 +94,17 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
                 self.zoomTo(self.initialZoom);
               }
             } else {
-              self.handleError(Ajax.makeError(request, url, "header"));
+              if (withCredentials) {
+                doLoad(false);
+              } else {
+                self.handleError(Ajax.makeError(request, url, "header"));
+              }
             }
           }
         };
         request.send(null);
-      } else {
-        self.handleError({
-          toString: function () {
-            return "XMLHttpRequest not supported";
-          }
-        });
-      }
+      };
+      doLoad(true);
       self.events.triggerEvent("load");
     },
 
