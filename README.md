@@ -38,5 +38,13 @@ Example data is available in the data branch of this repo. NOTE: Do not merge be
 
 # Testing
 
+Unit tests:
+
     sudo npm install testem -g
-    xvfb-run testem -l Chromium ci
+    xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 60
+
+Integration tests:
+
+    pip install -r requirements.txt
+    pip install chromedriver_installer --install-option="--chromedriver-version=2.10"
+    xvfb-run -s "-screen 0 1280x1024x24" nosetests -s -w ui_tests
