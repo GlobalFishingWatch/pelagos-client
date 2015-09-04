@@ -48,3 +48,9 @@ Integration tests:
     pip install -r requirements.txt
     pip install chromedriver_installer --install-option="--chromedriver-version=2.10"
     xvfb-run -s "-screen 0 1280x1024x24" nosetests -s -w ui_tests
+
+To develop new tests, run
+
+    ui_tests/server.py
+
+This opens a browser and a python command line with a selenium driver in the variable "driver".
