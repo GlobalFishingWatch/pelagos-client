@@ -150,7 +150,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Data/Pack", "app/Logg
         }
       */
 
-      LoadingInfo.default.add(self.url);
+      LoadingInfo.main.add(self.url);
       self.request.open('GET', self.url, true);
 //      self.request.withCredentials = true;
       self.request.responseType = "arraybuffer";
@@ -170,7 +170,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Data/Pack", "app/Logg
     cancel: function () {
       var self = this;
 
-      LoadingInfo.default.remove(self.url);
+      LoadingInfo.main.remove(self.url);
       if (self.loadingCanceled) return;
       self.loadingCanceled = true;
       if (self.request) self.request.abort();
@@ -247,7 +247,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Data/Pack", "app/Logg
       var self = this;
 
       if (self.request.readyState == 4) {
-        LoadingInfo.default.remove(self.url);
+        LoadingInfo.main.remove(self.url);
       }
 
       if (!self.request) return;

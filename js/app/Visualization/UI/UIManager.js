@@ -139,7 +139,7 @@ function (
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
-      LoadingInfo.default.events.on({
+      LoadingInfo.main.events.on({
         start: function () {
           self.loadingNode.fadeIn();
         },

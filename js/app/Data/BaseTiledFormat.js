@@ -54,10 +54,10 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
         request.open('GET', url, true);
         request.withCredentials = true;
         Ajax.setHeaders(request, self.headers);
-        LoadingInfo.default.add(url, true);
+        LoadingInfo.main.add(url, true);
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
-            LoadingInfo.default.remove(url);
+            LoadingInfo.main.remove(url);
             if (Ajax.isSuccess(request, url)) {
               var data = JSON.parse(request.responseText);
 
@@ -146,10 +146,10 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       request.open('POST', url, true);
       request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
-      LoadingInfo.default.add(url, true);
+      LoadingInfo.main.add(url, true);
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
-          LoadingInfo.default.remove(url);
+          LoadingInfo.main.remove(url);
           if (Ajax.isSuccess(request, url)) {
             var data = JSON.parse(request.responseText);
             cb(null, data);
@@ -173,10 +173,10 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       request.open('POST', url, true);
       request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
-      LoadingInfo.default.add(url, true);
+      LoadingInfo.main.add(url, true);
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
-          LoadingInfo.default.remove(url);
+          LoadingInfo.main.remove(url);
           if (Ajax.isSuccess(request, url)) {
             var data = JSON.parse(request.responseText);
             cb(null, data);

@@ -39,7 +39,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
     }
   });
 
-  LoadingInfo.default = new LoadingInfo();
+  LoadingInfo.main = new LoadingInfo();
 
   return LoadingInfo;
 });
