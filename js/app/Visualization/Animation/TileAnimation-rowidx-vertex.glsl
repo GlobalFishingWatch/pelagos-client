@@ -1,3 +1,4 @@
+#pragma include 'app/Visualization/Animation/mercator.glsl';
 #pragma include 'app/Visualization/Animation/rowidx.glsl';
 
 attribute vec4 worldCoord;
@@ -7,6 +8,6 @@ varying vec4 baseColor;
 
 void main() {
   baseColor = rowidxColor(tileidx, 0.);
-  gl_Position = googleMercator2webglMatrix * worldCoord;
+  gl_Position = lonlat2screen(vec2(worldCoord[0], worldCoord[1]), googleMercator2webglMatrix);
   gl_PointSize = 2.0;
 }

@@ -1,4 +1,4 @@
-define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, GeoProjection, Shader, Animation) {
+define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, Shader, Animation) {
   var TileAnimation = Class(Animation, {
     name: "TileAnimation",
 
@@ -20,6 +20,11 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Ani
 
     initGl: function(gl, cb) {
       var self = this;
+
+      self.selections = {
+        hover: -1,
+        selected: -1};
+
       Animation.prototype.initGl.call(self, gl, function () {
         Object.values(self.programs).map(function (program) {
           program.pointArrayBuffer = program.gl.createBuffer();
@@ -45,9 +50,8 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Ani
           {lat: tile.bounds.bottom, lon: tile.bounds.left},
           {lat: tile.bounds.top, lon: tile.bounds.left}];
         corners.map(function (corner) {
-          var pixel = GeoProjection.lonLatInGoogleMercator(corner);
-          self.rawLatLonData[i++] = pixel.x;
-          self.rawLatLonData[i++] = pixel.y;
+          self.rawLatLonData[i++] = corner.lon;
+          self.rawLatLonData[i++] = corner.lat;
         });
       });
 
@@ -66,20 +70,22 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Ani
       program.gl.uniformMatrix4fv(program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
 
       for (var i = 0; i < self.tilecount; i++) {
+        program.gl.uniform1f(program.uniforms.tileidx_selected, self.selections.selected);
+        program.gl.uniform1f(program.uniforms.tileidx_hover, self.selections.hover);
         program.gl.uniform1f(program.uniforms.tileidx, i);
         program.gl.drawArrays(program.gl.LINE_STRIP, i*5, 5);
       }
     },
 
-
-/*
     select: function (x, y, type, replace) {
       var self = this;
       var rowidx = self.getRowidxAtPos(x, y);
+      var tileidx = rowidx ? rowidx[0] : -1;
 
-      console.log(rowidx);
-    },
-*/
+      self.selections[type] = tileidx;
+
+      return Animation.prototype.select.call(self, x, y, type, replace);
+    }
   });
   Animation.animationClasses.TileAnimation = TileAnimation;
 
