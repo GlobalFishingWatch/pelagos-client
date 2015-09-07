@@ -48,11 +48,20 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
         return;
       }
 
-      if (typeof XMLHttpRequest != "undefined") {
+      if (typeof XMLHttpRequest == "undefined") {
+        self.handleError({
+          toString: function () {
+            return "XMLHttpRequest not supported";
+          }
+        });
+        return;
+      }
+
+      var doLoad = function (withCredentials) {
         var url = self.url + "/header";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
-        request.withCredentials = true;
+        request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
         LoadingInfo.main.add(url, true);
         request.onreadystatechange = function() {
@@ -85,18 +94,17 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
                 self.zoomTo(self.initialZoom);
               }
             } else {
-              self.handleError(Ajax.makeError(request, url, "header"));
+              if (withCredentials) {
+                doLoad(false);
+              } else {
+                self.handleError(Ajax.makeError(request, url, "header"));
+              }
             }
           }
         };
         request.send(null);
-      } else {
-        self.handleError({
-          toString: function () {
-            return "XMLHttpRequest not supported";
-          }
-        });
-      }
+      };
+      doLoad(true);
       self.events.triggerEvent("load");
     },
 
@@ -111,7 +119,11 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
 
       var urls;
       if (self.header.urls) {
-        fallbackLevel = fallbackLevel || 0;
+        if (fallbackLevel == -1) {
+          fallbackLevel = self.header.urls.length - 1;
+        } else if (!fallbackLevel) {
+          fallbackLevel = 0;
+        }
         urls = self.header.urls[fallbackLevel];
       } else if (self.header.alternatives) {
         urls = self.header.alternatives;
@@ -132,35 +144,59 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       return urls[idx];
     },
 
+    getSelectionQuery: function(selection, cols) {
+      var self = this;
+
+      var url = "";
+      if (cols === undefined) {
+        cols = selection.sortcols;
+      }
+      res = [];
+      cols.map(function (col) {
+        res.push(encodeURIComponent(col) + "=" + encodeURIComponent(selection.data[col][0].toString()));
+      });
+      return res.join(',');
+    },
+
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
-      var data = {};
-      for (var key in selection.data) {
-        data[key] = selection.data[key][0];
-      }
-
-      var url = self.url + "/series";
-
-      var request = new XMLHttpRequest();
-      request.open('POST', url, true);
-      request.withCredentials = true;
-      Ajax.setHeaders(request, self.headers);
-      LoadingInfo.main.add(url, true);
-      request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-          LoadingInfo.main.remove(url);
-          if (Ajax.isSuccess(request, url)) {
-            var data = JSON.parse(request.responseText);
-            cb(null, data);
-          } else {
-            var e = Ajax.makeError(request, url, "selection information from ");
-            e.source = self;
-            cb(e, null);
+      var getSelectionInfo = function (fallbackLevel, withCredentials) {
+        /* FIXME: self.header.infoUsesSelection is a workaround for
+           current info database that doesn't contain seriesgroup
+           values. This should be removed in the future. */
+        var url = (self.getUrl("selection-info", fallbackLevel) +
+                   "/sub/" +
+                   self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']) +
+                   "/info");
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.withCredentials = withCredentials;
+        Ajax.setHeaders(request, self.headers);
+        LoadingInfo.main.add(url, true);
+        request.onreadystatechange = function() {
+          if (request.readyState === 4) {
+            LoadingInfo.main.remove(url);
+            if (Ajax.isSuccess(request, url)) {
+              var data = JSON.parse(request.responseText);
+              cb(null, data);
+            } else {
+              if (request.status == 0 && withCredentials) {
+                getSelectionInfo(fallbackLevel, false);
+              } else if (fallbackLevel + 1 < self.getUrlFallbackLevels()) {
+                getSelectionInfo(fallbackLevel + 1, true);
+              } else {
+                var e = Ajax.makeError(request, url, "selection information from ");
+                e.source = self;
+                cb(e, null);
+              }
+            }
           }
-        }
+        };
+        request.send();
       };
-      request.send(JSON.stringify(data));
+
+      getSelectionInfo(0, true);
     },
 
     search: function(query, cb) {

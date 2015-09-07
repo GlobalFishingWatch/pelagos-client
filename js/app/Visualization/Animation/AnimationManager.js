@@ -180,8 +180,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         y = e.pixel.y;
       }
 
-      for (var key in self.animations) {
-        var animation = self.animations[key];
+      for (var i = 0; i < self.animations.length; i++) {
+        var animation = self.animations[i];
         if (animation.data_view) {
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
@@ -195,8 +195,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
     hideSelectionAnimations: function () {
       var self = this;
 
-      for (var key in self.animations) {
-        self.hideSelectionAnimation(self.animations[key]);
+      var animations = self.animations.slice(0);
+      for (var i = 0; i < animations.length; i++) {
+        self.hideSelectionAnimation(animations[i]);
       }
     },
 
@@ -227,9 +228,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
               "color": "grey",
               "visible": true,
               "source": {
-                "type": "BinFormat",
+                "type": "TiledBinFormat",
                 "args": {
-                  "url": "%(header.urls.1.0)s-%(selectionValue)s/-180,-90,180,90"
+                  "url": "%(versioned_url)s/sub/%(query)s"
                 }
               }
             },
@@ -242,7 +243,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
 
         seriesTileset = new ObjectTemplate(seriesTileset).eval({
           url: baseAnimation.data_view.source.url,
+          versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
           selectionValue: selectionValue,
+          query: baseAnimation.data_view.source.getSelectionQuery(selection),
           header: baseAnimation.data_view.source.header,
           selection: selection
         });
@@ -348,7 +351,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         if (err) {
           self.events.triggerEvent('info-error', err);
         } else {
-	  if (data) data.selection = info;
+          if (data) {
+            data.category = selectionEvent.category;
+            data.selection = info;
+          }
           self.events.triggerEvent('info', data);
         }
       }
