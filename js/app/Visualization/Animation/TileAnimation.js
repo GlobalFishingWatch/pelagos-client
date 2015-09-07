@@ -1,4 +1,4 @@
-define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, GeoProjection, Shader, Animation) {
+define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, Shader, Animation) {
   var TileAnimation = Class(Animation, {
     name: "TileAnimation",
 
@@ -10,13 +10,25 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Ani
         vertex: "app/Visualization/Animation/TileAnimation-vertex.glsl",
         fragment: "app/Visualization/Animation/TileAnimation-fragment.glsl",
         columns: []
+      },
+      rowidxProgram: {
+        context: "rowidxGl",
+        vertex: "app/Visualization/Animation/TileAnimation-rowidx-vertex.glsl",
+        fragment: "app/Visualization/Animation/TileAnimation-rowidx-fragment.glsl"
       }
     },
 
     initGl: function(gl, cb) {
       var self = this;
+
+      self.selections = {
+        hover: -1,
+        selected: -1};
+
       Animation.prototype.initGl.call(self, gl, function () {
-        self.pointArrayBuffer = self.gl.createBuffer();
+        Object.values(self.programs).map(function (program) {
+          program.pointArrayBuffer = program.gl.createBuffer();
+        });
 
         cb();
       });
@@ -31,36 +43,53 @@ define(["require", "app/Class", "app/Data/GeoProjection", "app/Visualization/Ani
 
       var i = 0;
       tiles.map(function (tile) {
+        var height = tile.bounds.top - tile.bounds.bottom;
+        var width = tile.bounds.right - tile.bounds.left;
+        var marginy = height / 50;
+        var marginx = width / 50;
+
         var corners = [
-          {lat: tile.bounds.top, lon: tile.bounds.left},
-          {lat: tile.bounds.top, lon: tile.bounds.right},
-          {lat: tile.bounds.bottom, lon: tile.bounds.right},
-          {lat: tile.bounds.bottom, lon: tile.bounds.left},
-          {lat: tile.bounds.top, lon: tile.bounds.left}];
+          {lat: tile.bounds.top - marginy, lon: tile.bounds.left + marginx},
+          {lat: tile.bounds.top - marginy, lon: tile.bounds.right - marginx},
+          {lat: tile.bounds.bottom + marginy, lon: tile.bounds.right - marginx},
+          {lat: tile.bounds.bottom + marginy, lon: tile.bounds.left + marginx},
+          {lat: tile.bounds.top - marginy, lon: tile.bounds.left + marginx}];
         corners.map(function (corner) {
-          var pixel = GeoProjection.lonLatInGoogleMercator(corner);
-          self.rawLatLonData[i++] = pixel.x;
-          self.rawLatLonData[i++] = pixel.y;
+          self.rawLatLonData[i++] = corner.lon;
+          self.rawLatLonData[i++] = corner.lat;
         });
       });
 
       self.gl.useProgram(self.programs.program);
-      Shader.programLoadArray(self.gl, self.pointArrayBuffer, self.rawLatLonData, self.programs.program);
+      Object.values(self.programs).map(function (program) {
+        Shader.programLoadArray(program.gl, program.pointArrayBuffer, self.rawLatLonData, program);
+      });
       Animation.prototype.updateData.call(self);
     },
 
-    draw: function () {
+    drawProgram: function (program) {
       var self = this;
 
-      self.gl.useProgram(self.programs.program);
-
-      Shader.programBindArray(self.gl, self.pointArrayBuffer, self.programs.program, "worldCoord", 2, self.gl.FLOAT);
-
-      self.gl.uniformMatrix4fv(self.programs.program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
+      program.gl.useProgram(program);
+      Shader.programBindArray(program.gl, program.pointArrayBuffer, program, "worldCoord", 2, program.gl.FLOAT);
+      program.gl.uniformMatrix4fv(program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
 
       for (var i = 0; i < self.tilecount; i++) {
-        self.gl.drawArrays(self.gl.LINE_STRIP, i*5, 5);
+        program.gl.uniform1f(program.uniforms.tileidx_selected, self.selections.selected);
+        program.gl.uniform1f(program.uniforms.tileidx_hover, self.selections.hover);
+        program.gl.uniform1f(program.uniforms.tileidx, i);
+        program.gl.drawArrays(program.gl.LINE_STRIP, i*5, 5);
       }
+    },
+
+    select: function (x, y, type, replace) {
+      var self = this;
+      var rowidx = self.getRowidxAtPos(x, y);
+      var tileidx = rowidx ? rowidx[0] : -1;
+
+      self.selections[type] = tileidx;
+
+      return Animation.prototype.select.call(self, x, y, type, replace);
     }
   });
   Animation.animationClasses.TileAnimation = TileAnimation;
