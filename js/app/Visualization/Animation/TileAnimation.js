@@ -43,12 +43,17 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
 
       var i = 0;
       tiles.map(function (tile) {
+        var height = tile.bounds.top - tile.bounds.bottom;
+        var width = tile.bounds.right - tile.bounds.left;
+        var marginy = height / 50;
+        var marginx = width / 50;
+
         var corners = [
-          {lat: tile.bounds.top, lon: tile.bounds.left},
-          {lat: tile.bounds.top, lon: tile.bounds.right},
-          {lat: tile.bounds.bottom, lon: tile.bounds.right},
-          {lat: tile.bounds.bottom, lon: tile.bounds.left},
-          {lat: tile.bounds.top, lon: tile.bounds.left}];
+          {lat: tile.bounds.top - marginy, lon: tile.bounds.left + marginx},
+          {lat: tile.bounds.top - marginy, lon: tile.bounds.right - marginx},
+          {lat: tile.bounds.bottom + marginy, lon: tile.bounds.right - marginx},
+          {lat: tile.bounds.bottom + marginy, lon: tile.bounds.left + marginx},
+          {lat: tile.bounds.top - marginy, lon: tile.bounds.left + marginx}];
         corners.map(function (corner) {
           self.rawLatLonData[i++] = corner.lon;
           self.rawLatLonData[i++] = corner.lat;
