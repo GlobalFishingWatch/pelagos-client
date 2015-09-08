@@ -1,13 +1,30 @@
  #! /bin/bash
 
 # Ensure apt is up to date
-# sudo apt-get clean
-# sudo apt-get update
+sudo apt-get clean
+sudo apt-get update
 
 # Install nodejs
-curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
-sudo apt-get install -y nodejs
+if command -v node >/dev/null 2>&1; then
+  echo "Nodejs is already installed"
+else
+  curl -sL https://deb.nodesource.com/setup_0.12 | sudo bash -
+  sudo apt-get install -y nodejs
+fi
 
-# Install other required utilities
+# Install other required utilities to compile and run the project
 sudo apt-get install -y unzip openjdk-6-jre
+
+# Install requirements for unit testing
+sudo apt-get install -y xvfb chromium-browser
+if command -v testem >/dev/null 2>&1; then
+  echo "Testem is already installed"
+else
+  sudo npm install testem -g
+fi
+
+# Install requirements for integration testing
+sudo apt-get -y install python python-dev python-pip libglapi-mesa libosmesa6 mesa-utils git
+sudo pip install -r /vagrant/requirements.txt
+sudo pip install chromedriver_installer --install-option="--chromedriver-version=2.10"
 

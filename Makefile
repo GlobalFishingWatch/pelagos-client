@@ -27,7 +27,7 @@ DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/dojo-release-1.10.0-src/util/buildscripts/build.sh
 
 
-.PHONY: all dependencies js-build clean clean-js-build clean-dependencies
+.PHONY: all dependencies js-build clean clean-js-build clean-dependencies test-unit test-integration server
 
 all: js-build
 
@@ -125,3 +125,12 @@ clean-dependencies:
 	rm -rf js/libs
 
 clean: clean-js-build clean-dependencies
+
+test-unit:
+	xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 60
+
+test-integration:
+	xvfb-run -s "-screen 0 1280x1024x24" nosetests -s -w ui_tests
+
+server:
+	python -m SimpleHTTPServer 8080

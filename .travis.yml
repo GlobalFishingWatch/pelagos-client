@@ -9,8 +9,8 @@ install:
 script:
   - export LIBGL_DEBUG=verbose; xvfb-run -s "-screen 0 1280x1024x24" glxinfo
   - make
-  - xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 60
-  - xvfb-run -s "-screen 0 1280x1024x24" nosetests -s -w ui_tests
+  - make test-unit
+  - make test-integration
 
 before_script:
   - scripts/travis-checkout-data.sh
