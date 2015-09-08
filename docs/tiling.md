@@ -68,7 +68,7 @@ lower limit, but a guide line.
   * Make a list of the months between those two dates
 
 * Spatial tiles to load
-  * Calculate the spatial tile boundaries to load using [the standard algorithm](https://github.com/SkyTruth/pelagos-client/blob/master/docs/tiling.md) for that with tilesPerScreen set to the number of spatial tiles to load calculated above
+  * Calculate the spatial tile boundaries to load using the algorithm above for spatial tiling, with tilesPerScreen set to the number of spatial tiles to load calculated above
 
 * Tiles to load
   * Load each combination of a spatial tile bound and a temporal slice calculated above
