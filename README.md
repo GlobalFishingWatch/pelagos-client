@@ -54,3 +54,7 @@ To develop new tests, run
     ui_tests/server.py
 
 This opens a browser and a python command line with a selenium driver in the variable "driver".
+
+# Data generation
+
+Data can be generated using the Python library https://github.com/SkyTruth/vectortile
