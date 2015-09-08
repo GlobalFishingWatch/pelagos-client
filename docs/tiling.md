@@ -1,5 +1,20 @@
 # The tiling algorithm
 
+Tiles make up a quad tree where every new zoom level divides the tile
+boundaries of each tile of the previous level into for equal sized
+quadrants.
+
+Given certain screen bounds (the part of the world visible on the
+screen currently) given in latitude and longitude, we need to
+calculate what set of tiles to load. This requires us both to
+calculate how many tiles to load, at what resolution / zoom level in
+the quad tree, and their exact coordinates.
+
+Apart from the screen bounds the algorithm takes a desired number of
+tiles per screen to load. This number is neither a hard upper nor
+lower limit, but a guide line.
+
+
 * Input:
   * screenBounds
   * tilesPerScreen
