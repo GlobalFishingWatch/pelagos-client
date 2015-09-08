@@ -58,7 +58,7 @@ define([
       self.sidePanels.sidebarContainer.layout();
 
       var updater = undefined;
-      self,visualization.data.events.on({
+      self.sidePanels.ui.visualization.data.events.on({
         update: function () {
           if (updater == undefined) {
             updater = setTimeout(function () {
