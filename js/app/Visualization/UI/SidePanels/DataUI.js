@@ -57,9 +57,15 @@ define([
       self.sidePanels.sidebarContainer.addChild(self.ui);
       self.sidePanels.sidebarContainer.layout();
 
+      var updater = undefined;
       self,visualization.data.events.on({
         update: function () {
-          $(self.ui.domNode).find('.source-stats').text(self.sidePanels.ui.visualization.data.printTree());
+          if (updater == undefined) {
+            updater = setTimeout(function () {
+              $(self.ui.domNode).find('.source-stats').text(self.sidePanels.ui.visualization.data.printTree());
+              updater = undefined;
+            });
+          }
         }
       });
     }
