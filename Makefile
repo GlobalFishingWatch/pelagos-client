@@ -27,7 +27,7 @@ DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/dojo-release-1.10.0-src/util/buildscripts/build.sh
 
 
-.PHONY: all dependencies js-build clean clean-js-build clean-dependencies test-unit test-integration server
+.PHONY: all dependencies js-build clean clean-js-build clean-dependencies test-unit test-integration server server-integration
 
 all: js-build
 
@@ -133,4 +133,7 @@ test-integration:
 	xvfb-run -s "-screen 0 1280x1024x24" nosetests -s -w ui_tests
 
 server:
-	python -m SimpleHTTPServer 8080
+	ui_tests/server-dev.py
+
+server-integration:
+	xvfb-run -s "-screen 0 1280x1024x24" ui_tests/server-test.py

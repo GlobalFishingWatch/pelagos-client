@@ -1,55 +1,24 @@
-#! /usr/bin/env python
-
-import SimpleHTTPServer
-import BaseHTTPServer
-import threading
-import selenium.webdriver
-import os.path
 import time
 import selenium.common.exceptions
-import selenium.webdriver.common.desired_capabilities
-import datetime
-import generate_test_tileset
+import _server
+import _selenium
+import _tileset
 
-httpds = None
-server = None
+http = None
 driver = None
 
-class HTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    protocol_version = "HTTP/1.0"
-    def log_message(self, *arg, **kw):
-        pass
-
 def open():
-    global httpd, server, driver
+    global driver, http
 
-    generate_test_tileset.generate_tileset(os.path.join(os.path.dirname(__file__), 'data/testtiles'), levels=3)
-
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-
-    httpd = BaseHTTPServer.HTTPServer(('', 8000), HTTPRequestHandler)
-
-    sa = httpd.socket.getsockname()
-    print "Serving HTTP on", sa[0], "port", sa[1], "..."
-
-    server = threading.Thread(target=httpd.serve_forever).start()
-    capabilities = selenium.webdriver.common.desired_capabilities.DesiredCapabilities.CHROME
-    capabilities['loggingPrefs'] = {'browser': 'ALL'}
-    options = selenium.webdriver.ChromeOptions()
-    options.arguments.append("--ignore-gpu-blacklist")
-    driver = selenium.webdriver.Chrome(desired_capabilities=capabilities, chrome_options=options)
-
+    _tileset.generate_test_tileset()
+    http = _server.start()
+    driver = _selenium.start()
 
 def close():
-    for line in driver.get_log("browser"):
-        if line['level'] != 'DEBUG':
-            print "%s: %s: %s" % (datetime.datetime.utcfromtimestamp(line['timestamp']/1000.0).strftime("%Y-%m-%d %H:%M:%S"), line['level'], line['message'])
     try:
-        driver.quit()
+        _selenium.stop(driver)
     finally:
-        httpd.shutdown()
-    
-
+        _server.stop(http)
 
 def wait_for(cond, max=60):
     for i in range(max):
@@ -74,17 +43,3 @@ def is_element_present(what):
         return False
     return True
 
-
-if __name__ == "__main__":
-    import code
-
-    open()
-    try:
-        driver.set_window_size(1280, 776)
-        driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
-
-        console = code.InteractiveConsole(locals=locals())
-        console.push("import readline")
-        console.interact()
-    finally:
-        close()

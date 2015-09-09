@@ -56,7 +56,8 @@ Where `/path/to/workspace` is an URL to a JSON file containing a workspace
 definition. For more information about this check out [the workspace
 schema](https://github.com/SkyTruth/pelagos-client/blob/master/docs/schema.md)
 
-Example data is available in the data branch of this repo.
+Example data is available in the data branch of this repo. A test workspace is
+also generated automatically by the `make server` task.
 
 ## Data generation
 
@@ -66,7 +67,8 @@ Data can be generated using the Python library https://github.com/SkyTruth/vecto
 
 ## Build
 
-You can build, concatenate and minify all assets through the `make all` task. This will do the following:
+You can build, concatenate and minify all assets through the `make all` task.
+This will do the following:
 
 * Download and install external libraries at `js/libs`.
 
@@ -77,7 +79,10 @@ You can build, concatenate and minify all assets through the `make all` task. Th
 
 ## Running a local dev environment
 
-You can start a quick http server to host your app with `make server`.
+You can start a quick http server to host your app with `make server`. This
+will start a server on your local port 8000, and generate some test workspace.
+Check out the output from the command, it provides a link to the workspace
+itself.
 
 ## Testing
 
@@ -87,5 +92,8 @@ The project contains both automated unit and integration tests.
 
 * Integration tests are run with `make test-integration`.
 
-To develop new tests, run `ui_tests/server.py`. This opens a browser and a
-python command line with a selenium driver in the variable "driver".
+* To develop new tests, run `make server-integration`. This starts a server
+  like `make server` does, opens a browser connected to a selenium webdriver
+and a python command line with a selenium driver in the variable "driver". This
+command is not meant to be run inside the vm, as it needs to communicate with
+your local chrome instance.
