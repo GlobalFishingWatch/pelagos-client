@@ -21,13 +21,11 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       self.tileCache = {};
       /* The tiles we really want to display. Might not all be loaded yet, or might have replacements... */
       self.wantedTiles = {};
-      self.initialZoom = undefined;
       self.tileIdxCounter = 0;
       self.urlAlternative = 0;
+      self.rowsPerScreen = 1600;
       Format.prototype.initialize.apply(self, arguments);
     },
-
-    tilesPerScreen: 16,
 
     world: new Bounds(-180, -90, 180, 90),
 
@@ -90,8 +88,8 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
               var e = {update: "header", header: data};
               self.events.triggerEvent(e.update, e);
               self.events.triggerEvent("update", e);
-              if (self.initialZoom) {
-                self.zoomTo(self.initialZoom);
+              if (self.bounds) {
+                self.updateTileset(self.bounds, self.rowsPerScreen);
               }
             } else {
               if (withCredentials) {
@@ -226,6 +224,12 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       request.send(JSON.stringify(data));
     },
 
+    getTilesPerScreen: function () {
+      var self = this;
+      // FIXME: Read rows per tile from tileset header... Hardcoded to 10000 for now...
+      return self.rowsPerScreen / 16000;
+    },
+
     tileParamsForRegion: function(bounds) {
       var self = this;
       var origBounds = bounds;
@@ -247,7 +251,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
         }
       };
 
-      res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(self.tilesPerScreen)), 2));
+      res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(self.getTilesPerScreen())), 2));
       
       res.tilewidth = res.worldwidth / Math.pow(2, res.level);
       res.tileheight = res.worldheight / Math.pow(2, res.level);
@@ -318,7 +322,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       });
     },
 
-    zoomTo: function (bounds) {
+    updateTileset: function (bounds, rowsPerScreen) {
       var self = this;
 
       if (self.error) {
@@ -331,7 +335,8 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       if (!self.headerIsLoaded) {
         /* Don't start loading tiles before we have a header and know
          * what URL alternatives there are. */
-        self.initialZoom = bounds;
+        self.bounds = bounds;
+        self.rowsPerScreen = rowsPerScreen;
         return;
       }
 
@@ -339,6 +344,8 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
        * or everything gets way too slow... */
       var findOverlaps = self.getLoadingTiles().length == 0;
 
+      var oldRowsPerScreen = self.rowsPerScreen;
+      self.rowsPerScreen = rowsPerScreen;
       var oldBounds = self.bounds;
       self.bounds = bounds;
 
@@ -361,6 +368,8 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       Logging.main.log("Data.BaseTiledFormat.zoomTo", {
         oldBounds: oldBounds,
         newBounds: bounds,
+        oldRowsPerScreen: oldRowsPerScreen,
+        rowsPerScreen: rowsPerScreen,
         newWantedTiles: Object.keys(wantedTiles),
         oldWantedTiles: Object.keys(oldWantedTiles),
         toString: function () {
@@ -376,7 +385,10 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
           }).join(", ");
           var oldBounds = self.oldBounds != undefined ? self.oldBounds.toBBOX() : "undefined";
           var newBounds = self.newBounds != undefined ? self.newBounds.toBBOX() : "undefined";
-          return oldBounds + " -> " + newBounds + ":\n  Added: " + newWantedTiles + "\n  Removed: " + oldWantedTiles + "\n  Kept: " + existingWantedTiles + "\n";
+          changes = [];
+          if (oldBounds != newBounds) changes.push(oldBounds + " -> " + newBounds);
+          if (self.oldRowsPerScreen != self.rowsPerScreen) changes.push("[" + self.oldRowsPerScreen + "] -> [" + self.rowsPerScreen + "]");
+          return changes.join(", ") + ":\n  Added: " + newWantedTiles + "\n  Removed: " + oldWantedTiles + "\n  Kept: " + existingWantedTiles + "\n";
         }
       });
 
@@ -396,6 +408,16 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
           }
         }, 0);
       });
+    },
+
+    zoomTo: function (bounds) {
+      var self = this;
+      self.updateTileset(bounds, self.rowsPerScreen);
+    },
+
+    setRowsPerScreen: function (rowsPerScreen) {
+      var self = this;
+      self.updateTileset(self.bounds, rowsPerScreen);
     },
 
 /*

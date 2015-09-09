@@ -8,6 +8,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       self.events = new Events("Data.DataManager");
       self.header = {colsByName: {}};
       self.bounds = undefined;
+      self.rowsPerScreen = 16000;
     },
 
     init: function (cb) {
@@ -40,9 +41,7 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       self.sources[key].usage++;
       self.events.triggerEvent("add", self.sources[key]);
 
-      if (self.bounds != undefined) {
-        self.sources[key].source.zoomTo(self.bounds);
-      }
+      self.sources[key].source.updateTileset(self.bounds, self.rowsPerScreen);
 
       return self.sources[key].source;
     },
@@ -100,8 +99,17 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
         sources: Object.keys(self.sources)
       });
       self.bounds = bounds;
-      Object.values(self.sources).map (function (source) {
+      Object.values(self.sources).map(function (source) {
         source.source.zoomTo(bounds);
+      });
+    },
+
+    setRowsPerScreen: function (rowsPerScreen) {
+      var self = this;
+      self.rowsPerScreen = rowsPerScreen;
+
+      Object.values(self.sources).map(function (source) {
+        source.source.setRowsPerScreen(self.rowsPerScreen);
       });
     },
 

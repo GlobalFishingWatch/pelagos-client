@@ -36,6 +36,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       }
       self.manager = manager;
       self.dataUpdates = 0;
+      self.rowCount = 0;
     },
 
     setVisible: function (visible) {
@@ -158,6 +159,13 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
 
       Object.values(self.programs).map(self.updateDataProgram.bind(self));
 
+      self.rowCount = self.data_view.source.getContent().map(function (tile) {
+        return tile.content.header.length;
+      }).reduce(
+        function (a, b) { return a + b; }, 
+        0
+      );
+
       self.manager.triggerUpdate();
     },
 
@@ -165,6 +173,11 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       var self = this;
 
       self.loadDataViewArrayBuffers(program);
+    },
+
+    getRowCount: function () {
+      var self = this;
+      return self.rowCount;
     },
 
     draw: function () {

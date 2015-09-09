@@ -1,6 +1,8 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Fps", "app/Bounds", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Fps, Bounds, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
   return Class({
     name: "AnimationManager",
+
+    fpsGoal: 20,
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -28,6 +30,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
 
       self.indrag = false;
       self.inPanZoom = false;
+      self.fps = new Fps();
     },
 
     init: function (cb) {
@@ -534,8 +537,6 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
     updateTime: function (header, paused) {
       var self = this;
 
-      self.stats.begin();
-
       if (paused) {
         self.lastUpdate = undefined;
       } else {
@@ -585,8 +586,25 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       return self.visualization.state.getValue("paused");
     },
 
+    updateRowsPerScreen: function () {
+      var self = this;
+
+      if (self.lastFps && Math.abs(self.fps.fps - self.lastFps) / self.lastFps <= 0.1) return;
+
+      self.lastFps = self.fps.fps;
+      var rowsPerScreen = (self.fps.fps / self.fpsGoal) * Math.max(self.getRowCount(), 1000) / Math.max(self.animations.length, 1);
+      self.visualization.data.setRowsPerScreen(rowsPerScreen);
+    },
+
     update: function() {
       var self = this;
+
+      /* Called here, rather than at the end of this function to
+       * correctly measure the full draw time, that is, the time until
+       * the next requestAnimationFrame triggers. */
+
+      self.fps.end();
+      self.updateRowsPerScreen();
 
       if (!self.gl) return;
 
@@ -603,6 +621,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         return;
       }
       self.updateNeeded = false;
+
+      self.fps.begin();
+
+      self.stats.begin();
 
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();
@@ -621,6 +643,21 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       self.animations.map(function (animation) { animation.draw(); });
 
       self.stats.end();
+    },
+
+    getRowCount: function () {
+      var self = this;
+
+      return self.animations.map(
+        function (animation) {
+          return animation.getRowCount();
+        }
+      ).reduce(
+        function (a, b) {
+          return a+b;
+        },
+        0
+      );
     },
 
     triggerUpdate: function (e) {

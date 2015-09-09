@@ -40,6 +40,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
 
       self.rawLatLonData = new Float32Array(tiles.length*5*2);
       self.tilecount = tiles.length;
+      self.rowCount = tiles.length;
 
       var i = 0;
       tiles.map(function (tile) {

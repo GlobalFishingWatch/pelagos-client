@@ -12,6 +12,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
       self.args = args;
       if (args) $.extend(self, args);
       self.manager = manager;
+      self.rowCount = 0;
     },
 
     destroy: function () {
