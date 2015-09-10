@@ -136,4 +136,4 @@ server:
 	ui_tests/server-dev.py
 
 server-integration:
-	xvfb-run -s "-screen 0 1280x1024x24" ui_tests/server-test.py
+	ui_tests/server-test.py
