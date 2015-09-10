@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+
+import click
 import time
 import selenium.common.exceptions
 import _server
@@ -7,16 +10,19 @@ import _tileset
 http = None
 driver = None
 
-def open():
+def open(initialize_selenium = True):
     global driver, http
 
     _tileset.generate_test_tileset()
     http = _server.start()
-    driver = _selenium.start()
+
+    if initialize_selenium:
+        driver = _selenium.start()
 
 def close():
     try:
-        _selenium.stop(driver)
+        if driver is not None:
+            _selenium.stop(driver)
     finally:
         _server.stop(http)
 
@@ -43,3 +49,27 @@ def is_element_present(what):
         return False
     return True
 
+@click.command()
+@click.option('-s', '--selenium', is_flag=True)
+def main(selenium):
+    import code
+
+    open(initialize_selenium=selenium)
+
+    print "The application is now running."
+    print "You can access a sample workspace at http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace"
+    print "You can exit by entering exit() or Ctrl-D in the REPL below"
+
+    try:
+        if driver is not None:
+            driver.set_window_size(1280, 776)
+            driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
+
+        console = code.InteractiveConsole(locals=locals())
+        console.push("import readline")
+        console.interact()
+    finally:
+        close()
+
+if __name__ == "__main__":
+    main()
