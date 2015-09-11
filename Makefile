@@ -135,7 +135,7 @@ prerequisites:
 clean: clean-js-build clean-dependencies
 
 unit-tests:
-	xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 60
+	xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 120
 
 integration-tests:
 	xvfb-run -s "-screen 0 1280x1024x24" nosetests -s -w ui_tests
