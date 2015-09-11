@@ -47,7 +47,7 @@ The environment is virtualized with vagrant, so you will need:
 ## Running the application
 
 You can start a local development server for the application with `make
-server`. The server running inside the virtualized environment is exposed
+dev-server`. The server running inside the virtualized environment is exposed
 through ssh tunneling as port 8080 in your host machine, so you can access the
 application through
 `http://localhost:8080/index.html?workspace=/path/to/workspace`.
@@ -57,7 +57,7 @@ definition. For more information about this check out [the workspace
 schema](https://github.com/SkyTruth/pelagos-client/blob/master/docs/schema.md)
 
 Example data is available in the data branch of this repo. A test workspace is
-also generated automatically by the `make server` task.
+also generated automatically by the `make dev-server` task.
 
 ## Data generation
 
@@ -79,7 +79,7 @@ This will do the following:
 
 ## Running a local dev environment
 
-You can start a quick http server to host your app with `make server`. This
+You can start a quick http server to host your app with `make dev-server`. This
 will start a server on your local port 8000, and generate some test workspace.
 Check out the output from the command, it provides a link to the workspace
 itself.
@@ -88,12 +88,12 @@ itself.
 
 The project contains both automated unit and integration tests.
 
-* Unit tests are run with `make test-unit`.
+* Unit tests are run with `make unit-tests`.
 
-* Integration tests are run with `make test-integration`.
+* Integration tests are run with `make integration-tests`.
 
-* To develop new tests, run `make server-integration`. This starts a server
-  like `make server` does, opens a browser connected to a selenium webdriver
+* To develop new tests, run `make test-server`. This starts a server
+  like `make dev-server` does, opens a browser connected to a selenium webdriver
 and a python command line with a selenium driver in the variable "driver". This
 command is not meant to be run inside the vm, as it needs to communicate with
 your local chrome instance.
