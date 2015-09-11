@@ -7,7 +7,6 @@ json
 # Vagrant
 .vagrant
 bootstrap.sh
-Vagrantfile
 
 # Mac OS
 .DS_Store
