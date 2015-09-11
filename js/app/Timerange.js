@@ -1,7 +1,10 @@
 /* Timerange code adapted from Bounds from OpenLayers; Published under
- * the 2-clause BSD license. See license.txt in the OpenLayers
- * distribution.
- *
+   the 2-clause BSD license. See license.txt in the OpenLayers
+   distribution.
+  
+   A Timerange represents a certain range of time, from a starting
+   time to an end time.
+   
  */
 define(["app/Class"], function(Class) {
   var Timerange = Class({
