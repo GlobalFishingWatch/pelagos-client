@@ -85,7 +85,7 @@ function(
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, true);
+        LoadingInfo.main.add(url, {request: request});
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
             LoadingInfo.main.remove(url);
@@ -195,7 +195,7 @@ function(
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, true);
+        LoadingInfo.main.add(url, {request:request});
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
             LoadingInfo.main.remove(url);
@@ -231,7 +231,7 @@ function(
       request.open('POST', url, true);
       request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
-      LoadingInfo.main.add(url, true);
+      LoadingInfo.main.add(url, {request: request});
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
           LoadingInfo.main.remove(url);
