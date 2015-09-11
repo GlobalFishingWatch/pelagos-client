@@ -226,15 +226,20 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
   };
 
   Interval.dateToList = function (date) {
-    return [
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate() - 1, // Use 0-based counting for modulo to work, but Date uses 1-based counting
-      date.getUTCHours(),
-      date.getUTCMinutes(),
-      date.getUTCSeconds(),
-      date.getUTCMilliseconds()
-    ];
+    date = Interval.dateToDict(date);
+    return [date.years, date.months, date.days, date.hours, date.minutes, date.seconds, date.milliseconds];
+  };
+
+  Interval.listToDate = function (date) {
+    return Interval.dictToDate({
+      years: date[0],
+      months: date[1],
+      days: date[2],
+      hours: date[3],
+      minutes: date[4],
+      seconds: date[5],
+      milliseconds: date[6]
+    });
   };
 
   return Interval;

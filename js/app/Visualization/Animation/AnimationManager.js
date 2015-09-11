@@ -180,8 +180,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
         y = e.pixel.y;
       }
 
-      for (var key in self.animations) {
-        var animation = self.animations[key];
+      for (var i = 0; i < self.animations.length; i++) {
+        var animation = self.animations[i];
         if (animation.data_view) {
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
@@ -195,8 +195,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     hideSelectionAnimations: function () {
       var self = this;
 
-      for (var key in self.animations) {
-        self.hideSelectionAnimation(self.animations[key]);
+      var animations = self.animations.slice(0);
+      for (var i = 0; i < animations.length; i++) {
+        self.hideSelectionAnimation(animations[i]);
       }
     },
 
@@ -227,9 +228,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
               "color": "grey",
               "visible": true,
               "source": {
-                "type": "BinFormat",
+                "type": "TiledBinFormat",
                 "args": {
-                  "url": "%(header.urls.1.0)s-%(selectionValue)s/-180,-90,180,90"
+                  "url": "%(versioned_url)s/sub/%(query)s"
                 }
               }
             },
@@ -242,7 +243,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
 
         seriesTileset = new ObjectTemplate(seriesTileset).eval({
           url: baseAnimation.data_view.source.url,
+          versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
           selectionValue: selectionValue,
+          query: baseAnimation.data_view.source.getSelectionQuery(selection),
           header: baseAnimation.data_view.source.header,
           selection: selection
         });
@@ -254,6 +257,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
             if (err) {
               self.removeAnimation(animation);
             } else {
+              animation.selectionAnimationFor = baseAnimation;
               baseAnimation.selectionAnimation = animation;
             }
           }
@@ -316,6 +320,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
                 "add": self.handleSelectionUpdate.bind(
                   self, animationInstance)
               });
+              animationInstance.data_view.selections.retriggerSelectionEvents();
             }
             self.events.triggerEvent("add", {animation: animationInstance});
           }
@@ -333,7 +338,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       for (var key in selectionData) {
         info[key] = selectionData[key][0];
       }
-
+ 
       if (type == 'info') {
         if (err) data = err;
         if (!data) return;
@@ -345,12 +350,33 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
         });
         self.infoPopup.open(self.map);
       } else {
-        if (err) {
-          self.events.triggerEvent('info-error', err);
-        } else {
-	  if (data) data.selection = info;
-          self.events.triggerEvent('info', data);
+        var category;
+        var event = {
+          layerInstance: animation,
+          layer: animation.title,
+          category: selectionEvent.category,
+          selection: info
         }
+
+        if (err) {
+          category = 'info-error';
+          event.error = error;
+          event.toString = function () { return this.error.toString(); };
+        } else if (data && data.error) {
+          category = 'info-error';
+          event.data = data;
+          event.toString = function () { return this.data.error; };
+        } else if (data) {
+          category = 'info';
+          event.data = data;
+          event.toString = function () { return this.data.toString(); };
+        } else {
+          category = 'info';
+          event.data = data;
+          event.toString = function () { return 'Nothing selected'; };
+        }
+
+        self.events.triggerEvent(category, event);
       }
     },
 
@@ -359,7 +385,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       var dataView = animation.data_view;
       var type = selectionEvent.category;
 
-      if (type == 'hover') return;
+      if (type != 'selected' && type != 'info') return;
 
       if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
           && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
@@ -398,12 +424,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
             var content;
 
             if (err) {
-              err.layerInstance = animation;
-              err.layer = animation.title;
               self.handleInfo(animation, selectionEvent, err, null);
             } else {
-              data.layerInstance = animation;
-              data.layer = animation.title;
               data.toString = function () {
                 var content = ["<table class='table table-striped table-bordered'>"];
                 if (data.name) {
@@ -668,7 +690,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     toJSON: function () {
       var self = this;
 
-      return {animations:self.animations, options:self.mapOptions};
+      return {animations: self.animations.filter(function (animation) {
+                return animation.selectionAnimationFor == undefined;
+              }),
+              options: self.mapOptions};
     }
   });
 });

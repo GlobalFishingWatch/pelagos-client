@@ -10,7 +10,31 @@
   tm.zoomTo(new Bounds([0, 0, 11.25, 11.25]));
 */
 
-define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/TileBounds", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Format, Tile, TileBounds, Pack, Logging, Ajax, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/LoadingInfo",
+  "app/Bounds",
+  "app/Data/Format",
+  "app/Data/Tile",
+  "app/Data/TileBounds",
+  "app/Data/Pack",
+  "app/Logging",
+  "app/Data/Ajax",
+  "lodash",
+  "app/LangExtensions"],
+function(
+  Class,
+  Events,
+  LoadingInfo,
+  Bounds,
+  Format,
+  Tile,
+  TileBounds,
+  Pack,
+  Logging,
+  Ajax,
+  _) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
     initialize: function() {
@@ -46,14 +70,25 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
         return;
       }
 
-      if (typeof XMLHttpRequest != "undefined") {
+      if (typeof XMLHttpRequest == "undefined") {
+        self.handleError({
+          toString: function () {
+            return "XMLHttpRequest not supported";
+          }
+        });
+        return;
+      }
+
+      var doLoad = function (withCredentials) {
         var url = self.url + "/header";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
-        request.withCredentials = true;
+        request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
+        LoadingInfo.main.add(url, true);
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
+            LoadingInfo.main.remove(url);
             if (Ajax.isSuccess(request, url)) {
               var data = JSON.parse(request.responseText);
 
@@ -81,18 +116,17 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
                 self.zoomTo(self.initialZoom);
               }
             } else {
-              self.handleError(Ajax.makeError(request, url, "header"));
+              if (withCredentials) {
+                doLoad(false);
+              } else {
+                self.handleError(Ajax.makeError(request, url, "header"));
+              }
             }
           }
         };
         request.send(null);
-      } else {
-        self.handleError({
-          toString: function () {
-            return "XMLHttpRequest not supported";
-          }
-        });
-      }
+      };
+      doLoad(true);
       self.events.triggerEvent("load");
     },
 
@@ -107,7 +141,11 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
 
       var urls;
       if (self.header.urls) {
-        fallbackLevel = fallbackLevel || 0;
+        if (fallbackLevel == -1) {
+          fallbackLevel = self.header.urls.length - 1;
+        } else if (!fallbackLevel) {
+          fallbackLevel = 0;
+        }
         urls = self.header.urls[fallbackLevel];
       } else if (self.header.alternatives) {
         urls = self.header.alternatives;
@@ -128,33 +166,59 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       return urls[idx];
     },
 
+    getSelectionQuery: function(selection, cols) {
+      var self = this;
+
+      var url = "";
+      if (cols === undefined) {
+        cols = selection.sortcols;
+      }
+      res = [];
+      cols.map(function (col) {
+        res.push(encodeURIComponent(col) + "=" + encodeURIComponent(selection.data[col][0].toString()));
+      });
+      return res.join(',');
+    },
+
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
-      var data = {};
-      for (var key in selection.data) {
-        data[key] = selection.data[key][0];
-      }
-
-      var url = self.url + "/series";
-
-      var request = new XMLHttpRequest();
-      request.open('POST', url, true);
-      request.withCredentials = true;
-      Ajax.setHeaders(request, self.headers);
-      request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-          if (Ajax.isSuccess(request, url)) {
-            var data = JSON.parse(request.responseText);
-            cb(null, data);
-          } else {
-            var e = Ajax.makeError(request, url, "selection information from ");
-            e.source = self;
-            cb(e, null);
+      var getSelectionInfo = function (fallbackLevel, withCredentials) {
+        /* FIXME: self.header.infoUsesSelection is a workaround for
+           current info database that doesn't contain seriesgroup
+           values. This should be removed in the future. */
+        var url = (self.getUrl("selection-info", fallbackLevel) +
+                   "/sub/" +
+                   self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']) +
+                   "/info");
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.withCredentials = withCredentials;
+        Ajax.setHeaders(request, self.headers);
+        LoadingInfo.main.add(url, true);
+        request.onreadystatechange = function() {
+          if (request.readyState === 4) {
+            LoadingInfo.main.remove(url);
+            if (Ajax.isSuccess(request, url)) {
+              var data = JSON.parse(request.responseText);
+              cb(null, data);
+            } else {
+              if (request.status == 0 && withCredentials) {
+                getSelectionInfo(fallbackLevel, false);
+              } else if (fallbackLevel + 1 < self.getUrlFallbackLevels()) {
+                getSelectionInfo(fallbackLevel + 1, true);
+              } else {
+                var e = Ajax.makeError(request, url, "selection information from ");
+                e.source = self;
+                cb(e, null);
+              }
+            }
           }
-        }
+        };
+        request.send();
       };
-      request.send(JSON.stringify(data));
+
+      getSelectionInfo(0, true);
     },
 
     search: function(query, cb) {
@@ -167,9 +231,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       request.open('POST', url, true);
       request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
-
+      LoadingInfo.main.add(url, true);
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
+          LoadingInfo.main.remove(url);
           if (Ajax.isSuccess(request, url)) {
             var data = JSON.parse(request.responseText);
             cb(null, data);
@@ -439,7 +504,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
       var wantedTiles = Object.values(self.wantedTiles).filter(filter);
       var rows = wantedTiles.map(function (tile) { return tile.content && tile.content.header && tile.content.header.length || 0; }).reduce(function (a, b) { return a + b }, 0);
       var loaded = wantedTiles.map(function (tile) { return tile.content.allIsLoaded ? 1 : 0; }).reduce(function (a, b) { return a + b }, 0);
-      res += indent + 'Wanted tiles (Rows: ' + rows + ', Loaded: ' + loaded + '):\n'
+      var errored = wantedTiles.map(function (tile) { return tile.content.error ? 1 : 0; }).reduce(function (a, b) { return a + b }, 0);
+      res += indent + 'Wanted tiles (Rows: ' + rows + ', Loaded: ' + loaded + ', Errors: ' + errored + '):\n'
       res += wantedTiles.map(printTree.bind(self, indent + "  ", 0)).join("");
 
       if (!args.coveredBy && !args.covers) {
@@ -506,23 +572,20 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Data/Format", "app/Data/Ti
           bounds = TileBounds.extendTileBounds(tile.bounds);
         }
 
+        /* There used to be code here to fire a
+         * self.handleError(data); for the top-level tile, but that
+         * prevents working when there are intermittent tile loading
+         * errors. Maybe we should retry all tiles endlessly with
+         * greater and greater timeout? */
+        self.events.triggerEvent("tile-error", data);
+
         if (bounds) {
           var replacement = self.setUpTile(bounds);
           tile.replace(replacement, data.complete_ancestor != undefined);
           replacement.content.load();
-
-          self.events.triggerEvent("tile-error", data);
         } else {
-          if (self.error) {
-            /* Do not generate multiple errors just because we tried to
-             * load multiple tiles... */
-            self.events.triggerEvent("tile-error", data);
-          } else {
-            self.handleError(data);
-          }
+          self.handleAllDone();
         }
-
-        self.handleAllDone();
       }
     },
 

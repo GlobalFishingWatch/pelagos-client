@@ -22,3 +22,5 @@ js/libs
 .#*
 #*
 *.pyc
+ui_tests/data
+travis-data

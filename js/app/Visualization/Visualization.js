@@ -81,11 +81,12 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
       if (!url) return cb();
 
       if (url.indexOf("?") >= 0) {
-        self.workspaceUrl = url.split("?")[0];
+        self.workspaceSaveUrl = url.split("?")[0];
       }
       else {
-        self.workspaceUrl = "/workspace";
+        self.workspaceSaveUrl = "/workspace";
       }
+      self.workspaceUrl = url;
 
       $.get(url, function (data) {
         data = Json.decode(data);
@@ -103,9 +104,9 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
     save: function (cb) {
       var self = this;
 
-      $.post(self.workspaceUrl, Json.encode(self, "  "), function (data) {
+      $.post(self.workspaceSaveUrl, Json.encode(self, "  "), function (data) {
         data = Json.decode(data);
-        cb(self.workspaceUrl + "/" + data.id);
+        cb(self.workspaceSaveUrl + "/" + data.id);
       }, 'text');
     }
   });

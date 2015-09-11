@@ -57,7 +57,7 @@ define(["app/Class", "app/Data/Format", "app/Data/SelectionManager", "app/Data/P
         string: self.toString()
       };
       self.events.triggerEvent(e.update, e);
-      self.events.triggerEvent('view-update', e);
+      self.events.triggerEvent('update', e);
     },
 
     addCol: function(spec) {
@@ -85,7 +85,7 @@ define(["app/Class", "app/Data/Format", "app/Data/SelectionManager", "app/Data/P
           string: self.toString()
         };
         self.events.triggerEvent(e.update, e);
-        self.events.triggerEvent('view-update', e);
+        self.events.triggerEvent('update', e);
         cb();
       });
     },
@@ -104,7 +104,7 @@ define(["app/Class", "app/Data/Format", "app/Data/SelectionManager", "app/Data/P
         string: self.toString()
       };
       self.events.triggerEvent(e.update, e);
-      self.events.triggerEvent('view-update', e);
+      self.events.triggerEvent('update', e);
     },
 
     getAvailableColumns: function (cb) {

@@ -1,4 +1,4 @@
-swissarmykitchensink
-gsutil
--e git+git@github.com:SkyTruth/clustering.git#egg=Package
 vectortile
+selenium
+nose
+click

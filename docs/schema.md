@@ -62,6 +62,13 @@ The tileset header specifies how to load tiles, and what columns to expect.
         ]
       ],
 
+      /* Default is to query /info/series/SERIESNR for selection
+         information (it should return json). If set to true, sortcols
+         from the selection object is used to determine the path:
+         /info/NAME1/VALUE1/NAME2/VALUE2.../NAMEN/VALUEN */
+
+      infoUsesSelection: false,
+
       /* Column specifications. Note: All tiles should adhere to this
          format, or extend it. Extra columns in tiles will be mostly
          ignored. Maps a column name to a specification containing column

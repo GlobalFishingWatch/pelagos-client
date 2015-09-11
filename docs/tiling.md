@@ -72,4 +72,3 @@ lower limit, but a guide line.
 
 * Tiles to load
   * Load each combination of a spatial tile bound and a temporal slice calculated above
-

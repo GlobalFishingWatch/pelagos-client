@@ -1,5 +1,6 @@
 define([
   "app/Class",
+  "app/LoadingInfo",
   "app/UrlValues",
   "app/Visualization/KeyModifiers",
   "app/Visualization/UI/Timeline",
@@ -12,6 +13,7 @@ define([
   "jQuery"],
 function (
   Class,
+  LoadingInfo,
   UrlValues,
   KeyModifiers,
   Timeline,
@@ -137,13 +139,15 @@ function (
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
-      self.visualization.data.events.on({
-        load: function () {
+      LoadingInfo.main.events.on({
+        start: function () {
           self.loadingNode.fadeIn();
         },
-        all: function () {
+        end: function () {
           self.loadingNode.fadeOut();
-        },
+        }
+      });
+      self.visualization.data.events.on({
         error: function (data) {
           var dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Error</h4></div><div class="modal-body alert"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
           dialog.find('.modal-body').html(data.toString());

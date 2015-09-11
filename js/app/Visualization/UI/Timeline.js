@@ -76,6 +76,11 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
     }),
 
     windowLengLabels: new TimeLabel({}),
+    windowLengHoverLabels: new TimeLabel({
+      intervalUnits: ['year', 'week', 'day', 'hour', 'minute', 'second'],
+      intervalPrecision: undefined,
+      intervalPrecisionLimit: undefined
+    }),
 
 
     /**** External API ****/
@@ -386,13 +391,19 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
         date: self.windowStart,
         stepLength: self.stepLength
       }));
+      self.startLabel.attr({title: self.windowStart.rfcstring().replace("T", " ")});
       self.lengthLabel.html(self.windowLengLabels.formatInterval({
-        interval: self.windowEnd - self.windowStart
+        interval: (  self.windowTimeLabels.floorDate({date: self.windowEnd, stepLength:self.stepLength})
+                   - self.windowTimeLabels.floorDate({date: self.windowStart, stepLength:self.stepLength}))
       }));
+      self.lengthLabel.attr({title: self.windowLengHoverLabels.formatInterval({
+        interval: self.windowEnd - self.windowStart
+      })});
       self.endLabel.html(self.windowTimeLabels.formatDate({
         date: self.windowEnd,
         stepLength: self.stepLength
       }));
+      self.endLabel.attr({title: self.windowEnd.rfcstring().replace("T", " ")});
     },
 
     setWindowSize: function () {
