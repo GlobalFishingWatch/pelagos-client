@@ -37,7 +37,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     res.tilesy = (res.tiletop - res.tilebottom) / res.tileheight;
 
     return res;
-  },
+  };
 
   TileBounds.tileBoundsForRegion = function(bounds, tilesPerScreen) {
     /* Returns a list of tile bounds covering a region. */
@@ -62,7 +62,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       tilesPerScreen: 1,
       params: params
     }
-  },
+  };
+
+  TileBounds.rangeSize = 1000 * 60 * 60 * 24 * 30;
 
   TileBounds.tileParamsForRange = function(range) {
     var range = new Timerange(range);
@@ -79,12 +81,11 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       }
     };
 
-    res.tilestart = new Date(Date.UTC(range.start.getUTCFullYear(), range.start.getUTCMonth(), 1));
-    res.tileend = new Date(Date.UTC(range.end.getUTCFullYear(), range.end.getUTCMonth() + 1, 1));
+    res.tilestart = Math.floor(range.start.getTime() / TileBounds.rangeSize) * TileBounds.rangeSize;
+    res.tileend = Math.ceil(range.end.getTime() / TileBounds.rangeSize) * TileBounds.rangeSize;
 
     return res;
-  },
-
+  };
 
   TileBounds.tileBoundsForRange = function(bounds, tilesPerScreen) {
     /* Returns a list of tile bounds covering a region. */
@@ -93,17 +94,17 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     Logging.main.log("Data.BaseTiledFormat.tileBoundsForRange", params);
 
     res = [];
-    for (var t = params.tilestart; t < params.tileend; t = new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1))) {
+    for (var t = params.tilestart; t < params.tileend; t += TileBounds.rangeSize) {
       res.push(new Timerange([
-        t, new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth() + 1, 1))]));
+        new Date(t), new Date(t + TileBounds.rangeSize)]));
     }
 
     return {
       set: res,
-      tilesPerScreen: Math.ceil(tilesPerScreen / (params.length / 1000 / 60 / 60 / 24 / 31)),
+      tilesPerScreen: Math.ceil(tilesPerScreen / (params.length / TileBounds.rangeSize)),
       params: params
     };
-  },
+  };
 
   TileBounds.tileBounds = function(bounds, tilesPerScreen) {
     var sets = [];
@@ -133,7 +134,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     }   
 
     return sets.reduce(flatten, [bounds]);
-  },
+  };
 
   TileBounds.extendTileBounds = function (obj) {
    /* Returns the first larger tile bounds enclosing the tile bounds
@@ -157,7 +158,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     } else {
       return undefined;
     }
-  }
+  };
 
   return TileBounds;
 });
