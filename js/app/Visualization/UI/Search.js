@@ -71,6 +71,7 @@ define([
     displaySearchResults: function (err, res) {
       var self = this;
       self.dialog.modal('show');
+      self.dialog.find('.search-loading').hide();
       if (err) {
       } else {
         self.dialog.find('.results').html('<table class="table result-table">' +
