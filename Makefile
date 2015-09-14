@@ -27,7 +27,7 @@ DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/dojo-release-1.10.0-src/util/buildscripts/build.sh
 
 
-.PHONY: all dependencies js-build clean clean-js-build clean-dependencies
+.PHONY: all prerequisites dependencies js-build clean clean-js-build clean-dependencies unit-tests integration-tests dev-server test-server
 
 all: js-build
 
@@ -124,4 +124,25 @@ clean-js-build:
 clean-dependencies:
 	rm -rf js/libs
 
+prerequisites:
+	if ! command -v node >/dev/null 2>&1; then curl -sL https://deb.nodesource.com/setup_0.12 | bash - 2>&1; fi
+	if ! command -v google-chrome >/dev/null 2>&1; then wget -q -O - "https://dl-ssl.google.com/linux/linux_signing_key.pub" | apt-key add - 2>&1; echo 'deb http://dl.google.com/linux/chrome/deb/ stable main' >> /etc/apt/sources.list.d/google-chrome.list; fi
+	apt-get update 2>&1
+	apt-get install -y nodejs unzip openjdk-6-jre xvfb chromium-browser google-chrome-stable libglapi-mesa libosmesa6 mesa-utils python python-dev python-pip git 2>&1
+	if ! command -v testem >/dev/null 2>&1; then npm install testem -g 2>&1; fi
+	pip install -r requirements.txt 2>&1
+	pip install chromedriver_installer --install-option="--chromedriver-version=2.10" 2>&1
+
 clean: clean-js-build clean-dependencies
+
+unit-tests:
+	xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 60
+
+integration-tests:
+	xvfb-run -s "-screen 0 1280x1024x24" nosetests -s -w ui_tests
+
+dev-server:
+	ui_tests/server.py
+
+test-server:
+	ui_tests/server.py --selenium
