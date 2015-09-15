@@ -203,6 +203,9 @@ function (
         'temporary-range': setRange,
         'user-update-start': function (e) {
           self.visualization.state.setValue("paused", true);
+        },
+        'hover': function (e) {
+          self.visualization.state.setValue("timeFocus", e.time);
         }
       });
 
