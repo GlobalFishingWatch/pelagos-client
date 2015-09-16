@@ -1,11 +1,14 @@
 install:
-  - sudo make prerequisites
+  - curl -sL https://deb.nodesource.com/setup | sudo bash -
+  - sudo apt-get update
+  - sudo apt-get install -qq xvfb chromium-browser nodejs libglapi-mesa libosmesa6 mesa-utils
+  - sudo npm install testem -g
+  - sudo pip install -r requirements.txt
+  - sudo pip install chromedriver_installer --install-option="--chromedriver-version=2.10"
 
 script:
   - export LIBGL_DEBUG=verbose; xvfb-run -s "-screen 0 1280x1024x24" glxinfo
-  - make
-  - make unit-tests
-  - make integration-tests
+  - xvfb-run -s "-screen 0 1280x1024x24" testem -l Chromium ci --timeout 60
 
 before_script:
   - scripts/travis-checkout-data.sh
