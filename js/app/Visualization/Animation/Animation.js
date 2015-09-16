@@ -51,7 +51,28 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
 
     destroy: function () {
       var self = this;
-      $(self.rowidxCanvas).remove();
+      // Destroy all we can explicitly, waiting for GC can take
+      // forever, and until then other animations might not get
+      // GL resources...
+      for (var programname in self.programs) {
+        var program = self.programs[programname];
+        for (var sourcename in program.dataViewArrayBuffers) {
+          var source = program.dataViewArrayBuffers[sourcename];
+          for (var buffername in source) {
+            var buffer = source[buffername];
+            program.gl.deleteBuffer(buffer);
+          }
+        }
+        program.gl.deleteProgram(program);
+      }
+      self.programs = {};
+      self.rowidxGl.viewport(0, 0, 0, 0);
+      var loseContextExt = self.rowidxGl.getExtension('WEBGL_lose_context');
+      if (loseContextExt) {
+        loseContextExt.loseContext();
+      }
+      self.rowidxCanvas = undefined;
+      self.rowidxGl = undefined;
     },
 
     initGl: function(gl, cb) {
