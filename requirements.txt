@@ -2,3 +2,4 @@ vectortile
 selenium
 nose
 click
+chromedriver_installer

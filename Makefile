@@ -131,7 +131,6 @@ prerequisites:
 	apt-get install -y nodejs unzip openjdk-6-jre xvfb chromium-browser google-chrome-stable libglapi-mesa libosmesa6 mesa-utils python python-dev python-pip git 2>&1
 	if ! command -v testem >/dev/null 2>&1; then npm install testem -g 2>&1; fi
 	pip install -r requirements.txt 2>&1
-	pip install chromedriver_installer --install-option="--chromedriver-version=2.10" 2>&1
 
 clean: clean-js-build clean-dependencies
 
