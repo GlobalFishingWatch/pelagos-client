@@ -40,7 +40,7 @@ define([
         '</div>');
       $('body').append(self.node);
 
-      self.update("none", undefined);
+      self.update("none", {});
 
       self.node.find("#collapse-button img").click(function () {
         self.node.css({left:self.node.offset().left + "px"});
@@ -73,7 +73,8 @@ define([
     update: function (color, event) {
       var self = this;
 
-      if (!event || event.vesselname || event.mmsi || event.imo || event.callsign) {
+      var data = event.data;
+        if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
         self.node.find("#vessel_identifiers").html(
           '      <h2>Vessel Information</h2>' +
           '      <span class="download"></span>' +
@@ -107,15 +108,15 @@ define([
           '      </table>'
         );
 
-        if (event) {
-          self.node.find(".vessel_id .callsign").html(event.callsign || "---");
+        if (data) {
+          self.node.find(".vessel_id .callsign").html(data.callsign || "---");
 
 
           var flag;
-          if (event.flagstate)
-              flag = event.flagstate;
+          if (data.flagstate)
+              flag = data.flagstate;
           else
-              flag = event.flag;
+              flag = data.flag;
 
           if (flag) {
             if (CountryCodes.codeToName[flag] != undefined) {
@@ -128,8 +129,8 @@ define([
             self.node.find(".vessel_id .flag").html("---");
           }
 
-          self.node.find(".vessel_id .imo").html(event.imo || "---");
-          self.node.find(".vessel_id .mmsi").html(event.mmsi || "---");
+          self.node.find(".vessel_id .imo").html(data.imo || "---");
+          self.node.find(".vessel_id .mmsi").html(data.mmsi || "---");
 
           var classes = {
             "transport/bulkcarrier": {name: "Bulk carrier", icon: "/vessels/bulkcarrier.png"},
@@ -149,23 +150,23 @@ define([
             return undefined;
           }
 
-          if (event.vesselclass) {
-            var cls = getClass(event.vesselclass);
+          if (data.vesselclass) {
+            var cls = getClass(data.vesselclass);
             if (cls) {
               self.node.find(".vessel_id .vesselclass").html(cls.name);
               self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + cls.icon + '"><br>');
             } else {
-              self.node.find(".vessel_id .vesselclass").html(event.vesselclass);
+              self.node.find(".vessel_id .vesselclass").html(data.vesselclass);
             }
           } else {
             self.node.find(".vessel_id .vesselclass").html("---");
           }
 
-          self.node.find(".vessel_id .vesselname").html(event.vesselname || "---");
+          self.node.find(".vessel_id .vesselname").html(data.vesselname || "---");
 
-          if (event.link) {
+          if (data.link) {
             var link = $("<a target='_new'>");
-            link.attr({href: event.link});
+            link.attr({href: data.link});
             self.node.find("h2").wrapInner(link);
           }
 

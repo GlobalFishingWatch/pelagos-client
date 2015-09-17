@@ -341,7 +341,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       for (var key in selectionData) {
         info[key] = selectionData[key][0];
       }
-
+ 
       if (type == 'info') {
         if (err) data = err;
         if (!data) return;
@@ -353,15 +353,33 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         });
         self.infoPopup.open(self.map);
       } else {
-        if (err) {
-          self.events.triggerEvent('info-error', err);
-        } else {
-          if (data) {
-            data.category = selectionEvent.category;
-            data.selection = info;
-          }
-          self.events.triggerEvent('info', data);
+        var category;
+        var event = {
+          layerInstance: animation,
+          layer: animation.title,
+          category: selectionEvent.category,
+          selection: info
         }
+
+        if (err) {
+          category = 'info-error';
+          event.error = error;
+          event.toString = function () { return this.error.toString(); };
+        } else if (data && data.error) {
+          category = 'info-error';
+          event.data = data;
+          event.toString = function () { return this.data.error; };
+        } else if (data) {
+          category = 'info';
+          event.data = data;
+          event.toString = function () { return this.data.toString(); };
+        } else {
+          category = 'info';
+          event.data = data;
+          event.toString = function () { return 'Nothing selected'; };
+        }
+
+        self.events.triggerEvent(category, event);
       }
     },
 
@@ -409,12 +427,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
             var content;
 
             if (err) {
-              err.layerInstance = animation;
-              err.layer = animation.title;
               self.handleInfo(animation, selectionEvent, err, null);
             } else {
-              data.layerInstance = animation;
-              data.layer = animation.title;
               data.toString = function () {
                 var content = ["<table class='table table-striped table-bordered'>"];
                 if (data.name) {
