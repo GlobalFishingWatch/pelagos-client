@@ -112,6 +112,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
     initCanvas: function (cb) {
       var self = this;
 
+      self.rowidxCanvas = document.createElement('canvas');
+      self.rowidxGl = self.rowidxCanvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+      self.rowidxGl.enable(self.rowidxGl.BLEND);
+      self.rowidxGl.blendFunc(self.rowidxGl.SRC_ALPHA, self.rowidxGl.ONE_MINUS_SRC_ALPHA);
+      self.rowidxGl.clearColor(1.0, 1.0, 1.0, 1.0);
+
       var canvasLayerOptions = {
         map: self.map,
         resizeHandler: function () { if (self.initialized) self.canvasResize() },
@@ -166,6 +172,68 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       }, cb);
     },
 
+    /* Uses the rowidxGl canvas to get a source data rowid from a
+     * pixel x/y position. Rowidx is encoded into RGB (in that order),
+     * with 1 added to the rowidx. 0 encodes no row drawn on that
+     * pixel. */
+    getRowidxAtPos: function (x, y, radius) {
+      var self = this;
+
+      /* Canvas coordinates are upside down for some reason... */
+      y = self.canvasLayer.canvas.height - y;
+
+      if (radius == undefined) radius = 4;
+
+      var size = radius * 2 + 1;
+
+      var data = new Uint8Array(4*size*size);
+      self.rowidxGl.readPixels(x-radius, y-radius, size, size, self.rowidxGl.RGBA, self.rowidxGl.UNSIGNED_BYTE, data);
+
+
+      var getBits = function (data, lower, upper) {
+        return (data & (Math.pow(2, upper + 1) - 1)) >> lower;
+      }
+
+      var pixelToId = function (data, offset) {
+        /* Bit layout, packed in 3 bytes (r, g, b):
+         * 4bits animation id
+         * 6bits tile id
+         * 14bits row id
+         *
+         * See js/app/Visualization/Animation/rowidx.glsl:rowidxColor
+         */
+
+        if (data[offset] == 255 && data[offset+1] == 255 & data[offset+2] == 255) {
+          return undefined;
+        }
+
+        var animationidx = getBits(data[offset], 4, 7);
+        var tileidx = (  (getBits(data[offset], 0, 3) << 2)
+                       | getBits(data[offset+1], 6, 7));
+        var rowidx = (getBits(data[offset+1], 0, 5) << 8) | data[offset+2];
+        return [animationidx, tileidx, rowidx];
+      }
+
+      var rowIdx = [];
+      for (var i = 0; i < size*size; i++) {
+        rowIdx.push(pixelToId(data, i * 4));
+      }
+
+      var last = undefined;
+      var lastradius = 0;
+      for (var oy = 0; oy < size; oy++) {
+        for (var ox = 0; ox < size; ox++) {
+          var r = Math.sqrt(Math.pow(Math.abs(ox - size + 0.5), 2) + Math.pow(Math.abs(oy - size + 0.5), 2))
+          if (rowIdx[oy*size+ox] != undefined && (r <= lastradius || last == undefined)) {
+            last = rowIdx[oy*size+ox];
+            lastradius = r;
+          }
+        }
+      }
+
+      return last;
+    },
+
     handleMouse: function (e, type) {
       var self = this;
 
@@ -180,12 +248,14 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         y = e.pixel.y;
       }
 
-      for (var i = 0; i < self.animations.length; i++) {
-        var animation = self.animations[i];
+      var rowidx = self.getRowidxAtPos(x, y);
+      if (rowidx) {
+        var animation = self.animations[rowidx[0]];
         if (animation.data_view) {
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
-        if (animation.select(x, y, type, true)) {
+
+        if (animation.select([rowidx[1], rowidx[2]], type, true)) {
           return animation;
         }
       }
@@ -307,7 +377,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       var self = this;
 
       animationInstance.addingToManager = true;
-      animationInstance.initGl(self.gl, function () { 
+      animationInstance.initGl(function () { 
         animationInstance.initUpdates(function () {
           if (animationInstance.addingToManager) {
             animationInstance.addingToManager = false;
@@ -603,6 +673,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         return;
       }
       self.updateNeeded = false;
+
+      var width = self.canvasLayer.canvas.width;
+      var height = self.canvasLayer.canvas.height;
+      self.rowidxCanvas.width = width;
+      self.rowidxCanvas.height = height;
+      self.rowidxGl.viewport(0, 0, width, height);
+      self.rowidxGl.clear(self.rowidxGl.COLOR_BUFFER_BIT);
 
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();
