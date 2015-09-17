@@ -5,7 +5,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       mapTypeControlOptions: {
-        position: google.maps.ControlPosition.TOP_LEFT
+          position: google.maps.ControlPosition.TOP_LEFT,
+          style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+      },
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.LEFT_TOP,
+        style: google.maps.ZoomControlStyle.LARGE
       },
       streetViewControl: false,
       overviewMapControl: false,
