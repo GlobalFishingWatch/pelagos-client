@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Rowidx", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Rowidx, Animation) {
   return Class({
     name: "AnimationManager",
 
@@ -109,14 +109,24 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       cb();
     },
 
+    getGlContext: function (canvas) {
+      var self = this;
+      var gl = canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+      gl.enable(gl.BLEND);
+      return gl;
+    },
+
+    createRowidxGlContext: function () {
+      var self = this;
+      var canvas = document.createElement('canvas');
+      var gl = self.getGlContext(canvas);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.clearColor(1.0, 1.0, 1.0, 1.0);
+      return gl;
+    },
+
     initCanvas: function (cb) {
       var self = this;
-
-      self.rowidxCanvas = document.createElement('canvas');
-      self.rowidxGl = self.rowidxCanvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
-      self.rowidxGl.enable(self.rowidxGl.BLEND);
-      self.rowidxGl.blendFunc(self.rowidxGl.SRC_ALPHA, self.rowidxGl.ONE_MINUS_SRC_ALPHA);
-      self.rowidxGl.clearColor(1.0, 1.0, 1.0, 1.0);
 
       var canvasLayerOptions = {
         map: self.map,
@@ -126,7 +136,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       };
       self.canvasLayer = new CanvasLayer(canvasLayerOptions);
 
-      self.gl = self.canvasLayer.canvas.getContext('experimental-webgl');
+      self.gl = self.getGlContext(self.canvasLayer.canvas);
       if (!self.gl) {
         var failover = self.visualization.state.getValue('nowebgl');
         if (failover) {
@@ -141,8 +151,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         }
         cb({msg: "Your browser does not support WebGL."});
       } else {
-        self.gl.enable(self.gl.BLEND);
         self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE);
+
+        self.rowidxGl = [self.createRowidxGlContext(), self.createRowidxGlContext()];
 
         var onAdd = function () {
           if (!self.canvasLayer.isAdded_) {
@@ -172,66 +183,24 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       }, cb);
     },
 
-    /* Uses the rowidxGl canvas to get a source data rowid from a
-     * pixel x/y position. Rowidx is encoded into RGB (in that order),
-     * with 1 added to the rowidx. 0 encodes no row drawn on that
-     * pixel. */
-    getRowidxAtPos: function (x, y, radius) {
+    /* Uses the selectionGl canvases to get a source animation, tile
+     * id and rowid from a pixel x/y position. */
+    getRowidxAtPos: function (x, y) {
       var self = this;
 
       /* Canvas coordinates are upside down for some reason... */
       y = self.canvasLayer.canvas.height - y;
 
-      if (radius == undefined) radius = 4;
-
-      var size = radius * 2 + 1;
-
-      var data = new Uint8Array(4*size*size);
-      self.rowidxGl.readPixels(x-radius, y-radius, size, size, self.rowidxGl.RGBA, self.rowidxGl.UNSIGNED_BYTE, data);
-
-
-      var getBits = function (data, lower, upper) {
-        return (data & (Math.pow(2, upper + 1) - 1)) >> lower;
-      }
-
-      var pixelToId = function (data, offset) {
-        /* Bit layout, packed in 3 bytes (r, g, b):
-         * 4bits animation id
-         * 6bits tile id
-         * 14bits row id
-         *
-         * See js/app/Visualization/Animation/rowidx.glsl:rowidxColor
-         */
-
-        if (data[offset] == 255 && data[offset+1] == 255 & data[offset+2] == 255) {
-          return undefined;
-        }
-
-        var animationidx = getBits(data[offset], 4, 7);
-        var tileidx = (  (getBits(data[offset], 0, 3) << 2)
-                       | getBits(data[offset+1], 6, 7));
-        var rowidx = (getBits(data[offset+1], 0, 5) << 8) | data[offset+2];
-        return [animationidx, tileidx, rowidx];
-      }
-
-      var rowIdx = [];
-      for (var i = 0; i < size*size; i++) {
-        rowIdx.push(pixelToId(data, i * 4));
-      }
-
-      var last = undefined;
-      var lastradius = 0;
-      for (var oy = 0; oy < size; oy++) {
-        for (var ox = 0; ox < size; ox++) {
-          var r = Math.sqrt(Math.pow(Math.abs(ox - size + 0.5), 2) + Math.pow(Math.abs(oy - size + 0.5), 2))
-          if (rowIdx[oy*size+ox] != undefined && (r <= lastradius || last == undefined)) {
-            last = rowIdx[oy*size+ox];
-            lastradius = r;
-          }
-        }
-      }
-
-      return last;
+      return Rowidx.pixelToId(
+        Rowidx.appendByteArrays.apply(
+          undefined,
+          self.rowidxGl.map(function (gl) {
+            var data = new Uint8Array(4);
+            gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
+            return data.subarray(0, 3); /* Disregard Alpha for now... Unsure how it interacts with BLEND functions... */
+          })
+        )
+      );
     },
 
     handleMouse: function (e, type) {
@@ -676,10 +645,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
 
       var width = self.canvasLayer.canvas.width;
       var height = self.canvasLayer.canvas.height;
-      self.rowidxCanvas.width = width;
-      self.rowidxCanvas.height = height;
-      self.rowidxGl.viewport(0, 0, width, height);
-      self.rowidxGl.clear(self.rowidxGl.COLOR_BUFFER_BIT);
+
+      self.rowidxGl.map(function (gl) {
+        gl.canvas.width = width;
+        gl.canvas.height = height;
+        gl.viewport(0, 0, width, height);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      });
 
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();

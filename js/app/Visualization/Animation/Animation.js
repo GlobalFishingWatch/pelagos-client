@@ -55,15 +55,18 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       // forever, and until then other animations might not get
       // GL resources...
       for (var programname in self.programs) {
-        var program = self.programs[programname];
-        for (var sourcename in program.dataViewArrayBuffers) {
-          var source = program.dataViewArrayBuffers[sourcename];
-          for (var buffername in source) {
-            var buffer = source[buffername];
-            program.gl.deleteBuffer(buffer);
+        var programs = self.programs[programname];
+        for (var i = 0; i < programs.length; i++) {
+          var program = programs[i];
+          for (var sourcename in program.dataViewArrayBuffers) {
+            var source = program.dataViewArrayBuffers[sourcename];
+            for (var buffername in source) {
+              var buffer = source[buffername];
+              program.gl.deleteBuffer(buffer);
+            }
           }
+          program.gl.deleteProgram(program);
         }
-        program.gl.deleteProgram(program);
       }
       self.programs = {};
     },
@@ -115,18 +118,32 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
 
       self.programs = {};
       async.map(Object.items(self.programSpecs), function (item, cb) {
-        Shader.createShaderProgramFromUrl(
-          self.manager[item.value.context],
-          require.toUrl(item.value.vertex),
-          require.toUrl(item.value.fragment),
-          {
-            attr0: Object.keys(self.data_view.source.header.colsByName)[0],
-            attrmapper: Shader.compileMapping(self.data_view)
+        var programName = item.key;
+        var programSpec = item.value;
+
+        var gls = self.manager[programSpec.context];
+        if (!gls.length) gls = [gls];
+
+        async.map(
+          gls,
+          function (gl, cb) {
+            Shader.createShaderProgramFromUrl(
+              gl,
+              require.toUrl(programSpec.vertex),
+              require.toUrl(programSpec.fragment),
+              {
+                attr0: Object.keys(self.data_view.source.header.colsByName)[0],
+                attrmapper: Shader.compileMapping(self.data_view)
+              },
+              function (program) {
+                program.name = programName;
+                program.dataViewArrayBuffers = {};
+                cb(null, program);
+              }
+            );
           },
-          function (program) {
-            program.name = item.key;
-            program.dataViewArrayBuffers = {};
-            self.programs[item.key] = program;
+          function (err, programs) {
+            self.programs[programName] = programs;
             cb();
           }
         );
@@ -160,7 +177,9 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       self.dataUpdateTimeout = undefined;
       self.dataUpdates++;
 
-      Object.values(self.programs).map(self.updateDataProgram.bind(self));
+      Object.values(self.programs).map(function (programs) {
+        programs.map(self.updateDataProgram.bind(self));
+      });
 
       self.manager.triggerUpdate();
     },
@@ -175,10 +194,12 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       var self = this;
       if (!self.visible) return;
 
-      Object.values(self.programs).map(self.drawProgram.bind(self));
+      Object.values(self.programs).map(function (programs) {
+        programs.map(self.drawProgram.bind(self));
+      });
     },
 
-    drawProgram: function (program) {
+    drawProgram: function (program, idx) {
       var self = this;
 
       if (program.name == "rowidxProgram" && !self.manager.isPaused())
@@ -193,6 +214,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       program.gl.uniform1f(
         program.uniforms.animationidx,
         self.manager.animations.indexOf(self));
+      program.gl.uniform1f(program.uniforms.canvasIndex, idx);
       var tileidx = 0;
       self.data_view.source.getContent().map(function (tile) {
         program.gl.uniform1f(program.uniforms.tileidx, tileidx);

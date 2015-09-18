@@ -1,3 +1,5 @@
+uniform float canvasIndex;
+
 float getBits(float data, float lower, float upper) {
   float upperPow = pow(2., upper + 1.);
   float leftBits = floor(data / upperPow) * upperPow;
@@ -10,19 +12,27 @@ vec4 bytesToColor(vec4 bytes) {
 }
 
 vec4 rowidxColor(float animationidx, float tileidx, float rowidx) {
-  /* Bit layout, packed in 3 bytes (r, g, b):
-   * 4bits animation id
-   * 6bits tile id
-   * 14bits row id
+  /* Bit layout, packed in 6 bytes (r1, g1, b1, r2, g2, b2):
+   * 8bits animation id
+   * 16bits tile id
+   * 24bits row id
    *
-   * See js/app/Visualization/Animation/AnimationManager.js:getRowidxAtPos:pixelToId
+   * See js/app/Visualization/Animation/Rowidx.js:pixelToId
    */
 
-  return bytesToColor(vec4(
-    animationidx * 16. + getBits(tileidx, 2., 5.),
-    getBits(tileidx, 0., 1.) * 64. + getBits(rowidx, 8., 13.),
-    getBits(rowidx, 0., 7.),
-    1.0));
+  if (canvasIndex == 0.) {
+    return bytesToColor(vec4(
+      getBits(animationidx, 0., 7.),
+      getBits(tileidx, 8., 15.),
+      getBits(tileidx, 0., 7.),      
+      1.0));
+  } else if (canvasIndex == 1.0) {
+    return bytesToColor(vec4(
+      getBits(rowidx, 16., 23.),
+      getBits(rowidx, 8., 15.),
+      getBits(rowidx, 0., 7.),      
+      1.0));
+  }
 }
 
 vec4 rowidxNone = vec4(1.0, 1.0, 1.0, 1.0);
