@@ -135,7 +135,7 @@ function (
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div class="loading" style="padding-left: 34px;"><img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg"></div>');
+      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
