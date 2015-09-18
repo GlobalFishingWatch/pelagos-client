@@ -1,0 +1,6 @@
+test_page: "testem.html"
+port: 8080
+launch_in_ci:
+  - Firefox
+timeout: 60
+

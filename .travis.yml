@@ -1,14 +1,33 @@
-install:
-  - sudo make prerequisites
+sudo: false
+language: python
 
-script:
-  - export LIBGL_DEBUG=verbose; xvfb-run -s "-screen 0 1280x1024x24" glxinfo
-  - make
-  - make unit-tests
-  - make integration-tests
+python:
+  - "2.7"
+
+addons:
+  apt:
+    packages:
+      - chromium-browser
+      - libglapi-mesa
+      - libosmesa6
+      - mesa-utils
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - node_modules
+
+before_install:
+  - pip install --upgrade pip
+  - npm install testem
 
 before_script:
+  - make all
   - scripts/travis-checkout-data.sh
+  - LIBGL_DEBUG=verbose xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l glxinfo
+
+script:
+  - xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l node_modules/testem/testem.js ci
+  - xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l nosetests -s -w ui_tests
 
 after_script:
   - cp *.png travis-data || true
