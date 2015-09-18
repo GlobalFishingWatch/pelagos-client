@@ -30,16 +30,25 @@ define(["app/Class", "app/Events"], function(Class, Events) {
       var value = self.data[key];
       delete self.data[key];
       if (value.request) {
-        if (value.request.response) {
-          if (value.request.response.byteLength) {
-            value.bytes = value.request.response.byteLength;
-          } else if (value.request.response.length) {
-            value.bytes = value.request.response.length;
-          } else if (value.request.response.size) {
-            value.bytes = value.request.response.size;
+        var response = undefined;
+        var responseText = undefined;
+
+        response = value.request.response;
+        // Not undefined, but throws an exception if accessed when responseType is not text...
+        try {
+          responseText = value.request.responseText;
+        } catch (e) {}
+
+        if (response) {
+          if (response.byteLength) {
+            value.bytes = response.byteLength;
+          } else if (response.length) {
+            value.bytes = response.length;
+          } else if (response.size) {
+            value.bytes = response.size;
           }
-        } else if (value.request.responseText) {
-            value.bytes = value.request.responseText.length;
+        } else if (responseText) {
+            value.bytes = responseText.length;
         }
 
         if (value.bytes) {
