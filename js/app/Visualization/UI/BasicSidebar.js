@@ -65,6 +65,7 @@ define([
       self.animationManager.events.on({
         'add': self.addHandler.bind(self),
         'remove': self.removeHandler.bind(self),
+        'info-loading': self.updateLoading.bind(self),
         'info': self.update.bind(self, "none"),
         'info-error': self.update.bind(self, "#ff0000")
       });
@@ -73,6 +74,14 @@ define([
       self.visualization.state.events.on({'edit': function (data) {        
         self.node.toggle(!data.new_value);
       }});
+    },
+
+    updateLoading: function () {
+      var self = this;
+      self.node.find("#vessel_identifiers").html(
+        '      <h2>Vessel Information</h2>' +
+        '      <div class="loading-vessel-info" style=""><img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg"></div>'
+      );
     },
 
     update: function (color, event) {
