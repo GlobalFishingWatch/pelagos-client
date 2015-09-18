@@ -20,7 +20,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
       // FIXME: DO we need to call destroy or something like that on self.layer?
     },
 
-    initGl: function(gl, cb) {
+    initGl: function(cb) {
       var self = this;
 
       self.layer = new google.maps.visualization.MapsEngineLayer({layerId:self.source.args.url, suppressInfoWindows:true});
