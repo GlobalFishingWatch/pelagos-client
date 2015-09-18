@@ -22,7 +22,7 @@ void main() {
     baseColor = vec4(0, 0, 0, 0);
     gl_PointSize = 0.0;
   } else {
-    gl_PointSize = 1.0;
+    gl_PointSize = 3.0;
     baseColor = vec4(0.5, 0.5, 1.0, 1.0);
   }
 }

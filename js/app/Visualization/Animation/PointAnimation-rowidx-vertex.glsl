@@ -21,6 +21,6 @@ void main() {
     baseColor = rowidxNone;
     gl_PointSize = 0.0;
   } else {
-    gl_PointSize = pointSize * _magnitude;
+    gl_PointSize = pointSize * _magnitude + 2.0;
   }
 }

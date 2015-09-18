@@ -31,7 +31,7 @@ void main() {
     vWeight = 0.0;
     baseColor = rowidxNone;
   } else if (_weight < 0.0) {
-    gl_PointSize = 1.0;
+    gl_PointSize = 3.0;
     vWeight = _weight;
     baseColor = rowidxColor(animationidx, tileidx, rowidx);
   } else {
@@ -44,6 +44,8 @@ void main() {
 
     gl_PointSize = pixelsPerWebGlX * radius;
     if (gl_PointSize > 5.0) {gl_PointSize = 5.0;}
+
+    gl_PointSize += 2.0;
 
     vWeight = areaScale * _weight;
 
