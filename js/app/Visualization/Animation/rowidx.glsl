@@ -12,13 +12,7 @@ vec4 bytesToColor(vec4 bytes) {
 }
 
 vec4 rowidxColor(float animationidx, float tileidx, float rowidx) {
-  /* Bit layout, packed in 6 bytes (r1, g1, b1, r2, g2, b2):
-   * 8bits animation id
-   * 16bits tile id
-   * 24bits row id
-   *
-   * See js/app/Visualization/Animation/Rowidx.js:pixelToId
-   */
+  /* See docs/limits.md */
 
   if (canvasIndex == 0.) {
     return bytesToColor(vec4(

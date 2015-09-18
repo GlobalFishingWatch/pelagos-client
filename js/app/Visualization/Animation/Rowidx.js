@@ -21,13 +21,7 @@ define(["app/Class"], function(Class) {
   };
 
   Rowidx.pixelToId = function (data) {
-    /* Bit layout, packed in 6 bytes (r1, g1, b1, r2, g2, b2):
-     * 8bits animation id
-     * 16bits tile id
-     * 24bits row id
-     *
-     * See js/app/Visualization/Animation/rowidx.glsl:rowidxColor
-     */
+    /* See docs/limits.md */
      
     if (data[0] == 255 && data[1] == 255 && data[2] == 255 && data[3] == 255 && data[4] == 255 && data[5] == 255) {
       return undefined;
