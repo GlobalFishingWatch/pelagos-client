@@ -402,7 +402,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
 
         if (err) {
           category = 'info-error';
-          event.error = error;
+          event.error = err;
           event.toString = function () { return this.error.toString(); };
         } else if (data && data.error) {
           category = 'info-error';
