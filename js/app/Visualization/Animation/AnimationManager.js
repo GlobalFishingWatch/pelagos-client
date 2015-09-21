@@ -1,11 +1,16 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
+define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Rowidx", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Rowidx, Animation) {
   return Class({
     name: "AnimationManager",
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       mapTypeControlOptions: {
-        position: google.maps.ControlPosition.TOP_LEFT
+          position: google.maps.ControlPosition.TOP_LEFT,
+          style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+      },
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.LEFT_TOP,
+        style: google.maps.ZoomControlStyle.LARGE
       },
       streetViewControl: false,
       overviewMapControl: false,
@@ -109,6 +114,22 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       cb();
     },
 
+    getGlContext: function (canvas) {
+      var self = this;
+      var gl = canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+      gl.enable(gl.BLEND);
+      return gl;
+    },
+
+    createRowidxGlContext: function () {
+      var self = this;
+      var canvas = document.createElement('canvas');
+      var gl = self.getGlContext(canvas);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.clearColor(1.0, 1.0, 1.0, 1.0);
+      return gl;
+    },
+
     initCanvas: function (cb) {
       var self = this;
 
@@ -120,7 +141,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       };
       self.canvasLayer = new CanvasLayer(canvasLayerOptions);
 
-      self.gl = self.canvasLayer.canvas.getContext('experimental-webgl');
+      self.gl = self.getGlContext(self.canvasLayer.canvas);
       if (!self.gl) {
         var failover = self.visualization.state.getValue('nowebgl');
         if (failover) {
@@ -135,8 +156,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         }
         cb({msg: "Your browser does not support WebGL."});
       } else {
-        self.gl.enable(self.gl.BLEND);
         self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE);
+
+        self.rowidxGl = [self.createRowidxGlContext(), self.createRowidxGlContext()];
 
         var onAdd = function () {
           if (!self.canvasLayer.isAdded_) {
@@ -166,6 +188,26 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       }, cb);
     },
 
+    /* Uses the selectionGl canvases to get a source animation, tile
+     * id and rowid from a pixel x/y position. */
+    getRowidxAtPos: function (x, y) {
+      var self = this;
+
+      /* Canvas coordinates are upside down for some reason... */
+      y = self.canvasLayer.canvas.height - y;
+
+      return Rowidx.pixelToId(
+        Rowidx.appendByteArrays.apply(
+          undefined,
+          self.rowidxGl.map(function (gl) {
+            var data = new Uint8Array(4);
+            gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
+            return data.subarray(0, 3); /* Disregard Alpha for now... Unsure how it interacts with BLEND functions... */
+          })
+        )
+      );
+    },
+
     handleMouse: function (e, type) {
       var self = this;
 
@@ -180,12 +222,14 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         y = e.pixel.y;
       }
 
-      for (var i = 0; i < self.animations.length; i++) {
-        var animation = self.animations[i];
+      var rowidx = self.getRowidxAtPos(x, y);
+      if (rowidx) {
+        var animation = self.animations[rowidx[0]];
         if (animation.data_view) {
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
-        if (animation.select(x, y, type, true)) {
+
+        if (animation.select([rowidx[1], rowidx[2]], type, true)) {
           return animation;
         }
       }
@@ -307,7 +351,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
       var self = this;
 
       animationInstance.addingToManager = true;
-      animationInstance.initGl(self.gl, function () { 
+      animationInstance.initGl(function () { 
         animationInstance.initUpdates(function () {
           if (animationInstance.addingToManager) {
             animationInstance.addingToManager = false;
@@ -385,73 +429,83 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
 
       if (type != 'selected' && type != 'info') return;
 
-      if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
-          && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
-        var data = {};
-        data.toString = function () { return ""; };
-        self.handleInfo(animation, selectionEvent, null, undefined);
+      if (type == 'selected') {
+        self.events.triggerEvent('info-loading', {});
         if (dataView.source.header.seriesTilesets) {
           self.hideSelectionAnimations();
         }
-      } else {
-        self.showSelectionAnimation(animation, dataView.selections.selections[type]);
-        if (dataView.selections.selections[type].rawInfo) {
-          var data = dataView.selections.selections[type].data;
-          data.layerInstance = animation;
-          data.layer = animation.title;
-          data.toString = function () {
-            var content = ["<table class='table table-striped table-bordered'>"];
-            Object.keys(data).sort().map(function (key) {
-              if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance' || key == 'selection') return;
-              var value = data[key][0];
-              if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
-                value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
-              }
-              if (typeof(value)=="string" && value.indexOf("://") != -1) {
-                content.push("<tr><th colspan='2'><a target='_new' href='" + value +  "'>" + key + "</a></th></tr>");
-              } else {
-                content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
-              }
-            });
-            content.push("</table>");
-            return content.join('\n');
-          };
-          self.handleInfo(animation, selectionEvent, null, data);
-        } else {
-          dataView.selections.getSelectionInfo(type, function (err, data) {
-            var content;
 
-            if (err) {
-              self.handleInfo(animation, selectionEvent, err, null);
+        if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
+            && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
+          var data = {};
+          data.toString = function () { return ""; };
+          self.handleInfo(animation, selectionEvent, null, undefined);
+        }
+      }
+
+      if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
+          && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
+        return;
+      }
+
+      if (dataView.selections.selections[type].rawInfo) {
+        var data = dataView.selections.selections[type].data;
+        data.layer = animation.title;
+        data.toString = function () {
+          var content = ["<table class='table table-striped table-bordered'>"];
+          Object.keys(data).sort().map(function (key) {
+            if (key == 'toString') return;
+            var value = data[key][0];
+            if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
+              value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
+            }
+            if (typeof(value)=="string" && value.indexOf("://") != -1) {
+              content.push("<tr><th colspan='2'><a target='_new' href='" + value +  "'>" + key + "</a></th></tr>");
             } else {
-              data.toString = function () {
-                var content = ["<table class='table table-striped table-bordered'>"];
-                if (data.name) {
-                  var name = data.name;
-                  if (data.link) {
-                    name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                  }
-                  content.push("<tr><th colspan='2'>" + name + "</th><tr>");
-                }
-
-                Object.keys(data).sort().map(function (key) {
-                  if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
-                  if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                    content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                  } else {
-                    content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
-                  }
-                });
-
-                content.push("</table>");
-
-                return content.join('\n');
-              };
-              self.handleInfo(animation, selectionEvent, null, data);
+              content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
             }
           });
-
+          content.push("</table>");
+          return content.join('\n');
+        };
+        self.handleInfo(animation, selectionEvent, null, data);
+      } else {
+        if (type == 'selected') {
+          self.showSelectionAnimation(animation, dataView.selections.selections[type]);
         }
+        dataView.selections.getSelectionInfo(type, function (err, data) {
+          var content;
+
+          if (err) {
+            self.handleInfo(animation, selectionEvent, err, null);
+          } else {
+            data.toString = function () {
+              var content = ["<table class='table table-striped table-bordered'>"];
+              if (data.name) {
+                var name = data.name;
+                if (data.link) {
+                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
+                }
+                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+              }
+
+              Object.keys(data).sort().map(function (key) {
+                if (key == 'toString' || key == 'name' || key == 'link') return;
+                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
+                } else {
+                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+                }
+              });
+
+              content.push("</table>");
+
+              return content.join('\n');
+            };
+            self.handleInfo(animation, selectionEvent, null, data);
+          }
+        });
+
       }
     },
 
@@ -617,6 +671,16 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         return;
       }
       self.updateNeeded = false;
+
+      var width = self.canvasLayer.canvas.width;
+      var height = self.canvasLayer.canvas.height;
+
+      self.rowidxGl.map(function (gl) {
+        gl.canvas.width = width;
+        gl.canvas.height = height;
+        gl.viewport(0, 0, width, height);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      });
 
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();

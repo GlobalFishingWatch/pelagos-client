@@ -7,6 +7,7 @@ uniform float pointSize;
 uniform mat4 googleMercator2webglMatrix;
 
 uniform float tileidx;
+uniform float animationidx;
 uniform float width;
 
 varying float vPointSize;
@@ -28,11 +29,11 @@ void main() {
   if (_filter > 0.0) {
     gl_PointSize = 0.0;
     vWeight = 0.0;
-    baseColor = vec4(0.0, 0.0, 0.0, 0.0);
+    baseColor = rowidxNone;
   } else if (_weight < 0.0) {
-    gl_PointSize = 1.0;
+    gl_PointSize = 3.0;
     vWeight = _weight;
-    baseColor = rowidxColor(tileidx, rowidx);
+    baseColor = rowidxColor(animationidx, tileidx, rowidx);
   } else {
     float ps = 0.005; // In WebGL units
 
@@ -44,9 +45,11 @@ void main() {
     gl_PointSize = pixelsPerWebGlX * radius;
     if (gl_PointSize > 5.0) {gl_PointSize = 5.0;}
 
+    gl_PointSize += 2.0;
+
     vWeight = areaScale * _weight;
 
-    baseColor = rowidxColor(tileidx, rowidx);
+    baseColor = rowidxColor(animationidx, tileidx, rowidx);
   }
 }
 
