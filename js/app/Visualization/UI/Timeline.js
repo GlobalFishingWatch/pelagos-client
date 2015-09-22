@@ -610,10 +610,15 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
         self.drag(e);
       } else {
         var pos = self.getFirstPosition(self.getEventPositions(e));
-        self.lastHoverTime = self.pixelPositionToTime(pos.pageX);
-        self.events.triggerEvent('hover', {time: self.lastHoverTime});
+        var coords = self.node.offset();
+        coords.right = coords.left + self.node.outerWidth();
+        coords.bottom = coords.top + self.node.outerHeight();
+        if (   coords.left <= pos.pageX && pos.pageX <= coords.right
+            && coords.top <= pos.pageY && pos.pageY <= coords.bottom) {
+          self.lastHoverTime = self.pixelPositionToTime(pos.pageX);
+          self.events.triggerEvent('hover', {time: self.lastHoverTime});
+        }
       }
-      self.eatEvent(e);
     },
 
     dragStart: function (type, e) {
