@@ -4,10 +4,12 @@ language: python
 python:
   - "2.7"
 
+env:
+  - TESTEM_PATH="node_modules/testem/" TESTEM_SUFFIX=".js"
+
 addons:
   apt:
     packages:
-      - chromium-browser
       - libglapi-mesa
       - libosmesa6
       - mesa-utils
@@ -26,8 +28,8 @@ before_script:
   - LIBGL_DEBUG=verbose xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l glxinfo
 
 script:
-  - xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l node_modules/testem/testem.js ci
-  - xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l nosetests -s -w ui_tests
+  - make unit-tests
+  - make integration-tests
 
 after_script:
   - cp *.png travis-data || true

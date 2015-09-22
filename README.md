@@ -48,9 +48,9 @@ The environment is virtualized with vagrant, so you will need:
 
 You can start a local development server for the application with `make
 dev-server`. The server running inside the virtualized environment is exposed
-through ssh tunneling as port 8080 in your host machine, so you can access the
+through ssh tunneling as port 8000 in your host machine, so you can access the
 application through
-`http://localhost:8080/index.html?workspace=/path/to/workspace`.
+`http://localhost:8000/index.html?workspace=/path/to/workspace`.
 
 Where `/path/to/workspace` is an URL to a JSON file containing a workspace
 definition. For more information about this check out [the workspace
@@ -76,13 +76,6 @@ This will do the following:
   concatenate and optimize everything using [the dojo build
   system](https://dojotoolkit.org/documentation/tutorials/1.10/build/index.html).
   The output of all this will be at the js-build direcotry.
-
-## Running a local dev environment
-
-You can start a quick http server to host your app with `make dev-server`. This
-will start a server on your local port 8000, and generate some test workspace.
-Check out the output from the command, it provides a link to the workspace
-itself.
 
 ## Testing
 
