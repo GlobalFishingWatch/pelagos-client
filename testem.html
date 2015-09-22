@@ -5,6 +5,11 @@
     <script type="text/javascript">
       app = {
         useBuild: false,
+        dependencies: {
+          stylesheets: ["$(lib)s/qunit-1.15.0.css"],
+          scripts: ["$(lib)s/qunit-1.15.0.js"]
+        },
+        packages: [{name: 'QUnit', location: '$(shim)s/QUnit'}],
         mainModule: 'app/testem'
       };
     </script>
