@@ -2,15 +2,20 @@ precision mediump float;
 
 varying float vWeight;
 varying vec4 baseColor;
+uniform float timefocus;
+varying float pointTime;
 
-
-float fudge(float v) {
-  float a = 0.1;
-  return v/2.0 - sqrt(4.0*a*a + v*v - 2.0*v + 1.0) / 2.0 + 1.0/2.0;
-}
+uniform selectionmap_timerange_from_datetime_0_lower;
+uniform selectionmap_timerange_from_datetime_0_upper;
 
 void main() {
-  gl_FragColor = baseColor;
+  float windowSize = selectionmap_timerange_from_datetime_0_upper - selectionmap_timerange_from_datetime_0_lower;
+  var factor = (windowSize / 100.) / abs(timefocus - pointTime)
 
+  gl_FragColor = vec4(
+    max(1., baseColor[0]*factor),
+    max(1., baseColor[1]*factor),
+    max(1., baseColor[2]*factor),
+    baseColor[3]);
 }
 

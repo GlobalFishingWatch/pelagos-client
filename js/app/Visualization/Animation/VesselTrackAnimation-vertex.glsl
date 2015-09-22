@@ -9,7 +9,7 @@ uniform mat4 googleMercator2webglMatrix;
 
 varying float vWeight;
 varying vec4 baseColor;
-
+varying float pointTime;
 
 void main() {
   mapper();
@@ -17,6 +17,7 @@ void main() {
   vec2 lonlat = vec2(longitude, latitude);
 
   gl_Position = lonlat2screen(lonlat, googleMercator2webglMatrix);
+  pointTime = _time;
 
   if (_filter > 0.0) {
     baseColor = vec4(0, 0, 0, 0);
