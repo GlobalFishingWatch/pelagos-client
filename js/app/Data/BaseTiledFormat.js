@@ -297,8 +297,8 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       var tilewidth = bounds.getWidth() * 2;
       var tileheight = bounds.getHeight() * 2;
 
-      var tileleft = tilewidth * Math.floor(bounds.left / tilewidth);
-      var tilebottom = tileheight * Math.floor(bounds.bottom / tileheight);
+      var tileleft = tilewidth * Math.floor((bounds.left - self.world.left) / tilewidth) + self.world.left;
+      var tilebottom = tileheight * Math.floor((bounds.bottom - self.world.bottom) / tileheight) + self.world.bottom;
 
       var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
 
