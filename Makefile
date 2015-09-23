@@ -27,7 +27,7 @@ DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/dojo-release-1.10.0-src/util/buildscripts/build.sh
 
 
-.PHONY: all dependencies js-build clean clean-js-build clean-dependencies unit-tests integration-tests dev-server test-server
+.PHONY: all prerequisites dependencies js-build clean clean-js-build clean-dependencies unit-tests integration-tests dev-server test-server
 
 all: js-build
 
@@ -125,6 +125,15 @@ clean-dependencies:
 	rm -rf js/libs
 
 clean: clean-js-build clean-dependencies
+
+prerequisites:
+	curl -sL https://deb.nodesource.com/setup_0.12 | bash -
+	apt-get update
+	apt-get install -y firefox chromium-browser nodejs unzip openjdk-6-jre xvfb python python-dev python-pip
+	apt-get install -y libglapi-mesa libosmesa6 mesa-utils
+	npm install -g testem
+	pip install --upgrade pip
+	pip install -r requirements.txt
 
 unit-tests:
 	xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l $(TESTEM_PATH)testem$(TESTEM_SUFFIX) ci
