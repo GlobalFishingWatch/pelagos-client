@@ -249,17 +249,24 @@ define([
         animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, 0.2) - 1;
         animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
 
-        function refreshSwatch() {
-          var value = slider.slider("value");
+        var update = undefined;
+        var refreshSwatch = function () {
+          if (update != undefined) return;
+          update = setTimeout(function () {
+            var value = slider.slider("value");
 
-          animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, value) - 1;
-          animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
+            animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, value) - 1;
+            animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
+            update = undefined;
+          }, 100);
         }
+        var maxv = Math.log(1+0.2)/Math.log(4);
+        var minv = Math.log(1+0)/Math.log(4);
         slider.slider({
           orientation: "horizontal",
-          min: Math.log(1+0)/Math.log(4),
-          max: Math.log(1+0.2)/Math.log(4),
-          step: 0.01,
+          max: maxv,
+          min: minv,
+          step: (maxv - minv) / 100,
           value: Math.log(animation.data_view.header.colsByName.weight.source.weight + 1)/Math.log(4),
           slide: refreshSwatch
         });
