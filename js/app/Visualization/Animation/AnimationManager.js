@@ -232,6 +232,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         if (animation.select([rowidx[1], rowidx[2]], type, true)) {
           return animation;
         }
+      } else {
+        self.animations.map(function (animation) {
+          animation.select(undefined, type, true);
+        });
       }
       return false;
     },
