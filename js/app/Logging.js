@@ -67,12 +67,22 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
       var self = this;
 
       var entry = new Logging.Entry();
+
+      var doStore = function () {
+        storefns.map(function (fn) { fn(entry); });
+      };
+
       entry.category = category;
       entry.data = data;
       if (self.store_time) entry.time = new Date();
-      if (self.store_stack) entry.stack = stacktrace().slice(6);
-
-      storefns.map(function (fn) { fn(entry); });
+      if (self.store_stack) {
+        StackTrace.get().then(function (stack) {
+          entry.stack = stack.slice(6);
+          doStore();
+        });
+      } else {
+        doStore();
+      }
     },
 
     ignore: function() {},

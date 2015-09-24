@@ -1,0 +1,39 @@
+{
+  "name": "pelagos-client",
+  "version": "0.0.1",
+  "homepage": "https://github.com/SkyTruth/pelagos-client",
+  "authors": [
+    "Egil Moeller <egil@skytruth.org>"
+  ],
+  "description": "Pelagos Client is a stand-alone web application for visualizing large time series datasets on top of a zoomable world map.",
+  "keywords": [
+    "visualization",
+    "webgl",
+    "google-maps",
+    "time-series"
+  ],
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "dojo": "~1.10.4",
+    "dijit": "~1.10.4",
+    "dojox": "~1.10.4",
+    "util": "dojo-util#~1.10.4",
+    "async": "~1.4.2",
+    "jquery-mousewheel": "~3.1.13",
+    "jquery": "~2.1.4",
+    "less": "~2.5.1",
+    "lodash": "~3.10.1",
+    "loggly-jslogger": "~2.1.0",
+    "qunit": "~1.19.0",
+    "stacktrace-js": "~1.0.0",
+    "stats.js": "*",
+    "font-awesome": "~4.4.0"
+  }
+}

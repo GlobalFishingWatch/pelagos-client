@@ -1,7 +1,7 @@
 dojoConfig = {
   isDebug: true,
   async: true,
-  baseUrl: app.paths.dojo.concat(['dojo', '']).join('/'),
+  baseUrl: app.paths.lib.concat(['dojo', '']).join('/'),
   packages: app.packages
 };
 

@@ -19,11 +19,9 @@
   if (app.useBuild) {
     app.paths.shim = app.paths.build;
     app.paths.app = app.paths.build.concat(['app']);
-    app.paths.dojo = app.paths.build;
   } else {
     app.paths.shim = app.paths.script.concat("shims");
     app.paths.app = app.paths.script.concat(['app']);
-    app.paths.dojo = app.paths.lib.concat(['dojo-release-1.10.0-src']);
   }
 
   app.dirs = app.dirs || {};
@@ -51,22 +49,22 @@
 
       {url: "$(script)s/../style.less", rel:"stylesheet/less"},
 
-      "$(dojo)s/dijit/themes/claro/claro.css",
+      "$(lib)s/dijit/themes/claro/claro.css",
 
-      "$(dojo)s/dojox/layout/resources/FloatingPane.css",
-      "$(dojo)s/dojox/layout/resources/ResizeHandle.css"
+      "$(lib)s/dojox/layout/resources/FloatingPane.css",
+      "$(lib)s/dojox/layout/resources/ResizeHandle.css"
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
-      "$(lib)s/async.js",
-      "$(lib)s/stacktrace.js",
-      "$(lib)s/lodash.js",
+      "$(lib)s/async/lib/async.js",
+      "$(lib)s/stacktrace-js/stacktrace.js",
+      "$(lib)s/lodash/lodash.min.js ",
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-      "$(lib)s/jquery-1.10.2.min.js",
-      "$(lib)s/jquery.mousewheel.js",
-      "$(lib)s/less.min.js",
+      "$(lib)s/jquery/dist/jquery.min.js",
+      "$(lib)s/jquery-mousewheel/jquery.mousewheel.min.js",
+      "$(lib)s/less/dist/less.min.js",
       "$(script)s/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
-      "$(lib)s/stats.min.js",
-      "$(lib)s/loggly.tracker.js",
+      "$(lib)s/stats.js/build/stats.min.js",
+      "$(lib)s/loggly-jslogger/src/loggly.tracker.min.js",
     ]);
   }
 
@@ -83,7 +81,7 @@
   ]);
 
   app.dependencies.scripts.push("$(script)s/dojoconfig.js");
-  app.dependencies.scripts.push("$(dojo)s/dojo/dojo.js");
+  app.dependencies.scripts.push("$(lib)s/dojo/dojo.js");
 
   /* Expand path variables */
   var replacePathVars = function(s) {

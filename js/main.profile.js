@@ -7,9 +7,9 @@ dojoConfig = {
   baseUrl: '.',
   releaseDir: '../js-build',
   packages: [
-      {name: "dojo", location:"libs/dojo-release-1.10.0-src/dojo"},
-      {name: "dijit", location:"libs/dojo-release-1.10.0-src/dijit"},
-      {name: "dojox", location:"libs/dojo-release-1.10.0-src/dojox"},
+      {name: "dojo", location:"libs/dojo"},
+      {name: "dijit", location:"libs/dijit"},
+      {name: "dojox", location:"libs/dojox"},
 
       {name: 'CanvasLayer', location: 'shims/CanvasLayer'},
       {name: 'Stats', location: 'shims/Stats'},
