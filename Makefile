@@ -9,13 +9,11 @@ JSDEPS= \
   $(LIBS)/jquery.mousewheel.js \
   $(LIBS)/less.min.js \
   $(LIBS)/stats.min.js \
-  $(LIBS)/loggly.tracker.js \
-  $(LIBS)/jquery-ui.js
+  $(LIBS)/loggly.tracker.js
 
 CSSDEPS= \
   $(LIBS)/font-awesome/css/font-awesome.min.css \
   $(LIBS)/qunit-1.15.0.css \
-  $(LIBS)/jquery-ui.css \
   $(LIBS)/dojo-release-1.10.0-src/dijit/themes/claro/claro.css \
   $(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/FloatingPane.css \
   $(LIBS)/dojo-release-1.10.0-src/dojox/layout/resources/ResizeHandle.css \
@@ -67,12 +65,6 @@ $(LIBS)/loggly.tracker.js:
 
 $(LIBS)/stats.min.js:
 	curl --silent -f -L https://raw.githubusercontent.com/mrdoob/stats.js/master/build/stats.min.js -o $@
-
-$(LIBS)/jquery-ui.css:
-	curl --silent -f -L http://code.jquery.com/ui/1.10.0/themes/smoothness/jquery-ui.css -o $@
-
-$(LIBS)/jquery-ui.js:
-	curl --silent -f -L http://code.jquery.com/ui/1.10.0/jquery-ui.js -o $@
 
 $(LIBS)/easyXDM/easyXDM.min.js:
 	mkdir -p $(LIBS)/easyXDM

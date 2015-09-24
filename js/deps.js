@@ -48,7 +48,6 @@
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       "$(lib)s/font-awesome/css/font-awesome.min.css",
-      "$(lib)s/jquery-ui.css",
 
       {url: "$(script)s/../style.less", rel:"stylesheet/less"},
 
@@ -68,7 +67,6 @@
       "$(script)s/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
       "$(lib)s/stats.min.js",
       "$(lib)s/loggly.tracker.js",
-      "$(lib)s/jquery-ui.js"
     ]);
   }
 
