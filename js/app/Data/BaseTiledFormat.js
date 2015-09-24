@@ -153,6 +153,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       }
       res = [];
       cols.map(function (col) {
+        if (selection.data[col][0] == undefined) return;
         res.push(encodeURIComponent(col) + "=" + encodeURIComponent(selection.data[col][0].toString()));
       });
       return res.join(',');
