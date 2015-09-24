@@ -8,13 +8,11 @@ JSDEPS= \
   $(LIBS)/jquery-1.10.2.min.js \
   $(LIBS)/jquery.mousewheel.js \
   $(LIBS)/less.min.js \
-  $(LIBS)/bootstrap-3.2.0-dist/js/bootstrap.min.js \
   $(LIBS)/stats.min.js \
   $(LIBS)/loggly.tracker.js \
   $(LIBS)/jquery-ui.js
 
 CSSDEPS= \
-  $(LIBS)/bootstrap-3.2.0-dist/css/bootstrap.min.css \
   $(LIBS)/font-awesome/css/font-awesome.min.css \
   $(LIBS)/qunit-1.15.0.css \
   $(LIBS)/jquery-ui.css \
@@ -75,12 +73,6 @@ $(LIBS)/jquery-ui.css:
 
 $(LIBS)/jquery-ui.js:
 	curl --silent -f -L http://code.jquery.com/ui/1.10.0/jquery-ui.js -o $@
-
-
-$(LIBS)/bootstrap-3.2.0-dist/js/bootstrap.min.js $(LIBS)/bootstrap-3.2.0-dist/css/bootstrap.min.css:
-	cd $(LIBS); curl --silent -f -L -O https://github.com/twbs/bootstrap/releases/download/v3.2.0/bootstrap-3.2.0-dist.zip
-	cd $(LIBS); unzip -DD -qq -o bootstrap-3.2.0-dist.zip
-	cd $(LIBS); rm bootstrap-3.2.0-dist.zip
 
 $(LIBS)/easyXDM/easyXDM.min.js:
 	mkdir -p $(LIBS)/easyXDM
