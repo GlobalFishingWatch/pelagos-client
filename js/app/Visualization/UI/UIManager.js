@@ -1,5 +1,6 @@
 define([
   "app/Class",
+  "dijit/Dialog",
   "app/LoadingInfo",
   "app/UrlValues",
   "app/Visualization/KeyModifiers",
@@ -13,6 +14,7 @@ define([
   "jQuery"],
 function (
   Class,
+  Dialog,
   LoadingInfo,
   UrlValues,
   KeyModifiers,
@@ -149,13 +151,19 @@ function (
       });
       self.visualization.data.events.on({
         error: function (data) {
-          var dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Error</h4></div><div class="modal-body alert"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-          dialog.find('.modal-body').html(data.toString());
-          $('body').append(dialog);
-          dialog.modal();
-          dialog.on('hidden.bs.modal', function (e) {
-            dialog.detach();
+          var dialog = new Dialog({
+              style: "width: 50%;",
+            title: "Error",
+            content: data.toString(),
+            actionBarTemplate: '' +
+              '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+              '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+              '</div>'
           });
+          $(dialog.closeButton).on('click', function () {
+            dialog.hide();
+          });
+          dialog.show();
         }
       });
       cb();
@@ -359,13 +367,21 @@ function (
         self.visualization.save(function (url) {
           url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
 
-          var dialog = $('<div class="modal fade" id="share" tabindex="-1" role="dialog" aria-labelledby="shareLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-success"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="shareLabel">Workspace saved</h4></div><div class="modal-body alert">Share this link: <input type="text" class="link" style="width: 300pt"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-          dialog.find('.modal-body .link').val(url);
-          $('body').append(dialog);
-          dialog.modal();
-          dialog.on('hidden.bs.modal', function (e) {
-            dialog.detach();
+          var dialog = new Dialog({
+            style: "width: 50%;",
+            title: "Workspace saved",
+            content: '' +
+              'Share this link: <input type="text" class="link" style="width: 300pt">',
+            actionBarTemplate: '' +
+              '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+              '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+              '</div>'
           });
+          $(dialog.containerNode).find("input").val(url);
+          $(dialog.closeButton).on('click', function () {
+            dialog.hide();
+          });
+          dialog.show();
         });
       });
 
