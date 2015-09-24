@@ -1,4 +1,41 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Rowidx", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Rowidx, Animation) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/Bounds",
+  "app/ObjectTemplate",
+  "async",
+  "app/Logging",
+  "app/Visualization/KeyModifiers",
+  "jQuery",
+  "dijit/Dialog",
+  "app/Visualization/Animation/Matrix",
+  "CanvasLayer",
+  "Stats",
+  "app/Visualization/Animation/Rowidx",
+  "app/Visualization/Animation/Animation",
+  "app/Visualization/Animation/PointAnimation",
+  "app/Visualization/Animation/LineAnimation",
+  "app/Visualization/Animation/LineStripAnimation",
+  "app/Visualization/Animation/TileAnimation",
+  "app/Visualization/Animation/DebugAnimation",
+  "app/Visualization/Animation/ClusterAnimation",
+  "app/Visualization/Animation/MapsEngineAnimation",
+  "app/Visualization/Animation/VesselTrackAnimation"],
+function(Class,
+  Events,
+  Bounds,
+  ObjectTemplate,
+  async,
+  Logging,
+  KeyModifiers,
+  $,
+  Dialog,
+  Matrix,
+  CanvasLayer,
+  Stats,
+  Rowidx,
+  Animation
+) {
   return Class({
     name: "AnimationManager",
 
@@ -147,12 +184,19 @@ define(["app/Class", "app/Events", "app/Bounds", "app/ObjectTemplate", "async", 
         if (failover) {
           window.location = failover;
         } else {
-          var dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Loading failed</h4></div><div class="modal-body alert">Your browser does not support WebGL.</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-          $('body').append(dialog);
-          dialog.modal();
-          dialog.on('hidden.bs.modal', function (e) {
-            dialog.detach();
+          self.dialog = new Dialog({
+            title: "Loading failed",
+            content: '' +
+              '<b class="error">Your browser does not support WebGL</b>',
+            actionBarTemplate: '' +
+              '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+              '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+              '</div>'
           });
+          $(self.dialog.closeButton).on('click', function () {
+            self.dialog.hide();
+          });
+          self.dialog.show();
         }
         cb({msg: "Your browser does not support WebGL."});
       } else {
