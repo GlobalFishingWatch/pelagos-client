@@ -47,7 +47,6 @@
     ]);
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-      "$(lib)s/bootstrap-3.2.0-dist/css/bootstrap.min.css",
       "$(lib)s/font-awesome/css/font-awesome.min.css",
       "$(lib)s/jquery-ui.css",
 
@@ -66,7 +65,6 @@
       "$(lib)s/jquery-1.10.2.min.js",
       "$(lib)s/jquery.mousewheel.js",
       "$(lib)s/less.min.js",
-      "$(lib)s/bootstrap-3.2.0-dist/js/bootstrap.min.js",
       "$(script)s/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
       "$(lib)s/stats.min.js",
       "$(lib)s/loggly.tracker.js",
@@ -75,7 +73,6 @@
   }
 
   app.packages = app.packages.concat([
-    {name: 'bootstrap', location: '$(shim)s/bootstrap'},
     {name: 'CanvasLayer', location: '$(shim)s/CanvasLayer'},
     {name: 'Stats', location: '$(shim)s/Stats'},
     {name: 'jQuery', location: '$(shim)s/jQuery'},
