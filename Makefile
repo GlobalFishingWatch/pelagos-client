@@ -11,10 +11,7 @@ JSDEPS= \
   $(LIBS)/loggly-jslogger/src/loggly.tracker.js
 
 CSSDEPS= \
-  $(LIBS)/font-awesome/css/font-awesome.css \
-  $(LIBS)/dijit/themes/claro/claro.css \
-  $(LIBS)/dojox/layout/resources/FloatingPane.css \
-  $(LIBS)/dojox/layout/resources/ResizeHandle.css \
+  $(LIBS)/font-awesome/css/font-awesome.min.css
 
 DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/easyXDM/easyXDM.min.js \
@@ -52,7 +49,7 @@ js-build/deps.js: $(JSDEPS) js/CanvasLayer.js js/dojoconfig.js
 	cat $^ > $@
 
 js-build/deps.css: $(CSSDEPS)
-	cat $^ | sed -e "s+../fonts/fontawesome+../js/libs/font-awesome-4.3.0/fonts/fontawesome+g" > $@
+	cat $^ | sed -e "s+../fonts/fontawesome+../js/libs/font-awesome/fonts/fontawesome+g" > $@
 
 clean-js-build:
 	rm -rf js-build
