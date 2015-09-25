@@ -34,6 +34,7 @@
     "qunit": "~1.19.0",
     "stacktrace-js": "~1.0.0",
     "stats.js": "*",
-    "font-awesome": "~4.4.0"
+    "font-awesome": "~4.4.0",
+    "easyXDM": "~2.4.17"
   }
 }

@@ -26,15 +26,9 @@ dependencies: $(DEPENDENCIES)
 node_modules/.bin/bower:
 	npm install bower
 
-$(JSDEPS) $(CSSDEPS): node_modules/.bin/bower
+$(DEPENDENCIES): node_modules/.bin/bower
 	node_modules/.bin/bower install
 	touch $@
-
-$(LIBS)/easyXDM/easyXDM.min.js:
-	mkdir -p $(LIBS)/easyXDM
-	cd $(LIBS)/easyXDM; curl --silent -f -L -O https://github.com/oyvindkinsey/easyXDM/releases/download/2.4.19/easyXDM-2.4.19.3.zip
-	cd $(LIBS)/easyXDM; unzip -DD -qq -o easyXDM-2.4.19.3.zip
-	cd $(LIBS)/easyXDM; rm easyXDM-2.4.19.3.zip
 
 js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/build-succeded
 
