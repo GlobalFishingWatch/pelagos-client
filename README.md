@@ -29,13 +29,20 @@ Features:
 
 ## Prerequisites
 
-The environment is virtualized with vagrant, so you will need:
+
+
+## Quick virtualized environment setup
+
+You can run all the tests and development files inside a Vagrant
+virtualized machine. For that will need:
 
 1. [Vagrant](http://www.vagrantup.com/) to manage the virtualized development
    environment. This requires installing
 [VirtualBox](https://www.virtualbox.org/).
 
-## Quick environment setup
+1. A vagrant box image that you add with `vagrant box add ubuntu/precise64 http://download.appscale.com/download/AppScale%201.12.0%20VirtualBox%20Image`
+
+Once these are installed you can set up and start the virtual machine:
 
 1. Start the virtualized environment with `vagrant up`. This **will** take a
    while, as the entire development environment is downloaded and configured.
@@ -43,6 +50,14 @@ The environment is virtualized with vagrant, so you will need:
 1. SSH into the virtual machine with `vagrant ssh`, jump to the project folder
    at `/vagrant`. You can run any of the project tasks which are run through
    make in this directory.
+
+## Non-virtualized setup (on ubuntu)
+
+To run all the tests etc natively
+
+1. `sudo make prerequisites`
+
+This will install all the prerequisites globally on you machine.
 
 ## Running the application
 
