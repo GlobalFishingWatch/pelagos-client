@@ -37,11 +37,13 @@
   if (app.useBuild) {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       "$(build)s/deps.css",
-      {url: "$(script)s/../style.less", rel:"stylesheet/less"}
+      {url: "$(script)s/../style.less", rel:"stylesheet/less"},
+      "$(build)s/dijit/themes/claro/claro.css",
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-      "$(build)s/deps.js"
+        "$(build)s/deps.js",
+      "$(build)s/app/app.js"
     ]);
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
@@ -65,6 +67,8 @@
       "$(script)s/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
       "$(lib)s/stats.js/build/stats.min.js",
       "$(lib)s/loggly-jslogger/src/loggly.tracker.min.js",
+      "$(script)s/dojoconfig.js",
+      "$(lib)s/dojo/dojo.js"
     ]);
   }
 
@@ -79,9 +83,6 @@
     {name: 'lodash', location: '$(shim)s/lodash'},
     {name: 'app', location:'$(app)s', main: 'main'}
   ]);
-
-  app.dependencies.scripts.push("$(script)s/dojoconfig.js");
-  app.dependencies.scripts.push("$(lib)s/dojo/dojo.js");
 
   /* Expand path variables */
   var replacePathVars = function(s) {
@@ -171,16 +172,6 @@
      });
     }
   }
-
-  if (app.useBuild) {
-    var realMain = main;
-    main = function () {
-      require(["app/app"], function (mainModule) {
-        realMain();
-      });
-    }
-  }
-
   app.dependencies.stylesheets.map(addHeadStylesheet);
   asyncmap(app.dependencies.scripts, addHeadScript, main);
 })();

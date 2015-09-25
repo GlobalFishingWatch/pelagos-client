@@ -4,6 +4,7 @@ dojoConfig = {
   layerOptimize: "closure",
   cssOptimize: "comments.keepLines",
   cssOptimize: "comments",
+  selectorEngine: "lite",
   baseUrl: '.',
   releaseDir: '../js-build',
   packages: [
@@ -26,7 +27,8 @@ dojoConfig = {
   deps:['app/main', "dojo/main"],
   layers: {
       "app/app": {
-          include: [ "app/main", "dojo/main", "dijit", "dojox" ]
+          include: [ "app/main", "dojo/dojo", "dijit", "dojox" ],
+          boot: true
      }
   }
 };
