@@ -65,7 +65,7 @@ def main(selenium):
             driver.set_window_size(1280, 776)
             driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
 
-        console = code.InteractiveConsole(locals=locals())
+        console = code.InteractiveConsole(locals=globals())
         console.push("import readline")
         console.interact()
     finally:
