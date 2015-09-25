@@ -3,8 +3,9 @@ define([
   "app/Logging",
   "app/CountryCodes",
   "jQuery",
+  "dijit/form/HorizontalSlider",
   "app/Visualization/KeyModifiers"
-], function(Class, Logging, CountryCodes, $, KeyModifiers){
+], function(Class, Logging, CountryCodes, $, HorizontalSlider, KeyModifiers){
   return Class({
     name: "BasicSidebar",
     initialize: function (visualization) {
@@ -242,34 +243,35 @@ define([
       self.node.find(".layer-list").append(node);
 
       if (animation.constructor.prototype.name == "ClusterAnimation") {
-        var slider = $("<div class=\"intensity-slider\">");
-        self.node.find(".layer-list").append(slider);
+        var maxv = Math.log(1+0.2)/Math.log(4);
+        var minv = Math.log(1+0)/Math.log(4);
 
         // This is a hack to set the current value within the max value of our exponential scale below...
-        animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, 0.2) - 1;
+        animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, maxv) - 1;
         animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
 
         var update = undefined;
         var refreshSwatch = function () {
           if (update != undefined) return;
           update = setTimeout(function () {
-            var value = slider.slider("value");
+            var value = slider.value;
 
             animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, value) - 1;
             animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
             update = undefined;
           }, 100);
         }
-        var maxv = Math.log(1+0.2)/Math.log(4);
-        var minv = Math.log(1+0)/Math.log(4);
-        slider.slider({
-          orientation: "horizontal",
-          max: maxv,
-          min: minv,
-          step: (maxv - minv) / 100,
-          value: Math.log(animation.data_view.header.colsByName.weight.source.weight + 1)/Math.log(4),
-          slide: refreshSwatch
-        });
+
+        var slider = new HorizontalSlider({
+            value: Math.log(animation.data_view.header.colsByName.weight.source.weight + 1)/Math.log(4),
+            minimum: minv,
+            maximum: maxv,
+            discreteValues: 100,
+            onChange: refreshSwatch,
+            intermediateChanges: true
+        }, "mySlider");
+        slider.placeAt(self.node.find(".layer-list")[0]);
+        slider.startup();
       }
 
     },

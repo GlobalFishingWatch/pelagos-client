@@ -19,11 +19,9 @@
   if (app.useBuild) {
     app.paths.shim = app.paths.build;
     app.paths.app = app.paths.build.concat(['app']);
-    app.paths.dojo = app.paths.build;
   } else {
     app.paths.shim = app.paths.script.concat("shims");
     app.paths.app = app.paths.script.concat(['app']);
-    app.paths.dojo = app.paths.lib.concat(['dojo-release-1.10.0-src']);
   }
 
   app.dirs = app.dirs || {};
@@ -39,43 +37,42 @@
   if (app.useBuild) {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       "$(build)s/deps.css",
-      {url: "$(script)s/../style.less", rel:"stylesheet/less"}
+      {url: "$(script)s/../style.less", rel:"stylesheet/less"},
+      "$(build)s/dijit/themes/claro/claro.css",
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-      "$(build)s/deps.js"
+        "$(build)s/deps.js",
+      "$(build)s/app/app.js"
     ]);
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-      "$(lib)s/bootstrap-3.2.0-dist/css/bootstrap.min.css",
       "$(lib)s/font-awesome/css/font-awesome.min.css",
-      "$(lib)s/jquery-ui.css",
 
       {url: "$(script)s/../style.less", rel:"stylesheet/less"},
 
-      "$(dojo)s/dijit/themes/claro/claro.css",
+      "$(lib)s/dijit/themes/claro/claro.css",
 
-      "$(dojo)s/dojox/layout/resources/FloatingPane.css",
-      "$(dojo)s/dojox/layout/resources/ResizeHandle.css"
+      "$(lib)s/dojox/layout/resources/FloatingPane.css",
+      "$(lib)s/dojox/layout/resources/ResizeHandle.css"
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
-      "$(lib)s/async.js",
-      "$(lib)s/stacktrace.js",
-      "$(lib)s/lodash.js",
+      "$(lib)s/async/lib/async.js",
+      "$(lib)s/stacktrace-js/stacktrace.js",
+      "$(lib)s/lodash/lodash.min.js ",
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-      "$(lib)s/jquery-1.10.2.min.js",
-      "$(lib)s/jquery.mousewheel.js",
-      "$(lib)s/less.min.js",
-      "$(lib)s/bootstrap-3.2.0-dist/js/bootstrap.min.js",
+      "$(lib)s/jquery/dist/jquery.min.js",
+      "$(lib)s/jquery-mousewheel/jquery.mousewheel.min.js",
+      "$(lib)s/less/dist/less.min.js",
       "$(script)s/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
-      "$(lib)s/stats.min.js",
-      "$(lib)s/loggly.tracker.js",
-      "$(lib)s/jquery-ui.js"
+      "$(lib)s/stats.js/build/stats.min.js",
+      "$(lib)s/loggly-jslogger/src/loggly.tracker.min.js",
+      "$(script)s/dojoconfig.js",
+      "$(lib)s/dojo/dojo.js"
     ]);
   }
 
   app.packages = app.packages.concat([
-    {name: 'bootstrap', location: '$(shim)s/bootstrap'},
     {name: 'CanvasLayer', location: '$(shim)s/CanvasLayer'},
     {name: 'Stats', location: '$(shim)s/Stats'},
     {name: 'jQuery', location: '$(shim)s/jQuery'},
@@ -86,9 +83,6 @@
     {name: 'lodash', location: '$(shim)s/lodash'},
     {name: 'app', location:'$(app)s', main: 'main'}
   ]);
-
-  app.dependencies.scripts.push("$(script)s/dojoconfig.js");
-  app.dependencies.scripts.push("$(dojo)s/dojo/dojo.js");
 
   /* Expand path variables */
   var replacePathVars = function(s) {
@@ -178,16 +172,6 @@
      });
     }
   }
-
-  if (app.useBuild) {
-    var realMain = main;
-    main = function () {
-      require(["app/app"], function (mainModule) {
-        realMain();
-      });
-    }
-  }
-
   app.dependencies.stylesheets.map(addHeadStylesheet);
   asyncmap(app.dependencies.scripts, addHeadScript, main);
 })();
