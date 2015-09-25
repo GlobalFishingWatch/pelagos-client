@@ -31,6 +31,7 @@ node_modules/.bin/bower:
 
 $(JSDEPS) $(CSSDEPS): node_modules/.bin/bower
 	node_modules/.bin/bower install
+	touch $@
 
 $(LIBS)/easyXDM/easyXDM.min.js:
 	mkdir -p $(LIBS)/easyXDM

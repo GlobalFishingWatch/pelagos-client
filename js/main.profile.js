@@ -23,10 +23,10 @@ dojoConfig = {
 
       {name: 'app', location:'app', main: 'main'}
   ],
-  deps:['app/main'],
+  deps:['app/main', "dojo/main"],
   layers: {
       "app/app": {
-          include: [ "app/main" ]
+          include: [ "app/main", "dojo/main", "dijit", "dojox" ]
      }
   }
 };
