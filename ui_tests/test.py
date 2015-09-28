@@ -5,9 +5,58 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 import time
 import os.path
+import json
 
 class HomeTest(unittest.TestCase):
     maxDiff = None
+
+    def load_helpers(self):
+        driver = server.driver
+        driver.execute_script("""
+          latLng2Point = function(latLng, map) {
+            var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
+            var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
+            var scale = Math.pow(2, map.getZoom());
+            var worldPoint = map.getProjection().fromLatLngToPoint(latLng);
+            return new google.maps.Point((worldPoint.x - bottomLeft.x) * scale, (worldPoint.y - topRight.y) * scale);
+          }
+
+          point2LatLng = function(point, map) {
+            var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
+            var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
+            var scale = Math.pow(2, map.getZoom());
+            var worldPoint = new google.maps.Point(point.x / scale + bottomLeft.x, point.y / scale + topRight.y);
+            return map.getProjection().fromPointToLatLng(worldPoint);
+          }
+        """)
+    
+    def latLng2Point(self, latLng):
+        driver = server.driver
+        return json.loads(driver.execute_script("""
+          return JSON.stringify(latLng2Point(new google.maps.LatLng(%(lat)s, %(lng)s), visualization.animations.map));
+        """ % latLng))
+
+    def point2LatLng(self, point):
+        driver = server.driver
+        return json.loads(driver.execute_script("""
+          var latLng = point2LatLng(new google.maps.Point(%(x)s, %(y)s), visualization.animations.map);
+          return JSON.stringify({lat: latLng.lat(), lng: latLng.lng()});
+        """ % point))
+
+    def test_coord_conversion(self):
+        driver = server.driver
+
+        driver.set_window_size(1280, 776)
+        driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
+        time.sleep(5)
+
+        self.load_helpers()
+
+        orig = {'x': 10, 'y': 20}
+        latLng = self.point2LatLng(orig)
+        point = self.latLng2Point(latLng)
+        self.assertAlmostEqual(point['x'], orig['x'])
+        self.assertAlmostEqual(point['y'], orig['y'])
 
     def test_home(self):
         driver = server.driver
@@ -16,6 +65,9 @@ class HomeTest(unittest.TestCase):
             driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
             time.sleep(5)
 
+            self.load_helpers()
+            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
+
             # Shift click is not supported by webdriver right now...
             driver.execute_script("""
               KeyModifiers = require("app/Visualization/KeyModifiers");
@@ -23,14 +75,11 @@ class HomeTest(unittest.TestCase):
             """)
 
             actions = ActionChains(driver)
-            actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), 639, 55)
-            # actions.key_down(Keys.SHIFT)
+            actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
             actions.click()
-            # actions.key_up(Keys.SHIFT)
             actions.perform()
 
             server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="imo"]'))
-
             self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="136"]'))
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
@@ -44,9 +93,12 @@ class HomeTest(unittest.TestCase):
             driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
             time.sleep(5)
 
-            def verifyHover(x, y, seriesgroup):
+            self.load_helpers()
+            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
+
+            def verifyHover(point, seriesgroup):
                 actions = ActionChains(driver)
-                actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), x, y)
+                actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
                 actions.perform()
                 return driver.execute_script("return visualization.animations.animations[0].data_view.selections.selections.hover.data.seriesgroup[0]") == seriesgroup
 
@@ -55,9 +107,9 @@ class HomeTest(unittest.TestCase):
                 actions.drag_and_drop_by_offset(driver.find_element_by_xpath('//div[@class="main-timeline timeline"]//div[@class="window"]'), offset, 0)
                 actions.perform()
 
-            self.assertTrue(verifyHover(756,74,136), "Seriesgroup not present at x,y")
+            self.assertTrue(verifyHover(point,136), "Seriesgroup not present at x,y")
             moveTimeslider(-272)
-            self.assertFalse(verifyHover(756,74,136), "Seriesgroup present at x,y when timeslider has moved")
+            self.assertFalse(verifyHover(point,136), "Seriesgroup present at x,y when timeslider has moved")
 
         except:
             name = os.path.realpath("ui_tests.test.test_timeslider.png")
