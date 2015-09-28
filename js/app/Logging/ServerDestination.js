@@ -7,12 +7,19 @@ define(["app/Class", "app/Logging/Destination", "app/Json"], function(Class, Des
       Destination.prototype.initialize.apply(self, arguments);
     },
 
-    store: function(entry) {
+      store: function(entry, cb) {
       var self = this;
 
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
-      request.send(son.encode(entry, "  "));
+      request.onreadystatechange = function() {
+        if (request.readyState === 4) {
+          var err = undefined;
+          if (request.status != 200) err = request.status;
+          cb(err);
+        }
+      };
+      request.send(Json.encode(entry, "  "));
     }
   });
   Destination.destinationClasses.server = ServerDestination;

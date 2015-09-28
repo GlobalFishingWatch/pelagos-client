@@ -9,9 +9,10 @@ define(["app/Class", "app/Logging/Destination", "LogglyTracker"], function(Class
       self.loggly.push({'logglyKey': self.key});
     },
 
-    store: function(entry) {
+      store: function(entry, cb) {
       var self = this;
       self.loggly.push(entry);
+      cb(); // No way to get completion from loggly API
     }
   });
   Destination.destinationClasses.loggly = LogglyDestination;

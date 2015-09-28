@@ -7,8 +7,9 @@ define(["app/Class", "app/Logging/Destination"], function(Class, Destination) {
   var ScreenDestination = Class(Destination, {
     name: "ScreenDestination",
 
-    store: function(entry) {
+    store: function(entry, cb) {
       print(entry.toString());
+      cb();
     }
   });
   Destination.destinationClasses.screen = ScreenDestination;

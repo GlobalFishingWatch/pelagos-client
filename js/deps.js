@@ -58,7 +58,7 @@
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
       "$(lib)s/async/lib/async.js",
-      "$(lib)s/stacktrace-js/stacktrace.js",
+      "$(lib)s/stacktrace-js/dist/stacktrace-with-polyfills.min.js",
       "$(lib)s/lodash/lodash.min.js ",
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
       "$(lib)s/jquery/dist/jquery.min.js",
