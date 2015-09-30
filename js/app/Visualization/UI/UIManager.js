@@ -409,6 +409,18 @@ function (
 
       self.search = new Search(self.visualization);
       cb();
+    },
+
+    toJSON: function () {
+      var self = this;
+      return {
+        sideBar: self.sideBar
+      };
+    },
+
+    load: function (data, cb) {
+      var self = this;
+      self.sideBar.load(data && data.sideBar, cb);
     }
   });
 });

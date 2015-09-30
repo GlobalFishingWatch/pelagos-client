@@ -4,10 +4,53 @@ define([
   "app/CountryCodes",
   "jQuery",
   "dijit/form/HorizontalSlider",
-  "app/Visualization/KeyModifiers"
-], function(Class, Logging, CountryCodes, $, HorizontalSlider, KeyModifiers){
+  "app/Visualization/KeyModifiers",
+  "app/ObjectTemplate"
+], function(
+  Class ,
+  Logging,
+  CountryCodes,
+  $,
+  HorizontalSlider,
+  KeyModifiers,
+  ObjectTemplate
+) {
   return Class({
     name: "BasicSidebar",
+
+    defaultConfig: {
+      logo: {
+        attr: {src: '%(img)s/gfw/logo-white.png'},
+        css: {}
+      },
+      sponsorLogos: [
+        {
+          attr: {src: '%(img)s/gfw/st_logo.png'},
+          css: {
+            "padding-right": "7%",
+            "vertical-align": "bottom",
+            "width": "28%"
+          }
+        },
+        {
+          attr: {src: '%(img)s/gfw/oceana_logo.png'},
+          css: {
+            "padding-right": "7%",
+            "vertical-align": "bottom",
+            "width": "32%"
+          }
+        },
+        {
+          attr: {src: '%(img)s/gfw/google_logo.png'},
+          css: {
+            "width": "26%",
+            "vertical-align": "bottom",
+            "padding-right": "0"
+          }
+        }
+      ]
+    },
+
     initialize: function (visualization) {
       var self = this;
 
@@ -16,7 +59,9 @@ define([
 
       self.idCounter = 0;
 
-      $('body').append('<img class="logo" src="' + app.dirs.img + '/gfw/logo-white.png">');
+      self.logoNode = $('<img class="logo">')
+      $('body').append(self.logoNode);
+
       self.node = $('' +        
         '<div id="w" class="expanded">' +
         '  <div id="expand-button"><img src="' + app.dirs.img + '/gfw/gfw_open.png"></div>' +
@@ -36,7 +81,7 @@ define([
         '' +
         '      <div id="codeoutput"></div>' +
         '      <div id="divide"></div>' +
-        '      <div id="gfw_logos"><img class="st" src="' + app.dirs.img + '/gfw/st_logo.png"><img class="oc" src="' + app.dirs.img + '/gfw/oceana_logo.png"><img class="g" src="' + app.dirs.img + '/gfw/google_logo.png"></div>' +
+        '      <div id="sponsor_logos"></div>' +
         '    </div>' +
         '  </div>' +
         '</div>');
@@ -75,6 +120,8 @@ define([
       self.visualization.state.events.on({'edit': function (data) {        
         self.node.toggle(!data.new_value);
       }});
+
+      self.load();
     },
 
     updateLoading: function () {
@@ -278,6 +325,31 @@ define([
 
     removeHandler: function (event) {
       event.animation.basicSidebarNode.remove();
+    },
+
+
+    toJSON: function () {
+      var self = this;
+      return self.config;
+    },
+
+    load: function (config, cb) {
+      var self = this;
+      self.config = $.extend({}, self.defaultConfig, config);
+      data = new ObjectTemplate(self.config).eval(app.dirs);
+
+      self.logoNode.attr(data.logo.attr);
+      self.logoNode.css(data.logo.css);
+
+      self.node.find("#sponsor_logos").html("");
+      data.sponsorLogos.map(function (spec) {
+        var logo = $("<img>");
+        logo.attr(spec.attr);
+        logo.css(spec.css);
+        self.node.find("#sponsor_logos").append(logo);
+      });
+
+      cb && cb();
     }
   });
 });
