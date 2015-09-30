@@ -29,6 +29,20 @@ Features:
 
 ## Setup
 
+The site itself does not require any specific server-side components for
+hosting; all the application is packaged as a static site and all you need to
+do to deploy it is to drop some files on an apache, nginx or any static file
+server.
+
+You do need however some development environment prerequisites to build those
+static files by downloading all library dependencies, concatenate and minify
+scripts, etc. You also need the development environment up and running if you
+want to generate test datasets, run the unit or integration tests, etc.
+
+You have 2 options to setup your development environment. You can either use
+the preferred virtualized development environment, which requires you to setup
+vagrant, or you can install all requirements in your machine.
+
 ### Quick virtualized environment
 
 You can build the application assets, run all the tests and start a development
