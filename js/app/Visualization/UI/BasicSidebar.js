@@ -62,12 +62,12 @@ define([
       self.logoNode = $('<img class="logo">')
       $('body').append(self.logoNode);
 
-      self.node = $('' +        
+      self.node = $(new ObjectTemplate('' +        
         '<div id="w" class="expanded">' +
-        '  <div id="expand-button"><img src="' + app.dirs.img + '/buttons/open.png"></div>' +
+        '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
         '  <div class="border">' +
         '    <div id="content">' +
-        '      <div id="collapse-button"><img src="' + app.dirs.img + '/buttons/close.png"></div>' +
+        '      <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
         '' +
         '      <div id="layers">' +
         '        <h2>Layers</h2>' +
@@ -84,7 +84,7 @@ define([
         '      <div id="sponsor_logos"></div>' +
         '    </div>' +
         '  </div>' +
-        '</div>');
+        '</div>').eval(app.dirs));
       $('body').append(self.node);
 
       self.update("none", {});

@@ -8,6 +8,7 @@ define([
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
+  "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
   "async",
@@ -22,6 +23,7 @@ function (
   SidePanelManager,
   BasicSidebar,
   Search,
+  ObjectTemplate,
   BorderContainer,
   ContentPane,
   async,
@@ -70,23 +72,17 @@ function (
       var self = this;
       self.buttonNodes = {};
 
-      var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "buttons", "arrow.png"]).join("/");
-      var playUrl = app.paths.script.slice(0,-1).concat(["img", "buttons", "play.png"]).join("/");
-      var pauseUrl = app.paths.script.slice(0,-1).concat(["img", "buttons", "pause.png"]).join("/");
-      var shareUrl = app.paths.script.slice(0,-1).concat(["img", "buttons", "share.png"]).join("/");
 
-      self.controlButtonsNode = $(''
-        
-        
+      self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
-        + '  <button class="btn btn-default btn-lg" data-name="share"><img src="' + shareUrl + '"></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="share"><img src="%(img)s/buttons/share.png"></button>'
         + '  <div class="divide"></div>'        
-        + '  <button class="btn btn-default btn-lg" data-name="play"><img class="paused" src="' + playUrl + '"><img class="playing" src="' + pauseUrl + '"></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="play"><img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png"></button>'
         + ''
         + '  <a class="balloon">'
         + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
         + '    <div>'
-        + '      <img class="arrow" src="' + arrowUrl + '">'
+        + '      <img class="arrow" src="%(img)s/buttons/arrow.png">'
         + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="backward"><i class="fa fa-backward"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="loop"><i class="fa fa-repeat"></i></button>'
@@ -94,7 +90,7 @@ function (
         + '      <button class="btn btn-default btn-xs" data-name="end"><i class="fa fa-step-forward"></i></button>'
         + '    </div>'
         + '  </a>'
-        + '</div>');
+        + '</div>').eval(app.dirs));
       self.visualization.node.append(self.controlButtonsNode);
 
       self.controlButtonsNode.find(".btn").each(function () {
