@@ -64,10 +64,10 @@ define([
 
       self.node = $('' +        
         '<div id="w" class="expanded">' +
-        '  <div id="expand-button"><img src="' + app.dirs.img + '/gfw/gfw_open.png"></div>' +
+        '  <div id="expand-button"><img src="' + app.dirs.img + '/buttons/open.png"></div>' +
         '  <div class="border">' +
         '    <div id="content">' +
-        '      <div id="collapse-button"><img src="' + app.dirs.img + '/gfw/gfw_close.png"></div>' +
+        '      <div id="collapse-button"><img src="' + app.dirs.img + '/buttons/close.png"></div>' +
         '' +
         '      <div id="layers">' +
         '        <h2>Layers</h2>' +
@@ -128,7 +128,7 @@ define([
       var self = this;
       self.node.find("#vessel_identifiers").html(
         '      <h2>Vessel Information</h2>' +
-        '      <div class="loading-vessel-info" style=""><img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg"></div>'
+        '      <div class="loading-vessel-info" style=""><img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg"></div>'
       );
     },
 

@@ -70,10 +70,10 @@ function (
       var self = this;
       self.buttonNodes = {};
 
-      var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "arrow.png"]).join("/");
-      var playUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "play.png"]).join("/");
-      var pauseUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "pause.png"]).join("/");
-      var shareUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "share.png"]).join("/");
+      var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "buttons", "arrow.png"]).join("/");
+      var playUrl = app.paths.script.slice(0,-1).concat(["img", "buttons", "play.png"]).join("/");
+      var pauseUrl = app.paths.script.slice(0,-1).concat(["img", "buttons", "pause.png"]).join("/");
+      var shareUrl = app.paths.script.slice(0,-1).concat(["img", "buttons", "share.png"]).join("/");
 
       self.controlButtonsNode = $(''
         
@@ -137,7 +137,7 @@ function (
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg"></div>');
+      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
