@@ -52,7 +52,10 @@ in your machine, and no configuration is needed. For that will need:
 
 1. [Vagrant](http://www.vagrantup.com/) to manage the virtualized development
    environment. This requires installing
-[VirtualBox](https://www.virtualbox.org/) as well.
+[VirtualBox](https://www.virtualbox.org/) as well. If you are using ubuntu,
+don't install it from the standard Debian repositories, as it is an outdated
+version incompatible with our vagrantfile. Use the [official
+packages](https://www.vagrantup.com/downloads.html) instead.
 
 Once these are installed you can set up and start the virtual machine:
 
