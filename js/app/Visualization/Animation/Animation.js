@@ -202,7 +202,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
     drawProgram: function (program, idx) {
       var self = this;
 
-      if (program.name == "rowidxProgram" && !self.manager.isPaused())
+      if (program.name == "rowidxProgram" && (self.manager.indrag || !self.manager.isPaused()))
         return;
 
       program.gl.useProgram(program);
