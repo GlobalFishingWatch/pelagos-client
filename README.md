@@ -1,8 +1,5 @@
 [![Build Status](https://travis-ci.org/SkyTruth/pelagos-client.svg?branch=master)](https://travis-ci.org/SkyTruth/pelagos-client)
 
-![alt text](https://raw.githubusercontent.com/SkyTruth/pelagos-client/master/img/logo.svg "Logo")
-
-
 # About
 
 Pelagos Client is a stand-alone web application for visualizing large time
