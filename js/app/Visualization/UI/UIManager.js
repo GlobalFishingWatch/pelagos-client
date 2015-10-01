@@ -38,8 +38,6 @@ function (
     init1: function (cb) {
       var self = this;
 
-      var self = this;
-
       self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
       self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
       self.container.addChild(self.animationsContainer);
@@ -72,6 +70,8 @@ function (
       var self = this;
       self.buttonNodes = {};
 
+      self.logoNode = $('<img class="logo">')
+      self.visualization.node.append(self.logoNode);
 
       self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
@@ -410,13 +410,21 @@ function (
     toJSON: function () {
       var self = this;
       return {
+        logo: self.config.logo,
         sideBar: self.sideBar
       };
     },
 
-    load: function (data, cb) {
+    load: function (config, cb) {
       var self = this;
-      self.sideBar.load(data && data.sideBar, cb);
+
+      self.config = config;
+      data = new ObjectTemplate(self.config).eval(app.dirs);
+
+      self.logoNode.attr(data.logo.attr);
+      self.logoNode.css(data.logo.css);
+
+      self.sideBar.load(config.sideBar, cb);
     }
   });
 });

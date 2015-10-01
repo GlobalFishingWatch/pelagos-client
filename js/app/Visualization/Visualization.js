@@ -1,4 +1,28 @@
-define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "app/Data/DataManager", "app/Visualization/Animation/AnimationManager", "app/Visualization/UI/UIManager", "async", "jQuery", "app/Json"], function(Class, Logging, SubscribableDict, UrlValues, DataManager, AnimationManager, UIManager, async, $, Json) {
+define([
+  "app/Class",
+  "app/Logging",
+  "app/SubscribableDict",
+  "app/UrlValues",
+  "app/Data/DataManager",
+  "app/Visualization/Animation/AnimationManager",
+  "app/Visualization/UI/UIManager",
+  "async",
+  "jQuery",
+  "lodash",
+  "app/Json"
+], function(
+  Class,
+  Logging,
+  SubscribableDict,
+  UrlValues,
+  DataManager,
+  AnimationManager,
+  UIManager,
+  async,
+  $,
+  _,
+  Json
+) {
   return Class({
     name: "Visualization",
     paramspec: {
@@ -45,6 +69,8 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
         }
       });
 
+      self.defaultConfig = {};
+
       async.series([
         function (cb) {
           self.ui = new UIManager(self);
@@ -61,10 +87,27 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
         function (cb) {
           self.ui.init2(cb);
         },
-        function (cb) {
-          self.load(UrlValues.getParameter("workspace"), cb);
-        }
+        self.loadDefaults.bind(self, app.dirs.root + "/defaultConfig.json"),
+        function (cb) { self.loadDefaults(app.dirs.root + "/config.json", function () { cb(); }); },
+        self.load.bind(self, UrlValues.getParameter("workspace"))
       ]);
+    },
+
+    loadDefaults: function (url, cb) {
+      var self = this;
+
+      $.get(url, function (data) {
+        self.defaultConfig = self.mergeDefaults(self.defaultConfig, Json.decode(data));
+        cb();
+      }, 'text').fail(function(jqXHR, textStatus, errorThrown) {
+        cb(errorThrown);
+      });
+    },
+
+    mergeDefaults: function (defaults, config) {
+      var self = this;
+
+      return _.merge({}, defaults, config);
     },
 
     toJSON: function () {
@@ -79,7 +122,10 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
     load: function (url, cb) {
       var self = this;
 
-      if (!url) return cb();
+      if (!url) {
+        /* Load defaults only */
+        return self.loadData({}, cb);
+      }
 
       if (url.indexOf("?") >= 0) {
         self.workspaceSaveUrl = url.split("?")[0];
@@ -90,18 +136,37 @@ define(["app/Class", "app/Logging", "app/SubscribableDict", "app/UrlValues", "ap
       self.workspaceUrl = url;
 
       $.get(url, function (data) {
-        data = Json.decode(data);
-        if (data.state == undefined) {
-          cb();
-        } else {
+        self.loadData(data, cb);
+      }, 'text').fail(function(jqXHR, textStatus, errorThrown) {
+        /* Load defaults only */
+        return self.loadData({}, function () {
+          cb(errorThrown);
+        });
+      });
+    },
+
+    loadData: function (data, cb) {
+      var self = this;
+
+      data = self.mergeDefaults(self.defaultConfig, Json.decode(data));
+
+      async.series([
+        function (cb) {
+          if (!data.state) return cb();
           for (var name in data.state) {
             self.state.setValue(name, data.state[name]);
           }
-          self.animations.load(data.map, function () {
-            self.ui.load(data.ui, cb);
-          });
+          cb();
+        },
+        function (cb) {
+          if (!data.map) return cb();
+          self.animations.load(data.map, cb);
+        },
+        function (cb) {
+          if (!data.ui) return cb();
+          self.ui.load(data.ui, cb);
         }
-      }, 'text');
+      ], cb);
     },
 
     save: function (cb) {
