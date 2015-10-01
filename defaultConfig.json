@@ -6,30 +6,6 @@
     },
     "sideBar": {
       "sponsorLogos": [
-        {
-          "attr": {"src": "%(img)s/gfw/st_logo.png"},
-          "css": {
-            "padding-right": "7%",
-            "vertical-align": "bottom",
-            "width": "28%"
-          }
-        },
-        {
-          "attr": {"src": "%(img)s/gfw/oceana_logo.png"},
-          "css": {
-            "padding-right": "7%",
-            "vertical-align": "bottom",
-            "width": "32%"
-          }
-        },
-        {
-          "attr": {"src": "%(img)s/gfw/google_logo.png"},
-          "css": {
-            "width": "26%",
-            "vertical-align": "bottom",
-            "padding-right": "0"
-          }
-        }
       ]
     }
   }
