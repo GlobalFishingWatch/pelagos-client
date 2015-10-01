@@ -285,56 +285,74 @@ function(Class,
       return false;
     },
 
-    hideSelectionAnimations: function () {
+    hideAllSelectionAnimations: function () {
       var self = this;
 
       var animations = self.animations.slice(0);
       for (var i = 0; i < animations.length; i++) {
-        self.hideSelectionAnimation(animations[i]);
+        self.hideSelectionAnimations(animations[i]);
       }
     },
 
-    hideSelectionAnimation: function (baseAnimation) {
+    hideSelectionAnimations: function (baseAnimation) {
       var self = this;
 
-      if (baseAnimation.selectionAnimation != undefined) {
-        self.removeAnimation(baseAnimation.selectionAnimation);
-        baseAnimation.selectionAnimation = undefined;
+      if (baseAnimation.selectionAnimations != undefined) {
+        baseAnimation.selectionAnimations.map(function (selectionAnimation) {
+          self.removeAnimation(selectionAnimation);
+        });
       }
+      baseAnimation.selectionAnimations = [];
     },
 
-    showSelectionAnimation: function (baseAnimation, selection) {
+    showSelectionAnimations: function (baseAnimation, selection) {
       var self = this;
       var baseHeader = baseAnimation.data_view.source.header;
 
       if (!baseHeader.seriesTilesets) return;
 
-      self.hideSelectionAnimation(baseAnimation);
+      self.hideSelectionAnimations(baseAnimation);
 
       if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
-        var seriesTileset = baseHeader.seriesTilesets;
+        var seriesTilesets = baseHeader.seriesTilesets;
 
-        if (seriesTileset === true) {
-          seriesTileset = {
-            "args": {
-              "title": "Vessel Track",
-              "color": "grey",
-              "visible": true,
-              "source": {
-                "type": "TiledBinFormat",
-                "args": {
-                  "url": "%(versioned_url)s/sub/%(query)s"
+        if (seriesTilesets === true) {
+          seriesTilesets = [
+            {
+              "args": {
+                "title": "Vessel Track",
+                "color": "grey",
+                "visible": true,
+                "source": {
+                  "type": "TiledBinFormat",
+                  "args": {
+                    "url": "%(versioned_url)s/sub/%(query)s"
+                  }
                 }
-              }
+              },
+              "type": "VesselTrackAnimation"
             },
-            "type": "VesselTrackAnimation"
-          };
+            {
+              "args": {
+                "title": "Course & speed",
+                "color": "grey",
+                "visible": true,
+                "source": {
+                  "type": "TiledBinFormat",
+                  "args": {
+                    "url": "%(versioned_url)s/sub/%(query)s"
+                  }
+                }
+              },
+              "type": "ArrowAnimation"
+            }
+          ];
         }
 
         var selectionValue = selection.data.series[0];
         if (selection.data.seriesgroup != undefined) selectionValue = selection.data.seriesgroup[0];
 
-        seriesTileset = new ObjectTemplate(seriesTileset).eval({
+        seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
           url: baseAnimation.data_view.source.url,
           versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
           selectionValue: selectionValue,
@@ -343,18 +361,22 @@ function(Class,
           selection: selection
         });
 
-        self.addAnimation(
-          seriesTileset,
-          function (err, animation) {
-            self.hideSelectionAnimation(baseAnimation);
-            if (err) {
-              self.removeAnimation(animation);
-            } else {
-              animation.selectionAnimationFor = baseAnimation;
-              baseAnimation.selectionAnimation = animation;
+        self.hideSelectionAnimations(baseAnimation);
+
+        async.each(seriesTilesets, function (seriesTileset, cb) {
+          self.addAnimation(
+            seriesTileset,
+            function (err, animation) {
+              if (err) {
+                self.removeAnimation(animation);
+              } else {
+                animation.selectionAnimationFor = baseAnimation;
+                baseAnimation.selectionAnimations.push(animation);
+              }
+              cb();
             }
-          }
-        );
+          );
+        });
       }
     },
 
@@ -481,7 +503,7 @@ function(Class,
       if (type == 'selected') {
         self.events.triggerEvent('info-loading', {});
         if (dataView.source.header.seriesTilesets) {
-          self.hideSelectionAnimations();
+          self.hideAllSelectionAnimations();
         }
 
         if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
@@ -520,7 +542,7 @@ function(Class,
         self.handleInfo(animation, selectionEvent, null, data);
       } else {
         if (type == 'selected') {
-          self.showSelectionAnimation(animation, dataView.selections.selections[type]);
+          self.showSelectionAnimations(animation, dataView.selections.selections[type]);
         }
         dataView.selections.getSelectionInfo(type, function (err, data) {
           var content;
