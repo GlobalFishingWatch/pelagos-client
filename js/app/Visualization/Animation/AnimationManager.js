@@ -37,7 +37,7 @@ function(Class,
   Rowidx,
   Animation
 ) {
-  return Class({
+  var AnimationManager = Class({
     name: "AnimationManager",
 
     mapOptions: {
@@ -152,9 +152,33 @@ function(Class,
       cb();
     },
 
+    handleNoGl: function () {
+      var self = this;
+      var failover = self.visualization.state.getValue('nowebgl');
+      if (failover) {
+        window.location = failover;
+      } else {
+        self.dialog = new Dialog({
+          title: "Loading failed",
+          content: '' +
+            '<b class="error">Your browser does not support WebGL</b>',
+          actionBarTemplate: '' +
+            '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+            '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+            '</div>'
+        });
+        $(self.dialog.closeButton).on('click', function () {
+          self.dialog.hide();
+        });
+        self.dialog.show();
+      }
+      throw new AnimationManager.NoGlError();
+    },
+
     getGlContext: function (canvas) {
       var self = this;
       var gl = canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+      if (!gl) self.handleNoGl();
       gl.enable(gl.BLEND);
       return gl;
     },
@@ -179,42 +203,28 @@ function(Class,
       };
       self.canvasLayer = new CanvasLayer(canvasLayerOptions);
 
-      self.gl = self.getGlContext(self.canvasLayer.canvas);
-      if (!self.gl) {
-        var failover = self.visualization.state.getValue('nowebgl');
-        if (failover) {
-          window.location = failover;
-        } else {
-          self.dialog = new Dialog({
-            title: "Loading failed",
-            content: '' +
-              '<b class="error">Your browser does not support WebGL</b>',
-            actionBarTemplate: '' +
-              '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-              '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-              '</div>'
-          });
-          $(self.dialog.closeButton).on('click', function () {
-            self.dialog.hide();
-          });
-          self.dialog.show();
-        }
-        cb({msg: "Your browser does not support WebGL."});
-      } else {
+      try {
+        self.gl = self.getGlContext(self.canvasLayer.canvas);
         self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE);
 
         self.rowidxGl = [self.createRowidxGlContext(), self.createRowidxGlContext()];
-
-        var onAdd = function () {
-          if (!self.canvasLayer.isAdded_) {
-            setTimeout(onAdd, 1);
-          } else {
-            self.canvasResize();
-            cb();
-          }
+      } catch (e) {
+        if (e instanceof AnimationManager.NoGlError) {
+          cb({msg: "Your browser does not support WebGL."});
+        } else {
+           throw e;
         }
-        onAdd();
       }
+
+      var onAdd = function () {
+        if (!self.canvasLayer.isAdded_) {
+          setTimeout(onAdd, 1);
+        } else {
+          self.canvasResize();
+          cb();
+        }
+      }
+      onAdd();
     },
 
     search: function(query, cb) {
@@ -815,4 +825,10 @@ function(Class,
               options: self.mapOptions};
     }
   });
+
+  AnimationManager.NoGlError = function () { Error.call(this); };
+  AnimationManager.NoGlError.prototype = new Error();
+  AnimationManager.NoGlError.prototype.name = "NoGlError";
+
+  return AnimationManager;
 });
