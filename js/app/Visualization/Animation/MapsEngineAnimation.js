@@ -45,11 +45,15 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
           });
           self.manager.infoPopup.open(self.manager.map);
         } else {
-          info.layer = self.title;
+          self.selected = true;
           info.toString = function () {
             return info.infoWindowHtml;
           }
-          self.manager.events.triggerEvent('info', info);
+          var event = {
+            layer: self.title,
+            data: info
+          };
+          self.manager.events.triggerEvent('info', event);
         }
       };
 
@@ -70,7 +74,13 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
 
     draw: function () {},
 
-    select: function (x, y, type, replace) {},
+    select: function (rowidx, type, replace) {
+      var self = this;
+      if (type == "selected" && self.selected) {
+        self.selected = false;
+        self.manager.events.triggerEvent('info', {});
+      }
+    },
 
     toString: function () {
       var self = this;
