@@ -118,6 +118,12 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
 
     gl.linkProgram(program);
 
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      var err = gl.getProgramInfoLog(program);
+      console.error(err);
+      throw err;
+    }
+
     gl.useProgram(program);
 
     // Collect attribute locations to make binding easier in the code using this program
