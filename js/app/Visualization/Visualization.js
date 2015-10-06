@@ -136,7 +136,7 @@ define([
       self.workspaceUrl = url;
 
       $.get(url, function (data) {
-        self.loadData(data, cb);
+        self.loadData(Json.decode(data), cb);
       }, 'text').fail(function(jqXHR, textStatus, errorThrown) {
         /* Load defaults only */
         return self.loadData({}, function () {
@@ -148,7 +148,7 @@ define([
     loadData: function (data, cb) {
       var self = this;
 
-      data = self.mergeDefaults(self.defaultConfig, Json.decode(data));
+      data = self.mergeDefaults(self.defaultConfig, data);
 
       async.series([
         function (cb) {
