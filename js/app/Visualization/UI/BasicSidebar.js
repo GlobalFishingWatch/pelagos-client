@@ -98,7 +98,7 @@ define([
       var self = this;
 
       var data = event.data;
-        if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
+      if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
         self.node.find("#vessel_identifiers").html(
           '      <h2>Vessel Information</h2>' +
           '      <span class="download"></span>' +
@@ -209,7 +209,7 @@ define([
       } else {
         self.node.find("#vessel_identifiers").html(
           '<h2>' + event.layer + '</h2>' +
-          event.toString());
+          data.toString());
         self.node.find("table").attr({"class": "vessel_id"});
       }
 
