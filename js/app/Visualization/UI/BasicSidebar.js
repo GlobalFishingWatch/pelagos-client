@@ -191,7 +191,7 @@ define([
           if (data.link) {
             var link = $("<a target='_new'>");
             link.attr({href: data.link});
-            self.node.find("h2").wrapInner(link);
+            self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
 
           var link = $('<a target="_new">Download as KML</a>');
