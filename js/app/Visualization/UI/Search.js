@@ -29,7 +29,7 @@ define([
                      '      <div class="modal-body alert">' +
                      '        <input type="text" class="form-control query" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
                      '        <div class="search-loading" style="float: right; margin-top: -2em; margin-right: 0.5em; z-index: 0; display: block; display: none;">' +
-                     '          <img style="width: 20px;" src="/client/img/gfw/spinner.min.svg">' +
+                     '          <img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg">' +
                      '        </div>' +
                      '        <div class="results" style="max-height: 200px; overflow: auto;"></div>' +
                      '      </div>' +
