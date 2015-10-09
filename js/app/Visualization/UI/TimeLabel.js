@@ -77,14 +77,39 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
       }
     },
 
-    formatDate: function (args) {
+    stepLengthIndex: function (args) {
       var self = this;
-
-      var dateList = Interval.dateToList(args.date);
       var index = self.intervalToIndex(args.stepLength);
 
       if (self.fullDates) index.end = Math.max(index.end, 3);
       if (self.neverJustHours && index.end == 4) index.end = 5;
+
+      var includeDatePrefix = self.includeDatePrefix;
+      if (args.includeDatePrefix != undefined) includeDatePrefix = args.includeDatePrefix;
+
+      if (includeDatePrefix) {
+        index.start = 0;
+      }
+
+      return index;
+    },
+
+    floorDate: function (args) {
+      var self = this;
+
+      var index = self.stepLengthIndex(args);
+
+      return Interval.listToDate(
+        [].concat(
+          Interval.dateToList(args.date).slice(0, index.end),
+          [0, 0, 0, 0, 0, 0, 0].slice(index.end)));
+    },
+
+    formatDate: function (args) {
+      var self = this;
+
+      var dateList = Interval.dateToList(args.date);
+      var index = self.stepLengthIndex(args);
 
       dateList[1] += 1;
       dateList[2] += 1;
@@ -94,13 +119,6 @@ define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
       }
 
       dateList[1] = self.monthNames[dateList[1]];
-
-      var includeDatePrefix = self.includeDatePrefix;
-      if (args.includeDatePrefix != undefined) includeDatePrefix = args.includeDatePrefix;
-
-      if (includeDatePrefix) {
-        index.start = 0;
-      }
 
       var resDateList = dateList.slice(index.start, index.end);
       var separators = self.separators.slice(index.start, index.end - 1);

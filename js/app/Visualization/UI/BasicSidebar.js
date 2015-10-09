@@ -30,6 +30,7 @@ define([
         '' +
         '      <div id="divide"></div>' +
         '' +
+        '      <a id="activate_search" href="javascript:undefined"><i class="fa fa-search"></i></a>' +
         '      <div id="vessel_identifiers"></div>' +
         '' +
         '      <div id="codeoutput"></div>' +
@@ -41,6 +42,10 @@ define([
       $('body').append(self.node);
 
       self.update("none", {});
+
+      self.node.find("#activate_search").click(function () {
+        self.visualization.ui.search.displaySearchDialog();
+      });
 
       self.node.find("#collapse-button img").click(function () {
         self.node.css({left:self.node.offset().left + "px"});

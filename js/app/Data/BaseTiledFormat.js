@@ -203,7 +203,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       var self = this;
 
       var data = {query: query};
-      var url = self.url + "/search";
+      var url = self.getUrl("search", -1) + "/search";
 
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
