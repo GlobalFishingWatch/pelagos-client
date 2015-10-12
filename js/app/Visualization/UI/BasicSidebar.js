@@ -31,6 +31,8 @@ define([
         '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
         '  <div class="border">' +
         '    <div id="content">' +
+        '      <a id="activate_help" href="javascript:undefined" style="float: right; font-size: 15pt"><i class="fa fa-question-circle"></i></a>' +
+        '' +
         '      <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
         '' +
         '      <div id="layers">' +
@@ -55,6 +57,10 @@ define([
 
       self.node.find("#activate_search").click(function () {
         self.visualization.ui.search.displaySearchDialog();
+      });
+
+      self.node.find("#activate_help").click(function () {
+        self.visualization.ui.help.displayHelpDialog();
       });
 
       self.node.find("#collapse-button img").click(function () {

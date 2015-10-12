@@ -8,6 +8,7 @@ define([
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
+  "app/Visualization/UI/Help",
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
@@ -23,6 +24,7 @@ function (
   SidePanelManager,
   BasicSidebar,
   Search,
+  Help,
   ObjectTemplate,
   BorderContainer,
   ContentPane,
@@ -62,7 +64,8 @@ function (
         self.initLoopButton.bind(self),
         self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
-        self.initSearch.bind(self)
+        self.initSearch.bind(self),
+        self.initHelp.bind(self)
       ], function () { cb(); });
     },
 
@@ -404,6 +407,13 @@ function (
       var self = this;
 
       self.search = new Search(self.visualization);
+      cb();
+    },
+
+    initHelp: function (cb) {
+      var self = this;
+
+      self.help = new Help(self.visualization);
       cb();
     },
 
