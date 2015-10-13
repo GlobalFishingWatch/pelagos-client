@@ -158,17 +158,27 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       return res.join(',');
     },
 
+    getSelectionUrl: function(selection, fallbackLevel) {
+      var self = this;
+      /* FIXME: self.header.infoUsesSelection is a workaround for
+         current info database that doesn't contain seriesgroup
+         values. This should be removed in the future. */
+
+      var baseUrl = self.getUrl("selection-info", fallbackLevel);
+      if (baseUrl.indexOf("/sub/") != -1) {
+          baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
+      } else {
+          baseUrl = baseUrl + "/sub/";
+      }
+
+      return baseUrl + self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series'])
+    },
+
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
-        /* FIXME: self.header.infoUsesSelection is a workaround for
-           current info database that doesn't contain seriesgroup
-           values. This should be removed in the future. */
-        var url = (self.getUrl("selection-info", fallbackLevel) +
-                   "/sub/" +
-                   self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']) +
-                   "/info");
+        var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
