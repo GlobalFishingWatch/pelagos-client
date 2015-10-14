@@ -336,7 +336,7 @@ function(Class,
                 "source": {
                   "type": "TiledBinFormat",
                   "args": {
-                    "url": "%(versioned_url)s/sub/%(query)s"
+                    "url": "%(query_url)s"
                   }
                 }
               },
@@ -350,7 +350,7 @@ function(Class,
                 "source": {
                   "type": "TiledBinFormat",
                   "args": {
-                    "url": "%(versioned_url)s/sub/%(query)s"
+                    "url": "%(query_url)s"
                   }
                 }
               },
@@ -365,6 +365,7 @@ function(Class,
         seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
           url: baseAnimation.data_view.source.url,
           versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
+          query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
           selectionValue: selectionValue,
           query: baseAnimation.data_view.source.getSelectionQuery(selection),
           header: baseAnimation.data_view.source.header,
