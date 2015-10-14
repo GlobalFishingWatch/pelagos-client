@@ -106,8 +106,8 @@ define([
       var data = event.data;
       if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
         self.node.find("#vessel_identifiers").html(
-          '      <h2>Vessel Information</h2>' +
           '      <span class="download"></span>' +
+          '      <h2>Vessel Information</h2>' +
           '      <table class="vessel_id">' +
           '        <tbody>' +
           '          <tr>' +
@@ -200,7 +200,7 @@ define([
             self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
 
-          var link = $('<a target="_new">Download as KML</a>');
+          var link = $('<a target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
 
           link.attr({
               href: (event.layerInstance.data_view.source.getUrl('export', -1) +
