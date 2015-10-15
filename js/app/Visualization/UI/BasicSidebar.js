@@ -228,10 +228,10 @@ define([
 
       var node = $('' +
         '<div class="layer-row">' +
-        '  <div class="switch">' +
+        '  <label class="switch">' +
         '    <input class="cmn-toggle" type="checkbox">' +
-        '    <label></label>' +
-        '  </div>' +
+        '    <div class="switch-line"></div>' +
+        '  </label>' +
         '  <div class="layer-label"></div>' +
         '</div>');
 

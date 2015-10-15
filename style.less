@@ -373,6 +373,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       .switch {
         width: 18%;
         font-size: 90%;
+        cursor: pointer;
       }
 
       .layer-label {
@@ -389,10 +390,9 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       visibility: hidden;
 
 
-      + label {
+      + .switch-line {
         display: block;
         position: relative;
-        cursor: pointer;
         outline: none;
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -452,7 +452,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
 
       &:checked {
-        + label {
+        + .switch-line {
           background-color: transparent;
           &:after {
             margin-left: 15px;
@@ -460,8 +460,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         }
       }
 
-      + label,
-      &:checked + label {
+      + .switch-line,
+      &:checked + .switch-line {
         background-repeat: repeat-x;
         background-position: center center;
       }
@@ -471,85 +471,85 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     /* colors */
     /* heatmap */
     input.cmn-toggle-orange {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #ef4323; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #ef4323; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #ef4323;
       }
     }
     /* oceana */
     input.cmn-toggle-purple {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #692897; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #692897; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #692897;
       }
     }
     /* eez */
     input.cmn-toggle-blue {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #4666af; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #4666af; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #4666af;
       }
     }
     /* bathymetry */
     input.cmn-toggle-blue2 {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #9daed4; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #9daed4; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #9daed4;
       }
     }
     /* mpa */
     input.cmn-toggle-green {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #4cae4e;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #4cae4e; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #4cae4e;
       }
     }
     /* world heritage */
     input.cmn-toggle-green2 {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #0e5c39;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #0e5c39; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #0e5c39;
       }
     }
     /* vessel tracks */
     input.cmn-toggle-grey {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #757575;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #757575; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #757575;
       }
     }
