@@ -329,6 +329,7 @@ function(Class,
         if (seriesTilesets === true) {
           seriesTilesets = [
             {
+              "type": "VesselTrackAnimation",
               "args": {
                 "title": "Vessel Track",
                 "color": "grey",
@@ -339,22 +340,7 @@ function(Class,
                     "url": "%(query_url)s"
                   }
                 }
-              },
-              "type": "VesselTrackAnimation"
-            },
-            {
-              "args": {
-                "title": "Course & speed",
-                "color": "grey",
-                "visible": true,
-                "source": {
-                  "type": "TiledBinFormat",
-                  "args": {
-                    "url": "%(query_url)s"
-                  }
-                }
-              },
-              "type": "ArrowAnimation"
+              }
             }
           ];
         }
