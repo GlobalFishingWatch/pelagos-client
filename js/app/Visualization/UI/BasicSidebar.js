@@ -31,7 +31,7 @@ define([
         '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
         '  <div class="border">' +
         '    <div id="content">' +
-        '      <a id="activate_help" href="javascript:undefined" style="float: right; font-size: 15pt"><i class="fa fa-question-circle"></i></a>' +
+        '      <a id="activate_help" href="javascript:undefined" style="float: right; font-size: 15pt"><i class="fa fa-keyboard-o"></i></a>' +
         '' +
         '      <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
         '' +

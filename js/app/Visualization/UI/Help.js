@@ -21,13 +21,12 @@ define([
       });
 
       self.dialog = new Dialog({
-        style: "width: 50%;",
-        title: "Help",
+        style: "width: 400pt;",
+        title: "Keyboard shortcuts",
         content: '' +
-          '<h1>Keyboard shortcuts</h1>' +
           '<dl>' +
           '  <dt>CTRL-ALT-F</dt><dd>Search</dd>' +
-          '  <dt>CTRL-ALT-E</dt><dd>Toggle between viewe and edit sidebar (advanced mode)</dd>' +
+          '  <dt>CTRL-ALT-E</dt><dd>Toggle between view and edit sidebar (advanced mode)</dd>' +
           '  <dt>CTRL-ALT-H</dt><dd>Show this help dialog</dd>' +
           '  <dt>left click (on map object)</dt><dd>Show object information in the sidebar</dd>' +
           '  <dt>right click</dt><dd>Show object information in a popup</dd>' +
