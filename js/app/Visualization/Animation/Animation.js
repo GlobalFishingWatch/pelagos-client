@@ -199,6 +199,21 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       });
     },
 
+    setBlendFunc: function(program) {
+      var self = this;
+      var gl = program.gl;
+      var blend = self.programSpecs[program.name].blend;
+
+      if (!blend) {
+        if (program.name == "rowidxProgram") {
+          blend = {src:"SRC_ALPHA", dst:"ONE_MINUS_SRC_ALPHA"};
+        } else {
+          blend = {src:"SRC_ALPHA", dst:"ONE"};
+        }
+      }
+      gl.blendFunc(gl[blend.src], gl[blend.dst]);
+    },
+
     drawProgram: function (program, idx) {
       var self = this;
 
@@ -206,6 +221,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
         return;
 
       program.gl.useProgram(program);
+      self.setBlendFunc(program);
 
       self.setGeneralUniforms(program);
 
