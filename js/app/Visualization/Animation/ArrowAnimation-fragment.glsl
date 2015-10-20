@@ -1,18 +1,24 @@
 precision mediump float;
 
-#define M_PI 3.1415926535897932384626433832795
-
 varying vec4 baseColor;
 varying float fragmentDirection;
 
 void main() {
-  float direction = fragmentDirection / 360.0 * 2.0 * M_PI;  
   vec2 coord = gl_PointCoord.xy - vec2(.5, .5);
 
   if (length(coord) <= .5) {
-    float dist = abs((coord[0] - (coord[1] / cos(direction))) / sqrt(2.0));
-    dist = max(0., 1. - dist*10.);
-    gl_FragColor = vec4(baseColor[0], baseColor[1], baseColor[2], baseColor[3] * dist);
+    vec2 arrow = vec2(cos(fragmentDirection), sin(fragmentDirection)); // Unit vector along direction
+    float projected_length = dot(coord, arrow);
+    if (projected_length >= 0.0) {
+      vec2 projected = projected_length * arrow; // No division by length(arrow) as arrow is unitary
+      vec2 rejected = coord - projected;
+      float dist = length(rejected);
+
+      dist = max(0., 1. - dist*20.);
+      gl_FragColor = vec4(baseColor[0], baseColor[1], baseColor[2], baseColor[3] * dist);
+    } else {
+    gl_FragColor = vec4(0., 0., 0., 0.);
+    }
   } else {
     gl_FragColor = vec4(0., 0., 0., 0.);
   }
