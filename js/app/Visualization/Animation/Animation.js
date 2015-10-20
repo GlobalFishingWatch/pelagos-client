@@ -236,6 +236,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
         } else {
           program.gl.drawArrays(mode, 0, tile.content.header.length);
         }
+        Shader.disableArrays(program);
       });
     },
 
@@ -267,7 +268,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       var self = this;
       if (!program.dataViewArrayBuffers[tile.url]) return false;
       program.gl.useProgram(program);
-      for (var name in program.dataViewArrayBuffers[tile.url]) {
+      for (var name in program.attributes) {
         Shader.programBindArray(program.gl, program.dataViewArrayBuffers[tile.url][name], program, name, 1, program.gl.FLOAT);
       };
       return true;
