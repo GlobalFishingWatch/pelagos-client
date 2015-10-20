@@ -14,7 +14,7 @@ void main() {
       vec2 rejected = coord - projected;
       float dist = length(rejected);
 
-      dist = max(0., 1. - dist*20.);
+      dist = max(0., 1. - dist*15.);
       gl_FragColor = vec4(baseColor[0], baseColor[1], baseColor[2], baseColor[3] * dist);
     } else {
     gl_FragColor = vec4(0., 0., 0., 0.);
