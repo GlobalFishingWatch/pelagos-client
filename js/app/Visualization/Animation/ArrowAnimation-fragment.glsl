@@ -17,7 +17,7 @@ void main() {
       dist = max(0., 1. - dist*15.);
       gl_FragColor = vec4(baseColor[0], baseColor[1], baseColor[2], baseColor[3] * dist);
     } else {
-    gl_FragColor = vec4(0., 0., 0., 0.);
+      gl_FragColor = vec4(0., 0., 0., 0.);
     }
   } else {
     gl_FragColor = vec4(0., 0., 0., 0.);
