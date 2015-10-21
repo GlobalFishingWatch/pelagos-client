@@ -187,7 +187,6 @@ function(Class,
       var self = this;
       var canvas = document.createElement('canvas');
       var gl = self.getGlContext(canvas);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.clearColor(1.0, 1.0, 1.0, 1.0);
       return gl;
     },
@@ -205,7 +204,6 @@ function(Class,
 
       try {
         self.gl = self.getGlContext(self.canvasLayer.canvas);
-        self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE);
 
         self.rowidxGl = [self.createRowidxGlContext(), self.createRowidxGlContext()];
       } catch (e) {
@@ -329,6 +327,7 @@ function(Class,
         if (seriesTilesets === true) {
           seriesTilesets = [
             {
+              "type": "VesselTrackAnimation",
               "args": {
                 "title": "Vessel Track",
                 "color": "grey",
@@ -339,22 +338,7 @@ function(Class,
                     "url": "%(query_url)s"
                   }
                 }
-              },
-              "type": "VesselTrackAnimation"
-            },
-            {
-              "args": {
-                "title": "Course & speed",
-                "color": "grey",
-                "visible": true,
-                "source": {
-                  "type": "TiledBinFormat",
-                  "args": {
-                    "url": "%(query_url)s"
-                  }
-                }
-              },
-              "type": "ArrowAnimation"
+              }
             }
           ];
         }

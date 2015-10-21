@@ -27,7 +27,8 @@ define(["require", "app/Class", "app/Visualization/Animation/Animation", "jQuery
       program: {
         context: "gl",
         vertex: "app/Visualization/Animation/ArrowAnimation-vertex.glsl",
-        fragment: "app/Visualization/Animation/ArrowAnimation-fragment.glsl"
+        fragment: "app/Visualization/Animation/ArrowAnimation-fragment.glsl",
+        blend: {src:"SRC_ALPHA", dst:"ONE_MINUS_SRC_ALPHA"}
       },
       rowidxProgram: {
         context: "rowidxGl",

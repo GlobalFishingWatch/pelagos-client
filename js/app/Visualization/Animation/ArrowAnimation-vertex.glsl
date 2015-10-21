@@ -16,8 +16,8 @@ void main() {
     gl_PointSize = 0.0;
     baseColor = vec4(0, 0, 0, 0);
   } else {
-    gl_PointSize = 20.0 * _length;
+    gl_PointSize = 30.0 * _length;
     baseColor = vec4(_red, _green, _blue, _alpha);
-    fragmentDirection = _direction;
+    fragmentDirection = (360.0 + 90.0 - _direction) / 360.0 * 2.0 * pi;
   }
 }

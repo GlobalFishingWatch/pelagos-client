@@ -495,7 +495,9 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
     getContent: function () {
       var self = this;
 
-      return self.getDoneTiles();
+      return self.getDoneTiles().filter(function (tile) {
+        return !tile.replacement;
+      });
     },
 
     printTree: function (args) {

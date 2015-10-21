@@ -22,6 +22,6 @@ void main() {
   } else {
     gl_PointSize = 20.0 * _length;
     baseColor = rowidxColor(animationidx, tileidx, rowidx);
-    fragmentDirection = _direction;
+    fragmentDirection = (360.0 + 90.0 - _direction) / 360.0 * 2.0 * pi;
   }
 }
