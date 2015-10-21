@@ -44,7 +44,9 @@ define(["app/Class"], function(Class, Events, Logging) {
         if (typeof(node) == "string") {
           return evalString(node);
         } else if (typeof(node) == "object") {
-          if (node.constructor.name == "Array") {
+          if (node === null) {
+            return node;
+          } else if (node.constructor.name == "Array") {
             return node.map(eval);
           } else if (node["%"] != undefined) {
             var res = data;
