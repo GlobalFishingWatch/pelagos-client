@@ -60,6 +60,15 @@ function(Class,
       ]
     },
 
+    /* Used to send map type to shader */
+    mapTypes: {
+      'undefined': 0,
+      "roadmap": 1,
+      "satellite": 2,
+      "hybrid": 3,
+      "terrain": 4
+    },
+
     initialize: function (visualization) {
       var self = this;
 

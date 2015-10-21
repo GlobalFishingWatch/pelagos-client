@@ -299,9 +299,6 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       time = time.getTime();
 
       self.data_view.selections.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
-      program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
-      program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
-      program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
 
       // pointSize range [5,20], 21 zoom levels
       var pointSize = Math.max(
@@ -311,8 +308,21 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
              self.manager.map.getCenter().lat(),
              self.manager.map.zoom)));
 
-      program.gl.uniform1f(program.uniforms.pointSize, pointSize*1.0);
+      var args = {
+        "zoom": self.manager.map.zoom,
+        "width": self.manager.canvasLayer.canvas.width,
+        "height": self.manager.canvasLayer.canvas.height,
+        "maptype": self.manager.mapTypes[self.manager.map.getMapTypeId()] || 0,
+        "pointSize": pointSize*1.0,
+      };
+
+      for (var key in args) {
+        var value = args[key];
+        if (program.uniforms[key] == undefined) continue;
+        program.gl.uniform1f(program.uniforms[key], value);
+      }
       program.gl.uniformMatrix4fv(program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
+
 
       Shader.setMappingUniforms(program, self.data_view);
     },
