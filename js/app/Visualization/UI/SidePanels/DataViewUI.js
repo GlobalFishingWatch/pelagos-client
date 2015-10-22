@@ -64,6 +64,12 @@ define([
         }
       );
       if (source.value != null) {
+        if (source.value < min) {
+          min = source.value;
+        }
+        if (source.value > max) {
+          max = source.value;
+        }
         var valuewidget = $("<input type='text' class='value'>");
         var sliderwidget = new HorizontalSlider({
           name: source.key,
