@@ -4,7 +4,10 @@ varying vec4 baseColor;
 varying float fragmentDirection;
 
 void main() {
-  vec2 coord = gl_PointCoord.xy - vec2(.5, .5);
+  // WebGL has 0.0 in upper left corner, we need it in the centre and positive x upwards
+  vec2 coord = gl_PointCoord.xy;
+  coord[1] = 1.0 - coord[1];
+  coord = coord - vec2(.5, .5);
 
   if (length(coord) <= .5) {
     vec2 arrow = vec2(cos(fragmentDirection), sin(fragmentDirection)); // Unit vector along direction
@@ -14,6 +17,7 @@ void main() {
       vec2 rejected = coord - projected;
       float dist = length(rejected);
 
+      // 15 is the slope of the translucency at the edges of the line (the antialiasing / line thickness).
       dist = max(0., 1. - dist*15.);
       gl_FragColor = vec4(baseColor[0], baseColor[1], baseColor[2], baseColor[3] * dist);
     } else {
