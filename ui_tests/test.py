@@ -43,6 +43,14 @@ class HomeTest(unittest.TestCase):
           return JSON.stringify({lat: latLng.lat(), lng: latLng.lng()});
         """ % point))
 
+    def setAnimation(self, name):
+        server.driver.execute_script("""
+          visualization.animations.animations.map(function (animation) {
+            animation.setVisible(animation.name == '%s');
+          });
+        """ % name)
+
+
     def test_coord_conversion(self):
         driver = server.driver
 
@@ -64,6 +72,8 @@ class HomeTest(unittest.TestCase):
             driver.set_window_size(1280, 776)
             driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
             time.sleep(5)
+
+            self.setAnimation("ClusterAnimation")
 
             self.load_helpers()
             point = self.latLng2Point({'lat':22.5, 'lng':0.0})
@@ -92,6 +102,8 @@ class HomeTest(unittest.TestCase):
             driver.set_window_size(1280, 776)
             driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
             time.sleep(5)
+
+            self.setAnimation("ClusterAnimation")
 
             self.load_helpers()
             point = self.latLng2Point({'lat':22.5, 'lng':0.0})
@@ -122,6 +134,8 @@ class HomeTest(unittest.TestCase):
             driver.set_window_size(1280, 776)
             driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
             time.sleep(5)
+
+            self.setAnimation("ClusterAnimation")
 
             def get_tiles():
                 tiles = driver.execute_script("return Object.keys(visualization.data.sources['TiledBinFormat|/ui_tests/data/testtiles/.'].source.tileCache)")

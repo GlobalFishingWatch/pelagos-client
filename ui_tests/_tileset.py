@@ -25,6 +25,8 @@ def generate_tile(outdir, bounds):
                 "latitude": idx * (bbox.latmax - bbox.latmin) / float(points) + bbox.latmin,
                 "datetime": idx * 1000. * 60. * 60. * 24. * 30. / float(points),
                 "weight": 20.0,
+                "sog":20,
+                "cog": 360.0 * round(8 * idx / float(points)) / 8.0,
                 "sigma": 0.0})
     last_series += 1
     for idx in xrange(0, points):
@@ -35,6 +37,8 @@ def generate_tile(outdir, bounds):
                 "latitude": bbox.latmin,
                 "datetime": idx * 1000. * 60. * 60. * 24. * 30. / float(points),
                 "weight": 20.0,
+                "sog":20,
+                "cog": 360.0 * round(8 * idx / float(points)) / 8.0,
                 "sigma": 0.0})
     last_series += 1
 
@@ -79,6 +83,12 @@ def generate_tileset(outdir, levels=None):
                                    "weight": {"max": 4711.,
                                               "type": "Float32",
                                               "min": 0.},
+                                   "sog": {"max": 30.,
+                                           "type": "Float32",
+                                           "min": 0.},
+                                   "cog": {"max": 360.,
+                                           "type": "Float32",
+                                           "min": 0.},
                                    "sigma": {"max": 4711.,
                                              "type": "Float32",
                                              "min": 0.}},
@@ -102,7 +112,7 @@ def generate_tileset(outdir, levels=None):
                         "animations": [
                             {
                                 "args": {
-                                    "title": title,
+                                    "title": 'Clusters',
                                     "visible": True,
                                     "source": {
                                         "type": "TiledBinFormat",
@@ -120,6 +130,27 @@ def generate_tileset(outdir, levels=None):
                                         }
                                     },
                                 "type": "ClusterAnimation"
+                                },
+                            {
+                                "args": {
+                                    "title": 'Arrows',
+                                    "visible": True,
+                                    "source": {
+                                        "type": "TiledBinFormat",
+                                        "args": {
+                                            "url": "."
+                                            }
+                                        },
+                                    "selections": {
+                                        "selected": {
+                                            "sortcols": ["seriesgroup"]
+                                                },
+                                        "hover": {
+                                            "sortcols": ["seriesgroup"]
+                                            }
+                                        }
+                                    },
+                                "type": "ArrowAnimation"
                                 }
                             ],
                         "options": {
