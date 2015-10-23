@@ -34,12 +34,21 @@ Tiles are loaded from under any of the provided fallback urls by adding the tile
 
 For information on the exact details of how bounds are calculated, look at [tileParamsForRegion()](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/BaseTiledFormat.js#L188).
 
-## Series lookup
-Whenever a user does a selection, a POST is made to
+## Queries
 
-    http://myproject.appspot.com/tile/mytileset/series
+A tileset can provide subset tilesets or information for queries. Queries are made up of one or more columnname=value pairs separated by commas, one for each sortcol (see the section on selections below for information about sortcols). If the main tileset resides under
 
-with selection information. It should return a JSON structure that will be rendered as an information table for the user.
+    http://myproject.appspot.com/tile/mytileset/
+
+the subset tileset will reside under 
+
+    http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../
+
+and detailed information about the selection in a json file under 
+
+    http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../info
+
+The info json file should contain a json structure with name: value pairs that will be rendered as an information table for the user.
 
 # The tileset header
 The tileset header specifies how to load tiles, and what columns to expect.
