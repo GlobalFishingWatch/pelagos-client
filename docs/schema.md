@@ -96,7 +96,10 @@ The tileset header specifies how to load tiles, and what columns to expect.
           "max": 1425168007168.0, 
           "hidden": true /* Don't show in animation editor interface */
         }
-      }, 
+      },
+      
+      /* Wether this tileset has subset tilesets for series / seriesgroupp queries */
+      seriesTilesets: true
     }
 
 # The workspace secification
