@@ -157,3 +157,34 @@ class HomeTest(unittest.TestCase):
             name = os.path.realpath("ui_tests.test.test_zoom.png")
             driver.get_screenshot_as_file(name)
             raise
+
+    def test_arrows(self):
+        driver = server.driver
+
+        driver.set_window_size(1280, 776)
+        driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
+        time.sleep(5)
+
+        server.driver.execute_script("""
+          visualization.state.setValue("time", new Date("1970-01-01 00:00:00"))
+          visualization.state.setValue("timeExtent", 31*24*60*60*1000)
+        """)
+
+        self.load_helpers()
+
+        for coord in [{"lat":0.7031073524364655,"lng":-43.59375},
+                      {"lat":0.5273363048114915,"lng":-38.583984375},
+                      {"lat":0.0878905905308115,"lng":-33.57421875},
+                      {"lat":-0.615222552406841,"lng":-28.212890625},
+                      {"lat":-0.7909904981540058,"lng":-22.060546875},
+                      {"lat":-0.615222552406841,"lng":-17.314453125},
+                      {"lat":-0.08789059053082421,"lng":-11.6015625},
+                      {"lat":0.4394488164139641,"lng":-6.240234375},
+                      {"lat":0.7909904981539804,"lng":-1.494140625}]:
+            
+            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
+
+            actions = ActionChains(driver)
+            actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
+            actions.perform()
+            print "XXXXX", driver.execute_script("return visualization.animations.animations[0].data_view.selections.selections.hover.data.seriesgroup[0]")
