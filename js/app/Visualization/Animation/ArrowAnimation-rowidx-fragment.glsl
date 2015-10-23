@@ -4,7 +4,10 @@ varying vec4 baseColor;
 varying float fragmentDirection;
 
 void main() {
-  vec2 coord = gl_PointCoord.xy - vec2(.5, .5);
+  // WebGL has 0.0 in upper left corner, we need it in the centre and positive x upwards
+  vec2 coord = gl_PointCoord.xy;
+  coord[1] = 1.0 - coord[1];
+  coord = coord - vec2(.5, .5);
 
   if (length(coord) <= .5) {
     vec2 arrow = vec2(cos(fragmentDirection), sin(fragmentDirection)); // Unit vector along direction
