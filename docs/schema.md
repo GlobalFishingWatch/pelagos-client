@@ -50,6 +50,10 @@ and detailed information about the selection in a json file under
 
 The info json file should contain a json structure with name: value pairs that will be rendered as an information table for the user.
 
+Special rendering for AIS vessel information will be done if the structure contains any of the fields vesselname, mmsi, imo or callsign.
+
+In all other cases, fields will be rendered as two columns, names and values. If a field named *name* is present, it will be used as a header, and if a field named *link* is present, the title will be made into a link pointing to this value (which must be an URL). Fields whose values are URLs will be rendered as links (and the value column left blank).
+
 # The tileset header
 The tileset header specifies how to load tiles, and what columns to expect.
 
