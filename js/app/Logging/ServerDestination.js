@@ -11,7 +11,7 @@ define(["app/Class", "app/Logging/Destination", "app/Json"], function(Class, Des
       var self = this;
 
       var request = new XMLHttpRequest();
-      request.open('POST', url, true);
+      request.open('POST', self.url, true);
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
           var err = undefined;
