@@ -228,6 +228,16 @@ function(Class,
     search: function(query, cb) {
       var self = this;
 
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.search",
+        {
+          query: query,
+          toString: function () {
+            return this.query;
+          }
+        }
+      );
+
       searchers = [];
       for (var key in self.animations) {
         var animation = self.animations[key];
