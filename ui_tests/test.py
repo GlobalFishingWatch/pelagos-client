@@ -200,3 +200,27 @@ class HomeTest(unittest.TestCase):
             
             point = self.latLng2Point(coord)
             self.assertEqual(self.getHover(point, "ArrowAnimation"), 102)
+
+    def test_vessel_info(self):
+        driver = server.driver
+        try:
+            driver.set_window_size(1280, 776)
+            driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
+            time.sleep(5)
+
+            self.setAnimation("ClusterAnimation")
+
+            self.load_helpers()
+            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
+
+            actions = ActionChains(driver)
+            actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
+            actions.click()
+            actions.perform()
+
+            server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="vesselname" and text()="---"]'))
+            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="136"]'))
+        except:
+            name = os.path.realpath("ui_tests.test.test_home.png")
+            driver.get_screenshot_as_file(name)
+            raise
