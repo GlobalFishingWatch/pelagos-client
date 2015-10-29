@@ -286,6 +286,24 @@ function(Class,
       }
 
       var rowidx = self.getRowidxAtPos(x, y);
+
+
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleMouse",
+        {
+          x: x,
+          y: y,
+          rowidx: rowidx,
+          toString: function () {
+            if (this.rowidx != undefined) {
+              return this.x.toString() + "," + this.y.toString() + ": " + JSON.stringify(this.rowidx);
+            } else {
+              return this.x.toString() + "," + this.y.toString() + ": NO OBJECT";
+            }
+          }
+        }
+      );
+
       if (rowidx) {
         var animation = self.animations[rowidx[0]];
         if (animation.data_view) {

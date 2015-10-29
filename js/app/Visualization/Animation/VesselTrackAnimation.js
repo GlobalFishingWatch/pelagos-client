@@ -20,10 +20,15 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
     ),
 
     programSpecs: {
-      programTrack: {
+      program: {
         context: "gl",
         vertex: "app/Visualization/Animation/VesselTrackAnimation-vertex.glsl",
         fragment: "app/Visualization/Animation/VesselTrackAnimation-fragment.glsl"
+      },
+      rowidxProgram: {
+        context: "rowidxGl",
+        vertex: "app/Visualization/Animation/VesselTrackAnimation-rowidx-vertex.glsl",
+        fragment: "app/Visualization/Animation/VesselTrackAnimation-rowidx-fragment.glsl"
       }
     },
 

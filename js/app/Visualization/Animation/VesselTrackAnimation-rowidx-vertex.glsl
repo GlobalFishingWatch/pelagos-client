@@ -7,7 +7,8 @@ uniform float zoom;
 
 uniform mat4 googleMercator2webglMatrix;
 
-varying vec4 baseColor;
+varying float fragment_rowidx;
+varying float alpha;
 
 void main() {
   mapper();
@@ -17,11 +18,12 @@ void main() {
   gl_Position = lonlat2screen(lonlat, googleMercator2webglMatrix);
 
   if (_filter > 0.0) {
-    baseColor = vec4(0, 0, 0, 0);
+    alpha = 0.0;
     gl_PointSize = 0.0;
   } else {
+    alpha = 1.0;
     gl_PointSize = 3.0;
-    baseColor = vec4(0.5, 0.5, 1.0, 1.0);
+    fragment_rowidx = rowidx;
   }
 }
 
