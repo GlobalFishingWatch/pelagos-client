@@ -69,6 +69,7 @@ class HomeTest(unittest.TestCase):
         actions = ActionChains(server.driver)
         actions.move_to_element_with_offset(server.driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
         actions.perform()
+        time.sleep(1)
         return server.driver.execute_script("return visualization.animations.animations.filter(function (animation) { return animation.name == '%s'; })[0].data_view.selections.selections.hover.data.seriesgroup[0]" % animation)
 
     def test_coord_conversion(self):
