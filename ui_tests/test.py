@@ -256,7 +256,8 @@ class HomeTest(unittest.TestCase):
 
             server.wait_for(lambda: self.animationHasLoaded("VesselTrackAnimation"))
 
-            # FIXME: Implement hover for tracks, and check hover here
+            self.assertEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup not present at x,y")
+
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
