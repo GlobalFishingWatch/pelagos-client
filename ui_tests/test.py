@@ -111,7 +111,7 @@ class HomeTest(unittest.TestCase):
             actions.perform()
 
             server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="imo"]'))
-            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="136"]'))
+            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="27200"]'))
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
@@ -134,9 +134,9 @@ class HomeTest(unittest.TestCase):
                 actions.drag_and_drop_by_offset(driver.find_element_by_xpath('//div[@class="main-timeline timeline"]//div[@class="window"]'), offset, 0)
                 actions.perform()
 
-            self.assertEqual(self.getHover(point, "ClusterAnimation"), 136, "Seriesgroup not present at x,y")
+            self.assertEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup not present at x,y")
             moveTimeslider(-272)
-            self.assertNotEqual(self.getHover(point, "ClusterAnimation"), 136, "Seriesgroup present at x,y when timeslider has moved")
+            self.assertNotEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup present at x,y when timeslider has moved")
 
         except:
             name = os.path.realpath("ui_tests.test.test_timeslider.png")
@@ -200,7 +200,7 @@ class HomeTest(unittest.TestCase):
                       {"lat":0.6152225524068282,"lng":-1.7578125}]:
             
             point = self.latLng2Point(coord)
-            self.assertEqual(self.getHover(point, "ArrowAnimation"), 102)
+            self.assertEqual(self.getHover(point, "ArrowAnimation"), 20400)
 
     def test_vessel_info(self):
         driver = server.driver
@@ -220,7 +220,7 @@ class HomeTest(unittest.TestCase):
             actions.perform()
 
             server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="vesselname" and text()="---"]'))
-            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="136"]'))
+            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="27200"]'))
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
