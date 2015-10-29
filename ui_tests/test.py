@@ -65,6 +65,17 @@ class HomeTest(unittest.TestCase):
           });
         """ % name)
 
+    def animationHasLoaded(self, name):
+        driver = server.driver
+        return driver.execute_script("""
+           return (
+             visualization.animations.animations.filter(
+               function (animation) {
+                 return animation.name == "%s";
+               }).length == 1
+             && !require("app/LoadingInfo").main.isLoading());
+         """ % name)
+
     def getHover(self, point, animation):
         actions = ActionChains(server.driver)
         actions.move_to_element_with_offset(server.driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
@@ -221,6 +232,31 @@ class HomeTest(unittest.TestCase):
 
             server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="vesselname" and text()="---"]'))
             self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="27200"]'))
+        except:
+            name = os.path.realpath("ui_tests.test.test_home.png")
+            driver.get_screenshot_as_file(name)
+            raise
+
+    def test_vessel_track(self):
+        driver = server.driver
+        try:
+            driver.set_window_size(1280, 776)
+            driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
+            time.sleep(5)
+
+            self.setAnimation("ClusterAnimation")
+
+            self.load_helpers()
+            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
+
+            actions = ActionChains(driver)
+            actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
+            actions.click()
+            actions.perform()
+
+            server.wait_for(lambda: self.animationHasLoaded("VesselTrackAnimation"))
+
+            # FIXME: Implement hover for tracks, and check hover here
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
