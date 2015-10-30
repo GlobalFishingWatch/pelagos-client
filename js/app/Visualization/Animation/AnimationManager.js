@@ -241,7 +241,7 @@ function(Class,
       searchers = [];
       for (var key in self.animations) {
         var animation = self.animations[key];
-        if (animation.search) {
+        if (animation.search && !animation.selectionAnimationFor) {
           searchers.push(animation.search.bind(animation));
         }
       }
@@ -286,6 +286,24 @@ function(Class,
       }
 
       var rowidx = self.getRowidxAtPos(x, y);
+
+
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleMouse",
+        {
+          x: x,
+          y: y,
+          rowidx: rowidx,
+          toString: function () {
+            if (this.rowidx != undefined) {
+              return this.x.toString() + "," + this.y.toString() + ": " + JSON.stringify(this.rowidx);
+            } else {
+              return this.x.toString() + "," + this.y.toString() + ": NO OBJECT";
+            }
+          }
+        }
+      );
+
       if (rowidx) {
         var animation = self.animations[rowidx[0]];
         if (animation.data_view) {
@@ -457,6 +475,18 @@ function(Class,
         info[key] = selectionData[key][0];
       }
  
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleInfo",
+        {
+          layer: animation.title,
+          category: selectionEvent.category,
+          data: data,
+          toString: function () {
+            return this.layer + "/" + this.category + ": " + this.data.toString();
+          }
+        }
+      );
+
       if (type == 'info') {
         if (err) data = err;
         if (!data) return;
@@ -504,6 +534,18 @@ function(Class,
       var type = selectionEvent.category;
 
       if (type != 'selected' && type != 'info') return;
+
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleSelectionUpdate",
+        {
+          layer: animation.title,
+          category: type,
+          query: animation.data_view.source.getSelectionQuery(dataView.selections.selections[type]),
+          toString: function () {
+            return this.layer + "/" + this.category + ": " + this.query;
+          }
+        }
+      );
 
       if (type == 'selected') {
         self.events.triggerEvent('info-loading', {});
