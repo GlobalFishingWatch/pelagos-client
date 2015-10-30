@@ -294,11 +294,13 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       var self = this;
       var time = self.manager.visualization.state.getValue("time");
       var timeExtent = self.manager.visualization.state.getValue("timeExtent");
+      var timeFocus = self.manager.visualization.state.getValue("timeFocus");
 
       if (time == undefined) return;
       time = time.getTime();
 
       self.data_view.selections.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
+      program.gl.uniform1f(program.uniforms.timefocus, timeFocus);
       program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
       program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
       program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
