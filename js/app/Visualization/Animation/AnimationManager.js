@@ -241,7 +241,7 @@ function(Class,
       searchers = [];
       for (var key in self.animations) {
         var animation = self.animations[key];
-        if (animation.search) {
+        if (animation.search && !animation.selectionAnimationFor) {
           searchers.push(animation.search.bind(animation));
         }
       }
