@@ -475,6 +475,18 @@ function(Class,
         info[key] = selectionData[key][0];
       }
  
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleInfo",
+        {
+          layer: animation.title,
+          category: selectionEvent.category,
+          data: data,
+          toString: function () {
+            return this.layer + "/" + this.category + ": " + this.data.toString();
+          }
+        }
+      );
+
       if (type == 'info') {
         if (err) data = err;
         if (!data) return;
@@ -522,6 +534,18 @@ function(Class,
       var type = selectionEvent.category;
 
       if (type != 'selected' && type != 'info') return;
+
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleSelectionUpdate",
+        {
+          layer: animation.title,
+          category: type,
+          query: animation.data_view.source.getSelectionQuery(dataView.selections.selections[type]),
+          toString: function () {
+            return this.layer + "/" + this.category + ": " + this.query;
+          }
+        }
+      );
 
       if (type == 'selected') {
         self.events.triggerEvent('info-loading', {});
