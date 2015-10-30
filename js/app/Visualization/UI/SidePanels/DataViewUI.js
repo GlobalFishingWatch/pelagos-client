@@ -204,7 +204,7 @@ define([
     generateUI: function () {
       var self = this;
 
-      var ui = new ContentPane({class: 'DataViewUI'});
+      var ui = new ContentPane({"class": 'DataViewUI'});
 
       Object.items(self.dataview.selections.selections).map(function (item) {
         self.generateSelectionUI(ui, item.key, item.value);
