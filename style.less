@@ -1,8 +1,50 @@
+html {
+  font-size: 10px;
+  font-family: sans-serif;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+body {
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #333;
+  background-color: #fff;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
 }
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+:before, :after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+a {
+  color: #6D6E70;
+  text-decoration: none;
+}
+
+label {
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+
 
 #test, #visualization {
   position: absolute;
@@ -167,7 +209,17 @@ body {
   }
 }
 
-
+.DataViewUI .value {
+  width: 3em;
+  float: right;
+  border: 1px solid #ffffff;
+  &:hover {
+    border: 1px solid #eeeeee;
+  }
+  &.null-value {
+    width: auto;
+  }
+}
 
 
 
@@ -246,28 +298,10 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    #gfw_logos {
+    #sponsor_logos {
       padding-top: 2.1296%; /* 45px / 2160px */
       padding-left: 10.5263%;/* 58px / 551px */
       text-align: left;
-
-      img.st {
-        padding-right: 7%;
-        vertical-align: bottom;
-        width: 28%;
-      }
-
-      img.oc {
-        padding-right: 7%;
-        vertical-align: bottom;
-        width: 32%;
-      }
-
-      img.g {
-        width: 26%;
-        vertical-align: bottom;
-        padding-right: 0; 
-      }
     }
 
     #layers, #vessel_identifiers {
@@ -282,6 +316,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       font-weight: 400;
     }
 
+    #layers .download, #vessel_identifiers .download {
+      float: right;
+      margin-top: 0.8em;
+      margin-right: 0.5em;
+    }
+
     #divide {
       border-bottom: solid 1px #dfe0e1;
       margin: 3rem 2.5% 0 2.5%;
@@ -290,7 +330,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     #activate_search {
       float: right;
       margin-top: 2em;
-      margin-right: 2.4em;
+      margin-right: 1em;
     }
 
     /* Vessel Info styles */
@@ -343,6 +383,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       .switch {
         width: 18%;
         font-size: 90%;
+        cursor: pointer;
       }
 
       .layer-label {
@@ -359,10 +400,9 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       visibility: hidden;
 
 
-      + label {
+      + .switch-line {
         display: block;
         position: relative;
-        cursor: pointer;
         outline: none;
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -422,7 +462,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
 
       &:checked {
-        + label {
+        + .switch-line {
           background-color: transparent;
           &:after {
             margin-left: 15px;
@@ -430,8 +470,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         }
       }
 
-      + label,
-      &:checked + label {
+      + .switch-line,
+      &:checked + .switch-line {
         background-repeat: repeat-x;
         background-position: center center;
       }
@@ -441,85 +481,85 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     /* colors */
     /* heatmap */
     input.cmn-toggle-orange {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #ef4323; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #ef4323; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #ef4323;
       }
     }
     /* oceana */
     input.cmn-toggle-purple {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #692897; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #692897; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #692897;
       }
     }
     /* eez */
     input.cmn-toggle-blue {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #4666af; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #4666af; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #4666af;
       }
     }
     /* bathymetry */
     input.cmn-toggle-blue2 {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #9daed4; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #9daed4; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #9daed4;
       }
     }
     /* mpa */
     input.cmn-toggle-green {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #4cae4e;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #4cae4e; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #4cae4e;
       }
     }
     /* world heritage */
     input.cmn-toggle-green2 {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #0e5c39;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #0e5c39; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #0e5c39;
       }
     }
     /* vessel tracks */
     input.cmn-toggle-grey {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #757575;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #757575; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #757575;
       }
     }

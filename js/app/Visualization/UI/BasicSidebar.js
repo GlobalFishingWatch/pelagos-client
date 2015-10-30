@@ -3,10 +3,21 @@ define([
   "app/Logging",
   "app/CountryCodes",
   "jQuery",
-  "app/Visualization/KeyModifiers"
-], function(Class, Logging, CountryCodes, $, KeyModifiers){
+  "dijit/form/HorizontalSlider",
+  "app/Visualization/KeyModifiers",
+  "app/ObjectTemplate"
+], function(
+  Class ,
+  Logging,
+  CountryCodes,
+  $,
+  HorizontalSlider,
+  KeyModifiers,
+  ObjectTemplate
+) {
   return Class({
     name: "BasicSidebar",
+
     initialize: function (visualization) {
       var self = this;
 
@@ -15,13 +26,14 @@ define([
 
       self.idCounter = 0;
 
-      $('body').append('<img class="logo" src="' + app.dirs.img + '/gfw/logo-white.png">');
-      self.node = $('' +        
+      self.node = $(new ObjectTemplate('' +        
         '<div id="w" class="expanded">' +
-        '  <div id="expand-button"><img src="' + app.dirs.img + '/gfw/gfw_open.png"></div>' +
+        '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
         '  <div class="border">' +
         '    <div id="content">' +
-        '      <div id="collapse-button"><img src="' + app.dirs.img + '/gfw/gfw_close.png"></div>' +
+        '      <a id="activate_help" href="javascript:undefined" style="float: right; font-size: 15pt"><i class="fa fa-keyboard-o"></i></a>' +
+        '' +
+        '      <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
         '' +
         '      <div id="layers">' +
         '        <h2>Layers</h2>' +
@@ -35,16 +47,20 @@ define([
         '' +
         '      <div id="codeoutput"></div>' +
         '      <div id="divide"></div>' +
-        '      <div id="gfw_logos"><img class="st" src="' + app.dirs.img + '/gfw/st_logo.png"><img class="oc" src="' + app.dirs.img + '/gfw/oceana_logo.png"><img class="g" src="' + app.dirs.img + '/gfw/google_logo.png"></div>' +
+        '      <div id="sponsor_logos"></div>' +
         '    </div>' +
         '  </div>' +
-        '</div>');
+        '</div>').eval(app.dirs));
       $('body').append(self.node);
 
       self.update("none", {});
 
       self.node.find("#activate_search").click(function () {
         self.visualization.ui.search.displaySearchDialog();
+      });
+
+      self.node.find("#activate_help").click(function () {
+        self.visualization.ui.help.displayHelpDialog();
       });
 
       self.node.find("#collapse-button img").click(function () {
@@ -80,7 +96,7 @@ define([
       var self = this;
       self.node.find("#vessel_identifiers").html(
         '      <h2>Vessel Information</h2>' +
-        '      <div class="loading-vessel-info" style=""><img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg"></div>'
+        '      <div class="loading-vessel-info" style=""><img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg"></div>'
       );
     },
 
@@ -88,10 +104,10 @@ define([
       var self = this;
 
       var data = event.data;
-        if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
+      if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
         self.node.find("#vessel_identifiers").html(
-          '      <h2>Vessel Information</h2>' +
           '      <span class="download"></span>' +
+          '      <h2>Vessel Information</h2>' +
           '      <table class="vessel_id">' +
           '        <tbody>' +
           '          <tr>' +
@@ -181,10 +197,10 @@ define([
           if (data.link) {
             var link = $("<a target='_new'>");
             link.attr({href: data.link});
-            self.node.find("h2").wrapInner(link);
+            self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
 
-          var link = $('<a target="_new">Download as KML</a>');
+          var link = $('<a target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
 
           link.attr({
               href: (event.layerInstance.data_view.source.getUrl('export', -1) +
@@ -199,8 +215,8 @@ define([
       } else {
         self.node.find("#vessel_identifiers").html(
           '<h2>' + event.layer + '</h2>' +
-          event.toString());
-        self.node.find("table").attr({"class": "vessel_id"});
+          data.toString());
+        self.node.find("#vessel_identifiers table").attr({"class": "vessel_id"});
       }
 
       self.node.find("#vessel_identifiers").css({color: color});
@@ -212,10 +228,10 @@ define([
 
       var node = $('' +
         '<div class="layer-row">' +
-        '  <div class="switch">' +
+        '  <label class="switch">' +
         '    <input class="cmn-toggle" type="checkbox">' +
-        '    <label></label>' +
-        '  </div>' +
+        '    <div class="switch-line"></div>' +
+        '  </label>' +
         '  <div class="layer-label"></div>' +
         '</div>');
 
@@ -242,33 +258,63 @@ define([
       self.node.find(".layer-list").append(node);
 
       if (animation.constructor.prototype.name == "ClusterAnimation") {
-        var slider = $("<div class=\"intensity-slider\">");
-        self.node.find(".layer-list").append(slider);
+        var maxv = Math.log(1+0.2)/Math.log(4);
+        var minv = Math.log(1+0)/Math.log(4);
 
         // This is a hack to set the current value within the max value of our exponential scale below...
-        animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, 0.2) - 1;
+        animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, maxv) - 1;
         animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
 
-        function refreshSwatch() {
-          var value = slider.slider("value");
+        var update = undefined;
+        var refreshSwatch = function () {
+          if (update != undefined) return;
+          update = setTimeout(function () {
+            var value = slider.value;
 
-          animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, value) - 1;
-          animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
+            animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, value) - 1;
+            animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
+            update = undefined;
+          }, 100);
         }
-        slider.slider({
-          orientation: "horizontal",
-          min: Math.log(1+0)/Math.log(4),
-          max: Math.log(1+0.2)/Math.log(4),
-          step: 0.01,
-          value: Math.log(animation.data_view.header.colsByName.weight.source.weight + 1)/Math.log(4),
-          slide: refreshSwatch
-        });
+
+        var slider = new HorizontalSlider({
+            value: Math.log(animation.data_view.header.colsByName.weight.source.weight + 1)/Math.log(4),
+            minimum: minv,
+            maximum: maxv,
+            discreteValues: 100,
+            onChange: refreshSwatch,
+            intermediateChanges: true
+        }, "mySlider");
+        slider.placeAt(self.node.find(".layer-list")[0]);
+        slider.startup();
       }
 
     },
 
     removeHandler: function (event) {
       event.animation.basicSidebarNode.remove();
+    },
+
+
+    toJSON: function () {
+      var self = this;
+      return self.config;
+    },
+
+    load: function (config, cb) {
+      var self = this;
+      self.config = config;
+      var data = new ObjectTemplate(self.config).eval(app.dirs);
+
+      self.node.find("#sponsor_logos").html("");
+      data.sponsorLogos.map(function (spec) {
+        var logo = $("<img>");
+        logo.attr(spec.attr);
+        logo.css(spec.css);
+        self.node.find("#sponsor_logos").append(logo);
+      });
+
+      cb && cb();
     }
   });
 });

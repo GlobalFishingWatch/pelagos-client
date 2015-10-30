@@ -64,7 +64,14 @@ define([
         }
       );
       if (source.value != null) {
-        sourcewidget.addChild(new HorizontalSlider({
+        if (source.value < min) {
+          min = source.value;
+        }
+        if (source.value > max) {
+          max = source.value;
+        }
+        var valuewidget = $("<input type='text' class='value'>");
+        var sliderwidget = new HorizontalSlider({
           name: source.key,
           "class": "pull-right",
           value: source.value,
@@ -84,20 +91,27 @@ define([
                 source: source.key
               }
             );
-            $(sourcewidget.domNode).find('.value').html(value.toPrecision(3));
+            valuewidget.val(value.toPrecision(3));
             spec.source[source.key] = value;
             self.dataview.changeCol(spec);
           }
-        }));
-      }
-      $(sourcewidget.domNode).append("<span class='value' style='float: right;'>");
-      var label = "";
-      if (source.value === null) {
-        label = "Automatic";
+        });
+        sourcewidget.addChild(sliderwidget);
+        $(sourcewidget.domNode).append(valuewidget);
+        valuewidget.change(function () {
+          var value = parseFloat(valuewidget.val());
+          if (value < sliderwidget.get("minimum")) {
+            sliderwidget.set("minimum", value);
+          }
+          if (value > sliderwidget.get("maximum")) {
+            sliderwidget.set("maximum", value);
+          }
+          sliderwidget.set("value", value);
+        });
+        valuewidget.val(source.value.toPrecision(3));
       } else {
-        label = source.value.toPrecision(3);
+        $(sourcewidget.domNode).append($("<span class='value null-value'>Automatic</span>"));
       }
-      $(sourcewidget.domNode).find('.value').html(label);
       colwidget.addChild(sourcewidget);
     },
 
@@ -174,15 +188,15 @@ define([
               value: value
             }
           );
-          $(uniformwidget.domNode).find('.value').html(value.toPrecision(3));
+          $(uniformwidget.domNode).find('.value').val(value.toPrecision(3));
           spec.value = value;
           self.dataview.changeUniform(spec);
         }
       }));
-      $(uniformwidget.domNode).append("<span class='value' style='float: right;'>");
+      $(uniformwidget.domNode).append("<input type='text' class='value'>");
       var label = "";
       label = spec.value.toPrecision(3);
-      $(uniformwidget.domNode).find('.value').html(label);
+      $(uniformwidget.domNode).find('.value').val(label);
 
       ui.addChild(uniformwidget);
     },
@@ -190,7 +204,7 @@ define([
     generateUI: function () {
       var self = this;
 
-      var ui = new ContentPane({});
+      var ui = new ContentPane({class: 'DataViewUI'});
 
       Object.items(self.dataview.selections.selections).map(function (item) {
         self.generateSelectionUI(ui, item.key, item.value);

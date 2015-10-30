@@ -19,11 +19,22 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
   Shader.programBindArray = function(gl, glbuffer, program, attrname, size, type, stride, offset) {
     if (program.attributes[attrname] == undefined) {
       console.warn(["Attempted to set an non-existent attribute " + attrname + ".", program]);
+    } else if (glbuffer == undefined) {
+      console.warn(["Attempted to set an attribute " + attrname + " to undefined.", program]);
+      gl.disableVertexAttribArray(program.attributes[attrname]);
     } else {
+      program.boundAttributes.push(program.attributes[attrname]);
       gl.bindBuffer(gl.ARRAY_BUFFER, glbuffer);
       gl.enableVertexAttribArray(program.attributes[attrname]);
       gl.vertexAttribPointer(program.attributes[attrname], size, type, false, stride || 0, offset || 0);
     }
+  };
+
+  Shader.disableArrays = function(program) {
+    program.boundAttributes.map(function (idx) {
+      program.gl.disableVertexAttribArray(idx);
+    });
+    program.boundAttributes = [];
   };
 
   Shader.preprocess = function(src, context, cb) {
@@ -61,7 +72,12 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
     async.series([
       function (cb) { $.get(vertexShaderUrl, function (data) { Shader.preprocess(data, context, function (data) { vertexSrc = data; cb(); }); }, "text"); },
       function (cb) { $.get(fragmentShaderUrl, function (data) { Shader.preprocess(data, context, function (data) { fragmentSrc = data; cb(); }); }, "text"); },
-        function (dummy) { cb(Shader.createShaderProgramFromSource(gl, vertexSrc, fragmentSrc, context.attr0)); }
+      function (dummy) {
+        var program = Shader.createShaderProgramFromSource(gl, vertexSrc, fragmentSrc, context.attr0);
+        program.vertexShaderUrl = vertexShaderUrl;
+        program.fragmentShaderUrl = fragmentShaderUrl;
+        cb(program);
+      }
     ]);
   }
 
@@ -118,6 +134,12 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
 
     gl.linkProgram(program);
 
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      var err = gl.getProgramInfoLog(program);
+      console.error(err);
+      throw err;
+    }
+
     gl.useProgram(program);
 
     // Collect attribute locations to make binding easier in the code using this program
@@ -132,6 +154,8 @@ define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async,
       var name = gl.getActiveUniform(program, i).name;
       program.uniforms[name] = gl.getUniformLocation(program, name);
     }
+
+    program.boundAttributes = [];
 
     return program;
   };

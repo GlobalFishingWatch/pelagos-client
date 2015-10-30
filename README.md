@@ -27,41 +27,74 @@ Features:
 
 # Development environment
 
-## Prerequisites
+## Setup
 
-The environment is virtualized with vagrant, so you will need:
+The site itself does not require any specific server-side components for
+hosting; all the application is packaged as a static site and all you need to
+do to deploy it is to drop some files on an apache, nginx or any static file
+server.
+
+You do need however some development environment prerequisites to build those
+static files by downloading all library dependencies, concatenate and minify
+scripts, etc. You also need the development environment up and running if you
+want to generate test datasets, run the unit or integration tests, etc.
+
+You have 2 options to setup your development environment. You can either use
+the preferred virtualized development environment, which requires you to setup
+vagrant, or you can install all requirements in your machine.
+
+### Quick virtualized environment
+
+You can build the application assets, run all the tests and start a development
+server inside a Vagrant virtualized machine. This is the preferred way of
+setting up your development environment, as no dependencies will be installed
+in your machine, and no configuration is needed. For that will need:
 
 1. [Vagrant](http://www.vagrantup.com/) to manage the virtualized development
    environment. This requires installing
-[VirtualBox](https://www.virtualbox.org/).
+[VirtualBox](https://www.virtualbox.org/) as well. If you are using ubuntu,
+don't install it from the standard Debian repositories, as it is an outdated
+version incompatible with our vagrantfile. Use the [official
+packages](https://www.vagrantup.com/downloads.html) instead.
 
-## Quick environment setup
+Once these are installed you can set up and start the virtual machine:
 
 1. Start the virtualized environment with `vagrant up`. This **will** take a
    while, as the entire development environment is downloaded and configured.
 
-1. SSH into the virtual machine with `vagrant ssh`, jump to the project folder
-   at `/vagrant`. You can run any of the project tasks which are run through
-   make in this directory.
+1. SSH into the virtual machine with `vagrant ssh` and jump to the project
+   folder with `cd /vagrant`.
+
+Any of the tasks described here, such as `make dev-sever` or `make all` are
+meant to be run inside the virtual machine at the `/vagrant` directory.
+
+### Non-virtualized setup (on ubuntu)
+
+If you want to instead run everything on your local machine, you will need to
+install a couple of libraries and other prerequisites.  You can do that by
+running `sudo make prerequisites`. Take a look at the makefile in this project
+to see exactly what is installed and how before running this task though.
 
 ## Running the application
 
 You can start a local development server for the application with `make
-dev-server`. The server running inside the virtualized environment is exposed
-through ssh tunneling as port 8080 in your host machine, so you can access the
+dev-server`. Remember to run the command inside the ssh session if you are
+using the virtualized environment. Once the server is up, You can access the
 application through
-`http://localhost:8080/index.html?workspace=/path/to/workspace`.
+`http://localhost:8000/index.html?workspace=/path/to/workspace`.
 
-Where `/path/to/workspace` is an URL to a JSON file containing a workspace
+`/path/to/workspace` is an URL to a JSON file containing a workspace
 definition. For more information about this check out [the workspace
 schema](https://github.com/SkyTruth/pelagos-client/blob/master/docs/schema.md)
 
-Example data is available in the data branch of this repo. A test workspace is
-also generated automatically by the `make dev-server` task.
+Example data is available in the `data` branch of this repo. A test workspace
+is also generated automatically by the `make dev-server` task, check out the
+output from the task, as it prints the exact url where this test workspace is
+available.
 
-## Data generation
-
-Data can be generated using the Python library https://github.com/SkyTruth/vectortile
+Data can also be generated using the
+[vectortile](https://github.com/SkyTruth/vectortile) Python library if you want
+to build your own custom workspace.
 
 # Build system
 
@@ -76,13 +109,6 @@ This will do the following:
   concatenate and optimize everything using [the dojo build
   system](https://dojotoolkit.org/documentation/tutorials/1.10/build/index.html).
   The output of all this will be at the js-build direcotry.
-
-## Running a local dev environment
-
-You can start a quick http server to host your app with `make dev-server`. This
-will start a server on your local port 8000, and generate some test workspace.
-Check out the output from the command, it provides a link to the workspace
-itself.
 
 ## Testing
 

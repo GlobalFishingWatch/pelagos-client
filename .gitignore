@@ -23,3 +23,5 @@ js/libs
 *.pyc
 ui_tests/data
 travis-data
+node_modules
+config.json

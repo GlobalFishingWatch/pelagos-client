@@ -46,6 +46,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
     ],
 
     stepLengths: [
+      new Interval({name: 'millisecond', milliseconds: 1}),
       new Interval({name: 'second', seconds: 1}),
 /*
       new Interval({name: 'secfiver', seconds: 5}),

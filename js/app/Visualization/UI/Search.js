@@ -1,8 +1,9 @@
 define([
   "app/Class",
+  "dijit/Dialog",
   "jQuery",
   "app/Visualization/KeyModifiers"
-], function(Class, $, KeyModifiers){
+], function(Class, Dialog, $, KeyModifiers){
   return Class({
     name: "Search",
     initialize: function (visualization) {
@@ -19,48 +20,41 @@ define([
         }
       });
 
-      self.dialog = $('<div class="modal fade" id="search" tabindex="-1" role="dialog" aria-labelledby="searchLabel" aria-hidden="true">' +
-                     '  <div class="modal-dialog">' +
-                     '    <div class="modal-content">' +
-                     '      <div class="modal-header bg-primary text-primary">' +
-                     '        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>' +
-                     '        <h4 class="modal-title" id="searchLabel">Search</h4>' +
-                     '      </div>' +
-                     '      <div class="modal-body alert">' +
-                     '        <input type="text" class="form-control query" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
-                     '        <div class="search-loading" style="float: right; margin-top: -2em; margin-right: 0.5em; z-index: 0; display: block; display: none;">' +
-                     '          <img style="width: 20px;" src="/client/img/gfw/spinner.min.svg">' +
-                     '        </div>' +
-                     '        <div class="results" style="max-height: 200px; overflow: auto;"></div>' +
-                     '      </div>' +
-                     '      <div class="modal-footer">' +
-                     '        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
-                     '        <button type="button" class="btn btn-success search">Search</button>' +
-                     '      </div>' +
-                     '    </div>' +
-                     '  </div>' +
-                     '</div>');
-      $('body').append(self.dialog);
-      self.dialog.modal({show:false});
-      self.dialog.on('hidden.bs.modal', function (e) {
-        self.dialog.modal('hide');
+      self.dialog = new Dialog({
+        style: "width: 50%;",
+        title: "Search",
+        content: '' +
+          '<input type="text" class="query" style="width: 100%;" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
+          '<div class="search-loading" style="margin-top: -1.7em; margin-right: 0.5em; padding-left: 100%; margin-left: -1.7em; display: block; display: none;">' +
+          '  <img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg">' +
+          '</div>' +
+          '<div class="results" style="max-height: 300px; overflow: auto;"></div>',
+        actionBarTemplate: '' +
+          '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+          '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+          '  <button data-dojo-type="dijit/form/Button" type="button" data-dojo-attach-point="searchButton">Search</button>' +
+          '</div>'
       });
-      self.dialog.find(".search").click(function () {
-        self.performSearch(self.dialog.find(".query").val());
+
+      $(self.dialog.closeButton).on('click', function () {
+        self.dialog.hide();
+      });
+      $(self.dialog.searchButton).on('click', function () {
+        self.performSearch($(self.dialog.containerNode).find(".query").val());
       });
     },
 
     displaySearchDialog: function () {
       var self = this;
-      self.dialog.find('.results').html('');
-      self.dialog.modal('show');
+      $(self.dialog.containerNode).find('.results').html('');
+      self.dialog.show();
     },
 
     performSearch: function (query) {
       var self = this;
-      self.dialog.modal('show');
+      self.dialog.show();
 
-      self.dialog.find('.search-loading').show();
+      $(self.dialog.containerNode).find('.search-loading').show();
 
       self.animationManager.search(
         query,
@@ -70,11 +64,11 @@ define([
 
     displaySearchResults: function (err, res) {
       var self = this;
-      self.dialog.modal('show');
-      self.dialog.find('.search-loading').hide();
+      self.dialog.show();
+      $(self.dialog.containerNode).find('.search-loading').hide();
       if (err) {
       } else {
-        self.dialog.find('.results').html('<table class="table result-table">' +
+        $(self.dialog.containerNode).find('.results').html('<table class="table result-table">' +
                                           '  <tr>' +
                                           '    <th>Name</th>' +
                                           '    <th>IMO</th>' +
@@ -91,10 +85,10 @@ define([
           row.find('a').attr({href: "javascript: void(0);"});
           row.find('a').click(function () {
             info.animation.data_view.selections.selections.selected.addDataRange(info, info, true);
-            self.dialog.modal('hide');
+            self.dialog.hide();
           });
 
-          self.dialog.find(".result-table").append(row);
+          $(self.dialog.containerNode).find(".result-table").append(row);
         });
       }
     }

@@ -153,22 +153,33 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       }
       res = [];
       cols.map(function (col) {
+        if (selection.data[col][0] == undefined) return;
         res.push(encodeURIComponent(col) + "=" + encodeURIComponent(selection.data[col][0].toString()));
       });
       return res.join(',');
+    },
+
+    getSelectionUrl: function(selection, fallbackLevel) {
+      var self = this;
+      /* FIXME: self.header.infoUsesSelection is a workaround for
+         current info database that doesn't contain seriesgroup
+         values. This should be removed in the future. */
+
+      var baseUrl = self.getUrl("selection-info", fallbackLevel);
+      if (baseUrl.indexOf("/sub/") != -1) {
+          baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
+      } else {
+          baseUrl = baseUrl + "/sub/";
+      }
+
+      return baseUrl + self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series'])
     },
 
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
-        /* FIXME: self.header.infoUsesSelection is a workaround for
-           current info database that doesn't contain seriesgroup
-           values. This should be removed in the future. */
-        var url = (self.getUrl("selection-info", fallbackLevel) +
-                   "/sub/" +
-                   self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']) +
-                   "/info");
+        var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
@@ -297,8 +308,8 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       var tilewidth = bounds.getWidth() * 2;
       var tileheight = bounds.getHeight() * 2;
 
-      var tileleft = tilewidth * Math.floor(bounds.left / tilewidth);
-      var tilebottom = tileheight * Math.floor(bounds.bottom / tileheight);
+      var tileleft = tilewidth * Math.floor((bounds.left - self.world.left) / tilewidth) + self.world.left;
+      var tilebottom = tileheight * Math.floor((bounds.bottom - self.world.bottom) / tileheight) + self.world.bottom;
 
       var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
 
@@ -484,7 +495,9 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
     getContent: function () {
       var self = this;
 
-      return self.getDoneTiles();
+      return self.getDoneTiles().filter(function (tile) {
+        return !tile.replacement;
+      });
     },
 
     printTree: function (args) {
