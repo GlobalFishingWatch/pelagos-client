@@ -66,6 +66,7 @@
       "$(lib)s/less/dist/less.min.js",
       "$(script)s/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
       "$(lib)s/stats.js/build/stats.min.js",
+      "$(lib)s/cartodb.js/cartodb.js",
       "$(lib)s/loggly-jslogger/src/loggly.tracker.min.js",
       "$(script)s/dojoconfig.js",
       "$(lib)s/dojo/dojo.js"
@@ -81,6 +82,7 @@
     {name: 'stacktrace', location: '$(shim)s/stacktrace'},
     {name: 'LogglyTracker', location: '$(shim)s/LogglyTracker'},
     {name: 'lodash', location: '$(shim)s/lodash'},
+    {name: "cartodb", location: "$(shim)s/cartodb"},
     {name: 'app', location:'$(app)s', main: 'main'}
   ]);
 

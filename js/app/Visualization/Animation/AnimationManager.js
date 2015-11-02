@@ -20,6 +20,7 @@ define([
   "app/Visualization/Animation/DebugAnimation",
   "app/Visualization/Animation/ClusterAnimation",
   "app/Visualization/Animation/MapsEngineAnimation",
+  "app/Visualization/Animation/CartoDBAnimation",
   "app/Visualization/Animation/VesselTrackAnimation",
   "app/Visualization/Animation/ArrowAnimation"],
 function(Class,
