@@ -49,6 +49,7 @@ The following steps will get you up and running with a test tileset as quickly a
 
     vagrant up
     vagrant ssh
+    # The following inside the vagrant ssh shell
     cd /vagrant
     make dev-server
 
