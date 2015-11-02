@@ -43,7 +43,20 @@ You have 2 options to setup your development environment. You can either use
 the preferred virtualized development environment, which requires you to setup
 vagrant, or you can install all requirements in your machine.
 
-### Quick virtualized environment
+### Quick virtualized test server
+
+The following steps will get you up and running with a test tileset as quickly as possible:
+
+    vagrant up
+    vagrant ssh
+    cd /vagrant
+    make dev-server
+
+Now got to http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace in your webserver.
+
+The workspace and tileset files you're viewing are located in /ui_tests/data/testtiles/. If you have another dataset you can place it alongside this one and adjust your URL accordingly.
+
+### Virtualized environment
 
 You can build the application assets, run all the tests and start a development
 server inside a Vagrant virtualized machine. This is the preferred way of
@@ -73,7 +86,7 @@ meant to be run inside the virtual machine at the `/vagrant` directory.
 If you want to instead run everything on your local machine, you will need to
 install a couple of libraries and other prerequisites.  You can do that by
 running `sudo make prerequisites`. Take a look at the makefile in this project
-to see exactly what is installed and how before running this task though.
+to see exactly what is installed and how before running this task as it will install software packages globally on your machine.
 
 ## Running the application
 
@@ -98,14 +111,18 @@ to build your own custom workspace.
 
 # Build system
 
+## Downloading dependencies
+
+You can download external libraries that the visualization depends on into `js/libs` using the `make dependencies` task.
+
 ## Build
 
-You can build, concatenate and minify all assets through the `make all` task.
+You don't need to build (minify) the application to run it, but it speeds it up greatly by minimizing download time. You can download all dependencies and do this through the `make all` task.
 This will do the following:
 
-* Download and install external libraries at `js/libs`.
+* Download and install external libraries as per `make dependencies`.
 
-* Compile all visualization and data loading code at `js/app`, minify,
+* Compile all visualization and data loading code in the `js` directory. It will minify,
   concatenate and optimize everything using [the dojo build
   system](https://dojotoolkit.org/documentation/tutorials/1.10/build/index.html).
   The output of all this will be at the js-build direcotry.
@@ -121,5 +138,5 @@ The project contains both automated unit and integration tests.
 * To develop new tests, run `make test-server`. This starts a server
   like `make dev-server` does, opens a browser connected to a selenium webdriver
 and a python command line with a selenium driver in the variable "driver". This
-command is not meant to be run inside the vm, as it needs to communicate with
+command does not work in a virualized vagrant environment, as it needs to communicate with
 your local chrome instance.
