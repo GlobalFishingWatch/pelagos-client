@@ -70,8 +70,8 @@ unit-tests: dependencies
 integration-tests: dependencies
 	xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l nosetests -s -w ui_tests
 
-dev-server:
+dev-server: dependencies
 	ui_tests/server.py
 
-test-server:
+test-server: dependencies
 	ui_tests/server.py --selenium
