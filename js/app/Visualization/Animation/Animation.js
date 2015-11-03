@@ -319,7 +319,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       Shader.setMappingUniforms(program, self.data_view);
     },
 
-    select: function (rowidx, type, replace) {
+    select: function (rowidx, type, replace, event) {
       var self = this;
       self.data_view.selections.addSelectionRange(type, rowidx, rowidx, replace);
       return rowidx;

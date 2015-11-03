@@ -313,12 +313,12 @@ function(Class,
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
 
-        if (animation.select([rowidx[1], rowidx[2]], type, true)) {
+        if (animation.select([rowidx[1], rowidx[2]], type, true, e)) {
           return animation;
         }
       } else {
         self.animations.map(function (animation) {
-          animation.select(undefined, type, true);
+          animation.select(undefined, type, true, e);
         });
       }
       return false;

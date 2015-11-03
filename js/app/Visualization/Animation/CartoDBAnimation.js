@@ -1,12 +1,14 @@
 define([
   "require",
   "app/Class",
+  "app/LoadingInfo",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation",
   "cartodb"
 ], function(
   require,
   Class,
+  LoadingInfo,
   ObjectToTable,
   Animation,
   cartodb
@@ -35,7 +37,7 @@ define([
     initGl: function(cb) {
       var self = this;
 
-        cartodb.createLayer(self.manager.map, self.source.args.url, {infowindow: false}
+      cartodb.createLayer(self.manager.map, self.source.args.url, {infowindow: false}
       ).addTo(self.manager.map
       ).on('done', function(layer) {
         self.layer = layer;
@@ -47,17 +49,23 @@ define([
           cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
         });
 
-        self.layer.on('featureClick', self.handleClick.bind(self, 'click'));
+//        self.layer.on('featureClick', self.handleClick.bind(self, 'click'));
+        self.layer.on('featureOver', self.handleMouseOver.bind(self));
+        self.layer.on('mouseout', self.handleMouseOut.bind(self));
 
-/*
-          google.maps.event.addListener(self.layer, 'click', self.handleClick.bind(self, 'click'));
-          google.maps.event.addListener(self.layer, 'rightclick', function () {
-              console.log("XXXXX", arguments);
-          });
-*/
+
 
         cb();
       });
+    },
+
+    handleMouseOver: function (event, latlng, pos, data, layerIndex) {
+      var self = this;
+      self.mouseOver = arguments;
+    },
+    handleMouseOut: function () {
+      var self = this;
+      self.mouseOver = undefined;
     },
 
     /* This is a bit of a hack, working around the normal selection
@@ -65,7 +73,7 @@ define([
     handleClick: function (type, event, latlng, pos, data, layerIndex) {
       var self = this;
       var handleInfo = function(info, type) {
-        if (type == 'rightclick') {
+        if (type == 'info') {
           self.manager.infoPopup.setOptions({
             content: info.toString(),
             position: latlng
@@ -84,6 +92,13 @@ define([
         }
       };
  
+      var url = "CartoDB://" + self.source.args.url + "?" + JSON.stringify(data);
+
+      if (type == 'selected') {
+        self.manager.events.triggerEvent('info-loading', {});
+      }
+      LoadingInfo.main.add(url, true);
+
       self.sql.execute(
         (  self.layer.getSubLayer(layerIndex).getSQL()
          + ' where '
@@ -92,6 +107,7 @@ define([
            }).join(' and ')),
         data
       ).done(function(data) {
+        LoadingInfo.main.remove(url);
         if (data.errors) {
           handleInfo(data, 'info-error');
         } else {
@@ -102,6 +118,7 @@ define([
           handleInfo(data, 'info');
         }
       }).error(function(errors) {
+        LoadingInfo.main.remove(url);
         handleInfo(errors, 'info-error');
       });
     },
@@ -116,9 +133,14 @@ define([
 
     draw: function () {},
 
-    select: function (rowidx, type, replace) {
+    select: function (rowidx, type, replace, event) {
       var self = this;
-      if (type == "selected" && self.selected) {
+
+      if (type != 'selected' && type != 'info') return;
+
+      if (self.mouseOver) {
+        self.handleClick.apply(self, [type].concat(Array.prototype.slice.call(self.mouseOver)));
+      } else if (type == "selected" && self.selected) {
         self.selected = false;
         self.manager.events.triggerEvent('info', {});
       }
