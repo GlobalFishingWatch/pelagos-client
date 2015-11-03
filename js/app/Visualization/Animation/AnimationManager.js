@@ -11,6 +11,7 @@ define([
   "app/Visualization/Animation/Matrix",
   "CanvasLayer",
   "Stats",
+  "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
   "app/Visualization/Animation/PointAnimation",
@@ -35,6 +36,7 @@ function(Class,
   Matrix,
   CanvasLayer,
   Stats,
+  ObjectToTable,
   Rowidx,
   Animation
 ) {
@@ -571,21 +573,7 @@ function(Class,
         var data = dataView.selections.selections[type].data;
         data.layer = animation.title;
         data.toString = function () {
-          var content = ["<table class='table table-striped table-bordered'>"];
-          Object.keys(data).sort().map(function (key) {
-            if (key == 'toString') return;
-            var value = data[key][0];
-            if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
-              value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
-            }
-            if (typeof(value)=="string" && value.indexOf("://") != -1) {
-              content.push("<tr><th colspan='2'><a target='_new' href='" + value +  "'>" + key + "</a></th></tr>");
-            } else {
-              content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
-            }
-          });
-          content.push("</table>");
-          return content.join('\n');
+          return ObjectToTable(this);
         };
         self.handleInfo(animation, selectionEvent, null, data);
       } else {

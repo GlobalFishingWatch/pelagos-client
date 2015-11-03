@@ -1,4 +1,16 @@
-define(["require", "app/Class", "app/Visualization/Animation/Animation", "cartodb"], function(require, Class, Animation, cartodb) {
+define([
+  "require",
+  "app/Class",
+  "app/Visualization/Animation/ObjectToTable",
+  "app/Visualization/Animation/Animation",
+  "cartodb"
+], function(
+  require,
+  Class,
+  ObjectToTable,
+  Animation,
+  cartodb
+) {
   var CartoDBAnimation = Class(Animation, {
     name: "CartoDBAnimation",
 
@@ -23,45 +35,75 @@ define(["require", "app/Class", "app/Visualization/Animation/Animation", "cartod
     initGl: function(cb) {
       var self = this;
 
+        cartodb.createLayer(self.manager.map, self.source.args.url, {infowindow: false}
+      ).addTo(self.manager.map
+      ).on('done', function(layer) {
+        self.layer = layer;
+        /* FIXME: Does not seem to work w/o jsonp:true... why? */
+        self.sql = new cartodb.SQL({user: layer.options.user_name, jsonp: true});
 
+        self.layer.getSubLayers().map(function (subLayer) {
+          subLayer.setInteraction(true); // Interaction for that layer must be enabled
+          cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
+        });
 
-      self.layer = cartodb.createLayer(self.manager.map, self.source.args.url).addTo(self.manager.map);
-      google.maps.event.addListener(self.layer, 'click', self.handleClick.bind(self, 'click'));
-      google.maps.event.addListener(self.layer, 'rightclick', self.handleClick.bind(self, 'rightclick'));
+        self.layer.on('featureClick', self.handleClick.bind(self, 'click'));
 
-      cb();
+/*
+          google.maps.event.addListener(self.layer, 'click', self.handleClick.bind(self, 'click'));
+          google.maps.event.addListener(self.layer, 'rightclick', function () {
+              console.log("XXXXX", arguments);
+          });
+*/
+
+        cb();
+      });
     },
 
     /* This is a bit of a hack, working around the normal selection
      * system. But all of this layer is a bit of a hack :) */
-    handleClick: function (type, e) {
+    handleClick: function (type, event, latlng, pos, data, layerIndex) {
       var self = this;
-
-      var handleInfo = function(info) {
+      var handleInfo = function(info, type) {
         if (type == 'rightclick') {
           self.manager.infoPopup.setOptions({
-            content: info.infoWindowHtml,
-            position: info.latLng
+            content: info.toString(),
+            position: latlng
           });
           self.manager.infoPopup.open(self.manager.map);
         } else {
           self.selected = true;
-          info.toString = function () {
-            return info.infoWindowHtml;
-          }
           var event = {
             layer: self.title,
-            data: info
+            data: info,
+            toString: function () {
+              return this.data.toString();
+            }
           };
-          self.manager.events.triggerEvent('info', event);
+          self.manager.events.triggerEvent(type, event);
         }
       };
-
-      if (e.infoWindowHtml && e.latLng) {
-        handleInfo(e);
-      } else {
-        e.getDetails(handleInfo);
-      }
+ 
+      self.sql.execute(
+        (  self.layer.getSubLayer(layerIndex).getSQL()
+         + ' where '
+         + Object.keys(data).map(function (key) {
+             return key + ' = {{' + key + '}}';
+           }).join(' and ')),
+        data
+      ).done(function(data) {
+        if (data.errors) {
+          handleInfo(data, 'info-error');
+        } else {
+          data = data.rows[0];
+          data.toString = function () {
+            return ObjectToTable(this);
+          };
+          handleInfo(data, 'info');
+        }
+      }).error(function(errors) {
+        handleInfo(errors, 'info-error');
+      });
     },
 
     setVisible: function (visible) {
