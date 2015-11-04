@@ -468,21 +468,15 @@ function(Class,
       });
     },
 
-    handleInfo: function (animation, selectionEvent, err, data) {
+    handleInfo: function (animation, type, err, data, selectionData) {
       var self = this;
       var dataView = animation.data_view;
-      var type = selectionEvent.category;
-      var info = {};
-      var selectionData = dataView.selections.selections[selectionEvent.category].data;
-      for (var key in selectionData) {
-        info[key] = selectionData[key][0];
-      }
  
       Logging.main.log(
         "Visualization.Animation.AnimationManager.handleInfo",
         {
           layer: animation.title,
-          category: selectionEvent.category,
+          category: type,
           data: data,
           toString: function () {
             return this.layer + "/" + this.category + ": " + this.data.toString();
@@ -496,8 +490,8 @@ function(Class,
 
         self.infoPopup.setOptions({
           content: data.toString(),
-          position: {lat: info.latitude,
-                     lng: info.longitude}
+          position: {lat: selectionData.latitude,
+                     lng: selectionData.longitude}
         });
         self.infoPopup.open(self.map);
       } else {
@@ -505,8 +499,8 @@ function(Class,
         var event = {
           layerInstance: animation,
           layer: animation.title,
-          category: selectionEvent.category,
-          selection: info
+          category: type,
+          selection: selectionData
         }
 
         if (err) {
@@ -529,6 +523,18 @@ function(Class,
 
         self.events.triggerEvent(category, event);
       }
+    },
+
+    handleSelectionInfo: function (animation, selectionEvent, err, data) {
+      var self = this;
+      var dataView = animation.data_view;
+      var type = selectionEvent.category;
+      var info = {};
+      var selectionData = dataView.selections.selections[type].data;
+      for (var key in selectionData) {
+        info[key] = selectionData[key][0];
+      }
+      self.handleInfo(animation, type, err, data, info);
     },
 
     handleSelectionUpdate: function (animation, selectionEvent, type) {
@@ -560,7 +566,7 @@ function(Class,
             && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
           var data = {};
           data.toString = function () { return ""; };
-          self.handleInfo(animation, selectionEvent, null, undefined);
+          self.handleSelectionInfo(animation, selectionEvent, null, undefined);
         }
       }
 
@@ -575,7 +581,7 @@ function(Class,
         data.toString = function () {
           return ObjectToTable(this);
         };
-        self.handleInfo(animation, selectionEvent, null, data);
+        self.handleSelectionInfo(animation, selectionEvent, null, data);
       } else {
         if (type == 'selected') {
           self.showSelectionAnimations(animation, dataView.selections.selections[type]);
@@ -584,7 +590,7 @@ function(Class,
           var content;
 
           if (err) {
-            self.handleInfo(animation, selectionEvent, err, null);
+            self.handleSelectionInfo(animation, selectionEvent, err, null);
           } else {
             data.toString = function () {
               var content = ["<table class='table table-striped table-bordered'>"];
@@ -609,7 +615,7 @@ function(Class,
 
               return content.join('\n');
             };
-            self.handleInfo(animation, selectionEvent, null, data);
+            self.handleSelectionInfo(animation, selectionEvent, null, data);
           }
         });
 

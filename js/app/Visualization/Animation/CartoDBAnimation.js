@@ -49,11 +49,8 @@ define([
           cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
         });
 
-//        self.layer.on('featureClick', self.handleClick.bind(self, 'click'));
         self.layer.on('featureOver', self.handleMouseOver.bind(self));
         self.layer.on('mouseout', self.handleMouseOut.bind(self));
-
-
 
         cb();
       });
@@ -72,25 +69,6 @@ define([
      * system. But all of this layer is a bit of a hack :) */
     handleClick: function (type, event, latlng, pos, data, layerIndex) {
       var self = this;
-      var handleInfo = function(info, type) {
-        if (type == 'info') {
-          self.manager.infoPopup.setOptions({
-            content: info.toString(),
-            position: latlng
-          });
-          self.manager.infoPopup.open(self.manager.map);
-        } else {
-          self.selected = true;
-          var event = {
-            layer: self.title,
-            data: info,
-            toString: function () {
-              return this.data.toString();
-            }
-          };
-          self.manager.events.triggerEvent(type, event);
-        }
-      };
  
       var url = "CartoDB://" + self.source.args.url + "?" + JSON.stringify(data);
 
@@ -109,17 +87,18 @@ define([
       ).done(function(data) {
         LoadingInfo.main.remove(url);
         if (data.errors) {
-          handleInfo(data, 'info-error');
+          self.manager.handleInfo(self, type, data.errors, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
         } else {
           data = data.rows[0];
           data.toString = function () {
             return ObjectToTable(this);
           };
-          handleInfo(data, 'info');
+          self.selected = true;
+          self.manager.handleInfo(self, type, undefined, data, {latitude: latlng[0], longitude: latlng[1]});
         }
       }).error(function(errors) {
         LoadingInfo.main.remove(url);
-        handleInfo(errors, 'info-error');
+        self.manager.handleInfo(self, type, errors, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
       });
     },
 
