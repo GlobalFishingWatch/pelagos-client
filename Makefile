@@ -8,7 +8,8 @@ JSDEPS= \
   $(LIBS)/jquery-mousewheel/jquery.mousewheel.js \
   $(LIBS)/less/dist/less.js \
   $(LIBS)/stats.js/build/stats.min.js \
-  $(LIBS)/loggly-jslogger/src/loggly.tracker.js
+  $(LIBS)/loggly-jslogger/src/loggly.tracker.js \
+  $(LIBS)/cartodb.js/cartodb.js
 
 CSSDEPS= \
   $(LIBS)/font-awesome/css/font-awesome.min.css

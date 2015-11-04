@@ -21,7 +21,7 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
 
       focus_red: {value: 1.0, min:0.0, max: 1.0},
       focus_green: {value: 0.5, min:0.0, max: 1.0},
-      focus_blue: {value: 1.0, min:0.0, max: 1.0},
+      focus_blue: {value: 1.0, min:0.0, max: 1.0}
     },
 
     selections: $.extend(
