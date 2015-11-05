@@ -20,7 +20,7 @@ vec4 rowidxColor(float animationidx, float tileidx, float rowidx) {
       getBits(tileidx, 8., 15.),
       getBits(tileidx, 0., 7.),      
       1.0));
-  } else if (canvasIndex == 1.0) {
+  } else /* if (canvasIndex == 1.0) */ {
     return bytesToColor(vec4(
       getBits(rowidx, 16., 23.),
       getBits(rowidx, 8., 15.),
