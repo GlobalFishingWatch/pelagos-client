@@ -11,6 +11,7 @@ define([
   "app/Visualization/Animation/Matrix",
   "CanvasLayer",
   "Stats",
+  "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
   "app/Visualization/Animation/PointAnimation",
@@ -20,6 +21,7 @@ define([
   "app/Visualization/Animation/DebugAnimation",
   "app/Visualization/Animation/ClusterAnimation",
   "app/Visualization/Animation/MapsEngineAnimation",
+  "app/Visualization/Animation/CartoDBAnimation",
   "app/Visualization/Animation/VesselTrackAnimation",
   "app/Visualization/Animation/ArrowAnimation"],
 function(Class,
@@ -34,6 +36,7 @@ function(Class,
   Matrix,
   CanvasLayer,
   Stats,
+  ObjectToTable,
   Rowidx,
   Animation
 ) {
@@ -310,12 +313,12 @@ function(Class,
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
 
-        if (animation.select([rowidx[1], rowidx[2]], type, true)) {
+        if (animation.select([rowidx[1], rowidx[2]], type, true, e)) {
           return animation;
         }
       } else {
         self.animations.map(function (animation) {
-          animation.select(undefined, type, true);
+          animation.select(undefined, type, true, e);
         });
       }
       return false;
@@ -465,21 +468,15 @@ function(Class,
       });
     },
 
-    handleInfo: function (animation, selectionEvent, err, data) {
+    handleInfo: function (animation, type, err, data, selectionData) {
       var self = this;
       var dataView = animation.data_view;
-      var type = selectionEvent.category;
-      var info = {};
-      var selectionData = dataView.selections.selections[selectionEvent.category].data;
-      for (var key in selectionData) {
-        info[key] = selectionData[key][0];
-      }
  
       Logging.main.log(
         "Visualization.Animation.AnimationManager.handleInfo",
         {
           layer: animation.title,
-          category: selectionEvent.category,
+          category: type,
           data: data,
           toString: function () {
             return this.layer + "/" + this.category + ": " + this.data.toString();
@@ -493,8 +490,8 @@ function(Class,
 
         self.infoPopup.setOptions({
           content: data.toString(),
-          position: {lat: info.latitude,
-                     lng: info.longitude}
+          position: {lat: selectionData.latitude,
+                     lng: selectionData.longitude}
         });
         self.infoPopup.open(self.map);
       } else {
@@ -502,8 +499,8 @@ function(Class,
         var event = {
           layerInstance: animation,
           layer: animation.title,
-          category: selectionEvent.category,
-          selection: info
+          category: type,
+          selection: selectionData
         }
 
         if (err) {
@@ -526,6 +523,18 @@ function(Class,
 
         self.events.triggerEvent(category, event);
       }
+    },
+
+    handleSelectionInfo: function (animation, selectionEvent, err, data) {
+      var self = this;
+      var dataView = animation.data_view;
+      var type = selectionEvent.category;
+      var info = {};
+      var selectionData = dataView.selections.selections[type].data;
+      for (var key in selectionData) {
+        info[key] = selectionData[key][0];
+      }
+      self.handleInfo(animation, type, err, data, info);
     },
 
     handleSelectionUpdate: function (animation, selectionEvent, type) {
@@ -557,7 +566,7 @@ function(Class,
             && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
           var data = {};
           data.toString = function () { return ""; };
-          self.handleInfo(animation, selectionEvent, null, undefined);
+          self.handleSelectionInfo(animation, selectionEvent, null, undefined);
         }
       }
 
@@ -570,23 +579,9 @@ function(Class,
         var data = dataView.selections.selections[type].data;
         data.layer = animation.title;
         data.toString = function () {
-          var content = ["<table class='table table-striped table-bordered'>"];
-          Object.keys(data).sort().map(function (key) {
-            if (key == 'toString') return;
-            var value = data[key][0];
-            if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
-              value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
-            }
-            if (typeof(value)=="string" && value.indexOf("://") != -1) {
-              content.push("<tr><th colspan='2'><a target='_new' href='" + value +  "'>" + key + "</a></th></tr>");
-            } else {
-              content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
-            }
-          });
-          content.push("</table>");
-          return content.join('\n');
+          return ObjectToTable(this);
         };
-        self.handleInfo(animation, selectionEvent, null, data);
+        self.handleSelectionInfo(animation, selectionEvent, null, data);
       } else {
         if (type == 'selected') {
           self.showSelectionAnimations(animation, dataView.selections.selections[type]);
@@ -595,7 +590,7 @@ function(Class,
           var content;
 
           if (err) {
-            self.handleInfo(animation, selectionEvent, err, null);
+            self.handleSelectionInfo(animation, selectionEvent, err, null);
           } else {
             data.toString = function () {
               var content = ["<table class='table table-striped table-bordered'>"];
@@ -620,7 +615,7 @@ function(Class,
 
               return content.join('\n');
             };
-            self.handleInfo(animation, selectionEvent, null, data);
+            self.handleSelectionInfo(animation, selectionEvent, null, data);
           }
         });
 

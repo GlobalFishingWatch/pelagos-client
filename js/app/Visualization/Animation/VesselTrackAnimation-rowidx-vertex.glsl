@@ -7,29 +7,23 @@ uniform float zoom;
 
 uniform mat4 googleMercator2webglMatrix;
 
-varying vec4 baseColor;
-varying vec4 focusColor;
-varying float pointTime;
-varying float timeWindowSize;
+varying float fragment_rowidx;
+varying float alpha;
 
 void main() {
   mapper();
 
-  timeWindowSize = selectionmap_timerange_from_datetime_0_upper - selectionmap_timerange_from_datetime_0_lower;
-
   vec2 lonlat = vec2(longitude, latitude);
 
   gl_Position = lonlat2screen(lonlat, googleMercator2webglMatrix);
-  pointTime = _time;
 
   if (_filter > 0.0) {
-    baseColor = vec4(0, 0, 0, 0);
-    focusColor = vec4(0, 0, 0, 0);
+    alpha = 0.0;
     gl_PointSize = 0.0;
   } else {
+    alpha = 1.0;
     gl_PointSize = 3.0;
-    baseColor = vec4(red, green, blue, 1.0);
-    focusColor = vec4(focus_red, focus_green, focus_blue, 1.0);
+    fragment_rowidx = rowidx;
   }
 }
 

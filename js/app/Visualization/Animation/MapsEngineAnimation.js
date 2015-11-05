@@ -74,7 +74,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
 
     draw: function () {},
 
-    select: function (rowidx, type, replace) {
+    select: function (rowidx, type, replace, event) {
       var self = this;
       if (type == "selected" && self.selected) {
         self.selected = false;

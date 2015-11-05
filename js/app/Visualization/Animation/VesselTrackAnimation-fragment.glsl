@@ -1,16 +1,16 @@
 precision mediump float;
 
+uniform float timefocus;
+
 varying float vWeight;
 varying vec4 baseColor;
-
-
-float fudge(float v) {
-  float a = 0.1;
-  return v/2.0 - sqrt(4.0*a*a + v*v - 2.0*v + 1.0) / 2.0 + 1.0/2.0;
-}
+varying vec4 focusColor;
+varying float pointTime;
+varying float timeWindowSize;
 
 void main() {
-  gl_FragColor = baseColor;
+  float factor = min(1.0, (timeWindowSize / 300.) / abs(timefocus - pointTime));
 
+  gl_FragColor = (1.0 - factor) * baseColor + factor * focusColor;
 }
 
