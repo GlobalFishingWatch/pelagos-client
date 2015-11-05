@@ -47,7 +47,6 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
 
     headerLoaded: function (data) {
       var self = this;
-      if (self.header.length == 0) return;
       self.header.colsByName.rowidx = {
         type: "Float32",
         min: 0,
