@@ -258,12 +258,12 @@ define([
       self.node.find(".layer-list").append(node);
 
       if (animation.constructor.prototype.name == "ClusterAnimation") {
-        var maxv = Math.log(1+0.2)/Math.log(4);
-        var minv = Math.log(1+0)/Math.log(4);
+        var val2slider = function(val) { return Math.log(1 + val)/Math.log(4); };
+        var slider2val = function(val) { return Math.pow(4, val) - 1; };
 
-        // This is a hack to set the current value within the max value of our exponential scale below...
-        animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, maxv) - 1;
-        animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
+        var maxv = val2slider(animation.data_view.header.colsByName.weight.max);
+        var minv = val2slider(animation.data_view.header.colsByName.weight.min);
+        var curv = val2slider(animation.data_view.header.colsByName.weight.source.weight);
 
         var update = undefined;
         var refreshSwatch = function () {
@@ -271,19 +271,19 @@ define([
           update = setTimeout(function () {
             var value = slider.value;
 
-            animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, value) - 1;
+            animation.data_view.header.colsByName.weight.source.weight = slider2val(value);
             animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
             update = undefined;
           }, 100);
         }
 
         var slider = new HorizontalSlider({
-            value: Math.log(animation.data_view.header.colsByName.weight.source.weight + 1)/Math.log(4),
-            minimum: minv,
-            maximum: maxv,
-            discreteValues: 100,
-            onChange: refreshSwatch,
-            intermediateChanges: true
+          value:curv,
+          minimum: minv,
+          maximum: maxv,
+          discreteValues: 100,
+          onChange: refreshSwatch,
+          intermediateChanges: true
         }, "mySlider");
         slider.placeAt(self.node.find(".layer-list")[0]);
         slider.startup();
