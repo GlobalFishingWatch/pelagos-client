@@ -200,16 +200,18 @@ define([
             self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
 
-          var link = $('<a target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
+          if (event.layerInstance.data_view.source.header.kml) {
+            var link = $('<a target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
 
-          link.attr({
-              href: (event.layerInstance.data_view.source.getUrl('export', -1) +
-                   "/sub/" +
-                   event.layerInstance.data_view.source.getSelectionQuery(
-                     event.layerInstance.data_view.selections.selections[event.category]) +
-                   "/export")
-          });
-          self.node.find(".download").append(link);
+            link.attr({
+                href: (event.layerInstance.data_view.source.getUrl('export', -1) +
+                     "/sub/" +
+                     event.layerInstance.data_view.source.getSelectionQuery(
+                       event.layerInstance.data_view.selections.selections[event.category]) +
+                     "/export")
+            });
+            self.node.find(".download").append(link);
+          }
 
         }
       } else {
