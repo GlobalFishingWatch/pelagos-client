@@ -69,6 +69,10 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
         }
       }
       self.programs = {};
+
+      if (self.data_view) {
+        self.manager.visualization.data.destroyView(self.data_view, self.source);
+      }
     },
 
     initGl: function(cb) {
