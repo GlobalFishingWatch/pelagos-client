@@ -6,6 +6,7 @@ dojoConfig = {
   cssOptimize: "comments",
   selectorEngine: "lite",
   baseUrl: '.',
+  useSourceMaps: false,
   releaseDir: '../js-build',
   packages: [
       {name: "dojo", location:"libs/dojo"},
