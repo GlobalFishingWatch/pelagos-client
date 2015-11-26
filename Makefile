@@ -2,7 +2,7 @@ LIBS=js/libs
 
 JSDEPS= \
   $(LIBS)/async/lib/async.js \
-  $(LIBS)/stacktrace-js/dist/stacktrace-with-polyfills.js \
+  $(LIBS)/stacktrace-js/dist/stacktrace-with-polyfills.min.js \
   $(LIBS)/lodash/lodash.js \
   $(LIBS)/jquery/dist/jquery.js \
   $(LIBS)/jquery-mousewheel/jquery.mousewheel.js \
