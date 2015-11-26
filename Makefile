@@ -2,7 +2,7 @@ LIBS=js/libs
 
 JSDEPS= \
   $(LIBS)/async/lib/async.js \
-  $(LIBS)/stacktrace-js/dist/stacktrace.js \
+  $(LIBS)/stacktrace-js/dist/stacktrace-with-polyfills.js \
   $(LIBS)/lodash/lodash.js \
   $(LIBS)/jquery/dist/jquery.js \
   $(LIBS)/jquery-mousewheel/jquery.mousewheel.js \
@@ -37,6 +37,7 @@ js-build-mkdir:
 
 js-build/build-succeded: dependencies
 	cd $(LIBS)/util/buildscripts; ./build.sh --dojoConfig ../../../main.profile.js --release --bin node > build-log || { cat build-log; exit 1; }
+	sed -i 's/app.js.uncompressed.js/\/js-build\/app\/app.js.uncompressed.js/g' js-build/app/app.js.map
 	touch $@
 
 js-build/deps.js: $(JSDEPS) js/CanvasLayer.js js/dojoconfig.js
