@@ -42,7 +42,6 @@ define([
         '' +
         '      <div id="divide"></div>' +
         '' +
-        '      <a id="activate_search" href="javascript:undefined"><i class="fa fa-search"></i></a>' +
         '      <div id="vessel_identifiers"></div>' +
         '' +
         '      <div id="codeoutput"></div>' +
@@ -54,10 +53,6 @@ define([
       $('body').append(self.node);
 
       self.update("none", {});
-
-      self.node.find("#activate_search").click(function () {
-        self.visualization.ui.search.displaySearchDialog();
-      });
 
       self.node.find("#activate_help").click(function () {
         self.visualization.ui.help.displayHelpDialog();
@@ -106,7 +101,9 @@ define([
       var data = event.data;
       if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
         self.node.find("#vessel_identifiers").html(
-          '      <span class="download"></span>' +
+          '      <span class="action_icons">'+
+          '        <a id="activate_search" class="activate_search" href="javascript:undefined"><i class="fa fa-search"></i></a>' +
+          '      </span>' +
           '      <h2>Vessel Information</h2>' +
           '      <table class="vessel_id">' +
           '        <tbody>' +
@@ -138,6 +135,10 @@ define([
           '      </table>'
         );
 
+        self.node.find("#activate_search").click(function () {
+          self.visualization.ui.search.displaySearchDialog();
+        });
+        
         if (data) {
           self.node.find(".vessel_id .callsign").html(data.callsign || "---");
 
@@ -201,7 +202,7 @@ define([
           }
 
           if (event.layerInstance.data_view.source.header.kml) {
-            var link = $('<a target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
+            var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
 
             link.attr({
                 href: (event.layerInstance.data_view.source.getUrl('export', -1) +
@@ -210,9 +211,8 @@ define([
                        event.layerInstance.data_view.selections.selections[event.category]) +
                      "/export")
             });
-            self.node.find(".download").append(link);
+            self.node.find(".action_icons").append(link);
           }
-
         }
       } else {
         self.node.find("#vessel_identifiers").html(

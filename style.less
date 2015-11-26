@@ -312,25 +312,27 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     #layers h2, #vessel_identifiers h2 {
       color: #3a3a3c;
       font-size: 100%;
-      padding-top: 1rem; 
       font-weight: 400;
     }
 
-    #layers .download, #vessel_identifiers .download {
+    #vessel_identifiers .action_icons {
       float: right;
-      margin-top: 0.8em;
+      margin-top: 0.7em;
+    }
+    
+    #vessel_identifiers .action_icons .activate_search{
+      float: right;
       margin-right: 0.5em;
     }
+    
+    #vessel_identifiers .action_icons .download_kml{
+      margin-right: 0.5em;
+    }
+
 
     #divide {
       border-bottom: solid 1px #dfe0e1;
       margin: 3rem 2.5% 0 2.5%;
-    }
-
-    #activate_search {
-      float: right;
-      margin-top: 2em;
-      margin-right: 1em;
     }
 
     /* Vessel Info styles */
@@ -365,7 +367,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     #layers {
       display: table;
       width: 100%;
-      margin-top: -38pt;
 
       .layer-row {
         display: table-row;
