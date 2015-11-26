@@ -101,9 +101,9 @@ define([
       var data = event.data;
       if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
         self.node.find("#vessel_identifiers").html(
-          '      <span class="action_icons">'+
+          '      <div class="action_icons">'+
           '        <a id="activate_search" class="activate_search" href="javascript:undefined"><i class="fa fa-search"></i></a>' +
-          '      </span>' +
+          '      </div>' +
           '      <h2>Vessel Information</h2>' +
           '      <table class="vessel_id">' +
           '        <tbody>' +
