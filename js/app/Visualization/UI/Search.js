@@ -26,7 +26,7 @@ define([
         content: '' +
           '<input type="text" class="query" style="width: 100%;" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
           '<div class="search-loading" style="margin-top: -1.7em; margin-right: 0.5em; padding-left: 100%; margin-left: -1.7em; display: block; display: none;">' +
-          '  <img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg">' +
+          '  <img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg">' +
           '</div>' +
           '<div class="results" style="max-height: 300px; overflow: auto;"></div>',
         actionBarTemplate: '' +
