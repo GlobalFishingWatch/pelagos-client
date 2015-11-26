@@ -37,7 +37,6 @@ js-build-mkdir:
 
 js-build/build-succeded: dependencies
 	cd $(LIBS)/util/buildscripts; ./build.sh --dojoConfig ../../../main.profile.js --release --bin node > build-log || { cat build-log; exit 1; }
-	sed -i 's/app.js.uncompressed.js/\/js-build\/app\/app.js.uncompressed.js/g' js-build/app/app.js.map
 	touch $@
 
 js-build/deps.js: $(JSDEPS) js/CanvasLayer.js js/dojoconfig.js
