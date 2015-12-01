@@ -33,7 +33,7 @@
     "loggly-jslogger": "~2.1.0",
     "qunit": "~1.19.0",
     "stacktrace-js": "~1.0.0",
-    "stats.js": "*",
+    "stats.js": "r14",
     "font-awesome": "~4.4.0",
     "easyXDM": "~2.4.17",
     "cartodb.js": "~3.15.8"

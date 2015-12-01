@@ -10,7 +10,7 @@
   tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
 */
 
-define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, LoadingInfo, Bounds, Format, Tile, Pack, Logging, Ajax, _) {
+define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Format", "app/Data/EmptyFormat", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, LoadingInfo, Bounds, Format, EmptyFormat, Tile, Pack, Logging, Ajax, _) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
     initialize: function() {
@@ -320,6 +320,16 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       }
     },
 
+    zoomLevelForTileBounds: function (bounds) {
+      var self = this;
+      return Math.max(
+        0,
+        Math.floor(Math.min(
+          Math.log(self.world.getWidth() / bounds.getWidth(), 2),
+          Math.log(self.world.getHeight() / bounds.getHeight(), 2)))
+      );
+    },
+
     clear: function () {
       var self = this;
 
@@ -419,6 +429,18 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
     setUpTileContent: function (tile) {
       var self = this;
 
+      if (self.header.maxZoom != undefined && self.zoomLevelForTileBounds(tile.bounds) > self.header.maxZoom) {
+        tile.setContent(new EmptyFormat({
+          headerTime: false,
+          contentTime: false,
+          header: {length: 0, colsByName: {}, tags: ["ZOOM_LEVEL_IGNORED"]}
+        }));
+        self.handleTileError(tile, {
+          msg: 'Zoom level not provided by tileset',
+          toString: function () { return this.msg; }
+        });
+        return;
+      }
       tile.setContent(self.getTileContent(tile));
       tile.content.events.on({
         "batch": self.handleBatch.bind(self, tile),
