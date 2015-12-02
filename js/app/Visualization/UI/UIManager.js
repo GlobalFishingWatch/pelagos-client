@@ -3,7 +3,7 @@ define([
   "dijit/Dialog",
   "app/LoadingInfo",
   "app/UrlValues",
-  "app/Visualization/KeyModifiers",
+  "app/Visualization/KeyBindings",
   "app/Visualization/UI/Timeline",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
@@ -19,7 +19,7 @@ function (
   Dialog,
   LoadingInfo,
   UrlValues,
-  KeyModifiers,
+  KeyBindings,
   Timeline,
   SidePanelManager,
   BasicSidebar,
@@ -393,13 +393,13 @@ function (
     initSidePanels: function (cb) {
       var self = this;
 
-      $(document).on({
-        keyup: function (e) {
-          if (KeyModifiers.nameById[e.keyCode] == 'E' && KeyModifiers.active.Alt && KeyModifiers.active.Ctrl) {
-            self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
-          }
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'E'], null, 'General',
+        'Toggle between view and edit sidebar (advanced mode)',
+        function () {
+          self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
         }
-      });
+      );
 
       self.sidePanels = new SidePanelManager(self);
       self.sideBar = new BasicSidebar(self.visualization);

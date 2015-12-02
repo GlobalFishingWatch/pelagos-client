@@ -1,4 +1,4 @@
-define(["app/Class", "jQuery"], function(Class, $) {
+define(["app/Class", "app/Events", "jQuery"], function(Class, Events, $) {
   var KeyModifiers = Class({name: "KeyModifiers"});
 
   // From http://www.javascriptkeycode.com/
@@ -13,11 +13,17 @@ define(["app/Class", "jQuery"], function(Class, $) {
 
   KeyModifiers.active = {};
 
+  KeyModifiers.events = new Events("KeyModifiers");
+
   KeyModifiers.keyUp = function (e) {
-    delete KeyModifiers.active[KeyModifiers.nameById[e.keyCode]];
+    var name = KeyModifiers.nameById[e.keyCode];
+    delete KeyModifiers.active[name];
+    KeyModifiers.events.triggerEvent("keyUp", {name: name, active: KeyModifiers.active});
   }
   KeyModifiers.keyDown = function (e) {
-    KeyModifiers.active[KeyModifiers.nameById[e.keyCode]] = true;
+    var name = KeyModifiers.nameById[e.keyCode];
+    KeyModifiers.active[name] = true;
+    KeyModifiers.events.triggerEvent("keyDown", {name: name, active: KeyModifiers.active});
   }
   $(document).on({
     keyup: KeyModifiers.keyUp,

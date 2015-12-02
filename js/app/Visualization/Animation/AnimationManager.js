@@ -6,6 +6,7 @@ define([
   "async",
   "app/Logging",
   "app/Visualization/KeyModifiers",
+  "app/Visualization/KeyBindings",
   "jQuery",
   "dijit/Dialog",
   "app/Visualization/Animation/Matrix",
@@ -31,6 +32,7 @@ function(Class,
   async,
   Logging,
   KeyModifiers,
+  KeyBindings,
   $,
   Dialog,
   Matrix,
@@ -408,6 +410,23 @@ function(Class,
 
     initMouse: function(cb) {
       var self = this;
+
+      KeyBindings.register(
+        [], 'left click (on object)', 'Map',
+        'Show object information in the sidebar'
+      );
+      KeyBindings.register(
+        [], 'right click (on object)', 'Map',
+        'Show object information in a popup'
+      );
+      KeyBindings.register(
+        ['Shift'], 'left click (on object)', 'Map',
+        'Show raw object information (no server query) in the sidebar'
+      );
+      KeyBindings.register(
+        ['Shift'], 'right click (on object)', 'Map',
+        'Show raw object information (no server query) in popup'
+      );
 
       self.infoPopup = new google.maps.InfoWindow({});
 
