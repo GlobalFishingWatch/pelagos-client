@@ -56,9 +56,10 @@ define(["app/Class", "app/Events", "app/Visualization/KeyModifiers", "jQuery"], 
   KeyModifiers.events.on({
     keyDown: function (data) {
       var keyPath = KeyBindings.keysToKeyPath(Object.keys(data.active));
+        console.log(keyPath);
       var registration = KeyBindings.byKeys[keyPath];
       if (registration && registration.cb) {
-        registration.cb(registration);
+        registration.cb(registration, data);
       }
     }
   });
