@@ -138,12 +138,19 @@ function(Class,
       );
 
       window.addEventListener('resize', self.windowSizeChanged.bind(self), false);
+      google.maps.event.addListener(self.map, 'tilesloaded', self.tilesLoaded.bind(self));
       google.maps.event.addListener(self.map, 'center_changed', self.centerChanged.bind(self));
       google.maps.event.addListener(self.map, 'zoom_changed', self.zoomChanged.bind(self));
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
       cb();
+    },
+
+    tilesLoaded: function() {    
+      var self = this;
+      // FIXME: We need a better way to handle focus / keyboard combinations than this... Not sure how it should work.
+      self.node.children().children().first().children().trigger('click');
     },
 
     initOverlay: function (cb) {
