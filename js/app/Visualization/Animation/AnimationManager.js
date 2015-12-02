@@ -149,8 +149,12 @@ function(Class,
 
     tilesLoaded: function() {    
       var self = this;
-      // FIXME: We need a better way to handle focus / keyboard combinations than this... Not sure how it should work.
-      self.node.children().children().first().children().trigger('click');
+
+      /* FIXME: We a way set focus to handle keyboard combinations...
+       * Not sure how it should work. The following works for initial
+       * focus, but generates a spurious and broken selection event.
+       * self.node.children().children().first().children().trigger('click');
+       */
     },
 
     initOverlay: function (cb) {
