@@ -15,12 +15,12 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
     },
 
     uniforms: {
-      red: {value: 0.05, min:0.0, max: 1.0},
+      red: {value: 0.0, min:0.0, max: 1.0},
       green: {value: 0.0, min:0.0, max: 1.0},
-      blue: {value: 0.05, min:0.0, max: 1.0},
+      blue: {value: 0.7, min:0.0, max: 1.0},
 
       focus_red: {value: 1.0, min:0.0, max: 1.0},
-      focus_green: {value: 0.5, min:0.0, max: 1.0},
+      focus_green: {value: 1.0, min:0.0, max: 1.0},
       focus_blue: {value: 1.0, min:0.0, max: 1.0}
     },
 
