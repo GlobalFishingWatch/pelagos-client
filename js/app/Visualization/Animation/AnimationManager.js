@@ -366,7 +366,11 @@ function(Class,
       self.hideSelectionAnimations(baseAnimation);
 
       if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
-        var seriesTilesets = baseHeader.seriesTilesets;
+        var seriesTilesets = baseAnimation.args.seriesTilesets;
+
+        if (!seriesTilesets) {
+          seriesTilesets = baseHeader.seriesTilesets;
+        }
 
         if (seriesTilesets === true) {
           seriesTilesets = [
