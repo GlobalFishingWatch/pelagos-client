@@ -5,6 +5,7 @@
       "css": {"width": "auto"}
     },
     "sideBar": {
+      "feedback_url" : "http://google.com",
       "sponsorLogos": [
         {
           "attr": {"src": "%(img)s/gfw/st_logo.png"},
