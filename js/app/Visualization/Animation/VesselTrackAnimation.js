@@ -1,3 +1,4 @@
+
 define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, Animation) {
   var VesselTrackAnimation = Class(Animation, {
     name: "VesselTrackAnimation",
@@ -15,9 +16,9 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
     },
 
     uniforms: {
-      red: {value: 0.0, min:0.0, max: 1.0},
-      green: {value: 0.0, min:0.0, max: 1.0},
-      blue: {value: 0.7, min:0.0, max: 1.0},
+      red: {value: 0.4, min:0.0, max: 1.0},
+      green: {value: 0.6, min:0.0, max: 1.0},
+      blue: {value: 0.9, min:0.0, max: 1.0},
 
       focus_red: {value: 1.0, min:0.0, max: 1.0},
       focus_green: {value: 1.0, min:0.0, max: 1.0},
