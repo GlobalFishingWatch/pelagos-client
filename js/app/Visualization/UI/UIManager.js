@@ -325,6 +325,7 @@ function (
         ['Ctrl', 'Left'], null, 'Timeline',
         'Move the time window left (earlier dates)',
         function (registration) {
+          self.visualization.state.setValue("paused", true);
           self.visualization.state.setValue("time", new Date(self.visualization.state.getValue("time").getTime() - self.visualization.state.getValue("timeExtent") / 10));
         }
       );
@@ -332,6 +333,7 @@ function (
         ['Ctrl', 'Right'], null, 'Timeline',
         'Move the time window right (later dates)',
         function (registration) {
+          self.visualization.state.setValue("paused", true);
           self.visualization.state.setValue("time", new Date(self.visualization.state.getValue("time").getTime() + self.visualization.state.getValue("timeExtent") / 10));
         }
       );
@@ -339,6 +341,7 @@ function (
         ['Ctrl', 'Shift', 'Left'], null, 'Timeline',
         'Move the time window to the beginning',
         function (registration) {
+          self.visualization.state.setValue("paused", true);
           self.visualization.state.setValue("time", new Date(self.timeline.min.getTime() + self.visualization.state.getValue("timeExtent")));
         }
       );
@@ -346,6 +349,7 @@ function (
         ['Ctrl', 'Shift', 'Right'], null, 'Timeline',
         'Move the time window to the end',
         function (registration) {
+          self.visualization.state.setValue("paused", true);
           self.visualization.state.setValue("time", self.timeline.max);
         }
       );
