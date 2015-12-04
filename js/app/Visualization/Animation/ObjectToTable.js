@@ -4,7 +4,7 @@ define(["app/Class"], function(Class) {
      Object.keys(data).sort().map(function (key) {
        if (key == 'toString') return;
        var value = data[key];
-       if (typeof(value) == "object" && value.length != undefined) {
+       if (typeof(value) == "object" && value !== null && value !== undefined && value.length != undefined) {
          value = value[0];
        }
        if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
