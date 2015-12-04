@@ -30,8 +30,15 @@ define([
         '<div id="w" class="expanded">' +
         '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
         '  <div class="border">' +
-        '    <div id="content">' +
-        '      <a id="activate_help" href="javascript:undefined" style="float: right; font-size: 15pt"><i class="fa fa-keyboard-o"></i></a>' +
+        '    <div id="content">' +    
+        '      <div class="top_action_icons">' +
+        '         <a id="activate_help" href="javascript:undefined">' +
+        '           <i class="fa fa-keyboard-o"></i>' +
+        '         </a>' +
+        '         <a id="feedback_url" target="_blank">' +
+        '           Feedback' +
+        '         </a>' +
+        '       </div>' +    
         '' +
         '      <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
         '' +
@@ -315,6 +322,8 @@ define([
         logo.css(spec.css);
         self.node.find("#sponsor_logos").append(logo);
       });
+      
+      self.node.find("#feedback_url").attr("href", data.feedback_url);
 
       cb && cb();
     }
