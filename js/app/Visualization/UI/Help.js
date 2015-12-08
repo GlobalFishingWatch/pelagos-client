@@ -37,6 +37,8 @@ define([
 
     displayHelpDialog: function () {
       var self = this;
+      /* Bug workaround for margin/padding calculations */
+      $(self.dialog.containerNode).css({height: "300pt", overflow: "auto"});
 
       self.dialog.set("content", KeyBindings.toHelp()[0]);
       self.dialog.show();
