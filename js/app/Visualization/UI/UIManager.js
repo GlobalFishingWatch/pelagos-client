@@ -311,12 +311,12 @@ function (
 
 
       KeyBindings.register(
-        ['Ctrl', 'Alt', '-'], null, 'Timeline',
+        ['Ctrl', 'Alt', 'Z'], null, 'Timeline',
         'Zoom in in time',
         function () { self.timeline.zoomOut(); }
       );
       KeyBindings.register(
-        ['Ctrl', 'Alt', '='], null, 'Timeline',
+        ['Ctrl', 'Z'], null, 'Timeline',
         'Zoom out in time',
         function () { self.timeline.zoomIn(); }
       );
