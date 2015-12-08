@@ -102,7 +102,51 @@ body {
 }
 
 #shortcuts {
-	padding-right: 5px;
+  padding-right: 5px;
+}
+
+.claro .dijitDialog {
+  border: 1px solid #b8bda7;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+}
+
+.claro .dijitDialogTitleBar {
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  background-color: #ef4223;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
+  background-repeat: repeat-x;
+  border-color: #b8bda7 #b8bda7 #ef4223;
+  border-image: none;
+  border-style: none solid solid;
+  border-width: medium 1px 1px;
+  padding: 5px 7px 4px;
+}
+
+.claro .dijitDialogTitle {
+  color: #ffffff;
+  font-size: 1.091em;
+  padding: 0 1px;
+}
+
+.claro .dijitDialogPaneContent {
+  background: #fcfcfc none repeat-x scroll left top;
+  border-top: 1px solid #fcfcfc;
+  padding: 10px 8px;
+  position: relative;
+}
+
+.dijitDialogPaneContent {
+  color: #6d6e70;
+}
+
+.claro .dijitDialogPaneActionBar {
+  background-color: #efefef;
+  border-top: 1px solid #d3d3d3;
+  padding: 3px 5px 2px 7px;
+  text-align: right;
 }
 
 .claro .dijitBorderContainer-dijitContentPane.AnimationContainer,
@@ -121,8 +165,7 @@ body {
 	padding: 5px 7px 2px;
 }
 
-.claro .dijitAccordionInnerContainerSelected .dijitAccordionTitle,
-.claro .dijitAccordionInnerContainerSelected { 
+.claro .dijitAccordionInnerContainerSelected .dijitAccordionTitle { 
 	background-color: #ef4223;
     color: #fff;
     border-right: none;

@@ -2,6 +2,8 @@ define([
   "app/Class",
   "app/Logging",
   "app/CountryCodes",
+  "dijit/layout/ContentPane",
+  "dijit/layout/AccordionContainer",
   "jQuery",
   "dijit/form/HorizontalSlider",
   "app/Visualization/KeyModifiers",
@@ -10,6 +12,8 @@ define([
   Class ,
   Logging,
   CountryCodes,
+  ContentPane,
+  AccordionContainer,
   $,
   HorizontalSlider,
   KeyModifiers,
@@ -34,23 +38,29 @@ define([
         '      <a id="activate_help" href="javascript:undefined" style="float: right; font-size: 15pt"><i class="fa fa-keyboard-o"></i></a>' +
         '' +
         '      <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
-        '' +
-        '      <div id="layers">' +
-        '        <h2>Layers</h2>' +
-        '        <form class="layer-list"></form>' +
-        '      </div>' +
-        '' +
-        '      <div id="divide"></div>' +
-        '' +
-        '      <div id="vessel_identifiers"></div>' +
-        '' +
-        '      <div id="codeoutput"></div>' +
-        '      <div id="divide"></div>' +
+        '      <div class="blades"></div>' +
         '      <div id="sponsor_logos"></div>' +
         '    </div>' +
         '  </div>' +
         '</div>').eval(app.dirs));
       $('body').append(self.node);
+
+      self.sidebar = new AccordionContainer({splitter:true});
+      $(self.sidebar.domNode).addClass("basic-sidebar");
+      self.node.find(".blades").prepend(self.sidebar.domNode);
+      self.sidebar.startup();
+
+      self.info = new ContentPane({title: 'Info', content: "<div id='vessel_identifiers'></div>", doLayout: false});
+      self.sidebar.addChild(self.info);
+      self.sidebar.layout();
+
+      self.layers = new ContentPane({title: 'Layers', content:"" +
+          "<div id='layers'>" +
+          "  <h2>Layers</h2>" +
+          "  <form class='layer-list'></form" +
+          "</div>", doLayout: false});
+      self.sidebar.addChild(self.layers);
+      self.sidebar.layout();
 
       self.update("none", {});
 
