@@ -33,7 +33,8 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
       program: {
         context: "gl",
         vertex: "app/Visualization/Animation/VesselTrackAnimation-vertex.glsl",
-        fragment: "app/Visualization/Animation/VesselTrackAnimation-fragment.glsl"
+        fragment: "app/Visualization/Animation/VesselTrackAnimation-fragment.glsl",
+        blend: {src:"SRC_ALPHA", dst:"ONE_MINUS_SRC_ALPHA"}
       },
       rowidxProgram: {
         context: "rowidxGl",
