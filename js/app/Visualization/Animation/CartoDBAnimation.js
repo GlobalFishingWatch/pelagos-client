@@ -98,6 +98,8 @@ define([
           self.manager.handleInfo(self, type, data.error, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
         } else {
           data = data.rows[0];
+          delete data.the_geom;
+          delete data.the_geom_webmercator;
           data.toString = function () {
             return ObjectToTable(this);
           };
