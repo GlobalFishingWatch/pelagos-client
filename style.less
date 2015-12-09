@@ -96,9 +96,105 @@ body {
   width: 100%;
 }
 
+#shortcuts {
+  padding-right: 5px;
+}
+
+.claro .dijitDialog {
+  border: 1px solid #b8bda7;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+}
+
+.claro .dijitDialogTitleBar {
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  background-color: #ef4223;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
+  background-repeat: repeat-x;
+  border-color: #b8bda7 #b8bda7 #ef4223;
+  border-image: none;
+  border-style: none solid solid;
+  border-width: medium 1px 1px;
+  padding: 5px 7px 4px;
+}
+
+.claro .dijitDialogTitle {
+  color: #ffffff;
+  font-size: 1.091em;
+  padding: 0 1px;
+}
+
+.claro .dijitDialogPaneContent {
+  background: #fcfcfc none repeat-x scroll left top;
+  border-top: 1px solid #fcfcfc;
+  padding: 10px 8px;
+  position: relative;
+}
+
+.dijitDialogPaneContent {
+  color: #6d6e70;
+}
+
+.claro .dijitDialogPaneActionBar {
+  background-color: #efefef;
+  border-top: 1px solid #d3d3d3;
+  padding: 3px 5px 2px 7px;
+  text-align: right;
+}
+
 .claro .dijitBorderContainer-dijitContentPane.AnimationContainer,
 .claro .dijitAccordionContainer .dijitAccordionContainer-child.dijitContentPane {
   padding: 0;
+  background-color: transparent;
+}
+
+.claro 
+.dijitAccordionInnerContainerHover 
+.dijitAccordionTitle {
+  color: #333333;
+}
+
+.claro .dijitAccordionTitleSelected {
+	padding: 5px 7px 2px;
+}
+
+.claro .dijitAccordionInnerContainerSelected .dijitAccordionTitle { 
+	background-color: #ef4223;
+    color: #fff;
+    border-right: none;
+    border-left: none;
+}
+
+.claro .dijitAccordionInnerContainer {
+    background-color: #dddcd6;
+    border-top: #b8bda7;
+    border-bottom: #b8bda7;
+    border-right: none;
+    border-left: none;
+    margin-bottom: 1px;
+    transition-duration: 0.3s;
+    transition-property: background-color, border;
+    transition-timing-function: linear;
+}
+
+.claro .dijitAccordionInnerContainerHover {
+	background-color: #ef4223;
+}
+
+.claro .dijitAccordionInnerContainerHover dijitAccordionTitle {
+	color: #767777;
+}	
+
+.claro .dijitAccordionContainer .dijitAccordionChildWrapper {
+    background-color: #fcfcfc;
+    border: none;
+    margin: 0;
+}
+
+.dijitAccordionContainer-child {
+    border-color: #dddcd6;
 }
 
 .animations {
@@ -158,9 +254,9 @@ body {
       border-radius: 6px;
       -moz-border-radius: 6px;
       -webkit-border-radius: 6px;
-      -moz-box-shadow: 6px 6px 10px #CCC;
-      -webkit-box-shadow: 6px 6px 10px #CCC;
-      box-shadow: 6px 6px 10px #CCC;
+      -moz-box-shadow: 6px 6px 10px #5F5D5c;
+      -webkit-box-shadow: 6px 6px 10px #5F5D5c;
+      box-shadow: 6px 6px 10px #5F5D5c;
       white-space: nowrap;
     }
 
@@ -242,7 +338,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 #w {
   position: absolute;
   pointer-events: none;
-  right: 15px;
+  right: 10px;
   width: 14.349%; /* 551px / 3180px */
   min-width: 225px;
   max-width: 551px;
@@ -257,7 +353,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   }
 
   #expand-button, #collapse-button {
-    background-color: #fcfcfc;
+    background-color: transparent;
     border-bottom-left-radius: 4pt; 
     img {
       width: 4%;
@@ -275,9 +371,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   .border {
     pointer-events: auto;
     width: 100%;
-    max-height: 100%;
-    overflow: auto;
-    padding: 5pt 5pt 13pt 0;
+    height: 100%;
+    padding: 0;
     font-family: 'Roboto', sans-serif; 
     background-color: #fcfcfc;
     box-shadow: -3px 1px 2px #b8bda7;
@@ -287,8 +382,45 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     line-height: normal !important;
     box-sizing: initial !important;
 
+    .sidebar-content {
+      height: 100%;
+      width: 100%;
+
+      .header {
+        #activate_help{
+          font-size: 15pt;
+          float: right;
+          margin-right: 0.5em;
+          margin-top: -2px;
+        }
+        #feedback_url{
+          float: right;
+          font-size: 10pt;
+          margin-right: 0.5em;
+          line-height: 17pt;
+        }
+      }
+
+      .blades {
+        height: 100%;
+        padding-bottom: 46pt;
+        .basic-sidebar {
+          height: 100%;
+        }
+      }
+      .sponsor_logos {
+        height: 23pt;
+      }
+    }
+
+    .sponsor_logos {
+      padding-top: 2.1296%; /* 45px / 2160px */
+      padding-left: 10.5263%;/* 58px / 551px */
+      text-align: left;
+    }
+
     #gfw_title {
-      color: #404041; 
+      color: #767777; 
       font-weight: 400;
       padding-left: 10.5263%;/* 58px / 551px */
       img {
@@ -298,56 +430,30 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    .top_action_icons{
-      float: right;
-
-      #activate_help{
-        font-size: 15pt;
-        float: right;
-        margin-right: 0.5em;
-        margin-top: -2px;
-      }
-      #feedback_url{
-        font-size: 10pt;
-        margin-right: 0.5em;
-      }
-    }
     
-    
-    #sponsor_logos {
-      padding-top: 2.1296%; /* 45px / 2160px */
-      padding-left: 10.5263%;/* 58px / 551px */
-      text-align: left;
-    }
 
     #layers, #vessel_identifiers {
-      padding-left: 10.5263%;/* 58px / 551px */
-      word-wrap: break-word;
+      /*padding-left: 10.5263%;*/ /* 58px / 551px */
+      padding-left: 5%;
+	  word-wrap: break-word;
     }
 
     #layers h2, #vessel_identifiers h2 {
       color: #3a3a3c;
       font-size: 100%;
+      padding-top: 1rem; 
       font-weight: 400;
     }
-
-    #vessel_identifiers .action_icons {
-      float: right;
-    }
-    
-    #vessel_identifiers .action_icons .activate_search{
-      float: right;
-      margin-right: 0.5em;
-    }
-    
-    #vessel_identifiers .action_icons .download_kml{
-      margin-right: 0.5em;
-    }
-
 
     #divide {
       border-bottom: solid 1px #dfe0e1;
       margin: 3rem 2.5% 0 2.5%;
+    }
+
+    #activate_search {
+      float: right;
+      margin-top: 2em;
+      margin-right: 2.4em;
     }
 
     /* Vessel Info styles */
@@ -382,6 +488,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     #layers {
       display: table;
       width: 100%;
+      margin-top: -38pt;
 
       .layer-row {
         display: table-row;
@@ -399,7 +506,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       .switch {
         width: 18%;
         font-size: 90%;
-        cursor: pointer;
       }
 
       .layer-label {
@@ -419,6 +525,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       + .switch-line {
         display: block;
         position: relative;
+        cursor: pointer;
         outline: none;
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -584,7 +691,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
     #layers h2,
     #vessel_identifiers h2 {
-      color: #404041; 
+      color: #767777; 
     }
 
     .vessel_id {
@@ -629,7 +736,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 @media screen and (min-width: 3000px) { 
   #w {
-    box-shadow: -6px 2px 4px #b8bda7;
+    box-shadow: -6px 2px 4px #5F5D5c;
   }
 
   #gfw_title {
