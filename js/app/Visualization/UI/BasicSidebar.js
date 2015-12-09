@@ -34,12 +34,14 @@ define([
         '<div id="w" class="expanded">' +
         '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
         '  <div class="border">' +
-        '    <div id="content">' +
-        '      <a id="activate_help" href="javascript:undefined" style="float: right; font-size: 15pt"><i class="fa fa-keyboard-o"></i></a>' +
+        '    <div class="sidebar-content">' +
+        '      <div class=".header">' +
+        '        <a id="activate_help" href="javascript:undefined" style="float: right; font-size: 15pt"><i class="fa fa-keyboard-o"></i></a>' +
         '' +
-        '      <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
+        '        <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
+        '      </div>' +
         '      <div class="blades"></div>' +
-        '      <div id="sponsor_logos"></div>' +
+        '      <div class="sponsor_logos">&nbsp;</div>' +
         '    </div>' +
         '  </div>' +
         '</div>').eval(app.dirs));
@@ -318,12 +320,12 @@ define([
       self.config = config;
       var data = new ObjectTemplate(self.config).eval(app.dirs);
 
-      self.node.find("#sponsor_logos").html("");
+      self.node.find(".sponsor_logos").html("");
       data.sponsorLogos.map(function (spec) {
         var logo = $("<img>");
         logo.attr(spec.attr);
         logo.css(spec.css);
-        self.node.find("#sponsor_logos").append(logo);
+        self.node.find(".sponsor_logos").append(logo);
       });
 
       cb && cb();
