@@ -10,7 +10,34 @@
   tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
 */
 
-define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Format", "app/Data/EmptyFormat", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, LoadingInfo, Bounds, Format, EmptyFormat, Tile, Pack, Logging, Ajax, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/LoadingInfo",
+  "app/Bounds",
+  "app/Data/Format",
+  "app/Data/EmptyFormat",
+  "app/Data/Tile",
+  "app/Data/Pack",
+  "app/Logging",
+  "app/Data/Ajax",
+  "lodash",
+  "app/PopupAuth",
+  "app/LangExtensions"
+], function(
+  Class,
+  Events,
+  LoadingInfo,
+  Bounds,
+  Format,
+  EmptyFormat,
+  Tile,
+  Pack,
+  Logging,
+  Ajax,
+  _,
+  PopupAuth
+) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
     initialize: function() {
@@ -188,11 +215,26 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
             LoadingInfo.main.remove(url);
+            var data = {};
+            try {
+              data = JSON.parse(request.responseText);
+            } catch (e) {
+            }
+
             if (Ajax.isSuccess(request, url)) {
-              var data = JSON.parse(request.responseText);
               cb(null, data);
             } else {
-              if (request.status == 0 && withCredentials) {
+              if (request.status == 403) {
+                new PopupAuth(data.auth_location, function (success) {
+                  if (success) {
+                    getSelectionInfo(fallbackLevel, withCredentials);
+                  } else {
+                    var e = Ajax.makeError(request, url, "selection information from ");
+                    e.source = self;
+                    cb(e, null);
+                  }
+                });
+              } if (request.status == 0 && withCredentials) {
                 getSelectionInfo(fallbackLevel, false);
               } else if (fallbackLevel + 1 < self.getUrlFallbackLevels()) {
                 getSelectionInfo(fallbackLevel + 1, true);
