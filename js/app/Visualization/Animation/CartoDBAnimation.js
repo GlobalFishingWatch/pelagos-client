@@ -46,7 +46,11 @@ define([
         self.manager.map.overlayMapTypes.setAt(self.manager.map.overlayMapTypes.length, layer);
         self.layer = layer;
         /* FIXME: Does not seem to work w/o jsonp:true... why? */
-        self.sql = new cartodb.SQL({user: layer.options.user_name, jsonp: true});
+        self.sql = new cartodb.SQL({
+          user: layer.options.user_name,
+          jsonp: true,
+          sql_api_template: self.layer.options.sql_api_template
+        });
 
         self.layer.getSubLayers().map(function (subLayer) {
           subLayer.setInteraction(true); // Interaction for that layer must be enabled
@@ -90,10 +94,12 @@ define([
         data
       ).done(function(data) {
         LoadingInfo.main.remove(url);
-        if (data.errors) {
-          self.manager.handleInfo(self, type, data.errors, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
+        if (data.error) {
+          self.manager.handleInfo(self, type, data.error, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
         } else {
           data = data.rows[0];
+          delete data.the_geom;
+          delete data.the_geom_webmercator;
           data.toString = function () {
             return ObjectToTable(this);
           };

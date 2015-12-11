@@ -35,17 +35,15 @@ define(["app/Class", "app/Events", "app/Visualization/KeyModifiers", "jQuery"], 
     var html = $("<div class='key-bindings-help'>");
 
     Object.keys(KeyBindings.byCategory).sort().map(function (category) {
-      var categoryHtml = $("<div class='category'><h1></h1><dl class='key-bindings'></dl></div>");
+      var categoryHtml = $("<div class='category'><h1></h1><iv class='key-bindings'></div></div>");
       categoryHtml.find('h1').text(category);
       var bindings = KeyBindings.byCategory[category];
       Object.keys(bindings).map(function (keyPath) {
         var registration = bindings[keyPath];
-        var keysHtml = $("<dt class='key-codes'>");
-        keysHtml.text(registration.keyPath);
-        var descriptionHtml = $("<dd class='description'>");
-        descriptionHtml.html(registration.description);
-        categoryHtml.find('.key-bindings').append(keysHtml);
-        categoryHtml.find('.key-bindings').append(descriptionHtml);
+        var regHtml = $("<div class='binding'><div class='key-codes'></div><div class='description'></div></div>");
+        regHtml.find('.key-codes').text(registration.keyPath);
+        regHtml.find('.description').html(registration.description);
+        categoryHtml.find('.key-bindings').append(regHtml);
       });
       html.append(categoryHtml);
     });

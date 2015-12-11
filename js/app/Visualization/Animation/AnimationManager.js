@@ -366,7 +366,11 @@ function(Class,
       self.hideSelectionAnimations(baseAnimation);
 
       if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
-        var seriesTilesets = baseHeader.seriesTilesets;
+        var seriesTilesets = baseAnimation.args.seriesTilesets;
+
+        if (!seriesTilesets) {
+          seriesTilesets = baseHeader.seriesTilesets;
+        }
 
         if (seriesTilesets === true) {
           seriesTilesets = [
@@ -387,14 +391,10 @@ function(Class,
           ];
         }
 
-        var selectionValue = selection.data.series[0];
-        if (selection.data.seriesgroup != undefined) selectionValue = selection.data.seriesgroup[0];
-
         seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
           url: baseAnimation.data_view.source.url,
           versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
           query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
-          selectionValue: selectionValue,
           query: baseAnimation.data_view.source.getSelectionQuery(selection),
           header: baseAnimation.data_view.source.header,
           selection: selection
