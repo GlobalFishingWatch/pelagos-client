@@ -1,5 +1,5 @@
 define([
-  "app/Class",
+  "app/Class"
 ], function(
   Class
 ) {
