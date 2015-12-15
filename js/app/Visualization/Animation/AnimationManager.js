@@ -1,11 +1,59 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime", "app/ObjectTemplate", "async", "app/Logging", "app/Visualization/KeyModifiers", "jQuery", "app/Visualization/Animation/Matrix", "CanvasLayer", "Stats", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation", "app/Visualization/Animation/LineAnimation", "app/Visualization/Animation/LineStripAnimation", "app/Visualization/Animation/TileAnimation", "app/Visualization/Animation/DebugAnimation", "app/Visualization/Animation/ClusterAnimation", "app/Visualization/Animation/MapsEngineAnimation", "app/Visualization/Animation/VesselTrackAnimation"], function(Class, Events, Bounds, Timerange, SpaceTime, ObjectTemplate, async, Logging, KeyModifiers, $, Matrix, CanvasLayer, Stats, Animation) {
-  return Class({
+define([
+  "app/Class",
+  "app/Events",
+  "app/Bounds",
+  "app/ObjectTemplate",
+  "async",
+  "app/Logging",
+  "app/Visualization/KeyModifiers",
+  "app/Visualization/KeyBindings",
+  "jQuery",
+  "dijit/Dialog",
+  "app/Visualization/Animation/Matrix",
+  "CanvasLayer",
+  "Stats",
+  "app/Visualization/Animation/ObjectToTable",
+  "app/Visualization/Animation/Rowidx",
+  "app/Visualization/Animation/Animation",
+  "app/Visualization/Animation/PointAnimation",
+  "app/Visualization/Animation/LineAnimation",
+  "app/Visualization/Animation/LineStripAnimation",
+  "app/Visualization/Animation/TileAnimation",
+  "app/Visualization/Animation/DebugAnimation",
+  "app/Visualization/Animation/ClusterAnimation",
+  "app/Visualization/Animation/MapsEngineAnimation",
+  "app/Visualization/Animation/CartoDBAnimation",
+  "app/Visualization/Animation/VesselTrackAnimation",
+  "app/Visualization/Animation/ArrowAnimation"],
+function(Class,
+  Events,
+  Bounds,
+  ObjectTemplate,
+  async,
+  Logging,
+  KeyModifiers,
+  KeyBindings,
+  $,
+  Dialog,
+  Matrix,
+  CanvasLayer,
+  Stats,
+  ObjectToTable,
+  Rowidx,
+  Animation
+) {
+  var AnimationManager = Class({
     name: "AnimationManager",
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       mapTypeControlOptions: {
-        position: google.maps.ControlPosition.TOP_LEFT
+          position: google.maps.ControlPosition.TOP_LEFT,
+          style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+      },
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.LEFT_TOP,
+        style: google.maps.ZoomControlStyle.LARGE
       },
       streetViewControl: false,
       overviewMapControl: false,
@@ -90,12 +138,23 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       );
 
       window.addEventListener('resize', self.windowSizeChanged.bind(self), false);
+      google.maps.event.addListener(self.map, 'tilesloaded', self.tilesLoaded.bind(self));
       google.maps.event.addListener(self.map, 'center_changed', self.centerChanged.bind(self));
       google.maps.event.addListener(self.map, 'zoom_changed', self.zoomChanged.bind(self));
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
       cb();
+    },
+
+    tilesLoaded: function() {    
+      var self = this;
+
+      /* FIXME: We a way set focus to handle keyboard combinations...
+       * Not sure how it should work. The following works for initial
+       * focus, but generates a spurious and broken selection event.
+       * self.node.children().children().first().children().trigger('click');
+       */
     },
 
     initOverlay: function (cb) {
@@ -109,6 +168,45 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       cb();
     },
 
+    handleNoGl: function () {
+      var self = this;
+      var failover = self.visualization.state.getValue('nowebgl');
+      if (failover) {
+        window.location = failover;
+      } else {
+        self.dialog = new Dialog({
+          title: "Loading failed",
+          content: '' +
+            '<b class="error">Your browser does not support WebGL</b>',
+          actionBarTemplate: '' +
+            '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+            '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+            '</div>'
+        });
+        $(self.dialog.closeButton).on('click', function () {
+          self.dialog.hide();
+        });
+        self.dialog.show();
+      }
+      throw new AnimationManager.NoGlError();
+    },
+
+    getGlContext: function (canvas) {
+      var self = this;
+      var gl = canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+      if (!gl) self.handleNoGl();
+      gl.enable(gl.BLEND);
+      return gl;
+    },
+
+    createRowidxGlContext: function () {
+      var self = this;
+      var canvas = document.createElement('canvas');
+      var gl = self.getGlContext(canvas);
+      gl.clearColor(1.0, 1.0, 1.0, 1.0);
+      return gl;
+    },
+
     initCanvas: function (cb) {
       var self = this;
 
@@ -120,43 +218,46 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       };
       self.canvasLayer = new CanvasLayer(canvasLayerOptions);
 
-      self.gl = self.canvasLayer.canvas.getContext('experimental-webgl');
-      if (!self.gl) {
-        var failover = self.visualization.state.getValue('nowebgl');
-        if (failover) {
-          window.location = failover;
-        } else {
-          var dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Loading failed</h4></div><div class="modal-body alert">Your browser does not support WebGL.</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-          $('body').append(dialog);
-          dialog.modal();
-          dialog.on('hidden.bs.modal', function (e) {
-            dialog.detach();
-          });
-        }
-        cb({msg: "Your browser does not support WebGL."});
-      } else {
-        self.gl.enable(self.gl.BLEND);
-        self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE);
+      try {
+        self.gl = self.getGlContext(self.canvasLayer.canvas);
 
-        var onAdd = function () {
-          if (!self.canvasLayer.isAdded_) {
-            setTimeout(onAdd, 1);
-          } else {
-            self.canvasResize();
-            cb();
-          }
+        self.rowidxGl = [self.createRowidxGlContext(), self.createRowidxGlContext()];
+      } catch (e) {
+        if (e instanceof AnimationManager.NoGlError) {
+          cb({msg: "Your browser does not support WebGL."});
+        } else {
+           throw e;
         }
-        onAdd();
       }
+
+      var onAdd = function () {
+        if (!self.canvasLayer.isAdded_) {
+          setTimeout(onAdd, 1);
+        } else {
+          self.canvasResize();
+          cb();
+        }
+      }
+      onAdd();
     },
 
     search: function(query, cb) {
       var self = this;
 
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.search",
+        {
+          query: query,
+          toString: function () {
+            return this.query;
+          }
+        }
+      );
+
       searchers = [];
       for (var key in self.animations) {
         var animation = self.animations[key];
-        if (animation.search) {
+        if (animation.search && !animation.selectionAnimationFor) {
           searchers.push(animation.search.bind(animation));
         }
       }
@@ -164,6 +265,26 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       async.concat(searchers, function (searcher, cb) {
         searcher(query, cb);
       }, cb);
+    },
+
+    /* Uses the selectionGl canvases to get a source animation, tile
+     * id and rowid from a pixel x/y position. */
+    getRowidxAtPos: function (x, y) {
+      var self = this;
+
+      /* Canvas coordinates are upside down for some reason... */
+      y = self.canvasLayer.canvas.height - y;
+
+      return Rowidx.pixelToId(
+        Rowidx.appendByteArrays.apply(
+          undefined,
+          self.rowidxGl.map(function (gl) {
+            var data = new Uint8Array(4);
+            gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
+            return data.subarray(0, 3); /* Disregard Alpha for now... Unsure how it interacts with BLEND functions... */
+          })
+        )
+      );
     },
 
     handleMouse: function (e, type) {
@@ -180,93 +301,147 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
         y = e.pixel.y;
       }
 
-      for (var i = 0; i < self.animations.length; i++) {
-        var animation = self.animations[i];
+      var rowidx = self.getRowidxAtPos(x, y);
+
+
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleMouse",
+        {
+          x: x,
+          y: y,
+          rowidx: rowidx,
+          toString: function () {
+            if (this.rowidx != undefined) {
+              return this.x.toString() + "," + this.y.toString() + ": " + JSON.stringify(this.rowidx);
+            } else {
+              return this.x.toString() + "," + this.y.toString() + ": NO OBJECT";
+            }
+          }
+        }
+      );
+
+      if (rowidx) {
+        var animation = self.animations[rowidx[0]];
         if (animation.data_view) {
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
-        if (animation.select(x, y, type, true)) {
+
+        if (animation.select([rowidx[1], rowidx[2]], type, true, e)) {
           return animation;
         }
+      } else {
+        self.animations.map(function (animation) {
+          animation.select(undefined, type, true, e);
+        });
       }
       return false;
     },
 
-    hideSelectionAnimations: function () {
+    hideAllSelectionAnimations: function () {
       var self = this;
 
       var animations = self.animations.slice(0);
       for (var i = 0; i < animations.length; i++) {
-        self.hideSelectionAnimation(animations[i]);
+        self.hideSelectionAnimations(animations[i]);
       }
     },
 
-    hideSelectionAnimation: function (baseAnimation) {
+    hideSelectionAnimations: function (baseAnimation) {
       var self = this;
 
-      if (baseAnimation.selectionAnimation != undefined) {
-        self.removeAnimation(baseAnimation.selectionAnimation);
-        baseAnimation.selectionAnimation = undefined;
+      if (baseAnimation.selectionAnimations != undefined) {
+        baseAnimation.selectionAnimations.map(function (selectionAnimation) {
+          self.removeAnimation(selectionAnimation);
+        });
       }
+      baseAnimation.selectionAnimations = [];
     },
 
-    showSelectionAnimation: function (baseAnimation, selection) {
+    showSelectionAnimations: function (baseAnimation, selection) {
       var self = this;
       var baseHeader = baseAnimation.data_view.source.header;
 
       if (!baseHeader.seriesTilesets) return;
 
-      self.hideSelectionAnimation(baseAnimation);
+      self.hideSelectionAnimations(baseAnimation);
 
       if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
-        var seriesTileset = baseHeader.seriesTilesets;
+        var seriesTilesets = baseAnimation.args.seriesTilesets;
 
-        if (seriesTileset === true) {
-          seriesTileset = {
-            "args": {
-              "title": "Vessel Track",
-              "color": "grey",
-              "visible": true,
-              "source": {
-                "type": "TiledBinFormat",
-                "args": {
-                  "url": "%(versioned_url)s/sub/%(query)s"
+        if (!seriesTilesets) {
+          seriesTilesets = baseHeader.seriesTilesets;
+        }
+
+        if (seriesTilesets === true) {
+          seriesTilesets = [
+            {
+              "type": "VesselTrackAnimation",
+              "args": {
+                "title": "Vessel Track",
+                "color": "grey",
+                "visible": true,
+                "source": {
+                  "type": "TiledBinFormat",
+                  "args": {
+                    "url": "%(query_url)s"
+                  }
                 }
               }
-            },
-            "type": "VesselTrackAnimation"
-          };
+            }
+          ];
         }
 
         var selectionValue = selection.data.series[0];
         if (selection.data.seriesgroup != undefined) selectionValue = selection.data.seriesgroup[0];
 
-        seriesTileset = new ObjectTemplate(seriesTileset).eval({
+        seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
           url: baseAnimation.data_view.source.url,
           versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
+          query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
           selectionValue: selectionValue,
           query: baseAnimation.data_view.source.getSelectionQuery(selection),
           header: baseAnimation.data_view.source.header,
           selection: selection
         });
 
-        self.addAnimation(
-          seriesTileset,
-          function (err, animation) {
-            self.hideSelectionAnimation(baseAnimation);
-            if (err) {
-              self.removeAnimation(animation);
-            } else {
-              animation.selectionAnimationFor = baseAnimation;
-              baseAnimation.selectionAnimation = animation;
+        self.hideSelectionAnimations(baseAnimation);
+
+        async.each(seriesTilesets, function (seriesTileset, cb) {
+          self.addAnimation(
+            seriesTileset,
+            function (err, animation) {
+              if (err) {
+                self.removeAnimation(animation);
+              } else {
+                animation.selectionAnimationFor = baseAnimation;
+                baseAnimation.selectionAnimations.push(animation);
+              }
+              cb();
             }
-          }
-        );
+          );
+        });
       }
     },
 
     initMouse: function(cb) {
       var self = this;
+
+      KeyBindings.register(
+        [], 'left click (on object)', 'Map',
+        'Show object information in the sidebar'
+      );
+      KeyBindings.register(
+        [], 'right click (on object)', 'Map',
+        'Show object information in a popup'
+      );
+      KeyBindings.register(
+        ['Shift'], 'left click (on object)', 'Map',
+        'Show raw object information (no server query) in the sidebar'
+      );
+      KeyBindings.register(
+        ['Shift'], 'right click (on object)', 'Map',
+        'Show raw object information (no server query) in popup'
+      );
 
       self.infoPopup = new google.maps.InfoWindow({});
 
@@ -309,7 +484,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       var self = this;
 
       animationInstance.addingToManager = true;
-      animationInstance.initGl(self.gl, function () { 
+      animationInstance.initGl(function () { 
         animationInstance.initUpdates(function () {
           if (animationInstance.addingToManager) {
             animationInstance.addingToManager = false;
@@ -329,24 +504,30 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       });
     },
 
-    handleInfo: function (animation, selectionEvent, err, data) {
+    handleInfo: function (animation, type, err, data, selectionData) {
       var self = this;
       var dataView = animation.data_view;
-      var type = selectionEvent.category;
-      var info = {};
-      var selectionData = dataView.selections.selections[selectionEvent.category].data;
-      for (var key in selectionData) {
-        info[key] = selectionData[key][0];
-      }
  
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleInfo",
+        {
+          layer: animation.title,
+          category: type,
+          data: data,
+          toString: function () {
+            return this.layer + "/" + this.category + ": " + this.data.toString();
+          }
+        }
+      );
+
       if (type == 'info') {
         if (err) data = err;
         if (!data) return;
 
         self.infoPopup.setOptions({
           content: data.toString(),
-          position: {lat: info.latitude,
-                     lng: info.longitude}
+          position: {lat: selectionData.latitude,
+                     lng: selectionData.longitude}
         });
         self.infoPopup.open(self.map);
       } else {
@@ -354,13 +535,13 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
         var event = {
           layerInstance: animation,
           layer: animation.title,
-          category: selectionEvent.category,
-          selection: info
+          category: type,
+          selection: selectionData
         }
 
         if (err) {
           category = 'info-error';
-          event.error = error;
+          event.error = err;
           event.toString = function () { return this.error.toString(); };
         } else if (data && data.error) {
           category = 'info-error';
@@ -380,6 +561,18 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       }
     },
 
+    handleSelectionInfo: function (animation, selectionEvent, err, data) {
+      var self = this;
+      var dataView = animation.data_view;
+      var type = selectionEvent.category;
+      var info = {};
+      var selectionData = dataView.selections.selections[type].data;
+      for (var key in selectionData) {
+        info[key] = selectionData[key][0];
+      }
+      self.handleInfo(animation, type, err, data, info);
+    },
+
     handleSelectionUpdate: function (animation, selectionEvent, type) {
       var self = this;
       var dataView = animation.data_view;
@@ -387,73 +580,81 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
 
       if (type != 'selected' && type != 'info') return;
 
+      Logging.main.log(
+        "Visualization.Animation.AnimationManager.handleSelectionUpdate",
+        {
+          layer: animation.title,
+          category: type,
+          query: animation.data_view.source.getSelectionQuery(dataView.selections.selections[type]),
+          toString: function () {
+            return this.layer + "/" + this.category + ": " + this.query;
+          }
+        }
+      );
+
+      if (type == 'selected') {
+        self.events.triggerEvent('info-loading', {});
+        if (dataView.source.header.seriesTilesets) {
+          self.hideAllSelectionAnimations();
+        }
+
+        if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
+            && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
+          var data = {};
+          data.toString = function () { return ""; };
+          self.handleSelectionInfo(animation, selectionEvent, null, undefined);
+        }
+      }
+
       if (   (selectionEvent.startidx == undefined || selectionEvent.endidx == undefined)
           && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
-        var data = {};
-        data.toString = function () { return ""; };
-        self.handleInfo(animation, selectionEvent, null, undefined);
-        if (dataView.source.header.seriesTilesets) {
-          self.hideSelectionAnimations();
-        }
+        return;
+      }
+
+      if (dataView.selections.selections[type].rawInfo) {
+        var data = dataView.selections.selections[type].data;
+        data.layer = animation.title;
+        data.toString = function () {
+          return ObjectToTable(this);
+        };
+        self.handleSelectionInfo(animation, selectionEvent, null, data);
       } else {
-        self.showSelectionAnimation(animation, dataView.selections.selections[type]);
-        if (dataView.selections.selections[type].rawInfo) {
-          var data = dataView.selections.selections[type].data;
-          data.layerInstance = animation;
-          data.layer = animation.title;
-          data.toString = function () {
-            var content = ["<table class='table table-striped table-bordered'>"];
-            Object.keys(data).sort().map(function (key) {
-              if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance' || key == 'selection') return;
-              var value = data[key][0];
-              if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
-                value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
-              }
-              if (typeof(value)=="string" && value.indexOf("://") != -1) {
-                content.push("<tr><th colspan='2'><a target='_new' href='" + value +  "'>" + key + "</a></th></tr>");
-              } else {
-                content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
-              }
-            });
-            content.push("</table>");
-            return content.join('\n');
-          };
-          self.handleInfo(animation, selectionEvent, null, data);
-        } else {
-          dataView.selections.getSelectionInfo(type, function (err, data) {
-            var content;
-
-            if (err) {
-              self.handleInfo(animation, selectionEvent, err, null);
-            } else {
-              data.toString = function () {
-                var content = ["<table class='table table-striped table-bordered'>"];
-                if (data.name) {
-                  var name = data.name;
-                  if (data.link) {
-                    name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                  }
-                  content.push("<tr><th colspan='2'>" + name + "</th><tr>");
-                }
-
-                Object.keys(data).sort().map(function (key) {
-                  if (key == 'toString' || key == 'name' || key == 'link' || key == 'layer' || key == 'layerInstance') return;
-                  if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                    content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                  } else {
-                    content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
-                  }
-                });
-
-                content.push("</table>");
-
-                return content.join('\n');
-              };
-              self.handleInfo(animation, selectionEvent, null, data);
-            }
-          });
-
+        if (type == 'selected') {
+          self.showSelectionAnimations(animation, dataView.selections.selections[type]);
         }
+        dataView.selections.getSelectionInfo(type, function (err, data) {
+          var content;
+
+          if (err) {
+            self.handleSelectionInfo(animation, selectionEvent, err, null);
+          } else {
+            data.toString = function () {
+              var content = ["<table class='table table-striped table-bordered'>"];
+              if (data.name) {
+                var name = data.name;
+                if (data.link) {
+                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
+                }
+                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+              }
+
+              Object.keys(data).sort().map(function (key) {
+                if (key == 'toString' || key == 'name' || key == 'link') return;
+                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
+                } else {
+                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+                }
+              });
+
+              content.push("</table>");
+
+              return content.join('\n');
+            };
+            self.handleSelectionInfo(animation, selectionEvent, null, data);
+          }
+        });
+
       }
     },
 
@@ -634,6 +835,16 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       }
       self.updateNeeded = false;
 
+      var width = self.canvasLayer.canvas.width;
+      var height = self.canvasLayer.canvas.height;
+
+      self.rowidxGl.map(function (gl) {
+        gl.canvas.width = width;
+        gl.canvas.height = height;
+        gl.viewport(0, 0, width, height);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      });
+
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();
 
@@ -696,4 +907,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
               options: self.mapOptions};
     }
   });
+
+  AnimationManager.NoGlError = function () { Error.call(this); };
+  AnimationManager.NoGlError.prototype = new Error();
+  AnimationManager.NoGlError.prototype.name = "NoGlError";
+
+  return AnimationManager;
 });

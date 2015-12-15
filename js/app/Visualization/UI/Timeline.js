@@ -46,6 +46,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
     ],
 
     stepLengths: [
+      new Interval({name: 'millisecond', milliseconds: 1}),
       new Interval({name: 'second', seconds: 1}),
 /*
       new Interval({name: 'secfiver', seconds: 5}),
@@ -157,7 +158,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       self.windowNode.mousedown(self.windowDragStart.bind(self));
 
       self.node.mousedown(self.dragStart.bind(self, 'moveTimeline'));
-      $(document).mousemove(self.drag.bind(self));
+      $(document).mousemove(self.move.bind(self));
       $(document).mouseup(self.dragEnd.bind(self));
 
 
@@ -168,7 +169,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       self.windowNode.on('touchstart', self.windowDragStart.bind(self));
 
       self.node.on('touchstart', self.dragStart.bind(self, 'moveTimeline'));
-      $(document).on('touchmove', self.drag.bind(self));
+      $(document).on('touchmove', self.move.bind(self));
       $(document).on('touchend', self.dragEnd.bind(self));
 
       self.node.mousewheel(function(event, delta, deltaX, deltaY) {
@@ -198,6 +199,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       self.leftContext = self.context;
       self.rightContext = self.context;
       self.setRange(self.windowStart, self.windowEnd);
+      self.lastHoverTime = undefined;
     },
 
     setRangeFromOffset: function (offset, type) {
@@ -603,6 +605,23 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       self.eatEvent(e);
     },
 
+    move: function (e) {
+      var self = this;
+      if (self.dragData != undefined) {
+        self.drag(e);
+      } else {
+        var pos = self.getFirstPosition(self.getEventPositions(e));
+        var coords = self.node.offset();
+        coords.right = coords.left + self.node.outerWidth();
+        coords.bottom = coords.top + self.node.outerHeight();
+        if (   coords.left <= pos.pageX && pos.pageX <= coords.right
+            && coords.top <= pos.pageY && pos.pageY <= coords.bottom) {
+          self.lastHoverTime = self.pixelPositionToTime(pos.pageX);
+          self.events.triggerEvent('hover', {time: self.lastHoverTime});
+        }
+      }
+    },
+
     dragStart: function (type, e) {
       var self = this;
 
@@ -620,8 +639,6 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
 
     drag: function (e) {
       var self = this;
-
-      if (self.dragData == undefined) return;
 
       self.dragData.currentPositions = self.getEventPositions(e);
       self.dragData.offsets = {};

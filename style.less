@@ -1,8 +1,50 @@
+html {
+  font-size: 10px;
+  font-family: sans-serif;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+body {
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #333;
+  background-color: #fff;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
 }
+
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+:before, :after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+a {
+  color: #6D6E70;
+  text-decoration: none;
+}
+
+label {
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+
 
 #test, #visualization {
   position: absolute;
@@ -30,9 +72,14 @@ body {
 
 .logo {
   position: absolute;
-  left: 60pt;
-  top: 30pt;
+  left: 90pt;
+  top: 10pt;
   pointer-events: none;
+}
+
+.loading {
+  padding-left: 14px;
+  padding-top: 10px;
 }
 
 .main-timeline {
@@ -49,14 +96,129 @@ body {
   width: 100%;
 }
 
+#shortcuts {
+  padding-right: 5px;
+}
+
+.claro .dijitDialog {
+  border: 1px solid #b8bda7;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+}
+
+.claro .dijitDialogTitleBar {
+  -moz-border-bottom-colors: none;
+  -moz-border-left-colors: none;
+  -moz-border-right-colors: none;
+  -moz-border-top-colors: none;
+  background-color: #ef4223;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
+  background-repeat: repeat-x;
+  border-color: #b8bda7 #b8bda7 #ef4223;
+  border-image: none;
+  border-style: none solid solid;
+  border-width: medium 1px 1px;
+  padding: 5px 7px 4px;
+}
+
+.claro .dijitDialogTitle {
+  color: #ffffff;
+  font-size: 1.091em;
+  padding: 0 1px;
+}
+
+.claro .dijitDialogPaneContent {
+  background: #fcfcfc none repeat-x scroll left top;
+  border-top: 1px solid #fcfcfc;
+  padding: 10px 8px;
+  position: relative;
+}
+
+.dijitDialogPaneContent {
+  color: #6d6e70;
+}
+
+.claro .dijitDialogPaneActionBar {
+  background-color: #efefef;
+  border-top: 1px solid #d3d3d3;
+  padding: 3px 5px 2px 7px;
+  text-align: right;
+}
+
 .claro .dijitBorderContainer-dijitContentPane.AnimationContainer,
 .claro .dijitAccordionContainer .dijitAccordionContainer-child.dijitContentPane {
   padding: 0;
+  background-color: transparent;
+}
+
+.claro 
+.dijitAccordionInnerContainerHover 
+.dijitAccordionTitle {
+  color: #333333;
+}
+
+.claro .dijitAccordionTitleSelected {
+	padding: 5px 7px 2px;
+}
+
+.claro .dijitAccordionInnerContainerSelected .dijitAccordionTitle { 
+	background-color: #ef4223;
+    color: #fff;
+    border-right: none;
+    border-left: none;
+}
+
+.claro .dijitAccordionInnerContainer {
+    background-color: #dddcd6;
+    border-top: #b8bda7;
+    border-bottom: #b8bda7;
+    border-right: none;
+    border-left: none;
+    margin-bottom: 1px;
+    transition-duration: 0.3s;
+    transition-property: background-color, border;
+    transition-timing-function: linear;
+}
+
+.claro .dijitAccordionInnerContainerHover {
+	background-color: #ef4223;
+}
+
+.claro .dijitAccordionInnerContainerHover dijitAccordionTitle {
+	color: #767777;
+}	
+
+.claro .dijitAccordionContainer .dijitAccordionChildWrapper {
+    background-color: #fcfcfc;
+    border: none;
+    margin: 0;
+}
+
+.dijitAccordionContainer-child {
+    border-color: #dddcd6;
 }
 
 .animations {
   width: 100%;
   height: 100%;
+}
+
+.key-bindings-help {
+  .key-bindings {
+    display: table;
+    font-size: 12pt;
+    .binding {
+      display: table-row;
+      .key-codes, .description {
+        display: table-cell;
+        padding-top: 2pt;
+      }
+      .key-codes {
+        white-space: nowrap;
+        text-align: right;
+        padding-right: 10pt;
+      }
+    }
+  }
 }
 
 .control_box {
@@ -111,9 +273,9 @@ body {
       border-radius: 6px;
       -moz-border-radius: 6px;
       -webkit-border-radius: 6px;
-      -moz-box-shadow: 6px 6px 10px #CCC;
-      -webkit-box-shadow: 6px 6px 10px #CCC;
-      box-shadow: 6px 6px 10px #CCC;
+      -moz-box-shadow: 6px 6px 10px #5F5D5c;
+      -webkit-box-shadow: 6px 6px 10px #5F5D5c;
+      box-shadow: 6px 6px 10px #5F5D5c;
       white-space: nowrap;
     }
 
@@ -162,7 +324,17 @@ body {
   }
 }
 
-
+.DataViewUI .value {
+  width: 3em;
+  float: right;
+  border: 1px solid #ffffff;
+  &:hover {
+    border: 1px solid #eeeeee;
+  }
+  &.null-value {
+    width: auto;
+  }
+}
 
 
 
@@ -185,7 +357,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 #w {
   position: absolute;
   pointer-events: none;
-  right: 15px;
+  right: 10px;
   width: 14.349%; /* 551px / 3180px */
   min-width: 225px;
   max-width: 551px;
@@ -200,7 +372,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   }
 
   #expand-button, #collapse-button {
-    background-color: #fcfcfc;
+    background-color: transparent;
     border-bottom-left-radius: 4pt; 
     img {
       width: 4%;
@@ -218,9 +390,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   .border {
     pointer-events: auto;
     width: 100%;
-    max-height: 100%;
-    overflow: auto;
-    padding: 5pt 5pt 13pt 0;
+    height: 100%;
+    padding: 0;
     font-family: 'Roboto', sans-serif; 
     background-color: #fcfcfc;
     box-shadow: -3px 1px 2px #b8bda7;
@@ -230,8 +401,45 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     line-height: normal !important;
     box-sizing: initial !important;
 
+    .sidebar-content {
+      height: 100%;
+      width: 100%;
+
+      .header {
+        #activate_help{
+          font-size: 15pt;
+          float: right;
+          margin-right: 0.5em;
+          margin-top: -2px;
+        }
+        #feedback_url{
+          float: right;
+          font-size: 10pt;
+          margin-right: 0.5em;
+          line-height: 17pt;
+        }
+      }
+
+      .blades {
+        height: 100%;
+        padding-bottom: 46pt;
+        .basic-sidebar {
+          height: 100%;
+        }
+      }
+      .sponsor_logos {
+        height: 23pt;
+      }
+    }
+
+    .sponsor_logos {
+      padding-top: 2.1296%; /* 45px / 2160px */
+      padding-left: 10.5263%;/* 58px / 551px */
+      text-align: left;
+    }
+
     #gfw_title {
-      color: #404041; 
+      color: #767777; 
       font-weight: 400;
       padding-left: 10.5263%;/* 58px / 551px */
       img {
@@ -241,33 +449,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    #gfw_logos {
-      padding-top: 2.1296%; /* 45px / 2160px */
-      padding-left: 10.5263%;/* 58px / 551px */
-      text-align: left;
-
-      img.st {
-        padding-right: 7%;
-        vertical-align: bottom;
-        width: 28%;
-      }
-
-      img.oc {
-        padding-right: 7%;
-        vertical-align: bottom;
-        width: 32%;
-      }
-
-      img.g {
-        width: 26%;
-        vertical-align: bottom;
-        padding-right: 0; 
-      }
-    }
+    
 
     #layers, #vessel_identifiers {
-      padding-left: 10.5263%;/* 58px / 551px */
-      word-wrap: break-word;
+      /*padding-left: 10.5263%;*/ /* 58px / 551px */
+      padding-left: 5%;
+	  word-wrap: break-word;
     }
 
     #layers h2, #vessel_identifiers h2 {
@@ -282,6 +469,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       margin: 3rem 2.5% 0 2.5%;
     }
 
+    #activate_search {
+      float: right;
+      margin-top: 2em;
+      margin-right: 2.4em;
+    }
 
     /* Vessel Info styles */
     .vessel_id {
@@ -349,7 +541,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       visibility: hidden;
 
 
-      + label {
+      + .switch-line {
         display: block;
         position: relative;
         cursor: pointer;
@@ -412,7 +604,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
 
       &:checked {
-        + label {
+        + .switch-line {
           background-color: transparent;
           &:after {
             margin-left: 15px;
@@ -420,8 +612,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         }
       }
 
-      + label,
-      &:checked + label {
+      + .switch-line,
+      &:checked + .switch-line {
         background-repeat: repeat-x;
         background-position: center center;
       }
@@ -431,85 +623,85 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     /* colors */
     /* heatmap */
     input.cmn-toggle-orange {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #ef4323; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #ef4323; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #ef4323;
       }
     }
     /* oceana */
     input.cmn-toggle-purple {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #692897; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #692897; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #692897;
       }
     }
     /* eez */
     input.cmn-toggle-blue {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #4666af; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #4666af; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #4666af;
       }
     }
     /* bathymetry */
     input.cmn-toggle-blue2 {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #9daed4; 
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #9daed4; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #9daed4;
       }
     }
     /* mpa */
     input.cmn-toggle-green {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #4cae4e;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #4cae4e; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #4cae4e;
       }
     }
     /* world heritage */
     input.cmn-toggle-green2 {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #0e5c39;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #0e5c39; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #0e5c39;
       }
     }
     /* vessel tracks */
     input.cmn-toggle-grey {
-      + label, &:checked + label {
+      + .switch-line, &:checked + .switch-line {
         border-color: #757575;
       }
-      &:checked + label:after {
+      &:checked + .switch-line:after {
         background-color: #757575; 
       }
-      + label:after {
+      + .switch-line:after {
         border-color: #757575;
       }
     }
@@ -518,7 +710,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
     #layers h2,
     #vessel_identifiers h2 {
-      color: #404041; 
+      color: #767777; 
     }
 
     .vessel_id {
@@ -531,6 +723,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         color: #939597; 
         vertical-align: top;
         padding-left: 5px; 
+        word-break: break-all;
       }
     }
 
@@ -562,7 +755,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 @media screen and (min-width: 3000px) { 
   #w {
-    box-shadow: -6px 2px 4px #b8bda7;
+    box-shadow: -6px 2px 4px #5F5D5c;
   }
 
   #gfw_title {

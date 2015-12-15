@@ -8,12 +8,12 @@ class HTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     def log_message(self, *arg, **kw):
         pass
 
-def start():
+def start(port):
     current_dir = os.path.dirname(__file__)
     root_dir = os.path.join(current_dir, "..")
 
     os.chdir(root_dir)
-    server = BaseHTTPServer.HTTPServer(('', 8000), HTTPRequestHandler)
+    server = BaseHTTPServer.HTTPServer(('', port), HTTPRequestHandler)
 
     socket_address = server.socket.getsockname()
     print "Serving HTTP on", socket_address[0], ":", socket_address[1], "..."

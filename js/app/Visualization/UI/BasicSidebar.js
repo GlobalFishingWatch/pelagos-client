@@ -2,11 +2,26 @@ define([
   "app/Class",
   "app/Logging",
   "app/CountryCodes",
+  "dijit/layout/ContentPane",
+  "dijit/layout/AccordionContainer",
   "jQuery",
-  "app/Visualization/KeyModifiers"
-], function(Class, Logging, CountryCodes, $, KeyModifiers){
+  "dijit/form/HorizontalSlider",
+  "app/Visualization/KeyModifiers",
+  "app/ObjectTemplate"
+], function(
+  Class ,
+  Logging,
+  CountryCodes,
+  ContentPane,
+  AccordionContainer,
+  $,
+  HorizontalSlider,
+  KeyModifiers,
+  ObjectTemplate
+) {
   return Class({
     name: "BasicSidebar",
+
     initialize: function (visualization) {
       var self = this;
 
@@ -15,32 +30,49 @@ define([
 
       self.idCounter = 0;
 
-      $('body').append('<img class="logo" src="' + app.dirs.img + '/gfw/logo-white.png">');
-      self.node = $('' +        
+      self.node = $(new ObjectTemplate('' +        
         '<div id="w" class="expanded">' +
-        '  <div id="expand-button"><img src="' + app.dirs.img + '/gfw/gfw_open.png"></div>' +
+        '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
         '  <div class="border">' +
-        '    <div id="content">' +
-        '      <div id="collapse-button"><img src="' + app.dirs.img + '/gfw/gfw_close.png"></div>' +
-        '' +
-        '      <div id="layers">' +
-        '        <h2>Layers</h2>' +
-        '        <form class="layer-list"></form>' +
-        '      </div>' +
-        '' +
-        '      <div id="divide"></div>' +
-        '' +
-        '      <div id="vessel_identifiers"></div>' +
-        '' +
-        '      <div id="codeoutput"></div>' +
-        '      <div id="divide"></div>' +
-        '      <div id="gfw_logos"><img class="st" src="' + app.dirs.img + '/gfw/st_logo.png"><img class="oc" src="' + app.dirs.img + '/gfw/oceana_logo.png"><img class="g" src="' + app.dirs.img + '/gfw/google_logo.png"></div>' +
+        '    <div class="sidebar-content">' +    
+        '      <div class="header">' +
+        '        <a id="activate_help" href="javascript:undefined">' +
+        '          <i class="fa fa-keyboard-o"></i>' +
+        '        </a>' +
+        '        <a id="feedback_url" target="_blank">' +
+        '          Feedback' +
+        '        </a>' +
+        '        <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
+        '      </div>' +    
+        '      <div class="blades"></div>' +
+        '      <div class="sponsor_logos">&nbsp;</div>' +
         '    </div>' +
         '  </div>' +
-        '</div>');
+        '</div>').eval(app.dirs));
       $('body').append(self.node);
 
+      self.sidebar = new AccordionContainer({splitter:true});
+      $(self.sidebar.domNode).addClass("basic-sidebar");
+      self.node.find(".blades").prepend(self.sidebar.domNode);
+      self.sidebar.startup();
+
+      self.info = new ContentPane({title: 'Info', content: "<div id='vessel_identifiers'></div>", doLayout: false});
+      self.sidebar.addChild(self.info);
+      self.sidebar.layout();
+
+      self.layers = new ContentPane({title: 'Layers', content:"" +
+          "<div id='layers'>" +
+          "  <h2>Layers</h2>" +
+          "  <form class='layer-list'></form" +
+          "</div>", doLayout: false});
+      self.sidebar.addChild(self.layers);
+      self.sidebar.layout();
+
       self.update("none", {});
+
+      self.node.find("#activate_help").click(function () {
+        self.visualization.ui.help.displayHelpDialog();
+      });
 
       self.node.find("#collapse-button img").click(function () {
         self.node.css({left:self.node.offset().left + "px"});
@@ -60,6 +92,7 @@ define([
       self.animationManager.events.on({
         'add': self.addHandler.bind(self),
         'remove': self.removeHandler.bind(self),
+        'info-loading': self.updateLoading.bind(self),
         'info': self.update.bind(self, "none"),
         'info-error': self.update.bind(self, "#ff0000")
       });
@@ -70,14 +103,24 @@ define([
       }});
     },
 
+    updateLoading: function () {
+      var self = this;
+      self.node.find("#vessel_identifiers").html(
+        '      <h2>Vessel Information</h2>' +
+        '      <div class="loading-vessel-info" style=""><img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg"></div>'
+      );
+    },
+
     update: function (color, event) {
       var self = this;
 
       var data = event.data;
-        if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
+      if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
         self.node.find("#vessel_identifiers").html(
+          '      <div class="action_icons">'+
+          '        <a id="activate_search" class="activate_search" href="javascript:undefined"><i class="fa fa-search"></i></a>' +
+          '      </div>' +
           '      <h2>Vessel Information</h2>' +
-          '      <span class="download"></span>' +
           '      <table class="vessel_id">' +
           '        <tbody>' +
           '          <tr>' +
@@ -108,6 +151,10 @@ define([
           '      </table>'
         );
 
+        self.node.find("#activate_search").click(function () {
+          self.visualization.ui.search.displaySearchDialog();
+        });
+        
         if (data) {
           self.node.find(".vessel_id .callsign").html(data.callsign || "---");
 
@@ -167,26 +214,27 @@ define([
           if (data.link) {
             var link = $("<a target='_new'>");
             link.attr({href: data.link});
-            self.node.find("h2").wrapInner(link);
+            self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
 
-          var link = $('<a target="_new">Download as KML</a>');
+          if (event.layerInstance.data_view.source.header.kml) {
+            var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
 
-          link.attr({
-              href: (event.layerInstance.data_view.source.getUrl('export', -1) +
-                   "/sub/" +
-                   event.layerInstance.data_view.source.getSelectionQuery(
-                     event.layerInstance.data_view.selections.selections[event.category]) +
-                   "/export")
-          });
-          self.node.find(".download").append(link);
-
+            link.attr({
+                href: (event.layerInstance.data_view.source.getUrl('export', -1) +
+                     "/sub/" +
+                     event.layerInstance.data_view.source.getSelectionQuery(
+                       event.layerInstance.data_view.selections.selections[event.category]) +
+                     "/export")
+            });
+            self.node.find(".action_icons").append(link);
+          }
         }
       } else {
         self.node.find("#vessel_identifiers").html(
           '<h2>' + event.layer + '</h2>' +
-          event.toString());
-        self.node.find("table").attr({"class": "vessel_id"});
+          data.toString());
+        self.node.find("#vessel_identifiers table").attr({"class": "vessel_id"});
       }
 
       self.node.find("#vessel_identifiers").css({color: color});
@@ -198,10 +246,10 @@ define([
 
       var node = $('' +
         '<div class="layer-row">' +
-        '  <div class="switch">' +
+        '  <label class="switch">' +
         '    <input class="cmn-toggle" type="checkbox">' +
-        '    <label></label>' +
-        '  </div>' +
+        '    <div class="switch-line"></div>' +
+        '  </label>' +
         '  <div class="layer-label"></div>' +
         '</div>');
 
@@ -228,33 +276,65 @@ define([
       self.node.find(".layer-list").append(node);
 
       if (animation.constructor.prototype.name == "ClusterAnimation") {
-        var slider = $("<div class=\"intensity-slider\">");
-        self.node.find(".layer-list").append(slider);
+        var val2slider = function(val) { return Math.log(1 + val)/Math.log(4); };
+        var slider2val = function(val) { return Math.pow(4, val) - 1; };
 
-        // This is a hack to set the current value within the max value of our exponential scale below...
-        animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, 0.2) - 1;
-        animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
+        var maxv = val2slider(animation.data_view.header.colsByName.weight.max);
+        var minv = val2slider(animation.data_view.header.colsByName.weight.min);
+        var curv = val2slider(animation.data_view.header.colsByName.weight.source.weight);
 
-        function refreshSwatch() {
-          var value = slider.slider("value");
+        var update = undefined;
+        var refreshSwatch = function () {
+          if (update != undefined) return;
+          update = setTimeout(function () {
+            var value = slider.value;
 
-          animation.data_view.header.colsByName.weight.source.weight = Math.pow(4, value) - 1;
-          animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
+            animation.data_view.header.colsByName.weight.source.weight = slider2val(value);
+            animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
+            update = undefined;
+          }, 100);
         }
-        slider.slider({
-          orientation: "horizontal",
-          min: Math.log(1+0)/Math.log(4),
-          max: Math.log(1+0.2)/Math.log(4),
-          step: 0.01,
-          value: Math.log(animation.data_view.header.colsByName.weight.source.weight + 1)/Math.log(4),
-          slide: refreshSwatch
-        });
+
+        var slider = new HorizontalSlider({
+          value:curv,
+          minimum: minv,
+          maximum: maxv,
+          discreteValues: 100,
+          onChange: refreshSwatch,
+          intermediateChanges: true
+        }, "mySlider");
+        slider.placeAt(self.node.find(".layer-list")[0]);
+        slider.startup();
       }
 
     },
 
     removeHandler: function (event) {
       event.animation.basicSidebarNode.remove();
+    },
+
+
+    toJSON: function () {
+      var self = this;
+      return self.config;
+    },
+
+    load: function (config, cb) {
+      var self = this;
+      self.config = config;
+      var data = new ObjectTemplate(self.config).eval(app.dirs);
+
+      self.node.find(".sponsor_logos").html("");
+      data.sponsorLogos.map(function (spec) {
+        var logo = $("<img>");
+        logo.attr(spec.attr);
+        logo.css(spec.css);
+        self.node.find(".sponsor_logos").append(logo);
+      });
+      
+      self.node.find("#feedback_url").attr("href", data.feedback_url);
+
+      cb && cb();
     }
   });
 });

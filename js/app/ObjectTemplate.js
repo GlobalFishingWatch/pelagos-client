@@ -24,7 +24,7 @@ define(["app/Class"], function(Class, Events, Logging) {
       var self = this;
 
       var evalString = function (str) {
-        var replacementsRe = new RegExp("%\\(([^)]*)\\)s", "g");
+        var replacementsRe = new RegExp('%\\(([^)]*)\\)s', 'g');
         var replacementArgs = {};
         var match;
         while (match = replacementsRe.exec(str)) {
@@ -35,7 +35,7 @@ define(["app/Class"], function(Class, Events, Logging) {
           replacementArgs[match[1]] = value;
         };
         for (var key in replacementArgs) {
-          str = str.replace(new RegExp('%\\(' +  key + '\\)s'), replacementArgs[key].toString());
+          str = str.replace(new RegExp('%\\(' +  key + '\\)s', 'g'), replacementArgs[key].toString());
         }
         return str;
       };
@@ -44,7 +44,9 @@ define(["app/Class"], function(Class, Events, Logging) {
         if (typeof(node) == "string") {
           return evalString(node);
         } else if (typeof(node) == "object") {
-          if (node.constructor.name == "Array") {
+          if (node === null) {
+            return node;
+          } else if (node.constructor.name == "Array") {
             return node.map(eval);
           } else if (node["%"] != undefined) {
             var res = data;

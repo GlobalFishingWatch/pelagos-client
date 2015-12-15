@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <title>VectorVisual - Test</title>
+    <script type="text/javascript">
+      app = {
+        useBuild: false,
+        dependencies: {
+          stylesheets: ["$(lib)s/qunit/qunit/qunit.css"],
+          scripts: ["$(lib)s/qunit/qunit/qunit.js"]
+        },
+        packages: [{name: 'QUnit', location: '$(shim)s/QUnit'}],
+        mainModule: 'app/test'
+      };
+    </script>
+    <script type="text/javascript" src="js/deps.js"></script>
+  </head>
+  <body class="claro">
+    <div id="test">
+      <div id="qunit"></div>
+      <div id="qunit-fixture"></div>
+    </div>
+  </body>
+</html>

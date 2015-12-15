@@ -51,10 +51,31 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
 
     destroy: function () {
       var self = this;
-      $(self.rowidxCanvas).remove();
+      // Destroy all we can explicitly, waiting for GC can take
+      // forever, and until then other animations might not get
+      // GL resources...
+      for (var programname in self.programs) {
+        var programs = self.programs[programname];
+        for (var i = 0; i < programs.length; i++) {
+          var program = programs[i];
+          for (var sourcename in program.dataViewArrayBuffers) {
+            var source = program.dataViewArrayBuffers[sourcename];
+            for (var buffername in source) {
+              var buffer = source[buffername];
+              program.gl.deleteBuffer(buffer);
+            }
+          }
+          program.gl.deleteProgram(program);
+        }
+      }
+      self.programs = {};
+
+      if (self.data_view) {
+        self.manager.visualization.data.destroyView(self.data_view, self.source);
+      }
     },
 
-    initGl: function(gl, cb) {
+    initGl: function(cb) {
       var self = this;
 
       if (self.source.args.url.indexOf("://") == -1) {
@@ -81,19 +102,9 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
         self.data_view = data_view;
 
         var handleHeader = function () {
-          self.gl = gl;
-
           self.data_view.source.events.un({
             "header": handleHeader
           });
-
-          self.rowidxCanvas = document.createElement('canvas');
-
-          rowidxCanvas = $(self.rowidxCanvas);
-          self.rowidxGl = self.rowidxCanvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
-          self.rowidxGl.enable(self.rowidxGl.BLEND);
-          self.rowidxGl.blendFunc(self.rowidxGl.SRC_ALPHA, self.rowidxGl.ONE_MINUS_SRC_ALPHA);
-          self.rowidxGl.lineWidth(1.0);
 
           self.initGlPrograms(cb);
         }
@@ -111,18 +122,32 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
 
       self.programs = {};
       async.map(Object.items(self.programSpecs), function (item, cb) {
-        Shader.createShaderProgramFromUrl(
-          self[item.value.context],
-          require.toUrl(item.value.vertex),
-          require.toUrl(item.value.fragment),
-          {
-            attr0: Object.keys(self.data_view.source.header.colsByName)[0],
-            attrmapper: Shader.compileMapping(self.data_view)
+        var programName = item.key;
+        var programSpec = item.value;
+
+        var gls = self.manager[programSpec.context];
+        if (!gls.length) gls = [gls];
+
+        async.map(
+          gls,
+          function (gl, cb) {
+            Shader.createShaderProgramFromUrl(
+              gl,
+              require.toUrl(programSpec.vertex),
+              require.toUrl(programSpec.fragment),
+              {
+                attr0: Object.keys(self.data_view.source.header.colsByName)[0],
+                attrmapper: Shader.compileMapping(self.data_view)
+              },
+              function (program) {
+                program.name = programName;
+                program.dataViewArrayBuffers = {};
+                cb(null, program);
+              }
+            );
           },
-          function (program) {
-            program.name = item.key;
-            program.dataViewArrayBuffers = {};
-            self.programs[item.key] = program;
+          function (err, programs) {
+            self.programs[programName] = programs;
             cb();
           }
         );
@@ -156,7 +181,9 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       self.dataUpdateTimeout = undefined;
       self.dataUpdates++;
 
-      Object.values(self.programs).map(self.updateDataProgram.bind(self));
+      Object.values(self.programs).map(function (programs) {
+        programs.map(self.updateDataProgram.bind(self));
+      });
 
       self.manager.triggerUpdate();
     },
@@ -171,29 +198,43 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       var self = this;
       if (!self.visible) return;
 
-      var width = self.manager.canvasLayer.canvas.width;
-      var height = self.manager.canvasLayer.canvas.height;
-      self.rowidxCanvas.width = width;
-      self.rowidxCanvas.height = height;
-
-      self.rowidxGl.viewport(0, 0, width, height);
-      self.rowidxGl.clear(self.rowidxGl.COLOR_BUFFER_BIT);
-
-      Object.values(self.programs).map(self.drawProgram.bind(self));
+      Object.values(self.programs).map(function (programs) {
+        programs.map(self.drawProgram.bind(self));
+      });
     },
 
-    drawProgram: function (program) {
+    setBlendFunc: function(program) {
+      var self = this;
+      var gl = program.gl;
+      var blend = self.programSpecs[program.name].blend;
+
+      if (!blend) {
+        if (program.name == "rowidxProgram") {
+          blend = {src:"SRC_ALPHA", dst:"ONE_MINUS_SRC_ALPHA"};
+        } else {
+          blend = {src:"SRC_ALPHA", dst:"ONE"};
+        }
+      }
+      gl.blendFunc(gl[blend.src], gl[blend.dst]);
+    },
+
+    drawProgram: function (program, idx) {
       var self = this;
 
-      if (program.name == "rowidxProgram" && !self.manager.isPaused())
+      if (program.name == "rowidxProgram" && (self.manager.indrag || !self.manager.isPaused()))
         return;
 
       program.gl.useProgram(program);
+      self.setBlendFunc(program);
 
       self.setGeneralUniforms(program);
 
       var mode = self.getDrawMode(program);
 
+      program.gl.uniform1f(
+        program.uniforms.animationidx,
+        self.manager.animations.indexOf(self));
+      program.gl.uniform1f(program.uniforms.canvasIndex, idx);
       var tileidx = 0;
       self.data_view.source.getContent().map(function (tile) {
         program.gl.uniform1f(program.uniforms.tileidx, tileidx);
@@ -215,6 +256,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
         } else {
           program.gl.drawArrays(mode, 0, tile.content.header.length);
         }
+        Shader.disableArrays(program);
       });
     },
 
@@ -246,7 +288,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       var self = this;
       if (!program.dataViewArrayBuffers[tile.url]) return false;
       program.gl.useProgram(program);
-      for (var name in program.dataViewArrayBuffers[tile.url]) {
+      for (var name in program.attributes) {
         Shader.programBindArray(program.gl, program.dataViewArrayBuffers[tile.url][name], program, name, 1, program.gl.FLOAT);
       };
       return true;
@@ -256,11 +298,13 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       var self = this;
       var time = self.manager.visualization.state.getValue("time");
       var timeExtent = self.manager.visualization.state.getValue("timeExtent");
+      var timeFocus = self.manager.visualization.state.getValue("timeFocus");
 
       if (time == undefined) return;
       time = time.getTime();
 
       self.data_view.selections.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
+      program.gl.uniform1f(program.uniforms.timefocus, timeFocus);
       program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
       program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
       program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
@@ -279,53 +323,8 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       Shader.setMappingUniforms(program, self.data_view);
     },
 
-    /* Uses the rowidxGl canvas to get a source data rowid from a
-     * pixel x/y position. Rowidx is encoded into RGB (in that order),
-     * with 1 added to the rowidx. 0 encodes no row drawn on that
-     * pixel. */
-    getRowidxAtPos: function (x, y, radius) {
+    select: function (rowidx, type, replace, event) {
       var self = this;
-
-      /* Canvas coordinates are upside down for some reason... */
-      y = self.manager.canvasLayer.canvas.height - y;
-
-      if (radius == undefined) radius = 4;
-
-      var size = radius * 2 + 1;
-
-      var data = new Uint8Array(4*size*size);
-      self.rowidxGl.readPixels(x-radius, y-radius, size, size, self.rowidxGl.RGBA, self.rowidxGl.UNSIGNED_BYTE, data);
-
-      var pixelToId = function (offset) {
-        var tileidx = data[offset];
-        var rowidx = ((data[offset+1] << 8) | data[offset+2]) - 1;
-        if (rowidx == -1) return undefined;
-        return [tileidx, rowidx];
-      }
-
-      var rowIdx = [];
-      for (var i = 0; i < size*size; i++) {
-        rowIdx.push(pixelToId(i * 4));
-      }
-
-      var last = undefined;
-      var lastradius = 0;
-      for (var oy = 0; oy < size; oy++) {
-        for (var ox = 0; ox < size; ox++) {
-          var r = Math.sqrt(Math.pow(Math.abs(ox - size + 0.5), 2) + Math.pow(Math.abs(oy - size + 0.5), 2))
-          if (rowIdx[oy*size+ox] != undefined && (r <= lastradius || last == undefined)) {
-            last = rowIdx[oy*size+ox];
-            lastradius = r;
-          }
-        }
-      }
-
-      return last;
-    },
-
-    select: function (x, y, type, replace) {
-      var self = this;
-      var rowidx = self.getRowidxAtPos(x, y);
       self.data_view.selections.addSelectionRange(type, rowidx, rowidx, replace);
       return rowidx;
     },

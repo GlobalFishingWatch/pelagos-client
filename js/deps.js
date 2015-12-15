@@ -19,11 +19,9 @@
   if (app.useBuild) {
     app.paths.shim = app.paths.build;
     app.paths.app = app.paths.build.concat(['app']);
-    app.paths.dojo = app.paths.build;
   } else {
     app.paths.shim = app.paths.script.concat("shims");
     app.paths.app = app.paths.script.concat(['app']);
-    app.paths.dojo = app.paths.lib.concat(['dojo-release-1.10.0-src']);
   }
 
   app.dirs = app.dirs || {};
@@ -38,60 +36,74 @@
 
   if (app.useBuild) {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-      app.dirs.build + "/deps.css",
-      {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"}
+      "$(build)s/deps.css",
+      "$(build)s/dijit/themes/claro/claro.css",
+      {url: "$(script)s/../style.less", rel:"stylesheet/less"}
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-      app.dirs.build + "/deps.js"
+        "$(build)s/deps.js",
+      "$(build)s/app/app.js"
     ]);
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-      app.dirs.lib + "/bootstrap-3.2.0-dist/css/bootstrap.min.css",
-      app.dirs.lib + "/font-awesome/css/font-awesome.min.css",
-      app.dirs.lib + "/qunit-1.15.0.css",
-      app.dirs.lib + "/jquery-ui.css",
-
-      {url: app.dirs.script + "/../style.less", rel:"stylesheet/less"},
-
-      app.dirs.dojo + "/dijit/themes/claro/claro.css",
-
-      app.dirs.dojo + "/dojox/layout/resources/FloatingPane.css",
-      app.dirs.dojo + "/dojox/layout/resources/ResizeHandle.css"
+      "$(lib)s/font-awesome/css/font-awesome.min.css",
+      "$(lib)s/dijit/themes/claro/claro.css",
+      "$(lib)s/dojox/layout/resources/FloatingPane.css",
+      "$(lib)s/dojox/layout/resources/ResizeHandle.css",
+      {url: "$(script)s/../style.less", rel:"stylesheet/less"},
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
-      app.dirs.lib + "/qunit-1.15.0.js",
-      app.dirs.lib + "/async.js",
-      app.dirs.lib + "/stacktrace.js",
-      app.dirs.lib + "/lodash.js",
+      "$(lib)s/async/lib/async.js",
+      "$(lib)s/stacktrace-js/dist/stacktrace-with-polyfills.min.js",
+      "$(lib)s/lodash/lodash.min.js ",
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
-      app.dirs.lib + "/jquery-1.10.2.min.js",
-      app.dirs.lib + "/jquery.mousewheel.js",
-      app.dirs.lib + "/less.min.js",
-      app.dirs.lib + "/bootstrap-3.2.0-dist/js/bootstrap.min.js",
-      app.dirs.script + "/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
-      app.dirs.lib + "/stats.min.js",
-      app.dirs.lib + "/loggly.tracker.js",
-      app.dirs.lib + "/jquery-ui.js"
+      "$(lib)s/jquery/dist/jquery.min.js",
+      "$(lib)s/jquery-mousewheel/jquery.mousewheel.min.js",
+      "$(lib)s/less/dist/less.min.js",
+      "$(script)s/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
+      "$(lib)s/stats.js/build/stats.min.js",
+      "$(lib)s/cartodb.js/cartodb.js",
+      "$(lib)s/loggly-jslogger/src/loggly.tracker.min.js",
+      "$(script)s/dojoconfig.js",
+      "$(lib)s/dojo/dojo.js"
     ]);
   }
 
   app.packages = app.packages.concat([
-    {name: 'bootstrap', location: app.paths.shim.concat(['bootstrap']).join('/')},
-    {name: 'CanvasLayer', location: app.paths.shim.concat(['CanvasLayer']).join('/')},
-    {name: 'Stats', location: app.paths.shim.concat(['Stats']).join('/')},
-    {name: 'QUnit', location: app.paths.shim.concat(['QUnit']).join('/')},
-    {name: 'jQuery', location: app.paths.shim.concat(['jQuery']).join('/')},
-    {name: 'less', location: app.paths.shim.concat(['less']).join('/')},
-    {name: 'async', location: app.paths.shim.concat(['async']).join('/')},
-    {name: 'stacktrace', location: app.paths.shim.concat(['stacktrace']).join('/')},
-    {name: 'LogglyTracker', location: app.paths.shim.concat(['LogglyTracker']).join('/')},
-    {name: 'lodash', location: app.paths.shim.concat(['lodash']).join('/')},
-    {name: 'app', location:app.dirs.app, main: 'main'}
+    {name: 'CanvasLayer', location: '$(shim)s/CanvasLayer'},
+    {name: 'Stats', location: '$(shim)s/Stats'},
+    {name: 'jQuery', location: '$(shim)s/jQuery'},
+    {name: 'less', location: '$(shim)s/less'},
+    {name: 'async', location: '$(shim)s/async'},
+    {name: 'stacktrace', location: '$(shim)s/stacktrace'},
+    {name: 'LogglyTracker', location: '$(shim)s/LogglyTracker'},
+    {name: 'lodash', location: '$(shim)s/lodash'},
+    {name: "cartodb", location: "$(shim)s/cartodb"},
+    {name: 'app', location:'$(app)s', main: 'main'}
   ]);
 
-  app.dependencies.scripts.push(app.dirs.script + "/dojoconfig.js");
-  app.dependencies.scripts.push(app.dirs.dojo + "/dojo/dojo.js");
+  /* Expand path variables */
+  var replacePathVars = function(s) {
+    for (var varName in app.dirs) {
+      s = s.replace("$(" + varName +")s", app.dirs[varName]);
+    }
+    return s;
+  }
+
+  for (var depType in app.dependencies) {
+    app.dependencies[depType] = app.dependencies[depType].map(function (item) {
+      if (typeof(item) == 'string') {
+        return replacePathVars(item)
+      } else {
+        item.url = replacePathVars(item.url);
+        return item;
+      }
+    });
+  }
+  app.packages.map(function (pkg) {
+    pkg.location = replacePathVars(pkg.location);
+  });
 
 
   /* Code to load the above dependencies */
@@ -159,16 +171,6 @@
      });
     }
   }
-
-  if (app.useBuild) {
-    var realMain = main;
-    main = function () {
-      require(["app/app"], function (mainModule) {
-        realMain();
-      });
-    }
-  }
-
   app.dependencies.stylesheets.map(addHeadStylesheet);
   asyncmap(app.dependencies.scripts, addHeadScript, main);
 })();

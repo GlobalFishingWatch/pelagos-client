@@ -21,9 +21,11 @@ define([
   "app/Data/Pack",
   "app/Logging",
   "app/Data/Ajax",
+  "app/Data/EmptyFormat",
   "lodash",
-  "app/LangExtensions"],
-function(
+  "app/PopupAuth",
+  "app/LangExtensions"
+], function(
   Class,
   Events,
   LoadingInfo,
@@ -34,7 +36,10 @@ function(
   Pack,
   Logging,
   Ajax,
-  _) {
+  EmptyFormat,
+  _,
+  PopupAuth
+) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
     initialize: function() {
@@ -175,22 +180,33 @@ function(
       }
       res = [];
       cols.map(function (col) {
+        if (selection.data[col][0] == undefined) return;
         res.push(encodeURIComponent(col) + "=" + encodeURIComponent(selection.data[col][0].toString()));
       });
       return res.join(',');
+    },
+
+    getSelectionUrl: function(selection, fallbackLevel) {
+      var self = this;
+      /* FIXME: self.header.infoUsesSelection is a workaround for
+         current info database that doesn't contain seriesgroup
+         values. This should be removed in the future. */
+
+      var baseUrl = self.getUrl("selection-info", fallbackLevel);
+      if (baseUrl.indexOf("/sub/") != -1) {
+          baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
+      } else {
+          baseUrl = baseUrl + "/sub/";
+      }
+
+      return baseUrl + self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series'])
     },
 
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
-        /* FIXME: self.header.infoUsesSelection is a workaround for
-           current info database that doesn't contain seriesgroup
-           values. This should be removed in the future. */
-        var url = (self.getUrl("selection-info", fallbackLevel) +
-                   "/sub/" +
-                   self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']) +
-                   "/info");
+        var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
@@ -199,11 +215,26 @@ function(
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
             LoadingInfo.main.remove(url);
+            var data = {};
+            try {
+              data = JSON.parse(request.responseText);
+            } catch (e) {
+            }
+
             if (Ajax.isSuccess(request, url)) {
-              var data = JSON.parse(request.responseText);
               cb(null, data);
             } else {
-              if (request.status == 0 && withCredentials) {
+              if (request.status == 403) {
+                new PopupAuth(data.auth_location, function (success) {
+                  if (success) {
+                    getSelectionInfo(fallbackLevel, withCredentials);
+                  } else {
+                    var e = Ajax.makeError(request, url, "selection information from ");
+                    e.source = self;
+                    cb(e, null);
+                  }
+                });
+              } if (request.status == 0 && withCredentials) {
                 getSelectionInfo(fallbackLevel, false);
               } else if (fallbackLevel + 1 < self.getUrlFallbackLevels()) {
                 getSelectionInfo(fallbackLevel + 1, true);
@@ -225,7 +256,7 @@ function(
       var self = this;
 
       var data = {query: query};
-      var url = self.url + "/search";
+      var url = self.getUrl("search", -1) + "/search";
 
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
@@ -246,6 +277,99 @@ function(
         }
       };
       request.send(JSON.stringify(data));
+    },
+
+    tileParamsForRegion: function(bounds) {
+      var self = this;
+      var origBounds = bounds;
+      bounds = bounds.unwrapDateLine(self.world);
+
+      var res = {
+        bounds: origBounds,
+        unwrappedBounds: bounds,
+        width: bounds.getWidth(),
+        height: bounds.getHeight(),
+        worldwidth: self.world.getWidth(),
+        worldheight: self.world.getHeight(),
+
+        toString: function () {
+          return "\n" + Object.items(this
+            ).filter(function (item) { return item.key != "toString" && item.key != "stack"; }
+            ).map(function (item) { return "  " + item.key + "=" + item.value.toString(); }
+            ).join("\n") + "\n";
+        }
+      };
+
+      res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(self.tilesPerScreen)), 2));
+      
+      res.tilewidth = res.worldwidth / Math.pow(2, res.level);
+      res.tileheight = res.worldheight / Math.pow(2, res.level);
+
+      res.tileleft = res.tilewidth * Math.floor(bounds.left / res.tilewidth);
+      res.tileright = res.tilewidth * Math.ceil(bounds.right / res.tilewidth);
+      res.tilebottom = res.tileheight * Math.floor(bounds.bottom / res.tileheight);
+      res.tiletop = res.tileheight * Math.ceil(bounds.top / res.tileheight);
+
+      res.tilesx = (res.tileright - res.tileleft) / res.tilewidth;
+      res.tilesy = (res.tiletop - res.tilebottom) / res.tileheight;
+
+      return res;
+    },
+
+    tileBoundsForRegion: function(bounds) {
+      /* Returns a list of tile bounds covering a region. */
+
+      var self = this;
+
+      var params = self.tileParamsForRegion(bounds);
+      Logging.main.log("Data.BaseTiledFormat.tileBoundsForRegion", params);
+
+      res = [];
+      for (var x = 0; x < params.tilesx; x++) {
+        for (var y = 0; y < params.tilesy; y++) {
+          res.push(new Bounds(
+            params.tileleft + x * params.tilewidth,
+            params.tilebottom + y * params.tileheight,
+            params.tileleft + (x+1) * params.tilewidth,
+            params.tilebottom + (y+1) * params.tileheight
+          ).rewrapDateLine(self.world));
+        }
+      }
+
+      return res;
+    },
+
+    extendTileBounds: function (bounds) {
+     /* Returns the first larger tile bounds enclosing the tile bounds
+      * sent in. Note: Parameter bounds must be for a tile, as returned
+      * by a previous call to tileBoundsForRegion or
+      * extendTileBounds. */
+
+      var self = this;
+
+      var tilewidth = bounds.getWidth() * 2;
+      var tileheight = bounds.getHeight() * 2;
+
+      var tileleft = tilewidth * Math.floor((bounds.left - self.world.left) / tilewidth) + self.world.left;
+      var tilebottom = tileheight * Math.floor((bounds.bottom - self.world.bottom) / tileheight) + self.world.bottom;
+
+      var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
+
+      if (self.world.containsBounds(res)) {
+        return res;
+      } else {
+        return undefined;
+      }
+    },
+
+    zoomLevelForTileBounds: function (bounds) {
+      var self = this;
+      return Math.max(
+        0,
+        Math.floor(Math.min(
+          Math.log(self.world.getWidth() / bounds.getWidth(), 2),
+          Math.log(self.world.getHeight() / bounds.getHeight(), 2)))
+      );
     },
 
     clear: function () {
@@ -348,6 +472,18 @@ function(
     setUpTileContent: function (tile) {
       var self = this;
 
+      if (self.header.maxZoom != undefined && self.zoomLevelForTileBounds(tile.bounds) > self.header.maxZoom) {
+        tile.setContent(new EmptyFormat({
+          headerTime: false,
+          contentTime: false,
+          header: {length: 0, colsByName: {}, tags: ["ZOOM_LEVEL_IGNORED"]}
+        }));
+        self.handleTileError(tile, {
+          msg: 'Zoom level not provided by tileset',
+          toString: function () { return this.msg; }
+        });
+        return;
+      }
       tile.setContent(self.getTileContent(tile));
       tile.content.events.on({
         "batch": self.handleBatch.bind(self, tile),
@@ -424,7 +560,9 @@ function(
     getContent: function () {
       var self = this;
 
-      return self.getDoneTiles();
+      return self.getDoneTiles().filter(function (tile) {
+        return !tile.replacement;
+      });
     },
 
     printTree: function (args) {

@@ -1,4 +1,4 @@
-define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Destination", "app/Logging/ScreenDestination", "app/Logging/StoreDestination", "app/Logging/LogglyDestination", "app/Logging/ServerDestination"], function(Class, UrlValues, stacktrace, _, Destination) {
+define(["app/Class", "stacktrace", "async", "lodash", "app/Logging/Destination", "app/Logging/ScreenDestination", "app/Logging/StoreDestination", "app/Logging/LogglyDestination", "app/Logging/ServerDestination", "app/Logging/GoogleAnalyticsDestination"], function(Class, stacktrace, async, _, Destination) {
   Logging = Class({
     name: "Logging",
     store_time: true,
@@ -63,19 +63,31 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
       return ruleTree;
     },
 
-    store: function(storefns, category, data) {
+    store: function(storefns, category, data, cb) {
       var self = this;
 
       var entry = new Logging.Entry();
+
+      var doStore = function () {
+        async.each(storefns, function (storefn, cb) {
+          storefn(entry, cb);
+        }, cb);
+      };
+
       entry.category = category;
       entry.data = data;
       if (self.store_time) entry.time = new Date();
-      if (self.store_stack) entry.stack = stacktrace().slice(6);
-
-      storefns.map(function (fn) { fn(entry); });
+      if (self.store_stack) {
+        StackTrace.get().then(function (stack) {
+          entry.stack = stack.slice(6);
+          doStore();
+        });
+      } else {
+        doStore();
+      }
     },
 
-    ignore: function() {},
+    ignore: function(category, data, cb) { cb && cb(); },
 
     setRules: function(rules) {
       var self = this;
@@ -105,14 +117,14 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
           return self.destinations[dstitem.key].store.bind(self.destinations[dstitem.key]);
         });
         if (storefns.length > 0) {
-          self.compiledRules[path] = function (category, data) { self.store(storefns, category, data); }
+          self.compiledRules[path] = function (category, data, cb) { self.store(storefns, category, data, cb); }
         } else {
           self.compiledRules[path] = ignore;
         }
       });
     },
 
-    log: function(category, arg) {
+    log: function(category, arg, cb) {
       var self = this;
 
       /* Important: Keep the amount of work needed here to a bare
@@ -137,7 +149,7 @@ define(["app/Class", "app/UrlValues", "stacktrace", "lodash", "app/Logging/Desti
           }
         }
       }
-      rule(category, arg);
+      rule(category, arg, cb);
     },
 
     logTiming: function (category, arg, cb) {

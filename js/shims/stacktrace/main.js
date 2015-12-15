@@ -1,3 +1,3 @@
 define([], function () {
-  return printStackTrace;
+  return StackTrace;
 });

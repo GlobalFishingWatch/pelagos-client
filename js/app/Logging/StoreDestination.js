@@ -8,9 +8,10 @@ define(["app/Class", "app/Logging/Destination"], function(Class, Destination) {
       Destination.prototype.initialize.apply(self, arguments);
     },
 
-    store: function(entry) {
+    store: function(entry, cb) {
       var self = this;
       self.storage.push(entry);
+      cb();
     },
 
     get: function (start, end) {

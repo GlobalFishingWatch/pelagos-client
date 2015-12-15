@@ -1,0 +1,12 @@
+{
+  "ui": {
+    "logo": {
+      "attr": {"src": "%(img)s/logo.svg"},
+      "css": {"width": "100px", "opacity": 0.5}
+    },
+    "sideBar": {
+      "sponsorLogos": [
+      ]
+    }
+  }
+}

@@ -91,6 +91,13 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       ));
     },
 
+    destroyView: function(view, sourceSpec) {
+      var self = this;
+      if (view.source && sourceSpec) {
+        self.removeSource(sourceSpec)
+      }
+    },
+
     zoomTo: function (bounds) {
       var self = this;
       if (bounds.length > 0) bounds = new Bounds(bounds);

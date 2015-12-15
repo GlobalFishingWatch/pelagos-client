@@ -62,6 +62,10 @@ define(["app/Class", "app/Events", "app/Logging"], function(Class, Events, Loggi
       }
     },
 
+    toggleValue: function(name) {
+      this.setValue(name, !this.getValue(name));
+    },
+
     incValue: function(name) {
       this.setValue(name, this.getValue(name) + 1);
     },

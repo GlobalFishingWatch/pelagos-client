@@ -1,25 +1,31 @@
 define([
   "app/Class",
+  "dijit/Dialog",
   "app/LoadingInfo",
   "app/UrlValues",
-  "app/Visualization/KeyModifiers",
+  "app/Visualization/KeyBindings",
   "app/Visualization/UI/Timeline",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
+  "app/Visualization/UI/Help",
+  "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
   "async",
   "jQuery"],
 function (
   Class,
+  Dialog,
   LoadingInfo,
   UrlValues,
-  KeyModifiers,
+  KeyBindings,
   Timeline,
   SidePanelManager,
   BasicSidebar,
   Search,
+  Help,
+  ObjectTemplate,
   BorderContainer,
   ContentPane,
   async,
@@ -32,8 +38,6 @@ function (
     },
 
     init1: function (cb) {
-      var self = this;
-
       var self = this;
 
       self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
@@ -60,7 +64,8 @@ function (
         self.initLoopButton.bind(self),
         self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
-        self.initSearch.bind(self)
+        self.initSearch.bind(self),
+        self.initHelp.bind(self)
       ], function () { cb(); });
     },
 
@@ -68,23 +73,19 @@ function (
       var self = this;
       self.buttonNodes = {};
 
-      var arrowUrl = app.paths.script.slice(0,-1).concat(["img", "arrow.png"]).join("/");
-      var playUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "play.png"]).join("/");
-      var pauseUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "pause.png"]).join("/");
-      var shareUrl = app.paths.script.slice(0,-1).concat(["img", "gfw", "share.png"]).join("/");
+      self.logoNode = $('<img class="logo">')
+      self.visualization.node.append(self.logoNode);
 
-      self.controlButtonsNode = $(''
-        
-        
+      self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
-        + '  <button class="btn btn-default btn-lg" data-name="share"><img src="' + shareUrl + '"></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="share"><img src="%(img)s/buttons/share.png"></button>'
         + '  <div class="divide"></div>'        
-        + '  <button class="btn btn-default btn-lg" data-name="play"><img class="paused" src="' + playUrl + '"><img class="playing" src="' + pauseUrl + '"></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="play"><img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png"></button>'
         + ''
         + '  <a class="balloon">'
         + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
         + '    <div>'
-        + '      <img class="arrow" src="' + arrowUrl + '">'
+        + '      <img class="arrow" src="%(img)s/buttons/arrow.png">'
         + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="backward"><i class="fa fa-backward"></i></button>'
         + '      <button class="btn btn-default btn-xs" data-name="loop"><i class="fa fa-repeat"></i></button>'
@@ -92,7 +93,7 @@ function (
         + '      <button class="btn btn-default btn-xs" data-name="end"><i class="fa fa-step-forward"></i></button>'
         + '    </div>'
         + '  </a>'
-        + '</div>');
+        + '</div>').eval(app.dirs));
       self.visualization.node.append(self.controlButtonsNode);
 
       self.controlButtonsNode.find(".btn").each(function () {
@@ -135,7 +136,7 @@ function (
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div class="loading" style="padding-left: 34px;"><img style="width: 20px;" src="' + app.dirs.img + '/gfw/spinner.min.svg"></div>');
+      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
@@ -149,13 +150,19 @@ function (
       });
       self.visualization.data.events.on({
         error: function (data) {
-          var dialog = $('<div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-danger text-danger"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="errorLabel">Error</h4></div><div class="modal-body alert"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-          dialog.find('.modal-body').html(data.toString());
-          $('body').append(dialog);
-          dialog.modal();
-          dialog.on('hidden.bs.modal', function (e) {
-            dialog.detach();
+          var dialog = new Dialog({
+              style: "width: 50%;",
+            title: "Error",
+            content: data.toString(),
+            actionBarTemplate: '' +
+              '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+              '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+              '</div>'
           });
+          $(dialog.closeButton).on('click', function () {
+            dialog.hide();
+          });
+          dialog.show();
         }
       });
       cb();
@@ -203,6 +210,9 @@ function (
         'temporary-range': setRange,
         'user-update-start': function (e) {
           self.visualization.state.setValue("paused", true);
+        },
+        'hover': function (e) {
+          self.visualization.state.setValue("timeFocus", e.time);
         }
       });
 
@@ -298,11 +308,78 @@ function (
       });
       self.visualization.data.events.on({update: daySliderUpdateMinMax});
       daySliderUpdateValue();
+
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'Z'], null, 'Timeline',
+        'Zoom in in time',
+        function () { self.timeline.zoomOut(); }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Z'], null, 'Timeline',
+        'Zoom out in time',
+        function () { self.timeline.zoomIn(); }
+      );
+
+      KeyBindings.register(
+        ['Ctrl', 'Left'], null, 'Timeline',
+        'Move the time window left (earlier dates)',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.visualization.state.getValue("time").getTime() - self.visualization.state.getValue("timeExtent") / 10));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Right'], null, 'Timeline',
+        'Move the time window right (later dates)',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.visualization.state.getValue("time").getTime() + self.visualization.state.getValue("timeExtent") / 10));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Left'], null, 'Timeline',
+        'Move the time window to the beginning',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.timeline.min.getTime() + self.visualization.state.getValue("timeExtent")));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Right'], null, 'Timeline',
+        'Move the time window to the end',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", self.timeline.max);
+        }
+      );
+
       cb();
     },
 
     initPlayButton: function(cb) {
       var self = this;
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
+        'Toggle play/pause',
+        self.visualization.state.toggleValue.bind(self.visualization.state, "paused")
+      );
+
+      KeyBindings.register(
+        ['Ctrl', 'Up'], null, 'Timeline',
+        'Play faster',
+        function () {
+          self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 0.5);
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Down'], null, 'Timeline',
+        'Play slower',
+        function () {
+          self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 2.0);
+        }
+      );
 
       self.buttonNodes.play.click(function () {
         val = self.buttonNodes.play.val() == "true";
@@ -352,22 +429,43 @@ function (
       cb();
     },
 
+    saveWorkspace: function () {
+      var self = this;
+      self.visualization.save(function (url) {
+        url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
+
+        var dialog = new Dialog({
+          style: "width: 50%;",
+          title: "Workspace saved",
+          content: '' +
+            'Share this link: <input type="text" class="link" style="width: 300pt">',
+          actionBarTemplate: '' +
+            '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+            '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+            '</div>'
+        });
+        $(dialog.containerNode).find("input").val(url);
+        $(dialog.closeButton).on('click', function () {
+          dialog.hide();
+        });
+        dialog.show();
+      });
+    },
+
     initSaveButton: function(cb) {
       var self = this;
 
-      self.buttonNodes.share.click(function () {
-        self.visualization.save(function (url) {
-          url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
+      /* Ctrl-Alt-S would have been more logical, but doesn't work in
+       * some browsers (As soon as Ctrl and S are pressed, it's
+       * eaten)
+       */
+      KeyBindings.register(
+        ['Alt', 'S'], null, 'General',
+        'Save workspace',
+        self.saveWorkspace.bind(self)
+      );
 
-          var dialog = $('<div class="modal fade" id="share" tabindex="-1" role="dialog" aria-labelledby="shareLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-success"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="shareLabel">Workspace saved</h4></div><div class="modal-body alert">Share this link: <input type="text" class="link" style="width: 300pt"></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div></div></div></div>');
-          dialog.find('.modal-body .link').val(url);
-          $('body').append(dialog);
-          dialog.modal();
-          dialog.on('hidden.bs.modal', function (e) {
-            dialog.detach();
-          });
-        });
-      });
+      self.buttonNodes.share.click(self.saveWorkspace.bind(self));
 
       cb();
     },
@@ -375,13 +473,13 @@ function (
     initSidePanels: function (cb) {
       var self = this;
 
-      $(document).on({
-        keyup: function (e) {
-          if (KeyModifiers.nameById[e.keyCode] == 'E' && KeyModifiers.active.Alt && KeyModifiers.active.Ctrl) {
-            self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
-          }
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'E'], null, 'General',
+        'Toggle between view and edit sidebar (advanced mode)',
+        function () {
+          self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
         }
-      });
+      );
 
       self.sidePanels = new SidePanelManager(self);
       self.sideBar = new BasicSidebar(self.visualization);
@@ -393,6 +491,33 @@ function (
 
       self.search = new Search(self.visualization);
       cb();
+    },
+
+    initHelp: function (cb) {
+      var self = this;
+
+      self.help = new Help(self.visualization);
+      cb();
+    },
+
+    toJSON: function () {
+      var self = this;
+      return {
+        logo: self.config.logo,
+        sideBar: self.sideBar
+      };
+    },
+
+    load: function (config, cb) {
+      var self = this;
+
+      self.config = config;
+      data = new ObjectTemplate(self.config).eval(app.dirs);
+
+      self.logoNode.attr(data.logo.attr);
+      self.logoNode.css(data.logo.css);
+
+      self.sideBar.load(config.sideBar, cb);
     }
   });
 });

@@ -6,8 +6,8 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
       longitude: {type: "Float32", hidden: true, source: {longitude: 1.0}},
       latitude: {type: "Float32", hidden: true, source: {latitude: 1.0}},
 
-      sigma: {type: "Float32", source: {sigma: 1}, min: 0.0, max: 1.0},
-      weight: {type: "Float32", source: {weight: 1}, min: 0.0, max: 1.0},
+      sigma: {type: "Float32", source: {sigma: 1, hover: 0.01, selected: 0.01}, min: 0.0, max: 1.0},
+      weight: {type: "Float32", source: {weight: 0.2, hover: 100, selected: 100}, min: 0.0, max: 0.4},
 
       time: {type: "Float32", hidden: true, source: {datetime: 1.0}},
 
