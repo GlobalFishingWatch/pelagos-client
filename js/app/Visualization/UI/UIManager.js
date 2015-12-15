@@ -363,14 +363,14 @@ function (
       );
 
       KeyBindings.register(
-        ['Ctrl', 'Up'], null, 'Timeline',
+        ['Ctrl', 'Shift', 'Up'], null, 'Timeline',
         'Play faster',
         function () {
           self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 0.5);
         }
       );
       KeyBindings.register(
-        ['Ctrl', 'Down'], null, 'Timeline',
+        ['Ctrl', 'Shift', 'Down'], null, 'Timeline',
         'Play slower',
         function () {
           self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 2.0);
