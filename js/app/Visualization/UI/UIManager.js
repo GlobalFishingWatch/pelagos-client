@@ -311,12 +311,12 @@ function (
 
 
       KeyBindings.register(
-        ['Ctrl', 'Alt', '-'], null, 'Timeline',
+        ['Ctrl', 'Alt', 'Z'], null, 'Timeline',
         'Zoom in in time',
         function () { self.timeline.zoomOut(); }
       );
       KeyBindings.register(
-        ['Ctrl', 'Alt', '='], null, 'Timeline',
+        ['Ctrl', 'Z'], null, 'Timeline',
         'Zoom out in time',
         function () { self.timeline.zoomIn(); }
       );
@@ -367,14 +367,14 @@ function (
       );
 
       KeyBindings.register(
-        ['Ctrl', 'Up'], null, 'Timeline',
+        ['Ctrl', 'Shift', 'Up'], null, 'Timeline',
         'Play faster',
         function () {
           self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 0.5);
         }
       );
       KeyBindings.register(
-        ['Ctrl', 'Down'], null, 'Timeline',
+        ['Ctrl', 'Shift', 'Down'], null, 'Timeline',
         'Play slower',
         function () {
           self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 2.0);

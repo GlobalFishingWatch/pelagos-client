@@ -385,7 +385,18 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     .sidebar-content {
       height: 100%;
       width: 100%;
-      .header {}
+      .header {
+        #activate_help{
+          font-size: 15pt;
+          float: right;
+          margin-right: 0.5em;
+          margin-top: -2px;
+        }
+        #feedback_url{
+          font-size: 10pt;
+          margin-right: 1.5em;
+        }
+      }
       .blades {
         height: 100%;
         padding-bottom: 46pt;
@@ -395,13 +406,10 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
       .sponsor_logos {
         height: 23pt;
+        padding-top: 2.1296%; /* 45px / 2160px */
+        padding-left: 10.5263%;/* 58px / 551px */
+        text-align: left;
       }
-    }
-
-    .sponsor_logos {
-      padding-top: 2.1296%; /* 45px / 2160px */
-      padding-left: 10.5263%;/* 58px / 551px */
-      text-align: left;
     }
 
     #gfw_title {
@@ -413,6 +421,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         padding-right: 4.3557%; /* 24px / 551px */
         width: 20%; 
       }
+    }
+    
+    #sponsor_logos {
+      padding-top: 2.1296%; /* 45px / 2160px */
+      padding-left: 10.5263%;/* 58px / 551px */
+      text-align: left;
     }
 
     #layers, #vessel_identifiers {
@@ -687,6 +701,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         color: #939597; 
         vertical-align: top;
         padding-left: 5px; 
+        word-break: break-all;
       }
     }
 
