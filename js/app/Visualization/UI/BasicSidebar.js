@@ -341,9 +341,9 @@ define([
         if (selection.data[sourcename].indexOf(value) != -1) {
           option.addClass("selected");
         }
-        option.mouseover(function () {
+        option.hover(function () {
           selectionselect.find('.label').html(CountryCodes.codeToName[key]);
-        });
+        }, function () {});
         option.click(function () {
           option.toggleClass("selected");
           updateSelection();

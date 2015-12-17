@@ -767,12 +767,13 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 }
 
 .imageselector {
-  .choice {
-    opacity: 0.5;
-    border: 1px solid white;
-    &.selected, &:hover {
-      opacity: 1;
-      border: 1px solid red;
+  .choices {
+    line-height: 0;
+    .choice {
+      border: 2px solid white;
+      &.selected, &:hover {
+        border: 2px solid blue;
+      }
     }
   }
 }
