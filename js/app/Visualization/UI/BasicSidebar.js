@@ -307,6 +307,57 @@ define([
         slider.startup();
       }
 
+      /* Transplanted from
+       * js/app/Visualization/UI/SidePanels/DataViewUI.js This is a
+       * hack for now... */
+
+      if (!animation.data_view || !animation.data_view.selections.selections.active_category) return;
+      var selection = animation.data_view.selections.selections.active_category;
+      var name = "active_category";
+
+      if (selection.hidden) return;
+      if (selection.sortcols.length != 1) return;
+      var sourcename = selection.sortcols[0]
+      var source = animation.data_view.source.header.colsByName[sourcename];
+      if (!source || !source.choices) return;
+
+      var selectionwidget = new ContentPane({
+        content: "<div>" + name + " from " + sourcename + "</div>",
+        style: "padding-top: 0; padding-bottom: 0;"
+      });
+
+      var selectionselect = $("<select multiple='true'>");
+      var choices = Object.keys(source.choices);
+      choices.sort();
+      choices.map(function (key) {
+        var value = source.choices[key];
+        var option = $("<option>");
+        option.text(key);
+        option.attr({value:value});
+        if (selection.data[sourcename].indexOf(value) != -1) {
+          option.attr({selected:'true'});
+        }
+        selectionselect.append(option);
+      })
+      selectionselect.change(function () {
+        selection.clearRanges();
+        var values = selectionselect.val();
+        if (values) {
+          values.map(function (value) {
+            var data = {};
+            data[sourcename] = value;
+            selection.addDataRange(data, data);
+          });
+        } else {
+          var startData = {};
+          var endData = {};
+          startData[sourcename] = -1.0/0.0;
+          endData[sourcename] = 1.0/0.0;
+          selection.addDataRange(startData, endData);
+        }
+      });
+
+      $(self.node.find(".layer-list")).append(selectionselect);
     },
 
     removeHandler: function (event) {
