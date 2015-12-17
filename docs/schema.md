@@ -104,7 +104,7 @@ The tileset header specifies how to load tiles, and what columns to expect.
 
 # Choices
 
-Columns that only contain a discrete number of different values can be used to produce a drop-down menu that allows the user to select/display a subset of the points sharing a certain value.
+Columns that only contain a discrete number of different values can be used to produce a drop-down menu that allows the user to select/display a subset of the points sharing a certain value. See the section on selections below for more information on this.
 
 Labels for such a menu should be added to the column specification under colsByName:
 
