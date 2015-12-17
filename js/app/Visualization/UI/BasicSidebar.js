@@ -326,23 +326,48 @@ define([
         style: "padding-top: 0; padding-bottom: 0;"
       });
 
-      var selectionselect = $("<select multiple='true'>");
-      var choices = Object.keys(source.choices);
+      var selectionselect = $("<div class='imageselector' style='position: fixed; z-index: 100000; background: white; border: 1px solid red;'><div class='choices' style='overflow: auto; height:200px;'></div><div class='label'></div></div>");
+      var choices = Object.keys(
+        CountryCodes.codeToName
+      ).filter(function (key) {
+        return source.choices[key] != undefined;
+      });
       choices.sort();
       choices.map(function (key) {
         var value = source.choices[key];
-        var option = $("<option>");
-        option.text(key);
-        option.attr({value:value});
+        var option = $('<img src="' + app.dirs.img + '/flags/png/' + key.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[key] + '" class="choice">');
+        // option.text(key);
+        option.data("value", value);
         if (selection.data[sourcename].indexOf(value) != -1) {
-          option.attr({selected:'true'});
+          option.addClass("selected");
         }
-        selectionselect.append(option);
-      })
-      selectionselect.change(function () {
+        option.mouseover(function () {
+          selectionselect.find('.label').html(CountryCodes.codeToName[key]);
+        });
+        option.click(function () {
+          option.toggleClass("selected");
+          updateSelection();
+        });
+        selectionselect.find('.choices').append(option);
+      });
+
+      var toggleselectionselect = $("<div>Countries</div>");
+      toggleselectionselect.click(function () {
+        selectionselect.toggle();
+      });
+      selectionselect.hide();
+      $(self.node.find(".layer-list")).append(toggleselectionselect);
+      $(self.node.find(".layer-list")).append(selectionselect);
+
+      var updateSelection = function () {
         selection.clearRanges();
-        var values = selectionselect.val();
-        if (values) {
+
+        var values = Array.prototype.slice.call(
+          selectionselect.find('.choices .selected')
+        ).map(function (option) {
+          return $(option).data("value");
+        });
+        if (values.length) {
           values.map(function (value) {
             var data = {};
             data[sourcename] = value;
@@ -355,9 +380,8 @@ define([
           endData[sourcename] = 1.0/0.0;
           selection.addDataRange(startData, endData);
         }
-      });
+      };
 
-      $(self.node.find(".layer-list")).append(selectionselect);
     },
 
     removeHandler: function (event) {
