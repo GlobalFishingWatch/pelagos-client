@@ -90,7 +90,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
       });
 
       p.load();
-      p.zoomTo(new Bounds(0, 0, 10, 5));
+      p.zoomTo(new Bounds([0, 0, 10, 5]));
     },
 
     "Keeping loaded tiles until new ones are loaded": function (cb) {
@@ -116,7 +116,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
             QUnit.deepEqual(tileCache, expectedTileCache, "Loaded the right tiles for bounds");
 
             p.headerTime = false;
-            p.zoomTo(new Bounds(0, 0, 5, 2.5));
+            p.zoomTo(new Bounds([0, 0, 5, 2.5]));
 
             setTimeout(function () {
               var wantedTiles = Object.keys(p.wantedTiles);
@@ -148,7 +148,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
       });
 
       p.load();
-      p.zoomTo(new Bounds(0, 0, 10, 5));
+      p.zoomTo(new Bounds([0, 0, 10, 5]));
     },
     "View bounds crossing international dateline ": function (cb) {
         QUnit.expect(3);
@@ -159,7 +159,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
         p.events.on({
           header: function () {
               console.log("HEADER");
-            p.zoomTo(new Bounds(180 - 5.625, 0, -180 + 5.625, 5.625));
+            p.zoomTo(new Bounds([180 - 5.625, 0, -180 + 5.625, 5.625]));
           },
           all: function () {
               console.log("ALL");

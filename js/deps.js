@@ -37,8 +37,8 @@
   if (app.useBuild) {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       "$(build)s/deps.css",
-      {url: "$(script)s/../style.less", rel:"stylesheet/less"},
       "$(build)s/dijit/themes/claro/claro.css",
+      {url: "$(script)s/../style.less", rel:"stylesheet/less"}
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
       {url: "http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded", handleCb: function (tag, cb) { googleMapsLoaded = cb; }},
@@ -48,13 +48,10 @@
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       "$(lib)s/font-awesome/css/font-awesome.min.css",
-
-      {url: "$(script)s/../style.less", rel:"stylesheet/less"},
-
       "$(lib)s/dijit/themes/claro/claro.css",
-
       "$(lib)s/dojox/layout/resources/FloatingPane.css",
-      "$(lib)s/dojox/layout/resources/ResizeHandle.css"
+      "$(lib)s/dojox/layout/resources/ResizeHandle.css",
+      {url: "$(script)s/../style.less", rel:"stylesheet/less"},
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
       "$(lib)s/async/lib/async.js",
@@ -66,6 +63,7 @@
       "$(lib)s/less/dist/less.min.js",
       "$(script)s/CanvasLayer.js", /* This should be a lib, but it's version hacked by CMU... */
       "$(lib)s/stats.js/build/stats.min.js",
+      "$(lib)s/cartodb.js/cartodb.js",
       "$(lib)s/loggly-jslogger/src/loggly.tracker.min.js",
       "$(script)s/dojoconfig.js",
       "$(lib)s/dojo/dojo.js"
@@ -81,6 +79,7 @@
     {name: 'stacktrace', location: '$(shim)s/stacktrace'},
     {name: 'LogglyTracker', location: '$(shim)s/LogglyTracker'},
     {name: 'lodash', location: '$(shim)s/lodash'},
+    {name: "cartodb", location: "$(shim)s/cartodb"},
     {name: 'app', location:'$(app)s', main: 'main'}
   ]);
 

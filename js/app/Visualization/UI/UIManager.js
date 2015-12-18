@@ -3,7 +3,7 @@ define([
   "dijit/Dialog",
   "app/LoadingInfo",
   "app/UrlValues",
-  "app/Visualization/KeyModifiers",
+  "app/Visualization/KeyBindings",
   "app/Visualization/UI/Timeline",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
@@ -19,7 +19,7 @@ function (
   Dialog,
   LoadingInfo,
   UrlValues,
-  KeyModifiers,
+  KeyBindings,
   Timeline,
   SidePanelManager,
   BasicSidebar,
@@ -210,6 +210,9 @@ function (
         'temporary-range': setRange,
         'user-update-start': function (e) {
           self.visualization.state.setValue("paused", true);
+        },
+        'hover': function (e) {
+          self.visualization.state.setValue("timeFocus", e.time);
         }
       });
 
@@ -305,11 +308,78 @@ function (
       });
       self.visualization.data.events.on({update: daySliderUpdateMinMax});
       daySliderUpdateValue();
+
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'Z'], null, 'Timeline',
+        'Zoom in in time',
+        function () { self.timeline.zoomOut(); }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Z'], null, 'Timeline',
+        'Zoom out in time',
+        function () { self.timeline.zoomIn(); }
+      );
+
+      KeyBindings.register(
+        ['Ctrl', 'Left'], null, 'Timeline',
+        'Move the time window left (earlier dates)',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.visualization.state.getValue("time").getTime() - self.visualization.state.getValue("timeExtent") / 10));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Right'], null, 'Timeline',
+        'Move the time window right (later dates)',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.visualization.state.getValue("time").getTime() + self.visualization.state.getValue("timeExtent") / 10));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Left'], null, 'Timeline',
+        'Move the time window to the beginning',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.timeline.min.getTime() + self.visualization.state.getValue("timeExtent")));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Right'], null, 'Timeline',
+        'Move the time window to the end',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", self.timeline.max);
+        }
+      );
+
       cb();
     },
 
     initPlayButton: function(cb) {
       var self = this;
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
+        'Toggle play/pause',
+        self.visualization.state.toggleValue.bind(self.visualization.state, "paused")
+      );
+
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Up'], null, 'Timeline',
+        'Play faster',
+        function () {
+          self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 0.5);
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Down'], null, 'Timeline',
+        'Play slower',
+        function () {
+          self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 2.0);
+        }
+      );
 
       self.buttonNodes.play.click(function () {
         val = self.buttonNodes.play.val() == "true";
@@ -359,30 +429,43 @@ function (
       cb();
     },
 
+    saveWorkspace: function () {
+      var self = this;
+      self.visualization.save(function (url) {
+        url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
+
+        var dialog = new Dialog({
+          style: "width: 50%;",
+          title: "Workspace saved",
+          content: '' +
+            'Share this link: <input type="text" class="link" style="width: 300pt">',
+          actionBarTemplate: '' +
+            '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+            '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+            '</div>'
+        });
+        $(dialog.containerNode).find("input").val(url);
+        $(dialog.closeButton).on('click', function () {
+          dialog.hide();
+        });
+        dialog.show();
+      });
+    },
+
     initSaveButton: function(cb) {
       var self = this;
 
-      self.buttonNodes.share.click(function () {
-        self.visualization.save(function (url) {
-          url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
+      /* Ctrl-Alt-S would have been more logical, but doesn't work in
+       * some browsers (As soon as Ctrl and S are pressed, it's
+       * eaten)
+       */
+      KeyBindings.register(
+        ['Alt', 'S'], null, 'General',
+        'Save workspace',
+        self.saveWorkspace.bind(self)
+      );
 
-          var dialog = new Dialog({
-            style: "width: 50%;",
-            title: "Workspace saved",
-            content: '' +
-              'Share this link: <input type="text" class="link" style="width: 300pt">',
-            actionBarTemplate: '' +
-              '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-              '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-              '</div>'
-          });
-          $(dialog.containerNode).find("input").val(url);
-          $(dialog.closeButton).on('click', function () {
-            dialog.hide();
-          });
-          dialog.show();
-        });
-      });
+      self.buttonNodes.share.click(self.saveWorkspace.bind(self));
 
       cb();
     },
@@ -390,13 +473,13 @@ function (
     initSidePanels: function (cb) {
       var self = this;
 
-      $(document).on({
-        keyup: function (e) {
-          if (KeyModifiers.nameById[e.keyCode] == 'E' && KeyModifiers.active.Alt && KeyModifiers.active.Ctrl) {
-            self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
-          }
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'E'], null, 'General',
+        'Toggle between view and edit sidebar (advanced mode)',
+        function () {
+          self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
         }
-      });
+      );
 
       self.sidePanels = new SidePanelManager(self);
       self.sideBar = new BasicSidebar(self.visualization);

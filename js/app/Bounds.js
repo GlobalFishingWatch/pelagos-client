@@ -6,32 +6,20 @@
 define(["app/Class"], function(Class) {
   var Bounds = Class({
     name: "Bounds",
-    initialize: function (left, bottom, right, top) {
+    initialize: function () {
       var self = this;
-      if (left.constructor == Bounds) {
-        self.left = left.left;
-        self.bottom = left.bottom;
-        self.right = left.right;
-        self.top = left.top;
-      } else if (left.length) {
-        if (left.constructor == String) {
-          left = left.split(",");
-        }
-        self.left = parseFloat(left[0]);
-        self.bottom = parseFloat(left[1]);
-        self.right = parseFloat(left[2]);
-        self.top = parseFloat(left[3]);
-      } else {
-        self.left = left;
-        self.bottom = bottom;
-        self.right = right;
-        self.top = top;
-      }
+
+      self.left = undefined;
+      self.bottom = undefined;
+      self.right = undefined;
+      self.top = undefined;
+
+      self.update.apply(self, arguments);
     },
 
     clone: function() {
       var self = this;
-      return new self.constructor(self.left, self.bottom, self.right, self.top);
+      return new self.constructor(self);
     },
 
     getWidth: function () {
@@ -146,6 +134,15 @@ define(["app/Class"], function(Class) {
     },
 
     /* Extensions on top of what OpenLayers support */
+    containsObj: function (obj, partial, inclusive) {
+      var self = this;
+      return self.containsBounds(obj, partial, inclusive);
+    },
+    intersectsObj: function (obj, options) {
+      var self = this;
+      return self.intersectsBounds(obj, options);
+    },
+
     /* Move right and left edges whole revolutions around the globe so
      * that they are within world bounds. */
     rewrapDateLine: function(world) {
@@ -187,6 +184,76 @@ define(["app/Class"], function(Class) {
         res.right += world.getWidth();
       }
       return res;
+    },
+
+    getBounds: function () { return this; },
+
+    update: function () {
+      /* Usages:
+
+         update("left,bottom,right,top")
+         update([left,bottom,right,top]);
+         update(obj, obj, ...);
+       */
+
+      var self = this;
+
+      var updateOne = function (obj) {
+        var left = undefined;
+        var bottom = undefined;
+        var right = undefined;
+        var top = undefined;
+
+
+        if (obj.length !== undefined) {
+          if (typeof(obj) == "string") {
+            obj = obj.split(",");
+          }
+          self.left = parseFloat(obj[0]);
+          self.bottom = parseFloat(obj[1]);
+          self.right = parseFloat(obj[2]);
+          self.top = parseFloat(obj[3]);
+        } else {
+          if (obj.getBounds != undefined) {
+            obj = obj.getBounds();
+          }
+
+          if (obj.left !== undefined) {
+            left = obj.left;
+          }
+          if (obj.bottom !== undefined) {
+            bottom = obj.bottom;
+          }
+          if (obj.right !== undefined) {
+            right = obj.right;
+          }
+          if (obj.top !== undefined) {
+            top = obj.top;
+          }
+        }
+
+        if (left) { left = parseFloat(left); }
+        if (bottom) { bottom = parseFloat(bottom); }
+        if (right) { right = parseFloat(right); }
+        if (top) { top = parseFloat(top); }
+
+        if (left !== undefined) {
+          self.left = left;
+        }
+        if (bottom !== undefined) {
+          self.bottom = bottom;
+        }
+        if (right !== undefined) {
+          self.right = right;
+        }
+        if (top !== undefined) {
+          self.top = top;
+        }
+      };
+ 
+      for (var i = 0; i < arguments.length; i++) {
+        updateOne(arguments[i]);
+      }
     },
 
     toString: function () {

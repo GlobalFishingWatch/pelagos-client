@@ -22,6 +22,7 @@ dojoConfig = {
       {name: 'stacktrace', location: 'shims/stacktrace'},
       {name: 'LogglyTracker', location: 'shims/LogglyTracker'},
       {name: 'lodash', location: 'shims/lodash'},
+      {name: "cartodb", location: "shims/cartodb"},
 
       {name: 'app', location:'app', main: 'main'}
   ],

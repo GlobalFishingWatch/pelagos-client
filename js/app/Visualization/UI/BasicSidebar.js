@@ -2,6 +2,8 @@ define([
   "app/Class",
   "app/Logging",
   "app/CountryCodes",
+  "dijit/layout/ContentPane",
+  "dijit/layout/AccordionContainer",
   "jQuery",
   "dijit/form/HorizontalSlider",
   "app/Visualization/KeyModifiers",
@@ -10,6 +12,8 @@ define([
   Class ,
   Logging,
   CountryCodes,
+  ContentPane,
+  AccordionContainer,
   $,
   HorizontalSlider,
   KeyModifiers,
@@ -30,34 +34,39 @@ define([
         '<div id="w" class="expanded">' +
         '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
         '  <div class="border">' +
-        '    <div id="content">' +    
-        '      <div class="top_action_icons">' +
-        '         <a id="activate_help" href="javascript:undefined">' +
-        '           <i class="fa fa-keyboard-o"></i>' +
-        '         </a>' +
-        '         <a id="feedback_url" target="_blank">' +
-        '           Feedback' +
-        '         </a>' +
-        '       </div>' +    
-        '' +
-        '      <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
-        '' +
-        '      <div id="layers">' +
-        '        <h2>Layers</h2>' +
-        '        <form class="layer-list"></form>' +
-        '      </div>' +
-        '' +
-        '      <div id="divide"></div>' +
-        '' +
-        '      <div id="vessel_identifiers"></div>' +
-        '' +
-        '      <div id="codeoutput"></div>' +
-        '      <div id="divide"></div>' +
-        '      <div id="sponsor_logos"></div>' +
+        '    <div class="sidebar-content">' +    
+        '      <div class="header">' +
+        '        <a id="activate_help" href="javascript:undefined">' +
+        '          <i class="fa fa-keyboard-o"></i>' +
+        '        </a>' +
+        '        <a id="feedback_url" target="_blank">' +
+        '          Feedback' +
+        '        </a>' +
+        '        <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
+        '      </div>' +    
+        '      <div class="blades"></div>' +
+        '      <div class="sponsor_logos">&nbsp;</div>' +
         '    </div>' +
         '  </div>' +
         '</div>').eval(app.dirs));
       $('body').append(self.node);
+
+      self.sidebar = new AccordionContainer({splitter:true});
+      $(self.sidebar.domNode).addClass("basic-sidebar");
+      self.node.find(".blades").prepend(self.sidebar.domNode);
+      self.sidebar.startup();
+
+      self.info = new ContentPane({title: 'Info', content: "<div id='vessel_identifiers'></div>", doLayout: false});
+      self.sidebar.addChild(self.info);
+      self.sidebar.layout();
+
+      self.layers = new ContentPane({title: 'Layers', content:"" +
+          "<div id='layers'>" +
+          "  <h2>Layers</h2>" +
+          "  <form class='layer-list'></form" +
+          "</div>", doLayout: false});
+      self.sidebar.addChild(self.layers);
+      self.sidebar.layout();
 
       self.update("none", {});
 
@@ -225,7 +234,7 @@ define([
         self.node.find("#vessel_identifiers").html(
           '<h2>' + event.layer + '</h2>' +
           data.toString());
-        self.node.find("table").attr({"class": "vessel_id"});
+        self.node.find("#vessel_identifiers table").attr({"class": "vessel_id"});
       }
 
       self.node.find("#vessel_identifiers").css({color: color});
@@ -315,12 +324,12 @@ define([
       self.config = config;
       var data = new ObjectTemplate(self.config).eval(app.dirs);
 
-      self.node.find("#sponsor_logos").html("");
+      self.node.find(".sponsor_logos").html("");
       data.sponsorLogos.map(function (spec) {
         var logo = $("<img>");
         logo.attr(spec.attr);
         logo.css(spec.css);
-        self.node.find("#sponsor_logos").append(logo);
+        self.node.find(".sponsor_logos").append(logo);
       });
       
       self.node.find("#feedback_url").attr("href", data.feedback_url);

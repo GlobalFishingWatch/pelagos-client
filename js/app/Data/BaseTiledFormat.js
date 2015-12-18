@@ -2,15 +2,44 @@
   tm = new BaseTiledFormat({url:"http://127.0.0.1:8000/tiles"});
 
   tm.events.on({
-      "tile-error": function (data) { console.log("tile-error: " + data.exception + " @ " + data.tile.bounds.toBBOX()); },
-      "batch": function (data) { console.log("batch: " + data.tile.bounds.toBBOX()); },
-      "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toBBOX()); },
+      "tile-error": function (data) { console.log("tile-error: " + data.exception + " @ " + data.tile.bounds.toString()); },
+      "batch": function (data) { console.log("batch: " + data.tile.bounds.toString()); },
+      "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toString()); },
       "all": function () { console.log("all"); }
   });
-  tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
+  tm.zoomTo(new Bounds([0, 0, 11.25, 11.25]));
 */
 
-define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Format", "app/Data/EmptyFormat", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, LoadingInfo, Bounds, Format, EmptyFormat, Tile, Pack, Logging, Ajax, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/LoadingInfo",
+  "app/Bounds",
+  "app/Data/Format",
+  "app/Data/Tile",
+  "app/Data/TileBounds",
+  "app/Data/Pack",
+  "app/Logging",
+  "app/Data/Ajax",
+  "app/Data/EmptyFormat",
+  "lodash",
+  "app/PopupAuth",
+  "app/LangExtensions"
+], function(
+  Class,
+  Events,
+  LoadingInfo,
+  Bounds,
+  Format,
+  Tile,
+  TileBounds,
+  Pack,
+  Logging,
+  Ajax,
+  EmptyFormat,
+  _,
+  PopupAuth
+) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
     initialize: function() {
@@ -28,8 +57,6 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
     },
 
     tilesPerScreen: 16,
-
-    world: new Bounds(-180, -90, 180, 90),
 
     retries: 10,
     retryTimeout: 2000,
@@ -63,7 +90,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, true);
+        LoadingInfo.main.add(url, {request: request});
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
             LoadingInfo.main.remove(url);
@@ -184,15 +211,30 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, true);
+        LoadingInfo.main.add(url, {request:request});
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
             LoadingInfo.main.remove(url);
+            var data = {};
+            try {
+              data = JSON.parse(request.responseText);
+            } catch (e) {
+            }
+
             if (Ajax.isSuccess(request, url)) {
-              var data = JSON.parse(request.responseText);
               cb(null, data);
             } else {
-              if (request.status == 0 && withCredentials) {
+              if (request.status == 403) {
+                new PopupAuth(data.auth_location, function (success) {
+                  if (success) {
+                    getSelectionInfo(fallbackLevel, withCredentials);
+                  } else {
+                    var e = Ajax.makeError(request, url, "selection information from ");
+                    e.source = self;
+                    cb(e, null);
+                  }
+                });
+              } if (request.status == 0 && withCredentials) {
                 getSelectionInfo(fallbackLevel, false);
               } else if (fallbackLevel + 1 < self.getUrlFallbackLevels()) {
                 getSelectionInfo(fallbackLevel + 1, true);
@@ -220,7 +262,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       request.open('POST', url, true);
       request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
-      LoadingInfo.main.add(url, true);
+      LoadingInfo.main.add(url, {request: request});
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
           LoadingInfo.main.remove(url);
@@ -341,6 +383,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
 
     zoomTo: function (bounds) {
       var self = this;
+        console.log("ZOOM", bounds.toString());
 
       if (self.error) {
         /* Retrow error, to not confuse code that expects either an
@@ -363,14 +406,24 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       var oldBounds = self.bounds;
       self.bounds = bounds;
 
-      var wantedTileBounds = self.tileBoundsForRegion(bounds);
+      if (self.header.temporalExtents == undefined) {
+        bounds = bounds.bounds;
+      } else {
+
+      }
+
+      var wantedTileBounds = TileBounds.tileBounds(
+        bounds,
+        self.tilesPerScreen,
+        self.header.temporalExtents
+      );
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
       var anyNewTiles = false;
       wantedTileBounds.map(function (tilebounds) {
-        var key = tilebounds.toBBOX();
+        var key = tilebounds.toString();
         if (oldWantedTiles[key] != undefined) {
-          wantedTiles[key] = oldWantedTiles[tilebounds.toBBOX()];
+          wantedTiles[key] = oldWantedTiles[tilebounds.toString()];
         } else {
             wantedTiles[key] = self.setUpTile(tilebounds, findOverlaps);
           anyNewTiles = true;
@@ -395,8 +448,8 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
           var existingWantedTiles = this.newWantedTiles.filter(function (bbox) {
               return self.oldWantedTiles.indexOf(bbox) != -1
           }).join(", ");
-          var oldBounds = self.oldBounds != undefined ? self.oldBounds.toBBOX() : "undefined";
-          var newBounds = self.newBounds != undefined ? self.newBounds.toBBOX() : "undefined";
+          var oldBounds = self.oldBounds != undefined ? self.oldBounds.toString() : "undefined";
+          var newBounds = self.newBounds != undefined ? self.newBounds.toString() : "undefined";
           return oldBounds + " -> " + newBounds + ":\n  Added: " + newWantedTiles + "\n  Removed: " + oldWantedTiles + "\n  Kept: " + existingWantedTiles + "\n";
         }
       });
@@ -410,10 +463,10 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       });
 
       wantedTileBounds.map(function (tilebounds) {
+        tilebounds = tilebounds.toString();
         setTimeout(function () {
-          var bbox = tilebounds.toBBOX();
-          if (self.wantedTiles[bbox]) {
-            self.wantedTiles[bbox].load();
+          if (self.wantedTiles[tilebounds]) {
+            self.wantedTiles[tilebounds].load();
           }
         }, 0);
       });
@@ -452,7 +505,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
 
     setUpTile: function (tilebounds, findOverlaps) {
       var self = this;
-      var key = tilebounds.toBBOX();
+      var key = tilebounds.toString();
 
       if (!self.tileCache[key]) {
         var tile = new Tile(self, tilebounds);
@@ -475,7 +528,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
     handleTileRemoval: function (tile) {
       var self = this;
 
-      delete self.tileCache[tile.bounds.toBBOX()];
+      delete self.tileCache[tile.bounds.toString()];
       e = {update: "tile-removal", tile: tile};
       self.events.triggerEvent(e.update, e);
       self.events.triggerEvent("update", e);
@@ -531,7 +584,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       var printTree = function (indent, depth, tile) {
         depth = depth || 0;
 
-        var key = tile.bounds.toBBOX();
+        var key = tile.bounds.toString();
 
         var again = printed[key] || false;
         printed[key] = true;
@@ -586,11 +639,11 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       var filter = function (tile) { return true; };
       if (args.covers) {
         filter = function (tile) {
-          return tile.bounds.containsBounds(new Bounds(args.covers))
+          return tile.bounds.containsObj(new Bounds(args.covers))
         };
       } else if (args.coveredBy) {
         filter = function (tile) {
-          return new Bounds(args.coveredBy).containsBounds(tile.bounds)
+          return new Bounds(args.coveredBy).containsObj(tile.bounds)
         };
       }
 
@@ -606,7 +659,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       if (!args.coveredBy && !args.covers) {
         res += indent + 'Forgotten tiles:\n'
         res += Object.values(self.tileCache).filter(function (tile) {
-          return !printed[tile.bounds.toBBOX()];
+          return !printed[tile.bounds.toString()];
         }).map(
           printTree.bind(self, indent + "  ", 0)
         ).join("");
@@ -647,7 +700,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
       data.tile = tile;
 
       if (data.status == 503 && tile.retry < self.retries - 1) {
-        console.log("retry " + tile.bounds.toBBOX());
+        console.log("retry " + tile.bounds.toString());
         tile.retryTimeout = setTimeout(function () {
           tile.retryTimeout = undefined;
           tile.retry++;
@@ -664,7 +717,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Bounds", "app/Data/Fo
         if (data.complete_ancestor) {
           bounds = new Bounds(data.complete_ancestor);
         } else {
-          bounds = self.extendTileBounds(tile.bounds);
+          bounds = TileBounds.extendTileBounds(tile.bounds);
         }
 
         /* There used to be code here to fire a

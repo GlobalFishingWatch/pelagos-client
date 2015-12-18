@@ -150,7 +150,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Data/Pack", "app/Logg
         }
       */
 
-      LoadingInfo.main.add(self.url);
+      LoadingInfo.main.add(self.url, {request: self.request});
       self.request.open('GET', self.url, true);
 //      self.request.withCredentials = true;
       self.request.responseType = "arraybuffer";
