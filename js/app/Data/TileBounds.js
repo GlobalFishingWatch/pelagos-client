@@ -66,7 +66,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
 
   TileBounds.rangeSize = 1000 * 60 * 60 * 24 * 30;
 
-  TileBounds.tileParamsForRange = function(range) {
+  TileBounds.tileParamsForRange = function(range, rangeSize) {
+    if (typeof(rangeSize) != "numeric") rangeSize = TileBounds.rangeSize;
     var range = new Timerange(range);
 
     var res = {
@@ -87,10 +88,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     return res;
   };
 
-  TileBounds.tileBoundsForRange = function(bounds, tilesPerScreen) {
+  TileBounds.tileBoundsForRange = function(bounds, tilesPerScreen, rangeSize) {
     /* Returns a list of tile bounds covering a region. */
 
-    var params = TileBounds.tileParamsForRange(bounds, tilesPerScreen);
+    var params = TileBounds.tileParamsForRange(bounds, tilesPerScreen, rangeSize);
     Logging.main.log("Data.BaseTiledFormat.tileBoundsForRange", params);
 
     res = [];
@@ -106,7 +107,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     };
   };
 
-  TileBounds.tileBounds = function(bounds, tilesPerScreen) {
+  TileBounds.tileBounds = function(bounds, tilesPerScreen, rangeSize) {
     var sets = [];
 
     var addSet = function(set) {
@@ -115,7 +116,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     };
 
     if (bounds.getTimerange) {
-      addSet(TileBounds.tileBoundsForRange(bounds, tilesPerScreen));
+      addSet(TileBounds.tileBoundsForRange(bounds, tilesPerScreen, rangeSize));
     }
     if (bounds.getBounds) {
       addSet(TileBounds.tileBoundsForRegion(bounds, tilesPerScreen));

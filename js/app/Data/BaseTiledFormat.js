@@ -406,7 +406,17 @@ define([
       var oldBounds = self.bounds;
       self.bounds = bounds;
 
-      var wantedTileBounds = TileBounds.tileBounds(bounds, self.tilesPerScreen);
+      if (self.header.temporalExtents == undefined) {
+        bounds = bounds.bounds;
+      } else {
+
+      }
+
+      var wantedTileBounds = TileBounds.tileBounds(
+        bounds,
+        self.tilesPerScreen,
+        self.header.temporalExtents
+      );
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
       var anyNewTiles = false;

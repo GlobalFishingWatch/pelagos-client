@@ -80,7 +80,7 @@ The tileset header specifies how to load tiles, and what columns to expect.
          from the selection object is used to determine the path:
          /info/NAME1/VALUE1/NAME2/VALUE2.../NAMEN/VALUEN */
 
-      infoUsesSelection: false,
+      "infoUsesSelection": false,
 
       /* Column specifications. Note: All tiles should adhere to this
          format, or extend it. Extra columns in tiles will be mostly
@@ -99,7 +99,13 @@ The tileset header specifies how to load tiles, and what columns to expect.
       },
       
       /* Wether this tileset has subset tilesets for series / seriesgroupp queries */
-      seriesTilesets: true
+      "seriesTilesets": true,
+
+      /* If set to a numeric value temporal tiling will be enabled,
+         and the value specifies the length (in milliseconds) of a
+         temporal tile. */
+      "temporalExtents": 2592000000,
+
     }
 
 # The workspace secification
