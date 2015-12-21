@@ -21,7 +21,7 @@ A tileset always has a header file under the base url:
     http://myproject.appspot.com/tile/mytileset/header
 
 ## Fallback URLS
-The header file can the specify a set of new base url:s to use for tile fetches as well as track queries.
+The header file can the specify a set of new base url:s to use for tile fetches as well as selection info and selection track queries.
 
 The base urls are specified as a list of fallback levels. For each level there can be multiple urls, used in a round-robin fashion. The client starts by trying to load a tile using the lowest fallback level. If a request returns a 404 error, the next higher fallback level is attempted, until all are exhausted.
 
@@ -60,20 +60,32 @@ The tileset header specifies how to load tiles, and what columns to expect.
     {
       "tilesetName": "Default name for animation", 
 
-      /* Urls to load tiles from. Each entry in the list is a fallback level (ordered from first level to attempt to last).
-         Each level is a list of urls to try in a round-robin fashion.
-      */
-      "urls": [
-        [
-          "http://storage.googleapis.com/myproject/tiles/mytileset-3.2.4"
-        ], 
-        [
-          "http://t0.myproject.appspot.com/tiles/mytileset/3.2.4", 
-          "http://t1.myproject.appspot.com/tiles/mytileset/3.2.4", 
-          "http://t2.myproject.appspot.com/tiles/mytileset/3.2.4", 
-          "http://t3.myproject.appspot.com/tiles/mytileset/3.2.4"
+      /* Urls to load files from for different purposes.
+
+         Each entry in the list is a fallback level (ordered from
+         first level to attempt to last). Each level is a list of urls
+         to try in a round-robin fashion.
+
+         Setting urls to a list of lists, instead of an object, is a
+         shortcut syntax for only setting the "default" member. */
+      "urls": {
+        "default": [
+          [
+            "http://storage.googleapis.com/myproject/tiles/mytileset-3.2.4"
+          ], 
+          [
+            "http://t0.myproject.appspot.com/tiles/mytileset/3.2.4", 
+            "http://t1.myproject.appspot.com/tiles/mytileset/3.2.4", 
+            "http://t2.myproject.appspot.com/tiles/mytileset/3.2.4", 
+            "http://t3.myproject.appspot.com/tiles/mytileset/3.2.4"
+          ]
+        ],
+        "selection-info": [
+          [
+            "http://storage.googleapis.com/myproject/vesseltracks"
+          ]
         ]
-      ],
+      },
 
       /* Default is to query /info/series/SERIESNR for selection
          information (it should return json). If set to true, sortcols

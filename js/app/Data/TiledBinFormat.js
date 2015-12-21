@@ -17,6 +17,7 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Bi
     getTileContent: function (tile) {
       var self = this;
       var base = self.getUrl(
+        "tile",
         tile.bounds.toString(),
         tile.fallbackLevel);
       var content = new BinFormat({

@@ -135,28 +135,38 @@ define([
       self.events.triggerEvent("load");
     },
 
-    getUrlFallbackLevels: function() {
+    getUrls: function (category) {
       var self = this;
-      if (self.header.urls) return self.header.urls.length;
-      return 1;
-    },
-
-    getUrl: function (key, fallbackLevel) {
-      var self = this;
-
       var urls;
       if (self.header.urls) {
-        if (fallbackLevel == -1) {
-          fallbackLevel = self.header.urls.length - 1;
-        } else if (!fallbackLevel) {
-          fallbackLevel = 0;
+        urls = self.header.urls;
+        if (urls[category]) {
+          urls = urls[category];
+        } else if (urls.default) {
+          urls = urls.default;
         }
-        urls = self.header.urls[fallbackLevel];
+        return urls;
       } else if (self.header.alternatives) {
-        urls = self.header.alternatives;
+        return [self.header.alternatives];
       } else {
-        return self.url;
+        return [[self.url]];
       }
+    },
+
+    getUrlFallbackLevels: function(category) {
+      var self = this;
+
+      return self.getUrls(category).length;
+    },
+
+    getUrl: function (category, key, fallbackLevel) {
+      var self = this;
+
+      var urls = self.getUrls(category);
+      if (fallbackLevel < 0) fallbackLevel += urls.length;
+      urls = urls[fallbackLevel];
+
+      if (urls.length == 1) return urls[0];
 
       var idx;
       if (key) {
@@ -192,14 +202,16 @@ define([
          current info database that doesn't contain seriesgroup
          values. This should be removed in the future. */
 
-      var baseUrl = self.getUrl("selection-info", fallbackLevel);
+      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+
+      var baseUrl = self.getUrl("selection-info", query, fallbackLevel);
       if (baseUrl.indexOf("/sub/") != -1) {
-          baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
+        baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
       } else {
-          baseUrl = baseUrl + "/sub/";
+        baseUrl = baseUrl + "/sub/";
       }
 
-      return baseUrl + self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series'])
+      return baseUrl + query
     },
 
     getSelectionInfo: function(selection, cb) {
@@ -236,7 +248,7 @@ define([
                 });
               } if (request.status == 0 && withCredentials) {
                 getSelectionInfo(fallbackLevel, false);
-              } else if (fallbackLevel + 1 < self.getUrlFallbackLevels()) {
+              } else if (fallbackLevel + 1 < self.getUrlFallbackLevels("selection-info")) {
                 getSelectionInfo(fallbackLevel + 1, true);
               } else {
                 var e = Ajax.makeError(request, url, "selection information from ");
@@ -256,7 +268,10 @@ define([
       var self = this;
 
       var data = {query: query};
-      var url = self.getUrl("search", -1) + "/search";
+      /* FIXME: JSON encoding is not unambiguous, so using it as a key
+       * is not a good idea... */
+      data = JSON.stringify(data);
+      var url = self.getUrl("search", data, -1) + "/search";
 
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
@@ -276,7 +291,7 @@ define([
           }
         }
       };
-      request.send(JSON.stringify(data));
+      request.send(data);
     },
 
     tileParamsForRegion: function(bounds) {
@@ -707,7 +722,7 @@ define([
           self.setUpTileContent(tile);
           tile.content.load();
         }, self.retryTimeout);
-      } else if (data.status == 404 && tile.fallbackLevel < self.getUrlFallbackLevels() - 1) {
+      } else if (data.status == 404 && tile.fallbackLevel < self.getUrlFallbackLevels("default") - 1) {
         tile.retry = 0;
         tile.fallbackLevel++;
         self.setUpTileContent(tile);

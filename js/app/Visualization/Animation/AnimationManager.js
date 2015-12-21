@@ -395,11 +395,12 @@ function(Class,
           ];
         }
 
+        var query = baseAnimation.data_view.source.getSelectionQuery(selection);
         seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
           url: baseAnimation.data_view.source.url,
-          versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
+          versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
           query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
-          query: baseAnimation.data_view.source.getSelectionQuery(selection),
+          query: query,
           header: baseAnimation.data_view.source.header,
           selection: selection
         });
