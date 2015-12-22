@@ -347,7 +347,7 @@ define([
         if (oldWantedTiles[key] != undefined) {
           wantedTiles[key] = oldWantedTiles[tilebounds.toString()];
         } else {
-            wantedTiles[key] = self.setUpTile(tilebounds, findOverlaps);
+          wantedTiles[key] = self.setUpTile(tilebounds, findOverlaps);
           anyNewTiles = true;
         }
         wantedTiles[key].reference();

@@ -150,12 +150,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     var tileleft = tilewidth * Math.floor(bounds.left / tilewidth);
     var tilebottom = tileheight * Math.floor(bounds.bottom / tileheight);
 
-    var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
+    var res = new Bounds([tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight]);
 
     if (TileBounds.world.containsObj(res)) {
-      obj = new obj.clone();
+      obj = obj.clone();
       obj.update(res);
-      return res;
+      return obj;
     } else {
       return undefined;
     }
