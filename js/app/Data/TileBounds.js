@@ -161,5 +161,14 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     }
   };
 
+  TileBounds.zoomLevelForTileBounds = function (bounds) {
+    return Math.max(
+      0,
+      Math.floor(Math.min(
+        Math.log(TileBounds.world.getWidth() / bounds.getWidth(), 2),
+        Math.log(TileBounds.world.getHeight() / bounds.getHeight(), 2)))
+    );
+  };
+
   return TileBounds;
 });

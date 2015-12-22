@@ -294,99 +294,6 @@ define([
       request.send(data);
     },
 
-    tileParamsForRegion: function(bounds) {
-      var self = this;
-      var origBounds = bounds;
-      bounds = bounds.unwrapDateLine(self.world);
-
-      var res = {
-        bounds: origBounds,
-        unwrappedBounds: bounds,
-        width: bounds.getWidth(),
-        height: bounds.getHeight(),
-        worldwidth: self.world.getWidth(),
-        worldheight: self.world.getHeight(),
-
-        toString: function () {
-          return "\n" + Object.items(this
-            ).filter(function (item) { return item.key != "toString" && item.key != "stack"; }
-            ).map(function (item) { return "  " + item.key + "=" + item.value.toString(); }
-            ).join("\n") + "\n";
-        }
-      };
-
-      res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(self.tilesPerScreen)), 2));
-      
-      res.tilewidth = res.worldwidth / Math.pow(2, res.level);
-      res.tileheight = res.worldheight / Math.pow(2, res.level);
-
-      res.tileleft = res.tilewidth * Math.floor(bounds.left / res.tilewidth);
-      res.tileright = res.tilewidth * Math.ceil(bounds.right / res.tilewidth);
-      res.tilebottom = res.tileheight * Math.floor(bounds.bottom / res.tileheight);
-      res.tiletop = res.tileheight * Math.ceil(bounds.top / res.tileheight);
-
-      res.tilesx = (res.tileright - res.tileleft) / res.tilewidth;
-      res.tilesy = (res.tiletop - res.tilebottom) / res.tileheight;
-
-      return res;
-    },
-
-    tileBoundsForRegion: function(bounds) {
-      /* Returns a list of tile bounds covering a region. */
-
-      var self = this;
-
-      var params = self.tileParamsForRegion(bounds);
-      Logging.main.log("Data.BaseTiledFormat.tileBoundsForRegion", params);
-
-      res = [];
-      for (var x = 0; x < params.tilesx; x++) {
-        for (var y = 0; y < params.tilesy; y++) {
-          res.push(new Bounds(
-            params.tileleft + x * params.tilewidth,
-            params.tilebottom + y * params.tileheight,
-            params.tileleft + (x+1) * params.tilewidth,
-            params.tilebottom + (y+1) * params.tileheight
-          ).rewrapDateLine(self.world));
-        }
-      }
-
-      return res;
-    },
-
-    extendTileBounds: function (bounds) {
-     /* Returns the first larger tile bounds enclosing the tile bounds
-      * sent in. Note: Parameter bounds must be for a tile, as returned
-      * by a previous call to tileBoundsForRegion or
-      * extendTileBounds. */
-
-      var self = this;
-
-      var tilewidth = bounds.getWidth() * 2;
-      var tileheight = bounds.getHeight() * 2;
-
-      var tileleft = tilewidth * Math.floor((bounds.left - self.world.left) / tilewidth) + self.world.left;
-      var tilebottom = tileheight * Math.floor((bounds.bottom - self.world.bottom) / tileheight) + self.world.bottom;
-
-      var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
-
-      if (self.world.containsBounds(res)) {
-        return res;
-      } else {
-        return undefined;
-      }
-    },
-
-    zoomLevelForTileBounds: function (bounds) {
-      var self = this;
-      return Math.max(
-        0,
-        Math.floor(Math.min(
-          Math.log(self.world.getWidth() / bounds.getWidth(), 2),
-          Math.log(self.world.getHeight() / bounds.getHeight(), 2)))
-      );
-    },
-
     clear: function () {
       var self = this;
 
@@ -497,7 +404,7 @@ define([
     setUpTileContent: function (tile) {
       var self = this;
 
-      if (self.header.maxZoom != undefined && self.zoomLevelForTileBounds(tile.bounds) > self.header.maxZoom) {
+      if (self.header.maxZoom != undefined && TileBounds.zoomLevelForTileBounds(tile.bounds) > self.header.maxZoom) {
         tile.setContent(new EmptyFormat({
           headerTime: false,
           contentTime: false,
