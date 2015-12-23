@@ -365,7 +365,7 @@ function(Class,
       baseAnimation.selectionAnimations = [];
     },
 
-    showSelectionAnimations: function (baseAnimation, selection, zoom) {
+    showSelectionAnimations: function (baseAnimation, selection) {
       var self = this;
       var baseHeader = baseAnimation.data_view.source.header;
 
@@ -427,7 +427,7 @@ function(Class,
             }
           );
         }, function (err) {
-          if (zoom) {
+          if (selection.data.zoomToSelectionAnimations != undefined) {
             var bounds = new SpaceTime();
             seriesAnimations.map(function (animation) {
               bounds.update(new Timerange([
