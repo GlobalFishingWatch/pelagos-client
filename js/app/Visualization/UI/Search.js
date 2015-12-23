@@ -2,8 +2,8 @@ define([
   "app/Class",
   "dijit/Dialog",
   "jQuery",
-  "app/Visualization/KeyModifiers"
-], function(Class, Dialog, $, KeyModifiers){
+  "app/Visualization/KeyBindings"
+], function(Class, Dialog, $, KeyBindings){
   return Class({
     name: "Search",
     initialize: function (visualization) {
@@ -12,13 +12,10 @@ define([
       self.visualization = visualization;
       self.animationManager = visualization.animations;
 
-      $(document).on({
-        keyup: function (e) {
-          if (KeyModifiers.nameById[e.keyCode] == 'F' && KeyModifiers.active.Alt && KeyModifiers.active.Ctrl) {
-            self.displaySearchDialog();
-          }
-        }
-      });
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'F'], null, 'General',
+        'Search', self.displaySearchDialog.bind(self)
+      );
 
       self.dialog = new Dialog({
         style: "width: 50%;",

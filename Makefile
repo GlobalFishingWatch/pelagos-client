@@ -8,7 +8,8 @@ JSDEPS= \
   $(LIBS)/jquery-mousewheel/jquery.mousewheel.js \
   $(LIBS)/less/dist/less.js \
   $(LIBS)/stats.js/build/stats.min.js \
-  $(LIBS)/loggly-jslogger/src/loggly.tracker.js
+  $(LIBS)/loggly-jslogger/src/loggly.tracker.js \
+  $(LIBS)/cartodb.js/cartodb.js
 
 CSSDEPS= \
   $(LIBS)/font-awesome/css/font-awesome.min.css
@@ -17,7 +18,7 @@ DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/easyXDM/easyXDM.min.js \
   $(LIBS)/util/buildscripts/build.sh
 
-.PHONY: all prerequisites dependencies js-build clean clean-js-build clean-dependencies unit-tests integration-tests dev-server test-server
+.PHONY: all prerequisites dependencies js-build clean clean-js-build clean-dependencies clean-integration-tests unit-tests integration-tests dev-server test-server
 
 all: js-build
 
@@ -51,7 +52,10 @@ clean-js-build:
 clean-dependencies:
 	rm -rf js/libs
 
-clean: clean-js-build clean-dependencies
+clean-integration-tests:
+	rm -rf ui_tests/data/testtiles
+
+clean: clean-js-build clean-dependencies clean-integration-tests
 
 prerequisites:
 	curl -sL https://deb.nodesource.com/setup_0.12 | bash -
@@ -61,10 +65,10 @@ prerequisites:
 	pip install --upgrade pip
 	pip install -r requirements.txt
 
-unit-tests:
+unit-tests: dependencies
 	xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l $(TESTEM_PATH)testem$(TESTEM_SUFFIX) ci
 
-integration-tests:
+integration-tests: dependencies
 	xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l nosetests -s -w ui_tests
 
 dev-server: dependencies

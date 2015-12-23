@@ -1,3 +1,4 @@
+
 define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, Animation) {
   var VesselTrackAnimation = Class(Animation, {
     name: "VesselTrackAnimation",
@@ -14,16 +15,32 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
       filter: {type: "Float32", source: {_: null, timerange: -1.0, active_category: -1.0}}
     },
 
+    uniforms: {
+      red: {value: 0.4, min:0.0, max: 1.0},
+      green: {value: 0.6, min:0.0, max: 1.0},
+      blue: {value: 0.9, min:0.0, max: 1.0},
+
+      focus_red: {value: 1.0, min:0.0, max: 1.0},
+      focus_green: {value: 1.0, min:0.0, max: 1.0},
+      focus_blue: {value: 1.0, min:0.0, max: 1.0}
+    },
+
     selections: $.extend(
       {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
       Animation.prototype.selections
     ),
 
     programSpecs: {
-      programTrack: {
+      program: {
         context: "gl",
         vertex: "app/Visualization/Animation/VesselTrackAnimation-vertex.glsl",
-        fragment: "app/Visualization/Animation/VesselTrackAnimation-fragment.glsl"
+        fragment: "app/Visualization/Animation/VesselTrackAnimation-fragment.glsl",
+        blend: {src:"SRC_ALPHA", dst:"ONE_MINUS_SRC_ALPHA"}
+      },
+      rowidxProgram: {
+        context: "rowidxGl",
+        vertex: "app/Visualization/Animation/VesselTrackAnimation-rowidx-vertex.glsl",
+        fragment: "app/Visualization/Animation/VesselTrackAnimation-rowidx-fragment.glsl"
       }
     },
 
