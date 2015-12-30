@@ -176,8 +176,39 @@ define([
             self.node.find(".vessel_id .flag").html("---");
           }
 
-          self.node.find(".vessel_id .imo").html(data.imo || "---");
-          self.node.find(".vessel_id .mmsi").html(data.mmsi || "---");
+          if (data.imo) {
+            self.node.find(".vessel_id .imo").html("");
+            var first = true;
+            data.imo.split(",").map(function (imo) {
+              var link = $("<a target='_blank'>");
+              link.text(imo);
+              link.attr({href: 'http://www.marinetraffic.com/ais/details/ships/imo:' + imo});
+              if (!first) {
+                self.node.find(".vessel_id .imo").append(", ");
+              }
+              self.node.find(".vessel_id .imo").append(link);
+              first = false;
+            });
+          } else {
+            self.node.find(".vessel_id .imo").html("---");
+          }
+
+          if (data.mmsi) {
+            self.node.find(".vessel_id .mmsi").html("");
+            var first = true;
+            data.mmsi.split(",").map(function (mmsi) {
+              var link = $("<a target='_blank'>");
+              link.text(mmsi);
+              link.attr({href: 'https://www.marinetraffic.com/en/ais/details/ships/' + mmsi});
+              if (!first) {
+                self.node.find(".vessel_id .mmsi").append(", ");
+              }
+              self.node.find(".vessel_id .mmsi").append(link);
+              first = false;
+            });
+          } else {
+            self.node.find(".vessel_id .mmsi").html("---");
+          }
 
           var classes = {
             "transport/bulkcarrier": {name: "Bulk carrier", icon: "/vessels/bulkcarrier.png"},
@@ -211,11 +242,13 @@ define([
 
           self.node.find(".vessel_id .vesselname").html(data.vesselname || "---");
 
+/*
           if (data.link) {
             var link = $("<a target='_new'>");
             link.attr({href: data.link});
             self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
+*/
 
           if (event.layerInstance.data_view.source.header.kml) {
             var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
