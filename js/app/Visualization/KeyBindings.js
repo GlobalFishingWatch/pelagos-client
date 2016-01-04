@@ -41,7 +41,7 @@ define(["app/Class", "app/Events", "app/Visualization/KeyModifiers", "jQuery"], 
       Object.keys(bindings).map(function (keyPath) {
         var registration = bindings[keyPath];
         var regHtml = $("<div class='binding'><div class='key-codes'></div><div class='description'></div></div>");
-        regHtml.find('.key-codes').text(registration.keyPath);
+        regHtml.find('.key-codes').text(registration.keyPath + ":");
         regHtml.find('.description').html(registration.description);
         categoryHtml.find('.key-bindings').append(regHtml);
       });
