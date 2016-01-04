@@ -465,19 +465,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    #layers, #vessel_identifiers {
-      /*padding-left: 10.5263%;*/ /* 58px / 551px */
-      padding-left: 5%;
-	  word-wrap: break-word;
-    }
-
-    #layers h2, #vessel_identifiers h2 {
-      color: #3a3a3c;
-      font-size: 100%;
-      padding-top: 1rem; 
-      font-weight: 400;
-    }
-
     #divide {
       border-bottom: solid 1px #dfe0e1;
       margin: 3rem 2.5% 0 2.5%;
@@ -517,35 +504,49 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
+    #layers, #vessel_identifiers {
+      padding-left: 5%;
+      word-wrap: break-word;
+    }
+
+    #layers h2, #vessel_identifiers h2 {
+      color: #3a3a3c;
+      font-size: 100%;
+      padding-top: 1rem; 
+      font-weight: 400;
+    }
+
     /* toggle styles */
     #layers {
-      display: table;
-      width: 100%;
       margin-top: -38pt;
 
-      .layer-row {
-        display: table-row;
-        height: 30px;
-      }
+      .layer-list {
+        display: table;
+        width: 100%;
+        .layer-row {
+          display: table-row;
+          height: 30px;
 
-      .layer-label,
-      .switch {
-        display: table-cell;
-        vertical-align: middle;
-        padding-top: 10px;
-        vertical-align: top;
-      }
+          .layer-label,
+          .switch {
+            display: table-cell;
+            vertical-align: middle;
+            padding-top: 10px;
+            vertical-align: top;
+          }
 
-      .switch {
-        width: 18%;
-        font-size: 90%;
-      }
+          .switch {
+            width: 18%;
+            font-size: 90%;
+          }
 
-      .layer-label {
-        color: #6D6E70;
-        font-size: 90%;
-        padding: 2%;
-        width: 65%;
+          .layer-label {
+            color: #6D6E70;
+            font-size: 90%;
+            padding: 2%;
+            width: 100%;
+          }
+        }
       }
     }
 
