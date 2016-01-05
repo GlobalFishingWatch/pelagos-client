@@ -238,6 +238,12 @@ define([
       }
 
       self.node.find("#vessel_identifiers").css({color: color});
+
+      self.sidebar.resize();
+
+      if (!self.visualization.state.getValue('edit')) {
+        self.sidebar.selectChild(self.info, true);
+      }
     },
 
     addHandler: function (event) {
