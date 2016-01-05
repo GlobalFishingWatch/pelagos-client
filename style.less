@@ -221,6 +221,54 @@ body {
   }
 }
 
+.search-dialog {
+  .query {
+    height: 2em;
+  }
+  .search-loading {
+    margin-top: -1.6em;
+    margin-right: 0.5em;
+    margin-left: -1.7em;
+    padding-left: 100%;
+    display: none;
+  }
+  .results {
+    .error {
+      font-weight: bold;
+      color: #ef4223;
+    }
+    .no-results {
+      font-weight: bold;
+    }
+    table {
+      border-spacing: 0;
+      tbody {
+        tr:nth-child(odd) {
+          background-color: #ccc;
+        }
+        tr {
+          th {
+            text-align: left;
+          }
+          th, td {
+            padding-right: 10pt;
+            vertical-align: top;
+            a {
+              display: block;
+            }
+          }
+          &:hover {
+            background-color: #aaa;
+          }
+        }
+        tr td:nth-child(0) {
+          width: 180pt;
+        }
+      }
+    }
+  }
+}
+
 .control_box {
   width:48pt;
   height: 80pt;
