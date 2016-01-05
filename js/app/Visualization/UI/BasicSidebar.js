@@ -266,11 +266,6 @@ define([
       node.find("input").change(function (event) {
         animation.setVisible(event.target.checked);
       });
-      if (animation.visible) {
-        node.find("input").attr('checked','checked');
-      } else {
-        node.find("input").removeAttr('checked');
-      }
 
       animation.basicSidebarNode = node;
       self.node.find(".layer-list").append(node);
@@ -303,10 +298,22 @@ define([
           onChange: refreshSwatch,
           intermediateChanges: true
         }, "mySlider");
-        slider.placeAt(self.node.find(".layer-list")[0]);
+
+        var intensityNode = $('<div class="intensity-slider-box"><div>Intensity:</div></div>')
+        node.find(".layer-label").append(intensityNode);
+        slider.placeAt(intensityNode[0]);
         slider.startup();
+
+        node.find("input").change(function (event) {
+          intensityNode.toggle(event.target.checked);
+        });
       }
 
+      if (animation.visible) {
+        node.find("input").attr('checked','checked');
+      } else {
+        node.find("input").removeAttr('checked');
+      }
     },
 
     removeHandler: function (event) {
