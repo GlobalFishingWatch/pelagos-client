@@ -142,8 +142,8 @@ define([
         urls = self.header.urls;
         if (urls[category]) {
           urls = urls[category];
-        } else if (urls.default) {
-          urls = urls.default;
+        } else if (urls['default']) {
+          urls = urls['default'];
         }
         return urls;
       } else if (self.header.alternatives) {
