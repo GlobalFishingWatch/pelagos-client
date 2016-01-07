@@ -58,7 +58,6 @@ function (
       async.series([
         self.initButtons.bind(self),
         self.initLoadSpinner.bind(self),
-        self.initLogo.bind(self),
         self.initTimeline.bind(self),
         self.initPlayButton.bind(self),
         self.initLoopButton.bind(self),
@@ -73,7 +72,7 @@ function (
       var self = this;
       self.buttonNodes = {};
 
-      self.logoNode = $('<img class="logo">')
+      self.logoNode = $('<div class="logo">')
       self.visualization.node.append(self.logoNode);
 
       self.controlButtonsNode = $(new ObjectTemplate(''
@@ -165,21 +164,6 @@ function (
           dialog.show();
         }
       });
-      cb();
-    },
-
-    initLogo: function(cb) {
-      var self = this;
-
-      var logo_img = self.visualization.state.getValue("logoimg");
-      var logo_url = self.visualization.state.getValue("logourl");
-
-      if (logo_img) {
-        var logo = $("<a class='logo'><img></a>");
-        logo.find("img").attr({src:logo_img});
-        logo.attr({href:logo_url});
-        self.visualization.node.append(logo);
-      }
       cb();
     },
 
@@ -514,8 +498,14 @@ function (
       self.config = config;
       data = new ObjectTemplate(self.config).eval(app.dirs);
 
-      self.logoNode.attr(data.logo.attr);
-      self.logoNode.css(data.logo.css);
+      if (typeof(data.logo) == "string") {
+        self.logoNode.append(data.logo);
+      } else {
+        var logo = $("<img>");
+        logo.attr(data.logo.attr);
+        logo.css(data.logo.css);
+        self.logoNode.append(logo);
+      }
 
       self.sideBar.load(config.sideBar, cb);
     }

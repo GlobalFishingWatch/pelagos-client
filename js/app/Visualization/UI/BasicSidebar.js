@@ -339,10 +339,14 @@ define([
 
       self.node.find(".sponsor_logos").html("");
       data.sponsorLogos.map(function (spec) {
-        var logo = $("<img>");
-        logo.attr(spec.attr);
-        logo.css(spec.css);
-        self.node.find(".sponsor_logos").append(logo);
+        if (typeof(spec) == "string") {
+          self.node.find(".sponsor_logos").append(spec);
+        } else {
+          var logo = $("<img>");
+          logo.attr(spec.attr);
+          logo.css(spec.css);
+          self.node.find(".sponsor_logos").append(logo);
+        }
       });
       
       self.node.find("#feedback_url").attr("href", data.feedback_url);
