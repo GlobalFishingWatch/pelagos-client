@@ -204,6 +204,10 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
   };
 
   Interval.dictToDate = function (dict) {
+    // Hack adound limitation in Safari 
+    var seconds = Math.floor(dict.milliseconds / 1000.0);
+    var milliseconds = dict.milliseconds % 1000.0;
+
     return new Date(
       Date.UTC(
         dict.years,
@@ -211,8 +215,8 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
         dict.days + 1, // We use 0-based counting for modulo to work, but Date uses 1-based counting
         dict.hours,
         dict.minutes,
-        dict.seconds,
-        dict.milliseconds
+        dict.seconds + seconds,
+        milliseconds
       )
     );
   };
