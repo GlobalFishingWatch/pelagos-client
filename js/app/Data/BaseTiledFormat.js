@@ -598,7 +598,7 @@ define([
         return !tile.retryTimeout && (tile.content.allIsLoaded || tile.content.error);
       }).reduce(function (a, b) {
         return a && b;
-      });
+      }, true);
 
       if (allDone) {
         var e = {update: "all", tile: tile};

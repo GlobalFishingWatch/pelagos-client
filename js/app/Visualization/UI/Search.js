@@ -86,6 +86,7 @@ define([
           row.find(".callsign").html(info.callsign);
           row.find('a').attr({href: "javascript: void(0);"});
           row.find('a').click(function () {
+            info.zoomToSelectionAnimations = true;
             info.animation.data_view.selections.selections.selected.addDataRange(info, info, true);
             self.dialog.hide();
           });

@@ -2,6 +2,8 @@ define([
   "app/Class",
   "app/Events",
   "app/Bounds",
+  "app/Timerange",
+  "app/SpaceTime",
   "app/ObjectTemplate",
   "async",
   "app/Logging",
@@ -12,8 +14,6 @@ define([
   "app/Visualization/Animation/Matrix",
   "CanvasLayer",
   "Stats",
-  "app/Timerange",
-  "app/SpaceTime",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
@@ -31,6 +31,8 @@ define([
 function(Class,
   Events,
   Bounds,
+  Timerange,
+  SpaceTime,
   ObjectTemplate,
   async,
   Logging,
@@ -41,8 +43,6 @@ function(Class,
   Matrix,
   CanvasLayer,
   Stats,
-  Timerange,
-  SpaceTime,
   ObjectToTable,
   Rowidx,
   Animation
@@ -405,6 +405,7 @@ function(Class,
 
         self.hideSelectionAnimations(baseAnimation);
 
+        var seriesAnimations = [];
         async.each(seriesTilesets, function (seriesTileset, cb) {
           self.addAnimation(
             seriesTileset,
@@ -414,10 +415,35 @@ function(Class,
               } else {
                 animation.selectionAnimationFor = baseAnimation;
                 baseAnimation.selectionAnimations.push(animation);
+                seriesAnimations.push(animation);
               }
               cb();
             }
           );
+        }, function (err) {
+          if (selection.data.zoomToSelectionAnimations != undefined) {
+            var bounds = new SpaceTime();
+            seriesAnimations.map(function (animation) {
+              bounds.update(new Timerange([
+                animation.data_view.source.header.colsByName.datetime.min,
+                animation.data_view.source.header.colsByName.datetime.max]));
+              bounds.update(new Bounds([
+                animation.data_view.source.header.colsByName.longitude.min,
+                animation.data_view.source.header.colsByName.latitude.min,
+                animation.data_view.source.header.colsByName.longitude.max,
+                animation.data_view.source.header.colsByName.latitude.max]));
+            });
+
+            self.visualization.state.setValue("time", bounds.getTimerange().end);
+            self.visualization.state.setValue("timeExtent", bounds.getTimerange().end.getTime() - bounds.getTimerange().start.getTime());
+            bounds = bounds.getBounds();
+            self.visualization.animations.map.fitBounds({
+              south:bounds.bottom,
+              west:bounds.left,
+              north:bounds.top,
+              east:bounds.right
+            });
+          }            
         });
       }
     },
