@@ -376,8 +376,8 @@ define([
         } else {
           var startData = {};
           var endData = {};
-          startData[sourcename] = -1.0/0.0;
-          endData[sourcename] = 1.0/0.0;
+          startData[sourcename] = Number.NEGATIVE_INFINITY;
+          endData[sourcename] = Number.POSITIVE_INFINITY;
           selection.addDataRange(startData, endData);
         }
       };
