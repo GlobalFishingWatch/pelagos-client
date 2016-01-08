@@ -20,7 +20,7 @@ define([
       self.dialog = new Dialog({
         style: "width: 50%;",
         title: "Search",
-        class: 'search-dialog',
+        "class": 'search-dialog',
         content: '' +
           '<input type="text" class="query" style="width: 100%;" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
           '<div class="search-loading">' +
