@@ -176,39 +176,28 @@ define([
             self.node.find(".vessel_id .flag").html("---");
           }
 
-          if (data.imo) {
-            self.node.find(".vessel_id .imo").html("");
-            var first = true;
-            data.imo.split(",").map(function (imo) {
-              var link = $("<a target='_blank'>");
-              link.text(imo);
-              link.attr({href: 'http://www.marinetraffic.com/ais/details/ships/imo:' + imo});
-              if (!first) {
-                self.node.find(".vessel_id .imo").append(", ");
-              }
-              self.node.find(".vessel_id .imo").append(link);
-              first = false;
-            });
-          } else {
-            self.node.find(".vessel_id .imo").html("---");
-          }
+          var setMultiLinkField = function (field, url_prefix) {
+            var node = self.node.find(".vessel_id ." + field);
+            if (data[field]) {
+              node.html("");
+              var first = true;
+              data[field].split(",").map(function (value) {
+                var link = $("<a target='_blank'>");
+                link.text(value);
+                link.attr({href: url_prefix + value});
+                if (!first) {
+                  node.append(", ");
+                }
+                node.append(link);
+                first = false;
+              });
+            } else {
+              node.html("---");
+            }
+          };
 
-          if (data.mmsi) {
-            self.node.find(".vessel_id .mmsi").html("");
-            var first = true;
-            data.mmsi.split(",").map(function (mmsi) {
-              var link = $("<a target='_blank'>");
-              link.text(mmsi);
-              link.attr({href: 'https://www.marinetraffic.com/en/ais/details/ships/' + mmsi});
-              if (!first) {
-                self.node.find(".vessel_id .mmsi").append(", ");
-              }
-              self.node.find(".vessel_id .mmsi").append(link);
-              first = false;
-            });
-          } else {
-            self.node.find(".vessel_id .mmsi").html("---");
-          }
+          setMultiLinkField('imo', 'http://www.marinetraffic.com/ais/details/ships/imo:');
+          setMultiLinkField('mmsi', 'https://www.marinetraffic.com/en/ais/details/ships/');
 
           var classes = {
             "transport/bulkcarrier": {name: "Bulk carrier", icon: "/vessels/bulkcarrier.png"},
