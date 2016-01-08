@@ -176,8 +176,28 @@ define([
             self.node.find(".vessel_id .flag").html("---");
           }
 
-          self.node.find(".vessel_id .imo").html(data.imo || "---");
-          self.node.find(".vessel_id .mmsi").html(data.mmsi || "---");
+          var setMultiLinkField = function (field, url_prefix) {
+            var node = self.node.find(".vessel_id ." + field);
+            if (data[field]) {
+              node.html("");
+              var first = true;
+              data[field].split(",").map(function (value) {
+                var link = $("<a target='_blank'>");
+                link.text(value);
+                link.attr({href: url_prefix + value});
+                if (!first) {
+                  node.append(", ");
+                }
+                node.append(link);
+                first = false;
+              });
+            } else {
+              node.html("---");
+            }
+          };
+
+          setMultiLinkField('imo', 'http://www.marinetraffic.com/ais/details/ships/imo:');
+          setMultiLinkField('mmsi', 'https://www.marinetraffic.com/en/ais/details/ships/');
 
           var classes = {
             "transport/bulkcarrier": {name: "Bulk carrier", icon: "/vessels/bulkcarrier.png"},
@@ -211,11 +231,13 @@ define([
 
           self.node.find(".vessel_id .vesselname").html(data.vesselname || "---");
 
+/*
           if (data.link) {
             var link = $("<a target='_new'>");
             link.attr({href: data.link});
             self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
+*/
 
           if (event.layerInstance.data_view.source.header.kml) {
             var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
