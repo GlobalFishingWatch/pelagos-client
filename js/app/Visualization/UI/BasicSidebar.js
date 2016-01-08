@@ -176,8 +176,28 @@ define([
             self.node.find(".vessel_id .flag").html("---");
           }
 
-          self.node.find(".vessel_id .imo").html(data.imo || "---");
-          self.node.find(".vessel_id .mmsi").html(data.mmsi || "---");
+          var setMultiLinkField = function (field, url_prefix) {
+            var node = self.node.find(".vessel_id ." + field);
+            if (data[field]) {
+              node.html("");
+              var first = true;
+              data[field].split(",").map(function (value) {
+                var link = $("<a target='_blank'>");
+                link.text(value);
+                link.attr({href: url_prefix + value});
+                if (!first) {
+                  node.append(", ");
+                }
+                node.append(link);
+                first = false;
+              });
+            } else {
+              node.html("---");
+            }
+          };
+
+          setMultiLinkField('imo', 'http://www.marinetraffic.com/ais/details/ships/imo:');
+          setMultiLinkField('mmsi', 'https://www.marinetraffic.com/en/ais/details/ships/');
 
           var classes = {
             "transport/bulkcarrier": {name: "Bulk carrier", icon: "/vessels/bulkcarrier.png"},
@@ -211,20 +231,23 @@ define([
 
           self.node.find(".vessel_id .vesselname").html(data.vesselname || "---");
 
+/*
           if (data.link) {
             var link = $("<a target='_new'>");
             link.attr({href: data.link});
             self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
+*/
 
           if (event.layerInstance.data_view.source.header.kml) {
             var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
+            var query = event.layerInstance.data_view.source.getSelectionQuery(
+              event.layerInstance.data_view.selections.selections[event.category]);
 
             link.attr({
-                href: (event.layerInstance.data_view.source.getUrl('export', -1) +
+                href: (event.layerInstance.data_view.source.getUrl('export', query, -1) +
                      "/sub/" +
-                     event.layerInstance.data_view.source.getSelectionQuery(
-                       event.layerInstance.data_view.selections.selections[event.category]) +
+                     query +
                      "/export")
             });
             self.node.find(".action_icons").append(link);
@@ -238,6 +261,12 @@ define([
       }
 
       self.node.find("#vessel_identifiers").css({color: color});
+
+      self.sidebar.resize();
+
+      if (!self.visualization.state.getValue('edit')) {
+        self.sidebar.selectChild(self.info, true);
+      }
     },
 
     addHandler: function (event) {
@@ -266,11 +295,6 @@ define([
       node.find("input").change(function (event) {
         animation.setVisible(event.target.checked);
       });
-      if (animation.visible) {
-        node.find("input").attr('checked','checked');
-      } else {
-        node.find("input").removeAttr('checked');
-      }
 
       animation.basicSidebarNode = node;
       self.node.find(".layer-list").append(node);
@@ -303,8 +327,15 @@ define([
           onChange: refreshSwatch,
           intermediateChanges: true
         }, "mySlider");
-        slider.placeAt(self.node.find(".layer-list")[0]);
+
+        var intensityNode = $('<div class="intensity-slider-box"><div>Intensity:</div></div>')
+        node.find(".layer-label").append(intensityNode);
+        slider.placeAt(intensityNode[0]);
         slider.startup();
+
+        node.find("input").change(function (event) {
+          intensityNode.toggle(event.target.checked);
+        });
       }
 
       /* Transplanted from
@@ -382,6 +413,11 @@ define([
         }
       };
 
+      if (animation.visible) {
+        node.find("input").attr('checked','checked');
+      } else {
+        node.find("input").removeAttr('checked');
+      }
     },
 
     removeHandler: function (event) {
@@ -401,10 +437,14 @@ define([
 
       self.node.find(".sponsor_logos").html("");
       data.sponsorLogos.map(function (spec) {
-        var logo = $("<img>");
-        logo.attr(spec.attr);
-        logo.css(spec.css);
-        self.node.find(".sponsor_logos").append(logo);
+        if (typeof(spec) == "string") {
+          self.node.find(".sponsor_logos").append(spec);
+        } else {
+          var logo = $("<img>");
+          logo.attr(spec.attr);
+          logo.css(spec.css);
+          self.node.find(".sponsor_logos").append(logo);
+        }
       });
       
       self.node.find("#feedback_url").attr("href", data.feedback_url);

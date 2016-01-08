@@ -19,6 +19,7 @@
   }, 
   "tilesetName": "my_tileset", 
   "seriesTilesets": true, 
+  "temporalExtents": 2592000000,
   "colsByName": {
     "weight": {
       "max": 4711.0, 
