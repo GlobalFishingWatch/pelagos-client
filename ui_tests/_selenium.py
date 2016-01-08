@@ -5,7 +5,7 @@ import selenium.webdriver.common.desired_capabilities
 
 def start():
     capabilities = selenium.webdriver.common.desired_capabilities.DesiredCapabilities.CHROME.copy()
-    capabilities['loggingPrefs'] = {'browser': 'ALL'}
+    #capabilities['loggingPrefs'] = {'browser': 'ALL'}
     options = selenium.webdriver.ChromeOptions()
     options.binary = '/usr/bin/chromium-browser'
     options.arguments.append("--ignore-gpu-blacklist")

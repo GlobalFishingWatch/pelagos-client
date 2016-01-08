@@ -109,7 +109,7 @@ def generate_header(outdir, title, time_min, time_max, temporalExtents=False):
                     "tilesetVersion": "1",
                     "seriesTilesets": True,
                     "infoUsesSelection": True,
-                    "temporalExtents": temporalExtents
+                    "temporalExtents": temporalExtents or None
                     }))
 
 def generate_workspace(outdir, title):
