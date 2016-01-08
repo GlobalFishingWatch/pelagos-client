@@ -130,11 +130,14 @@ define([
       });
 
       var selectionselect = $("<select multiple='true'>");
-      Object.items(source.choices).map(function (item) {
+      var choices = Object.keys(source.choices);
+      choices.sort();
+      choices.map(function (key) {
+        var value = source.choices[key];
         var option = $("<option>");
-        option.text(item.key);
-        option.attr({value:item.value});
-        if (selection.data[sourcename].indexOf(item.value) != -1) {
+        option.text(key);
+        option.attr({value:value});
+        if (selection.data[sourcename].indexOf(value) != -1) {
           option.attr({selected:'true'});
         }
         selectionselect.append(option);
