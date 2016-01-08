@@ -28,7 +28,8 @@ define([
   "app/Visualization/Animation/MapsEngineAnimation",
   "app/Visualization/Animation/CartoDBAnimation",
   "app/Visualization/Animation/VesselTrackAnimation",
-  "app/Visualization/Animation/ArrowAnimation"],
+  "app/Visualization/Animation/ArrowAnimation",
+  "app/Visualization/Animation/SatelliteAnimation"],
 function(Class,
   Events,
   Bounds,
@@ -55,14 +56,11 @@ function(Class,
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
-      mapTypeControlOptions: {
-          position: google.maps.ControlPosition.TOP_LEFT,
-          style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
-      },
       zoomControlOptions: {
         position: google.maps.ControlPosition.LEFT_TOP,
         style: google.maps.ZoomControlStyle.LARGE
       },
+      mapTypeControl: false,
       streetViewControl: false,
       overviewMapControl: false,
       styles: [

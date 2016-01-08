@@ -1,4 +1,4 @@
-define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/TiledEmptyFormat"], function(Class, QUnit, BaseTest, Bounds, TiledEmptyFormat) {
+define(["app/Class", "QUnit", "app/Test/BaseTest", "app/SpaceTime", "app/Data/TiledEmptyFormat"], function(Class, QUnit, BaseTest, SpaceTime, TiledEmptyFormat) {
   var expectedWantedTiles = [
     "0,0,2.8125,1.40625",
     "0,1.40625,2.8125,2.8125",
@@ -90,7 +90,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
       });
 
       p.load();
-      p.zoomTo(new Bounds([0, 0, 10, 5]));
+      p.zoomTo(new SpaceTime("1970-01-01T00:00:00,1970-01-01T00:00:00;0,0,10,5"));
     },
 
     "Keeping loaded tiles until new ones are loaded": function (cb) {
@@ -116,7 +116,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
             QUnit.deepEqual(tileCache, expectedTileCache, "Loaded the right tiles for bounds");
 
             p.headerTime = false;
-            p.zoomTo(new Bounds([0, 0, 5, 2.5]));
+            p.zoomTo(new SpaceTime("1970-01-01T00:00:00,1970-01-01T00:00:00;0,0,5,2.5"));
 
             setTimeout(function () {
               var wantedTiles = Object.keys(p.wantedTiles);
@@ -148,7 +148,7 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
       });
 
       p.load();
-      p.zoomTo(new Bounds([0, 0, 10, 5]));
+      p.zoomTo(new SpaceTime("1970-01-01T00:00:00,1970-01-01T00:00:00;0,0,10,5"));
     },
     "View bounds crossing international dateline ": function (cb) {
         QUnit.expect(3);
@@ -158,13 +158,11 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Bounds", "app/Data/Tiled
 
         p.events.on({
           header: function () {
-              console.log("HEADER");
-            p.zoomTo(new Bounds([180 - 5.625, 0, -180 + 5.625, 5.625]));
+            p.zoomTo(new SpaceTime("1970-01-01T00:00:00,1970-01-01T00:00:00;174.375,0,-174.375,5.625"));
           },
           all: function () {
-              console.log("ALL");
-            QUnit.equal(p.bounds.left, 180 - 5.625, "Correct bounds")
-            QUnit.equal(p.bounds.right, -180 + 5.625, "Correct bounds")
+            QUnit.equal(p.bounds.bounds.left, 180 - 5.625, "Correct bounds")
+            QUnit.equal(p.bounds.bounds.right, -180 + 5.625, "Correct bounds")
             QUnit.ok(p.tileCache["174.375,0,180,2.8125"], "Tile Present")
 
             cb();

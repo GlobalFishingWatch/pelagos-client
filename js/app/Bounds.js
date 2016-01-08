@@ -214,7 +214,7 @@ define(["app/Class"], function(Class) {
           self.right = parseFloat(obj[2]);
           self.top = parseFloat(obj[3]);
         } else {
-          if (obj.getBounds != undefined) {
+          if (obj.getBounds !== undefined) {
             obj = obj.getBounds();
           }
 

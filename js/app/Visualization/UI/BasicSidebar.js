@@ -176,8 +176,28 @@ define([
             self.node.find(".vessel_id .flag").html("---");
           }
 
-          self.node.find(".vessel_id .imo").html(data.imo || "---");
-          self.node.find(".vessel_id .mmsi").html(data.mmsi || "---");
+          var setMultiLinkField = function (field, url_prefix) {
+            var node = self.node.find(".vessel_id ." + field);
+            if (data[field]) {
+              node.html("");
+              var first = true;
+              data[field].split(",").map(function (value) {
+                var link = $("<a target='_blank'>");
+                link.text(value);
+                link.attr({href: url_prefix + value});
+                if (!first) {
+                  node.append(", ");
+                }
+                node.append(link);
+                first = false;
+              });
+            } else {
+              node.html("---");
+            }
+          };
+
+          setMultiLinkField('imo', 'http://www.marinetraffic.com/ais/details/ships/imo:');
+          setMultiLinkField('mmsi', 'https://www.marinetraffic.com/en/ais/details/ships/');
 
           var classes = {
             "transport/bulkcarrier": {name: "Bulk carrier", icon: "/vessels/bulkcarrier.png"},
@@ -211,11 +231,13 @@ define([
 
           self.node.find(".vessel_id .vesselname").html(data.vesselname || "---");
 
+/*
           if (data.link) {
             var link = $("<a target='_new'>");
             link.attr({href: data.link});
             self.node.find("#vessel_identifiers h2").wrapInner(link);
           }
+*/
 
           if (event.layerInstance.data_view.source.header.kml) {
             var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
@@ -239,6 +261,12 @@ define([
       }
 
       self.node.find("#vessel_identifiers").css({color: color});
+
+      self.sidebar.resize();
+
+      if (!self.visualization.state.getValue('edit')) {
+        self.sidebar.selectChild(self.info, true);
+      }
     },
 
     addHandler: function (event) {
@@ -267,11 +295,6 @@ define([
       node.find("input").change(function (event) {
         animation.setVisible(event.target.checked);
       });
-      if (animation.visible) {
-        node.find("input").attr('checked','checked');
-      } else {
-        node.find("input").removeAttr('checked');
-      }
 
       animation.basicSidebarNode = node;
       self.node.find(".layer-list").append(node);
@@ -304,10 +327,97 @@ define([
           onChange: refreshSwatch,
           intermediateChanges: true
         }, "mySlider");
-        slider.placeAt(self.node.find(".layer-list")[0]);
+
+        var intensityNode = $('<div class="intensity-slider-box"><div>Intensity:</div></div>')
+        node.find(".layer-label").append(intensityNode);
+        slider.placeAt(intensityNode[0]);
         slider.startup();
+
+        node.find("input").change(function (event) {
+          intensityNode.toggle(event.target.checked);
+        });
       }
 
+      /* Transplanted from
+       * js/app/Visualization/UI/SidePanels/DataViewUI.js This is a
+       * hack for now... */
+
+      if (!animation.data_view || !animation.data_view.selections.selections.active_category) return;
+      var selection = animation.data_view.selections.selections.active_category;
+      var name = "active_category";
+
+      if (selection.hidden) return;
+      if (selection.sortcols.length != 1) return;
+      var sourcename = selection.sortcols[0]
+      var source = animation.data_view.source.header.colsByName[sourcename];
+      if (!source || !source.choices) return;
+
+      var selectionwidget = new ContentPane({
+        content: "<div>" + name + " from " + sourcename + "</div>",
+        style: "padding-top: 0; padding-bottom: 0;"
+      });
+
+      var selectionselect = $("<div class='imageselector' style='position: fixed; z-index: 100000; background: white; border: 1px solid red;'><div class='choices' style='overflow: auto; height:200px;'></div><div class='label'></div></div>");
+      var choices = Object.keys(
+        CountryCodes.codeToName
+      ).filter(function (key) {
+        return source.choices[key] != undefined;
+      });
+      choices.sort();
+      choices.map(function (key) {
+        var value = source.choices[key];
+        var option = $('<img src="' + app.dirs.img + '/flags/png/' + key.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[key] + '" class="choice">');
+        // option.text(key);
+        option.data("value", value);
+        if (selection.data[sourcename].indexOf(value) != -1) {
+          option.addClass("selected");
+        }
+        option.hover(function () {
+          selectionselect.find('.label').html(CountryCodes.codeToName[key]);
+        }, function () {});
+        option.click(function () {
+          option.toggleClass("selected");
+          updateSelection();
+        });
+        selectionselect.find('.choices').append(option);
+      });
+
+      var toggleselectionselect = $("<div>Countries</div>");
+      toggleselectionselect.click(function () {
+        selectionselect.toggle();
+      });
+      selectionselect.hide();
+      $(self.node.find(".layer-list")).append(toggleselectionselect);
+      $(self.node.find(".layer-list")).append(selectionselect);
+
+      var updateSelection = function () {
+        selection.clearRanges();
+
+        var values = Array.prototype.slice.call(
+          selectionselect.find('.choices .selected')
+        ).map(function (option) {
+          return $(option).data("value");
+        });
+        if (values.length) {
+          values.map(function (value) {
+            var data = {};
+            data[sourcename] = value;
+            selection.addDataRange(data, data);
+          });
+        } else {
+          var startData = {};
+          var endData = {};
+          startData[sourcename] = Number.NEGATIVE_INFINITY;
+          endData[sourcename] = Number.POSITIVE_INFINITY;
+          selection.addDataRange(startData, endData);
+        }
+      };
+
+      if (animation.visible) {
+        node.find("input").attr('checked','checked');
+      } else {
+        node.find("input").removeAttr('checked');
+      }
     },
 
     removeHandler: function (event) {
@@ -327,10 +437,14 @@ define([
 
       self.node.find(".sponsor_logos").html("");
       data.sponsorLogos.map(function (spec) {
-        var logo = $("<img>");
-        logo.attr(spec.attr);
-        logo.css(spec.css);
-        self.node.find(".sponsor_logos").append(logo);
+        if (typeof(spec) == "string") {
+          self.node.find(".sponsor_logos").append(spec);
+        } else {
+          var logo = $("<img>");
+          logo.attr(spec.attr);
+          logo.css(spec.css);
+          self.node.find(".sponsor_logos").append(logo);
+        }
       });
       
       self.node.find("#feedback_url").attr("href", data.feedback_url);

@@ -72,7 +72,7 @@ body {
 
 .logo {
   position: absolute;
-  left: 90pt;
+  left: 40pt;
   top: 10pt;
   pointer-events: none;
 }
@@ -216,6 +216,54 @@ body {
         white-space: nowrap;
         text-align: right;
         padding-right: 10pt;
+      }
+    }
+  }
+}
+
+.search-dialog {
+  .query {
+    height: 2em;
+  }
+  .search-loading {
+    margin-top: -1.6em;
+    margin-right: 0.5em;
+    margin-left: -1.7em;
+    padding-left: 100%;
+    display: none;
+  }
+  .results {
+    .error {
+      font-weight: bold;
+      color: #ef4223;
+    }
+    .no-results {
+      font-weight: bold;
+    }
+    table {
+      border-spacing: 0;
+      tbody {
+        tr:nth-child(odd) {
+          background-color: #ccc;
+        }
+        tr {
+          th {
+            text-align: left;
+          }
+          th, td {
+            padding-right: 10pt;
+            vertical-align: top;
+            a {
+              display: block;
+            }
+          }
+          &:hover {
+            background-color: #aaa;
+          }
+        }
+        tr td:nth-child(0) {
+          width: 180pt;
+        }
       }
     }
   }
@@ -416,7 +464,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         #feedback_url{
           float: right;
           font-size: 10pt;
-          margin-right: 0.5em;
+          margin-right: 1.5em;
           line-height: 17pt;
         }
       }
@@ -430,6 +478,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
       .sponsor_logos {
         height: 23pt;
+        margin-top: -46pt;
       }
     }
 
@@ -465,28 +514,19 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    #layers, #vessel_identifiers {
-      /*padding-left: 10.5263%;*/ /* 58px / 551px */
-      padding-left: 5%;
-	  word-wrap: break-word;
-    }
-
-    #layers h2, #vessel_identifiers h2 {
-      color: #3a3a3c;
-      font-size: 100%;
-      padding-top: 1rem; 
-      font-weight: 400;
-    }
-
     #divide {
       border-bottom: solid 1px #dfe0e1;
       margin: 3rem 2.5% 0 2.5%;
     }
 
-    #activate_search {
+    .action_icons {
       float: right;
-      margin-top: 2em;
-      margin-right: 2.4em;
+      margin-top: 0.7em;
+
+      #activate_search {
+        float: right;
+        margin-right: 0.5em;
+      }
     }
 
     /* Vessel Info styles */
@@ -517,35 +557,49 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
+    #layers, #vessel_identifiers {
+      padding-left: 5%;
+      word-wrap: break-word;
+    }
+
+    #layers h2, #vessel_identifiers h2 {
+      color: #3a3a3c;
+      font-size: 100%;
+      padding-top: 1rem; 
+      font-weight: 400;
+    }
+
     /* toggle styles */
     #layers {
-      display: table;
-      width: 100%;
       margin-top: -38pt;
 
-      .layer-row {
-        display: table-row;
-        height: 30px;
-      }
+      .layer-list {
+        display: table;
+        width: 100%;
+        .layer-row {
+          display: table-row;
+          height: 30px;
 
-      .layer-label,
-      .switch {
-        display: table-cell;
-        vertical-align: middle;
-        padding-top: 10px;
-        vertical-align: top;
-      }
+          .layer-label,
+          .switch {
+            display: table-cell;
+            vertical-align: middle;
+            padding-top: 10px;
+            vertical-align: top;
+          }
 
-      .switch {
-        width: 18%;
-        font-size: 90%;
-      }
+          .switch {
+            width: 18%;
+            font-size: 90%;
+          }
 
-      .layer-label {
-        color: #6D6E70;
-        font-size: 90%;
-        padding: 2%;
-        width: 65%;
+          .layer-label {
+            color: #6D6E70;
+            font-size: 90%;
+            padding: 2%;
+            width: 100%;
+          }
+        }
       }
     }
 
@@ -764,6 +818,18 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
   .vesselclass img {
     height: 11px;
+  }
+}
+
+.imageselector {
+  .choices {
+    line-height: 0;
+    .choice {
+      border: 2px solid white;
+      &.selected, &:hover {
+        border: 2px solid blue;
+      }
+    }
   }
 }
 
