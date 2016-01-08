@@ -145,8 +145,10 @@ class HomeTest(unittest.TestCase):
                 actions.drag_and_drop_by_offset(driver.find_element_by_xpath('//div[@class="main-timeline timeline"]//div[@class="window"]'), offset, 0)
                 actions.perform()
 
+            server.wait_for(lambda: self.animationHasLoaded("ClusterAnimation"))
             self.assertEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup not present at x,y")
             moveTimeslider(-272)
+            server.wait_for(lambda: self.animationHasLoaded("ClusterAnimation"))
             self.assertNotEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup present at x,y when timeslider has moved")
 
         except:
