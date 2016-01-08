@@ -12,6 +12,8 @@ define([
   "app/Visualization/Animation/Matrix",
   "CanvasLayer",
   "Stats",
+  "app/Timerange",
+  "app/SpaceTime",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
@@ -39,6 +41,8 @@ function(Class,
   Matrix,
   CanvasLayer,
   Stats,
+  Timerange,
+  SpaceTime,
   ObjectToTable,
   Rowidx,
   Animation
@@ -389,11 +393,12 @@ function(Class,
           ];
         }
 
+        var query = baseAnimation.data_view.source.getSelectionQuery(selection);
         seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
           url: baseAnimation.data_view.source.url,
-          versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
+          versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
           query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
-          query: baseAnimation.data_view.source.getSelectionQuery(selection),
+          query: query,
           header: baseAnimation.data_view.source.header,
           selection: selection
         });
@@ -467,6 +472,8 @@ function(Class,
         lat: self.panZoom,
         lon: self.panZoom,
         zoom: self.panZoom,
+        time: self.dataNeedsChanged,
+        timeExtent:self.dataNeedsChanged,
         scope: self
       });
       cb();
@@ -708,7 +715,13 @@ function(Class,
 
     boundsChanged: function() {
       var self = this;
+
       if (self.indrag) return;
+      self.dataNeedsChanged();
+    },
+
+    dataNeedsChanged: function() {
+      var self = this;
       var bounds = self.map.getBounds();
       var ne = bounds.getNorthEast();
       var sw = bounds.getSouthWest();
@@ -716,7 +729,15 @@ function(Class,
       var lonmin = sw.lng();
       var latmax = ne.lat();
       var lonmax = ne.lng();
-      self.visualization.data.zoomTo(new Bounds(lonmin, latmin, lonmax, latmax));
+      var bounds = new Bounds([lonmin, latmin, lonmax, latmax]);
+
+      var end = self.visualization.state.getValue("time");
+      if (end == undefined) return;
+
+      var start = new Date(end.getTime() - self.visualization.state.getValue("timeExtent"));
+      var range = new Timerange([start, end]);
+
+      self.visualization.data.zoomTo(new SpaceTime(range, bounds));
     },
 
     canvasResize: function() {

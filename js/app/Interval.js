@@ -1,4 +1,12 @@
 /* Example usage:
+
+   An Interval represents a certain amount of time. This time can be
+   represented either absolutely, as a number of milliseconds, or
+   relatively, as a number of years, months, weeks, days, etc. The
+   difference is mostly relevant for months, where adding a month to a
+   certain date gives different values for different dates (all months
+   do not have the same length).
+
    Interval = require("app/Interval");
 
    month = new Interval(new Date(Date.UTC(2013, 2, 1)), new Date(Date.UTC(2013, 1, 1)));

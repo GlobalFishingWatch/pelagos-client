@@ -22,7 +22,7 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Em
     getTileContent: function (tile) {
       var self = this;
       return new EmptyFormat({
-        url:self.url + "/" + tile.bounds.toBBOX(),
+        url:self.url + "/" + tile.bounds.toString(),
         headerTime: self.headerTime,
         contentTime: self.contentTime
       });

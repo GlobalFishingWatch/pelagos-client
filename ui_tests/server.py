@@ -26,7 +26,7 @@ def close():
     finally:
         _server.stop(http)
 
-def wait_for(cond, max=60):
+def wait_for(cond, max=120):
     for i in range(max):
         try:
             if cond():

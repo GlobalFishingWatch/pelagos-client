@@ -219,12 +219,13 @@ define([
 
           if (event.layerInstance.data_view.source.header.kml) {
             var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
+            var query = event.layerInstance.data_view.source.getSelectionQuery(
+              event.layerInstance.data_view.selections.selections[event.category]);
 
             link.attr({
-                href: (event.layerInstance.data_view.source.getUrl('export', -1) +
+                href: (event.layerInstance.data_view.source.getUrl('export', query, -1) +
                      "/sub/" +
-                     event.layerInstance.data_view.source.getSelectionQuery(
-                       event.layerInstance.data_view.selections.selections[event.category]) +
+                     query +
                      "/export")
             });
             self.node.find(".action_icons").append(link);
