@@ -50,6 +50,9 @@ define([
 
     draw: function () {},
 
+    select: function (rowidx, type, replace, event) {
+    },
+
     toString: function () {
       var self = this;
       return self.name;

@@ -29,7 +29,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
       var self = this;
       var value = self.data[key];
       delete self.data[key];
-      if (value.request) {
+      if (value && value.request) {
         var response = undefined;
         var responseText = undefined;
 
