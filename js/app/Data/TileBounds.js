@@ -144,6 +144,10 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
 
     bounds = new Bounds(obj);
 
+    if (!TileBounds.world.containsObj(bounds)) {
+      return undefined;
+    }
+
     var tilewidth = bounds.getWidth() * 2;
     var tileheight = bounds.getHeight() * 2;
 
@@ -157,7 +161,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       obj.update(res);
       return obj;
     } else {
-      return undefined;
+      return TileBounds.world;
     }
   };
 
