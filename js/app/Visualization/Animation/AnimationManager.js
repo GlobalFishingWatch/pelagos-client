@@ -566,12 +566,12 @@ function(Class,
 
         if (err) {
           category = 'info-error';
-          event.error = err;
-          event.toString = function () { return this.error.toString(); };
+          event.data = err;
+          event.toString = function () { return this.data.toString(); };
         } else if (data && data.error) {
           category = 'info-error';
-          event.data = data;
-          event.toString = function () { return this.data.error; };
+          event.data = data.error;
+          event.toString = function () { return this.data.toString(); };
         } else if (data) {
           category = 'info';
           event.data = data;

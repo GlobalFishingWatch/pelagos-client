@@ -35,7 +35,7 @@ define([
   PopupAuth.open_dialogs = {};
 
   window.popup_auth_done = function (window_name, success) {
-    PopupAuth.open_dialogs[window_name].done(true);
+    PopupAuth.open_dialogs[window_name].done(success);
   };
 
   return PopupAuth;

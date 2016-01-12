@@ -23,6 +23,7 @@ define([
   "app/Data/Ajax",
   "app/Data/EmptyFormat",
   "lodash",
+  "jQuery",
   "app/PopupAuth",
   "app/LangExtensions"
 ], function(
@@ -38,6 +39,7 @@ define([
   Ajax,
   EmptyFormat,
   _,
+  $,
   PopupAuth
 ) {
   var BaseTiledFormat = Class(Format, {
@@ -237,16 +239,19 @@ define([
               cb(null, data);
             } else {
               if (request.status == 403) {
-                new PopupAuth(data.auth_location, function (success) {
-                  if (success) {
-                    getSelectionInfo(fallbackLevel, withCredentials);
-                  } else {
-                    var e = Ajax.makeError(request, url, "selection information from ");
-                    e.source = self;
-                    cb(e, null);
-                  }
-                });
-              } if (request.status == 0 && withCredentials) {
+                data.toString = function () {
+                  var res = $("<span>You are currently not authorized to perform this action. <a href='javascript: void(0);'>Log in</a> to continue.</span>");
+                  res.find('a').click(function () {
+                    new PopupAuth(data.auth_location, function (success) {
+                      if (success) {
+                        getSelectionInfo(fallbackLevel, withCredentials);
+                      }
+                    });
+                  });
+                  return res;
+                };
+                cb(data, null);
+              } else if (request.status == 0 && withCredentials) {
                 getSelectionInfo(fallbackLevel, false);
               } else if (fallbackLevel + 1 < self.getUrlFallbackLevels("selection-info")) {
                 getSelectionInfo(fallbackLevel + 1, true);
