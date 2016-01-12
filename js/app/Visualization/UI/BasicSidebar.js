@@ -328,7 +328,7 @@ define([
           intermediateChanges: true
         }, "mySlider");
 
-        var intensityNode = $('<div class="intensity-slider-box"><div>Intensity:</div></div>')
+        var intensityNode = $('<div class="intensity-slider-box"><div class="intensity-label">Intensity:</div></div>')
         node.find(".layer-label").append(intensityNode);
         slider.placeAt(intensityNode[0]);
         slider.startup();
