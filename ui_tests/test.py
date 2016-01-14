@@ -138,7 +138,6 @@ class HomeTest(unittest.TestCase):
             self.setAnimation("ClusterAnimation")
 
             self.load_helpers()
-            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
 
             def moveTimeslider(offset):
                 actions = ActionChains(driver)
@@ -146,8 +145,10 @@ class HomeTest(unittest.TestCase):
                 actions.perform()
 
             server.wait_for(lambda: self.animationHasLoaded("ClusterAnimation"))
+            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
             self.assertEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup not present at x,y")
             moveTimeslider(-272)
+            time.sleep(2)
             server.wait_for(lambda: self.animationHasLoaded("ClusterAnimation"))
             self.assertNotEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup present at x,y when timeslider has moved")
 
@@ -235,7 +236,7 @@ class HomeTest(unittest.TestCase):
             actions.perform()
 
             server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="vesselname" and text()="---"]'))
-            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="27200"]'))
+            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//*[text()="27200"]'))
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
