@@ -40,7 +40,7 @@ define([
       Animation.prototype.setVisible.call(self, visible);
       if (visible) {
         self.previousMapType = self.manager.map.getMapTypeId();
-        self.manager.map.setMapTypeId(google.maps.MapTypeId.SATELLITE);
+        self.manager.map.setMapTypeId(google.maps.MapTypeId.HYBRID);
       } else {
         self.manager.map.setMapTypeId(self.previousMapType == undefined ? google.maps.MapTypeId.ROADMAP : self.previousMapType);
       }
