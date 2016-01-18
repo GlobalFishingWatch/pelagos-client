@@ -102,6 +102,26 @@ The tileset header specifies how to load tiles, and what columns to expect.
       seriesTilesets: true
     }
 
+# Choices
+
+Columns that only contain a discrete number of different values can be used to produce a drop-down menu that allows the user to select/display a subset of the points sharing a certain value. See the section on selections below for more information on this.
+
+Labels for such a menu should be added to the column specification under colsByName:
+
+      "colsByName": {
+        "category": {
+          "type": "Float32",
+          "min": -1.0,
+          "max": 2.0, 
+          "choices": {
+            "Unknown": -1.0
+            "Chocolate": 0.0,
+            "Vanilla": 1.0,
+            "Strawberry": 2.0
+          }
+        }
+      },
+
 # The workspace secification
 A workspace is a JSON file loadable from a URL. If the URL contains a query ?id=SOMEID, then the url without the query will be used to save new workspaces to using a POST request.
 
@@ -235,6 +255,8 @@ Selection are defined as:
     }
 
 sortcols contains one or more data source column names. The selection can represent a range of input data whose values lie between two extremes for each sortcol. Even a range where the upper and lower bound are the same can contain multiple points, if not all data source columns are listed in sortcols.
+
+The default sortcols is ["seriesgroup"] for all selections apart from active_category, for which it is ["category"].
 
 data and header contains values representing a current selection. It is recommended to generate these values by loading the workspace, changing the selections and then saving the workspace.
 

@@ -62,4 +62,3 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
 
   return VesselTrackAnimation;
 });
-
