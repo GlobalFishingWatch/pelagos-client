@@ -244,6 +244,7 @@ define([
                   res.find('a').click(function () {
                     new PopupAuth(data.auth_location, function (success) {
                       if (success) {
+                        cb(null, null);
                         getSelectionInfo(fallbackLevel, withCredentials);
                       }
                     });
