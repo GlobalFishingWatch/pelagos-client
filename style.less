@@ -232,8 +232,13 @@ body {
     padding-left: 100%;
     display: none;
   }
+  .dijitDialogPaneContent {
+    text-align: center;
+  }
   .results {
     margin-top: 10px;
+    text-align: left;
+    display: inline-block;
 
     .error {
       color: #ef4223;
@@ -250,6 +255,9 @@ body {
           background-color: #ccc;
         }
         tr {
+          .imo, .mmsi, .callsign {
+            width: 60px;
+          }
           th {
             text-align: left;
           }
@@ -261,11 +269,8 @@ body {
             }
           }
           &:hover {
-            background-color: #aaa;
+            background-color: #d2cece;
           }
-        }
-        tr td:nth-child(0) {
-          width: 180pt;
         }
       }
     }
