@@ -72,10 +72,10 @@ define([
       } else {
         results.html('<table class="table result-table">' +
                      '  <tr>' +
-                     '    <th>Name</th>' +
-                     '    <th>IMO</th>' +
-                     '    <th>MMSI</th>' +
-                     '    <th>Callsign</th>' +
+                     '    <th class="name">Name</th>' +
+                     '    <th class="imo">IMO</th>' +
+                     '    <th class="mmsi">MMSI</th>' +
+                     '    <th class="callsign">Callsign</th>' +
                      '  </tr>' +
                      '</table>');
         res.map(function (info) {
