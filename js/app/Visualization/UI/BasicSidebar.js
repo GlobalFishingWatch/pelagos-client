@@ -101,6 +101,8 @@ define([
       self.visualization.state.events.on({'edit': function (data) {        
         self.node.toggle(!data.new_value);
       }});
+
+      self.sidebar.selectChild(self.layers, false);
     },
 
     updateLoading: function () {
