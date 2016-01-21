@@ -102,6 +102,11 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
         self.data_view = data_view;
 
         var handleHeader = function () {
+          if (self.data_view.source.header.empty) {
+            self.manager.removeAnimation(self);
+            return;
+          }
+
           self.data_view.source.events.un({
             "header": handleHeader
           });
