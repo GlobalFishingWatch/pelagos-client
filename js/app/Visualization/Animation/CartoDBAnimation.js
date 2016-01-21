@@ -135,7 +135,14 @@ define([
       LoadingInfo.main.add(url, true);
       self.getInfoWindow(data.cartodb_id, function (html) {
         LoadingInfo.main.remove(url);
-        self.manager.handleInfo(self, type, undefined, {html: html, toString: function () { return this.html; }}, {latitude: latlng[0], longitude: latlng[1]});
+
+        var data = {
+          html: html,
+          reportable: self.reportable,
+          reportBaseUrl: self.reportBaseUrl,
+          toString: function () { return this.html; }
+        };
+        self.manager.handleInfo(self, type, undefined, data, {latitude: latlng[0], longitude: latlng[1]});
       });
     },
 

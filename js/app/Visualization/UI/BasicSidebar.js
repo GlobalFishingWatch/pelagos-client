@@ -1,23 +1,25 @@
 define([
   "app/Class",
-  "app/Logging",
   "app/CountryCodes",
-  "dijit/layout/ContentPane",
-  "dijit/layout/AccordionContainer",
-  "jQuery",
-  "dijit/form/HorizontalSlider",
+  "app/Logging",
+  "app/ObjectTemplate",
   "app/Visualization/KeyModifiers",
-  "app/ObjectTemplate"
+  "app/Visualization/UI/LayerReportDialog",
+  "dijit/form/HorizontalSlider",
+  "dijit/layout/AccordionContainer",
+  "dijit/layout/ContentPane",
+  "jQuery"
 ], function(
   Class ,
-  Logging,
   CountryCodes,
-  ContentPane,
-  AccordionContainer,
-  $,
-  HorizontalSlider,
+  Logging,
+  ObjectTemplate,
   KeyModifiers,
-  ObjectTemplate
+  LayerReportDialog,
+  HorizontalSlider,
+  AccordionContainer,
+  ContentPane,
+  $
 ) {
   return Class({
     name: "BasicSidebar",
@@ -111,6 +113,31 @@ define([
         '      <h2>Vessel Information</h2>' +
         '      <div class="loading-vessel-info" style=""><img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg"></div>'
       );
+    },
+
+    updateWithCustomInfo: function(event) {
+      var self = this;
+      var vesselNodes = self.node.find("#vessel_identifiers");
+
+      var infoHtml =
+        '<h2>' + event.layer + '</h2>' +
+        event.data.toString();
+
+      if (event.data.reportable) {
+        infoHtml += '<br />' +
+          '<div class="text-center">' +
+            '<button id="generate-report" class="btn btn-default">' +
+              'Generate vessel report' +
+            '</button>' +
+          '</div>' +
+          '<br />';
+      }
+
+      vesselNodes.html(infoHtml);
+      vesselNodes.find("table").attr({"class": "vessel_id"});
+      vesselNodes.find("#generate-report").on('click', function() {
+        LayerReportDialog.show(self.visualization.state, event.layer, event.data);
+      });
     },
 
     update: function (color, event) {
@@ -237,14 +264,6 @@ define([
 
           tableNode.find(".vesselname").html(data.vesselname || "---");
 
-/*
-          if (data.link) {
-            var link = $("<a target='_new'>");
-            link.attr({href: data.link});
-            self.node.find("#vessel_identifiers h2").wrapInner(link);
-          }
-*/
-
           if (event.layerInstance.data_view.source.header.kml) {
             var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
             var query = event.layerInstance.data_view.source.getSelectionQuery(
@@ -260,8 +279,7 @@ define([
           }
         }
       } else {
-        vesselIdNode.html('<h2>' + event.layer + '</h2>');
-        vesselIdNode.append(data.toString());
+        self.updateWithCustomInfo(event)
       }
 
       vesselIdNode.css({color: color});
