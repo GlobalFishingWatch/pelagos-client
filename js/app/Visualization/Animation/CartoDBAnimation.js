@@ -64,6 +64,54 @@ define([
       });
     },
 
+    getInfoWindow: function (cartodb_id, cb) {
+      /* This code mimics what cdb.geo.ui.Infowindow:render() in
+       * geo/ui/infowindow.js in CartoDB.JS but without creating a
+       * whole info window popup. The API does not have a separate
+       * call for this, unfourtunately. Note: This function does NOT
+       * do any of the field value sanitation that
+       * cdb.geo.ui.Infowindow:render does because copying that much
+       * code is too ugly, and you can't call that code without
+       * creating a full info window instance. */
+      var self = this;
+      var infoWindowData = self.layer.getInfowindowData(0);
+
+      self.layer.fetchAttributes(0, cartodb_id, infoWindowData.fields, function(attributes) {
+        var model = new cdb.geo.ui.InfowindowModel(infoWindowData);
+        model.updateContent(attributes);
+
+        var fields = _.map(model.attributes.content.fields, function(field){
+          return _.clone(field);
+        });
+        var data = model.get('content') ? model.get('content').data : {};
+
+        if (model.get('template_name')) {
+          var template_name = _.clone(model.attributes.template_name);
+        }
+
+        var values = {};
+        _.each(model.get('content').fields, function(pair) {
+          values[pair.title] = pair.value;
+        })
+
+        var obj = _.extend({
+          content: {
+            fields: fields,
+            data: data
+          }
+        }, values);
+
+        var popupHtml = new cdb.core.Template({
+          template: model.get('template'),
+          type: model.get('template_type') || 'mustache'
+        }).asFunction()(
+         obj
+        )
+
+        cb($(popupHtml).find('.cartodb-popup-content'));
+      });
+    },
+
     handleMouseOver: function (event, latlng, pos, data, layerIndex) {
       var self = this;
       self.mouseOver = arguments;
@@ -77,38 +125,15 @@ define([
      * system. But all of this layer is a bit of a hack :) */
     handleClick: function (type, event, latlng, pos, data, layerIndex) {
       var self = this;
- 
-      var url = "CartoDB://" + self.source.args.url + "?" + JSON.stringify(data);
 
       if (type == 'selected') {
         self.manager.events.triggerEvent('info-loading', {});
       }
+      var url = "CartoDB://" + self.source.args.url + "?" + JSON.stringify(data);
       LoadingInfo.main.add(url, true);
-
-      self.sql.execute(
-        (  self.layer.getSubLayer(layerIndex).getSQL()
-         + ' where '
-         + Object.keys(data).map(function (key) {
-             return key + ' = {{' + key + '}}';
-           }).join(' and ')),
-        data
-      ).done(function(data) {
+      self.getInfoWindow(data.cartodb_id, function (html) {
         LoadingInfo.main.remove(url);
-        if (data.error) {
-          self.manager.handleInfo(self, type, data.error, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
-        } else {
-          data = data.rows[0];
-          delete data.the_geom;
-          delete data.the_geom_webmercator;
-          data.toString = function () {
-            return ObjectToTable(this);
-          };
-          self.selected = true;
-          self.manager.handleInfo(self, type, undefined, data, {latitude: latlng[0], longitude: latlng[1]});
-        }
-      }).error(function(errors) {
-        LoadingInfo.main.remove(url);
-        self.manager.handleInfo(self, type, errors, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
+        self.manager.handleInfo(self, type, undefined, {html: html, toString: function () { return this.html; }}, {latitude: latlng[0], longitude: latlng[1]});
       });
     },
 
