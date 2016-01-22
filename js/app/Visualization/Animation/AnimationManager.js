@@ -566,12 +566,12 @@ function(Class,
 
         if (err) {
           category = 'info-error';
-          event.error = err;
-          event.toString = function () { return this.error.toString(); };
+          event.data = err;
+          event.toString = function () { return this.data.toString(); };
         } else if (data && data.error) {
           category = 'info-error';
-          event.data = data;
-          event.toString = function () { return this.data.error; };
+          event.data = data.error;
+          event.toString = function () { return this.data.toString(); };
         } else if (data) {
           category = 'info';
           event.data = data;
@@ -652,7 +652,7 @@ function(Class,
 
           if (err) {
             self.handleSelectionInfo(animation, selectionEvent, err, null);
-          } else {
+          } else if (data) {
             data.toString = function () {
               var content = ["<table class='table table-striped table-bordered'>"];
               if (data.name) {
@@ -677,6 +677,10 @@ function(Class,
               return content.join('\n');
             };
             self.handleSelectionInfo(animation, selectionEvent, null, data);
+          } else {
+            // We got an error call before, but now something has
+            // changed and we're retrying the load...
+            self.events.triggerEvent('info-loading', {});
           }
         });
 
