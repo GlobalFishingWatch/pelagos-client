@@ -34,6 +34,12 @@ define([
           '</div>'
       });
 
+      $(self.dialog.containerNode).find(".query").keyup(function(event) {
+        if (event.keyCode == 13) {
+          self.performSearch($(self.dialog.containerNode).find(".query").val());
+        }
+      });
+
       $(self.dialog.closeButton).on('click', function () {
         self.dialog.hide();
       });
