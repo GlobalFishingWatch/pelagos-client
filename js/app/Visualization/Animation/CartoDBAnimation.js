@@ -88,7 +88,9 @@ define([
       LoadingInfo.main.add(url, true);
 
       self.sql.execute(
-        (  self.layer.getSubLayer(layerIndex).getSQL()
+        (  'select * from ('
+         +   self.layer.getSubLayer(layerIndex).getSQL()
+         + ') as a'
          + ' where '
          + Object.keys(data).map(function (key) {
              return key + ' = {{' + key + '}}';
