@@ -119,25 +119,22 @@ define([
       var self = this;
       var vesselNodes = self.node.find("#vessel_identifiers");
 
-      var infoHtml =
-        '<h2>' + event.layer + '</h2>' +
-        event.data.toString();
+      vesselNodes.html('<h2>' + event.layer + '</h2>');
+      vesselNodes.append(event.data.toString());
+      vesselNodes.find("table").attr({"class": "vessel_id"});
 
       if (event.data.reportable) {
-        infoHtml += '<br />' +
-          '<div class="text-center">' +
-            '<button id="generate-report" class="btn btn-default">' +
-              'Generate vessel report' +
-            '</button>' +
-          '</div>' +
-          '<br />';
+        var buttonNode =
+          $("<button>Generate vessel report</button>").on("click", function() {
+            LayerReportDialog.show(self.visualization.state, event.layer, event.data);
+          });
+
+        var buttonContainer =
+          $('<div class="text-center" />').append(buttonNode);
+
+        vesselNodes.append(buttonContainer);
       }
 
-      vesselNodes.html(infoHtml);
-      vesselNodes.find("table").attr({"class": "vessel_id"});
-      vesselNodes.find("#generate-report").on('click', function() {
-        LayerReportDialog.show(self.visualization.state, event.layer, event.data);
-      });
     },
 
     update: function (color, event) {

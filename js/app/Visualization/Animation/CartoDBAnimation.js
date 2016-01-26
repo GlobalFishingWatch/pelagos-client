@@ -108,7 +108,7 @@ define([
           type: model.get('template_type') || 'mustache'
         }).asFunction()(
          obj
-        )
+        );
 
         cb($(popupHtml).find('.cartodb-popup-content'));
       });
