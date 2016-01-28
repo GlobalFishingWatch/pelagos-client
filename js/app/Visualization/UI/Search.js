@@ -39,7 +39,7 @@ define([
       });
 
       $(self.dialog.containerNode).find(".query").keyup(function(event) {
-        if (event.keyCode == 13) {
+        if (event.which == 13) {
           self.performSearch($(self.dialog.containerNode).find(".query").val());
         }
       });
