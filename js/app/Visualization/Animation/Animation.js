@@ -102,6 +102,11 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
         self.data_view = data_view;
 
         var handleHeader = function () {
+          if (self.data_view.source.header.empty) {
+            self.manager.removeAnimation(self);
+            return;
+          }
+
           self.data_view.source.events.un({
             "header": handleHeader
           });
@@ -329,24 +334,21 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
       return rowidx;
     },
 
-    search: function (query, cb) {
+    search: function (query, offset, limit, cb) {
       var self = this;
       if (self.data_view && self.data_view.source.search) {
-        self.data_view.source.search(query, function (err, res) {
+        self.data_view.source.search(query, offset, limit, function (err, res) {
           if (err) {
             cb(err, res)
           } else {
-            cb(
-              err,
-              res.map(function (item) {
-                item.animation = self;
-                return item;
-              })
-            );
+            res.entries.map(function (item) {
+              item.animation = self;
+            });
+            cb(err, res);
           }
         });
       } else {
-        cb(null, []);
+        cb(null, null);
       }
     },
 

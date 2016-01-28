@@ -232,14 +232,25 @@ body {
     padding-left: 100%;
     display: none;
   }
+  .paging {
+    margin-top: 10px;
+  }
+  .dijitDialogPaneContent {
+    text-align: center;
+  }
   .results {
+    margin-top: 10px;
+    text-align: left;
+    display: inline-block;
+
     .error {
-      font-weight: bold;
       color: #ef4223;
     }
-    .no-results {
+    error, .no-results {
       font-weight: bold;
+      text-align: center;
     }
+
     table {
       border-spacing: 0;
       tbody {
@@ -247,6 +258,9 @@ body {
           background-color: #ccc;
         }
         tr {
+          .imo, .mmsi, .callsign {
+            width: 60px;
+          }
           th {
             text-align: left;
           }
@@ -258,11 +272,8 @@ body {
             }
           }
           &:hover {
-            background-color: #aaa;
+            background-color: #d2cece;
           }
-        }
-        tr td:nth-child(0) {
-          width: 180pt;
         }
       }
     }

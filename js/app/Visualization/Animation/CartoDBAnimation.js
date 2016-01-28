@@ -60,6 +60,8 @@ define([
         self.layer.on('featureOver', self.handleMouseOver.bind(self));
         self.layer.on('mouseout', self.handleMouseOut.bind(self));
 
+        self.setVisible(self.visible);
+
         cb();
       });
     },
@@ -139,7 +141,7 @@ define([
 
     setVisible: function (visible) {
       var self = this;
-      Animation.prototype.setVisible.call(self, visible);
+      self.visible = visible;
       if (visible) {
         self.layer.show();
       } else {
