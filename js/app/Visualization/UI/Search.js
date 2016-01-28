@@ -20,9 +20,10 @@ define([
       self.dialog = new Dialog({
         style: "width: 50%;",
         title: "Search",
+        "class": 'search-dialog',
         content: '' +
           '<input type="text" class="query" style="width: 100%;" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
-          '<div class="search-loading" style="margin-top: -1.7em; margin-right: 0.5em; padding-left: 100%; margin-left: -1.7em; display: block; display: none;">' +
+          '<div class="search-loading">' +
           '  <img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg">' +
           '</div>' +
           '<div class="results" style="max-height: 300px; overflow: auto;"></div>',
@@ -31,6 +32,12 @@ define([
           '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
           '  <button data-dojo-type="dijit/form/Button" type="button" data-dojo-attach-point="searchButton">Search</button>' +
           '</div>'
+      });
+
+      $(self.dialog.containerNode).find(".query").keyup(function(event) {
+        if (event.which == 13) {
+          self.performSearch($(self.dialog.containerNode).find(".query").val());
+        }
       });
 
       $(self.dialog.closeButton).on('click', function () {
@@ -49,7 +56,7 @@ define([
 
     performSearch: function (query) {
       var self = this;
-      self.dialog.show();
+      self.displaySearchDialog();
 
       $(self.dialog.containerNode).find('.search-loading').show();
 
@@ -61,18 +68,22 @@ define([
 
     displaySearchResults: function (err, res) {
       var self = this;
-      self.dialog.show();
+      self.displaySearchDialog();
       $(self.dialog.containerNode).find('.search-loading').hide();
+      var results = $(self.dialog.containerNode).find('.results');
       if (err) {
+        results.html('<div class="error">An error occured: ' + err.toString() + '<div>');
+      } else if (res.length == 0) {
+        results.html('<div class="no-results">No results found</div>');
       } else {
-        $(self.dialog.containerNode).find('.results').html('<table class="table result-table">' +
-                                          '  <tr>' +
-                                          '    <th>Name</th>' +
-                                          '    <th>IMO</th>' +
-                                          '    <th>MMSI</th>' +
-                                          '    <th>Callsign</th>' +
-                                          '  </tr>' +
-                                          '</table>');
+        results.html('<table class="table result-table">' +
+                     '  <tr>' +
+                     '    <th class="name">Name</th>' +
+                     '    <th class="imo">IMO</th>' +
+                     '    <th class="mmsi">MMSI</th>' +
+                     '    <th class="callsign">Callsign</th>' +
+                     '  </tr>' +
+                     '</table>');
         res.map(function (info) {
           var row = $('<tr><td><a class="vesselname"></a></td><td><a class="imo"></a></td><td><a class="mmsi"></a></td><td><a class="callsign"></a></td></tr>');
           row.find(".vesselname").html(info.vesselname);
@@ -81,11 +92,12 @@ define([
           row.find(".callsign").html(info.callsign);
           row.find('a').attr({href: "javascript: void(0);"});
           row.find('a').click(function () {
+            info.zoomToSelectionAnimations = true;
             info.animation.data_view.selections.selections.selected.addDataRange(info, info, true);
             self.dialog.hide();
           });
 
-          $(self.dialog.containerNode).find(".result-table").append(row);
+          results.find(".result-table").append(row);
         });
       }
     }

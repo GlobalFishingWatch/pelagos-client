@@ -56,7 +56,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
     findOverlaps: function () {
       var self = this;
       self.overlaps = Object.values(self.manager.tileCache).filter(function (tile) {
-        return tile.bounds.intersectsBounds(self.bounds);
+        return tile.bounds.intersectsObj(self.bounds);
       });
       self.overlaps.map(function (tile) {
         tile.reference();
@@ -73,7 +73,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
 
     allLoaded: function () {
       var self = this;
-      Logging.main.log("Data.BaseTiledFormat.Tile.allLOaded", {tile:self.bounds.toBBOX(), toString: function () { return this.tile; }});
+      Logging.main.log("Data.BaseTiledFormat.Tile.allLOaded", {tile:self.bounds.toString(), toString: function () { return this.tile; }});
       self.removeOverlaps();
     },
 

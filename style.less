@@ -72,7 +72,7 @@ body {
 
 .logo {
   position: absolute;
-  left: 90pt;
+  left: 40pt;
   top: 10pt;
   pointer-events: none;
 }
@@ -98,23 +98,6 @@ body {
 
 #shortcuts {
   padding-right: 5px;
-}
-
-button {
-  -webkit-border-radius: 3;
-  -moz-border-radius: 3;
-  border-radius: 3px;
-  background: #767777;
-  font-family: Arial;
-  color: #ffffff;
-  font-size: 14px;
-  padding: 3px 7px 3px 7px;
-  text-decoration: none;
-  border: none;
-  &:hover {
-    background: #8abbc7;
-    text-decoration: none;
-  }
 }
 
 .claro .dijitDialog {
@@ -220,24 +203,74 @@ button {
 }
 
 .key-bindings-help {
-  .category {
-    h1 {
-      font-size: 1.5em;
+  .key-bindings {
+    display: table;
+    font-size: 12pt;
+    .binding {
+      display: table-row;
+      .key-codes, .description {
+        display: table-cell;
+        padding-top: 2pt;
+      }
+      .key-codes {
+        white-space: nowrap;
+        text-align: right;
+        padding-right: 10pt;
+      }
     }
-    .key-bindings {
-      display: table;
-      font-size: 11pt;
-      .binding {
-        display: table-row;
-        .key-codes, .description {
-          display: table-cell;
-          padding-top: 2pt;
+  }
+}
+
+.search-dialog {
+  .query {
+    height: 2em;
+  }
+  .search-loading {
+    margin-top: -1.6em;
+    margin-right: 0.5em;
+    margin-left: -1.7em;
+    padding-left: 100%;
+    display: none;
+  }
+  .dijitDialogPaneContent {
+    text-align: center;
+  }
+  .results {
+    margin-top: 10px;
+    text-align: left;
+    display: inline-block;
+
+    .error {
+      color: #ef4223;
+    }
+    error, .no-results {
+      font-weight: bold;
+      text-align: center;
+    }
+
+    table {
+      border-spacing: 0;
+      tbody {
+        tr:nth-child(odd) {
+          background-color: #ccc;
         }
-        .key-codes {
-          width: 150pt;
-          white-space: nowrap;
-          text-align: right;
-          padding-right: 10pt;
+        tr {
+          .imo, .mmsi, .callsign {
+            width: 60px;
+          }
+          th {
+            text-align: left;
+          }
+          th, td {
+            padding-right: 10pt;
+            vertical-align: top;
+            a {
+              display: block;
+            }
+          }
+          &:hover {
+            background-color: #d2cece;
+          }
         }
       }
     }
@@ -489,19 +522,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    #layers, #vessel_identifiers {
-      /*padding-left: 10.5263%;*/ /* 58px / 551px */
-      padding-left: 5%;
-	  word-wrap: break-word;
-    }
-
-    #layers h2, #vessel_identifiers h2 {
-      color: #3a3a3c;
-      font-size: 100%;
-      padding-top: 1rem; 
-      font-weight: 400;
-    }
-
     #divide {
       border-bottom: solid 1px #dfe0e1;
       margin: 3rem 2.5% 0 2.5%;
@@ -545,35 +565,52 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
+    #layers, #vessel_identifiers {
+      padding-left: 5%;
+      word-wrap: break-word;
+    }
+
+    #layers h2, #vessel_identifiers h2 {
+      color: #3a3a3c;
+      font-size: 100%;
+      padding-top: 1rem; 
+      font-weight: 400;
+    }
+
     /* toggle styles */
     #layers {
-      display: table;
-      width: 100%;
       margin-top: -38pt;
 
-      .layer-row {
-        display: table-row;
-        height: 30px;
-      }
+      .layer-list {
+        display: table;
+        width: 100%;
+        .layer-row {
+          display: table-row;
+          height: 30px;
 
-      .layer-label,
-      .switch {
-        display: table-cell;
-        vertical-align: middle;
-        padding-top: 10px;
-        vertical-align: top;
-      }
+          .layer-label,
+          .switch {
+            display: table-cell;
+            vertical-align: middle;
+            padding-top: 10px;
+            vertical-align: top;
+          }
 
-      .switch {
-        width: 18%;
-        font-size: 90%;
-      }
+          .switch {
+            width: 18%;
+            font-size: 90%;
+          }
 
-      .layer-label {
-        color: #6D6E70;
-        font-size: 90%;
-        padding: 2%;
-        width: 65%;
+          .layer-label {
+            color: #6D6E70;
+            font-size: 90%;
+            padding: 2%;
+            width: 100%;
+            .intensity-slider-box .intensity-label {
+              font-size: 0.8em;
+            }
+          }
+        }
       }
     }
 
@@ -792,6 +829,18 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
   .vesselclass img {
     height: 11px;
+  }
+}
+
+.imageselector {
+  .choices {
+    line-height: 0;
+    .choice {
+      border: 2px solid white;
+      &.selected, &:hover {
+        border: 2px solid blue;
+      }
+    }
   }
 }
 

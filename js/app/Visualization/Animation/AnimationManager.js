@@ -2,6 +2,8 @@ define([
   "app/Class",
   "app/Events",
   "app/Bounds",
+  "app/Timerange",
+  "app/SpaceTime",
   "app/ObjectTemplate",
   "async",
   "app/Logging",
@@ -24,10 +26,13 @@ define([
   "app/Visualization/Animation/MapsEngineAnimation",
   "app/Visualization/Animation/CartoDBAnimation",
   "app/Visualization/Animation/VesselTrackAnimation",
-  "app/Visualization/Animation/ArrowAnimation"],
+  "app/Visualization/Animation/ArrowAnimation",
+  "app/Visualization/Animation/SatelliteAnimation"],
 function(Class,
   Events,
   Bounds,
+  Timerange,
+  SpaceTime,
   ObjectTemplate,
   async,
   Logging,
@@ -47,14 +52,11 @@ function(Class,
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
-      mapTypeControlOptions: {
-          position: google.maps.ControlPosition.TOP_LEFT,
-          style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
-      },
       zoomControlOptions: {
         position: google.maps.ControlPosition.LEFT_TOP,
         style: google.maps.ZoomControlStyle.LARGE
       },
+      mapTypeControl: false,
       streetViewControl: false,
       overviewMapControl: false,
       styles: [
@@ -391,17 +393,19 @@ function(Class,
           ];
         }
 
+        var query = baseAnimation.data_view.source.getSelectionQuery(selection);
         seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
           url: baseAnimation.data_view.source.url,
-          versioned_url: baseAnimation.data_view.source.getUrl('sub', -1),
+          versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
           query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
-          query: baseAnimation.data_view.source.getSelectionQuery(selection),
+          query: query,
           header: baseAnimation.data_view.source.header,
           selection: selection
         });
 
         self.hideSelectionAnimations(baseAnimation);
 
+        var seriesAnimations = [];
         async.each(seriesTilesets, function (seriesTileset, cb) {
           self.addAnimation(
             seriesTileset,
@@ -411,10 +415,35 @@ function(Class,
               } else {
                 animation.selectionAnimationFor = baseAnimation;
                 baseAnimation.selectionAnimations.push(animation);
+                seriesAnimations.push(animation);
               }
               cb();
             }
           );
+        }, function (err) {
+          if (selection.data.zoomToSelectionAnimations != undefined) {
+            var bounds = new SpaceTime();
+            seriesAnimations.map(function (animation) {
+              bounds.update(new Timerange([
+                animation.data_view.source.header.colsByName.datetime.min,
+                animation.data_view.source.header.colsByName.datetime.max]));
+              bounds.update(new Bounds([
+                animation.data_view.source.header.colsByName.longitude.min,
+                animation.data_view.source.header.colsByName.latitude.min,
+                animation.data_view.source.header.colsByName.longitude.max,
+                animation.data_view.source.header.colsByName.latitude.max]));
+            });
+
+            self.visualization.state.setValue("time", bounds.getTimerange().end);
+            self.visualization.state.setValue("timeExtent", bounds.getTimerange().end.getTime() - bounds.getTimerange().start.getTime());
+            bounds = bounds.getBounds();
+            self.visualization.animations.map.fitBounds({
+              south:bounds.bottom,
+              west:bounds.left,
+              north:bounds.top,
+              east:bounds.right
+            });
+          }            
         });
       }
     },
@@ -469,6 +498,8 @@ function(Class,
         lat: self.panZoom,
         lon: self.panZoom,
         zoom: self.panZoom,
+        time: self.dataNeedsChanged,
+        timeExtent:self.dataNeedsChanged,
         scope: self
       });
       cb();
@@ -710,7 +741,13 @@ function(Class,
 
     boundsChanged: function() {
       var self = this;
+
       if (self.indrag) return;
+      self.dataNeedsChanged();
+    },
+
+    dataNeedsChanged: function() {
+      var self = this;
       var bounds = self.map.getBounds();
       var ne = bounds.getNorthEast();
       var sw = bounds.getSouthWest();
@@ -718,7 +755,15 @@ function(Class,
       var lonmin = sw.lng();
       var latmax = ne.lat();
       var lonmax = ne.lng();
-      self.visualization.data.zoomTo(new Bounds(lonmin, latmin, lonmax, latmax));
+      var bounds = new Bounds([lonmin, latmin, lonmax, latmax]);
+
+      var end = self.visualization.state.getValue("time");
+      if (end == undefined) return;
+
+      var start = new Date(end.getTime() - self.visualization.state.getValue("timeExtent"));
+      var range = new Timerange([start, end]);
+
+      self.visualization.data.zoomTo(new SpaceTime(range, bounds));
     },
 
     canvasResize: function() {

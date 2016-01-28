@@ -2,12 +2,12 @@
   tm = new BaseTiledFormat({url:"http://127.0.0.1:8000/tiles"});
 
   tm.events.on({
-      "tile-error": function (data) { console.log("tile-error: " + data.exception + " @ " + data.tile.bounds.toBBOX()); },
-      "batch": function (data) { console.log("batch: " + data.tile.bounds.toBBOX()); },
-      "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toBBOX()); },
+      "tile-error": function (data) { console.log("tile-error: " + data.exception + " @ " + data.tile.bounds.toString()); },
+      "batch": function (data) { console.log("batch: " + data.tile.bounds.toString()); },
+      "full-tile": function (data) { console.log("full-tile: " + data.tile.bounds.toString()); },
       "all": function () { console.log("all"); }
   });
-  tm.zoomTo(new Bounds(0, 0, 11.25, 11.25));
+  tm.zoomTo(new Bounds([0, 0, 11.25, 11.25]));
 */
 
 define([
@@ -16,11 +16,12 @@ define([
   "app/LoadingInfo",
   "app/Bounds",
   "app/Data/Format",
-  "app/Data/EmptyFormat",
   "app/Data/Tile",
+  "app/Data/TileBounds",
   "app/Data/Pack",
   "app/Logging",
   "app/Data/Ajax",
+  "app/Data/EmptyFormat",
   "lodash",
   "app/PopupAuth",
   "app/LangExtensions"
@@ -30,11 +31,12 @@ define([
   LoadingInfo,
   Bounds,
   Format,
-  EmptyFormat,
   Tile,
+  TileBounds,
   Pack,
   Logging,
   Ajax,
+  EmptyFormat,
   _,
   PopupAuth
 ) {
@@ -55,8 +57,6 @@ define([
     },
 
     tilesPerScreen: 16,
-
-    world: new Bounds(-180, -90, 180, 90),
 
     retries: 10,
     retryTimeout: 2000,
@@ -90,7 +90,7 @@ define([
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, true);
+        LoadingInfo.main.add(url, {request: request});
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
             LoadingInfo.main.remove(url);
@@ -135,28 +135,38 @@ define([
       self.events.triggerEvent("load");
     },
 
-    getUrlFallbackLevels: function() {
+    getUrls: function (category) {
       var self = this;
-      if (self.header.urls) return self.header.urls.length;
-      return 1;
-    },
-
-    getUrl: function (key, fallbackLevel) {
-      var self = this;
-
       var urls;
       if (self.header.urls) {
-        if (fallbackLevel == -1) {
-          fallbackLevel = self.header.urls.length - 1;
-        } else if (!fallbackLevel) {
-          fallbackLevel = 0;
+        urls = self.header.urls;
+        if (urls[category]) {
+          urls = urls[category];
+        } else if (urls['default']) {
+          urls = urls['default'];
         }
-        urls = self.header.urls[fallbackLevel];
+        return urls;
       } else if (self.header.alternatives) {
-        urls = self.header.alternatives;
+        return [self.header.alternatives];
       } else {
-        return self.url;
+        return [[self.url]];
       }
+    },
+
+    getUrlFallbackLevels: function(category) {
+      var self = this;
+
+      return self.getUrls(category).length;
+    },
+
+    getUrl: function (category, key, fallbackLevel) {
+      var self = this;
+
+      var urls = self.getUrls(category);
+      if (fallbackLevel < 0) fallbackLevel += urls.length;
+      urls = urls[fallbackLevel];
+
+      if (urls.length == 1) return urls[0];
 
       var idx;
       if (key) {
@@ -192,14 +202,16 @@ define([
          current info database that doesn't contain seriesgroup
          values. This should be removed in the future. */
 
-      var baseUrl = self.getUrl("selection-info", fallbackLevel);
+      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+
+      var baseUrl = self.getUrl("selection-info", query, fallbackLevel);
       if (baseUrl.indexOf("/sub/") != -1) {
-          baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
+        baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
       } else {
-          baseUrl = baseUrl + "/sub/";
+        baseUrl = baseUrl + "/sub/";
       }
 
-      return baseUrl + self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series'])
+      return baseUrl + query
     },
 
     getSelectionInfo: function(selection, cb) {
@@ -211,7 +223,7 @@ define([
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, true);
+        LoadingInfo.main.add(url, {request:request});
         request.onreadystatechange = function() {
           if (request.readyState === 4) {
             LoadingInfo.main.remove(url);
@@ -236,7 +248,7 @@ define([
                 });
               } if (request.status == 0 && withCredentials) {
                 getSelectionInfo(fallbackLevel, false);
-              } else if (fallbackLevel + 1 < self.getUrlFallbackLevels()) {
+              } else if (fallbackLevel + 1 < self.getUrlFallbackLevels("selection-info")) {
                 getSelectionInfo(fallbackLevel + 1, true);
               } else {
                 var e = Ajax.makeError(request, url, "selection information from ");
@@ -256,13 +268,16 @@ define([
       var self = this;
 
       var data = {query: query};
-      var url = self.getUrl("search", -1) + "/search";
+      /* FIXME: JSON encoding is not unambiguous, so using it as a key
+       * is not a good idea... */
+      data = JSON.stringify(data);
+      var url = self.getUrl("search", data, -1) + "/search";
 
       var request = new XMLHttpRequest();
       request.open('POST', url, true);
       request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
-      LoadingInfo.main.add(url, true);
+      LoadingInfo.main.add(url, {request: request});
       request.onreadystatechange = function() {
         if (request.readyState === 4) {
           LoadingInfo.main.remove(url);
@@ -276,100 +291,7 @@ define([
           }
         }
       };
-      request.send(JSON.stringify(data));
-    },
-
-    tileParamsForRegion: function(bounds) {
-      var self = this;
-      var origBounds = bounds;
-      bounds = bounds.unwrapDateLine(self.world);
-
-      var res = {
-        bounds: origBounds,
-        unwrappedBounds: bounds,
-        width: bounds.getWidth(),
-        height: bounds.getHeight(),
-        worldwidth: self.world.getWidth(),
-        worldheight: self.world.getHeight(),
-
-        toString: function () {
-          return "\n" + Object.items(this
-            ).filter(function (item) { return item.key != "toString" && item.key != "stack"; }
-            ).map(function (item) { return "  " + item.key + "=" + item.value.toString(); }
-            ).join("\n") + "\n";
-        }
-      };
-
-      res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(self.tilesPerScreen)), 2));
-      
-      res.tilewidth = res.worldwidth / Math.pow(2, res.level);
-      res.tileheight = res.worldheight / Math.pow(2, res.level);
-
-      res.tileleft = res.tilewidth * Math.floor(bounds.left / res.tilewidth);
-      res.tileright = res.tilewidth * Math.ceil(bounds.right / res.tilewidth);
-      res.tilebottom = res.tileheight * Math.floor(bounds.bottom / res.tileheight);
-      res.tiletop = res.tileheight * Math.ceil(bounds.top / res.tileheight);
-
-      res.tilesx = (res.tileright - res.tileleft) / res.tilewidth;
-      res.tilesy = (res.tiletop - res.tilebottom) / res.tileheight;
-
-      return res;
-    },
-
-    tileBoundsForRegion: function(bounds) {
-      /* Returns a list of tile bounds covering a region. */
-
-      var self = this;
-
-      var params = self.tileParamsForRegion(bounds);
-      Logging.main.log("Data.BaseTiledFormat.tileBoundsForRegion", params);
-
-      res = [];
-      for (var x = 0; x < params.tilesx; x++) {
-        for (var y = 0; y < params.tilesy; y++) {
-          res.push(new Bounds(
-            params.tileleft + x * params.tilewidth,
-            params.tilebottom + y * params.tileheight,
-            params.tileleft + (x+1) * params.tilewidth,
-            params.tilebottom + (y+1) * params.tileheight
-          ).rewrapDateLine(self.world));
-        }
-      }
-
-      return res;
-    },
-
-    extendTileBounds: function (bounds) {
-     /* Returns the first larger tile bounds enclosing the tile bounds
-      * sent in. Note: Parameter bounds must be for a tile, as returned
-      * by a previous call to tileBoundsForRegion or
-      * extendTileBounds. */
-
-      var self = this;
-
-      var tilewidth = bounds.getWidth() * 2;
-      var tileheight = bounds.getHeight() * 2;
-
-      var tileleft = tilewidth * Math.floor((bounds.left - self.world.left) / tilewidth) + self.world.left;
-      var tilebottom = tileheight * Math.floor((bounds.bottom - self.world.bottom) / tileheight) + self.world.bottom;
-
-      var res = new Bounds(tileleft, tilebottom, tileleft + tilewidth, tilebottom + tileheight);
-
-      if (self.world.containsBounds(res)) {
-        return res;
-      } else {
-        return undefined;
-      }
-    },
-
-    zoomLevelForTileBounds: function (bounds) {
-      var self = this;
-      return Math.max(
-        0,
-        Math.floor(Math.min(
-          Math.log(self.world.getWidth() / bounds.getWidth(), 2),
-          Math.log(self.world.getHeight() / bounds.getHeight(), 2)))
-      );
+      request.send(data);
     },
 
     clear: function () {
@@ -383,6 +305,7 @@ define([
 
     zoomTo: function (bounds) {
       var self = this;
+        console.log("ZOOM", bounds.toString());
 
       if (self.error) {
         /* Retrow error, to not confuse code that expects either an
@@ -405,16 +328,26 @@ define([
       var oldBounds = self.bounds;
       self.bounds = bounds;
 
-      var wantedTileBounds = self.tileBoundsForRegion(bounds);
+      if (self.header.temporalExtents == undefined) {
+        bounds = bounds.bounds;
+      } else {
+
+      }
+
+      var wantedTileBounds = TileBounds.tileBounds(
+        bounds,
+        self.tilesPerScreen,
+        self.header.temporalExtents
+      );
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
       var anyNewTiles = false;
       wantedTileBounds.map(function (tilebounds) {
-        var key = tilebounds.toBBOX();
+        var key = tilebounds.toString();
         if (oldWantedTiles[key] != undefined) {
-          wantedTiles[key] = oldWantedTiles[tilebounds.toBBOX()];
+          wantedTiles[key] = oldWantedTiles[tilebounds.toString()];
         } else {
-            wantedTiles[key] = self.setUpTile(tilebounds, findOverlaps);
+          wantedTiles[key] = self.setUpTile(tilebounds, findOverlaps);
           anyNewTiles = true;
         }
         wantedTiles[key].reference();
@@ -437,8 +370,8 @@ define([
           var existingWantedTiles = this.newWantedTiles.filter(function (bbox) {
               return self.oldWantedTiles.indexOf(bbox) != -1
           }).join(", ");
-          var oldBounds = self.oldBounds != undefined ? self.oldBounds.toBBOX() : "undefined";
-          var newBounds = self.newBounds != undefined ? self.newBounds.toBBOX() : "undefined";
+          var oldBounds = self.oldBounds != undefined ? self.oldBounds.toString() : "undefined";
+          var newBounds = self.newBounds != undefined ? self.newBounds.toString() : "undefined";
           return oldBounds + " -> " + newBounds + ":\n  Added: " + newWantedTiles + "\n  Removed: " + oldWantedTiles + "\n  Kept: " + existingWantedTiles + "\n";
         }
       });
@@ -452,10 +385,10 @@ define([
       });
 
       wantedTileBounds.map(function (tilebounds) {
+        tilebounds = tilebounds.toString();
         setTimeout(function () {
-          var bbox = tilebounds.toBBOX();
-          if (self.wantedTiles[bbox]) {
-            self.wantedTiles[bbox].load();
+          if (self.wantedTiles[tilebounds]) {
+            self.wantedTiles[tilebounds].load();
           }
         }, 0);
       });
@@ -471,7 +404,7 @@ define([
     setUpTileContent: function (tile) {
       var self = this;
 
-      if (self.header.maxZoom != undefined && self.zoomLevelForTileBounds(tile.bounds) > self.header.maxZoom) {
+      if (self.header.maxZoom != undefined && TileBounds.zoomLevelForTileBounds(tile.bounds) > self.header.maxZoom) {
         tile.setContent(new EmptyFormat({
           headerTime: false,
           contentTime: false,
@@ -494,7 +427,7 @@ define([
 
     setUpTile: function (tilebounds, findOverlaps) {
       var self = this;
-      var key = tilebounds.toBBOX();
+      var key = tilebounds.toString();
 
       if (!self.tileCache[key]) {
         var tile = new Tile(self, tilebounds);
@@ -517,7 +450,7 @@ define([
     handleTileRemoval: function (tile) {
       var self = this;
 
-      delete self.tileCache[tile.bounds.toBBOX()];
+      delete self.tileCache[tile.bounds.toString()];
       e = {update: "tile-removal", tile: tile};
       self.events.triggerEvent(e.update, e);
       self.events.triggerEvent("update", e);
@@ -573,7 +506,7 @@ define([
       var printTree = function (indent, depth, tile) {
         depth = depth || 0;
 
-        var key = tile.bounds.toBBOX();
+        var key = tile.bounds.toString();
 
         var again = printed[key] || false;
         printed[key] = true;
@@ -628,11 +561,11 @@ define([
       var filter = function (tile) { return true; };
       if (args.covers) {
         filter = function (tile) {
-          return tile.bounds.containsBounds(new Bounds(args.covers))
+          return tile.bounds.containsObj(new Bounds(args.covers))
         };
       } else if (args.coveredBy) {
         filter = function (tile) {
-          return new Bounds(args.coveredBy).containsBounds(tile.bounds)
+          return new Bounds(args.coveredBy).containsObj(tile.bounds)
         };
       }
 
@@ -648,7 +581,7 @@ define([
       if (!args.coveredBy && !args.covers) {
         res += indent + 'Forgotten tiles:\n'
         res += Object.values(self.tileCache).filter(function (tile) {
-          return !printed[tile.bounds.toBBOX()];
+          return !printed[tile.bounds.toString()];
         }).map(
           printTree.bind(self, indent + "  ", 0)
         ).join("");
@@ -665,7 +598,7 @@ define([
         return !tile.retryTimeout && (tile.content.allIsLoaded || tile.content.error);
       }).reduce(function (a, b) {
         return a && b;
-      });
+      }, true);
 
       if (allDone) {
         var e = {update: "all", tile: tile};
@@ -689,14 +622,14 @@ define([
       data.tile = tile;
 
       if (data.status == 503 && tile.retry < self.retries - 1) {
-        console.log("retry " + tile.bounds.toBBOX());
+        console.log("retry " + tile.bounds.toString());
         tile.retryTimeout = setTimeout(function () {
           tile.retryTimeout = undefined;
           tile.retry++;
           self.setUpTileContent(tile);
           tile.content.load();
         }, self.retryTimeout);
-      } else if (data.status == 404 && tile.fallbackLevel < self.getUrlFallbackLevels() - 1) {
+      } else if (data.status == 404 && tile.fallbackLevel < self.getUrlFallbackLevels("default") - 1) {
         tile.retry = 0;
         tile.fallbackLevel++;
         self.setUpTileContent(tile);
@@ -706,7 +639,7 @@ define([
         if (data.complete_ancestor) {
           bounds = new Bounds(data.complete_ancestor);
         } else {
-          bounds = self.extendTileBounds(tile.bounds);
+          bounds = TileBounds.extendTileBounds(tile.bounds);
         }
 
         /* There used to be code here to fire a
