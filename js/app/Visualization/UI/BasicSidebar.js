@@ -256,9 +256,8 @@ define([
           }
         }
       } else {
-        self.node.find("#vessel_identifiers").html(
-          '<h2>' + event.layer + '</h2>' +
-          data.toString());
+        self.node.find("#vessel_identifiers").html('<h2>' + event.layer + '</h2>');
+        self.node.find("#vessel_identifiers").append(data.toString());
         self.node.find("#vessel_identifiers table").attr({"class": "vessel_id"});
       }
 

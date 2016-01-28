@@ -11,7 +11,19 @@ define(["app/Class"], function(Class) {
          value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
        }
        if (typeof(value)=="string" && value.indexOf("://") != -1) {
-         content.push("<tr><th colspan='2'><a target='_new' href='" + value +  "'>" + key + "</a></th></tr>");
+         var nameUrl = value.split("://")
+         var name = 'Link';
+         var url = value;
+         if (nameUrl[0].indexOf(' ') != -1) {
+           var pos = nameUrl[0].lastIndexOf(' ');
+           var proto = nameUrl[0].slice(pos + 1);
+           name = nameUrl[0].slice(0, pos);
+           if (name.slice(-1) == ':') {
+             name = name.slice(0, -1);
+           }
+           url = proto + '://' + nameUrl[1];
+         }
+         content.push("<tr><th>" + key + "</th><td><a target='_new' href='" + url +  "'>" + name + "</a></th></tr>");
        } else {
          content.push("<tr><th>" + key + "</th><td>" + value + "</td></tr>");
        }
