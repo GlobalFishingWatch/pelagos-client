@@ -2,17 +2,17 @@ define([
   "require",
   "app/Class",
   "app/LoadingInfo",
+  "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation",
-  "app/Visualization/UI/CartoDBInfoWindow",
   "cartodb"
 ], function(
   require,
   Class,
   LoadingInfo,
+  CartoDBInfoWindow,
   ObjectToTable,
   Animation,
-  CartoDBInfoWindow,
   cartodb
 ) {
   var CartoDBAnimation = Class(Animation, {
