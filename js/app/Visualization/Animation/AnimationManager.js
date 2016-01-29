@@ -340,11 +340,11 @@ function(Class,
 
       if (rowidx) {
         var animation = self.animations[rowidx[0]];
-        if (animation.data_view) {
+        if (animation && animation.data_view) {
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
 
-        if (animation.select([rowidx[1], rowidx[2]], type, true, e)) {
+        if (animation && animation.select([rowidx[1], rowidx[2]], type, true, e)) {
           return animation;
         }
       } else {

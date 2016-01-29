@@ -532,7 +532,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
     .action_icons {
       float: right;
-      margin-top: 0.7em;
+      margin-top: 0.2em;
 
       #activate_search {
         float: right;
@@ -569,15 +569,24 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     }
 
     #layers, #vessel_identifiers {
-      padding-left: 5%;
+      padding: 0 5%;
       word-wrap: break-word;
     }
 
     #layers h2, #vessel_identifiers h2 {
-      color: #3a3a3c;
+      color: #767777;
+      border-bottom: solid 1px #767777;
       font-size: 100%;
-      padding-top: 1rem; 
-      font-weight: 400;
+      padding-top: 0.5rem;
+      font-weight: 500;
+    }
+
+    #vessel_identifiers .cartodb-popup-content h4 {
+      margin: 0 0 0 0;
+    }
+
+    #vessel_identifiers .cartodb-popup-content p {
+      margin: 0 0 1rem 0;
     }
 
     /* toggle styles */
@@ -786,13 +795,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       + .switch-line:after {
         border-color: #757575;
       }
-    }
-
-
-
-    #layers h2,
-    #vessel_identifiers h2 {
-      color: #767777; 
     }
 
     .vessel_id {
