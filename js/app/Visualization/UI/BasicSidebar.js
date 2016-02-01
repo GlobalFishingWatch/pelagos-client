@@ -54,21 +54,16 @@ define([
       self.sidebar = new AccordionContainer({splitter:true});
       $(self.sidebar.domNode).addClass("basic-sidebar");
       self.node.find(".blades").prepend(self.sidebar.domNode);
-      self.sidebar.startup();
 
-      self.info = new ContentPane({title: 'Info', content: "<div id='vessel_identifiers'></div>", doLayout: false});
+      self.info = new ContentPane({title: 'Info', content: "<div id='vessel_identifiers'></div>"});
       self.sidebar.addChild(self.info);
-      self.sidebar.layout();
 
       self.layers = new ContentPane({title: 'Layers', content:"" +
           "<div id='layers'>" +
           "  <h2>Layers</h2>" +
-          "  <form class='layer-list'></form" +
-          "</div>", doLayout: false});
+          "  <form class='layer-list'></form>" +
+          "</div>"});
       self.sidebar.addChild(self.layers);
-      self.sidebar.layout();
-
-      self.update("none", {});
 
       self.node.find("#activate_help").click(function () {
         self.visualization.ui.help.displayHelpDialog();
@@ -102,6 +97,8 @@ define([
         self.node.toggle(!data.new_value);
       }});
 
+      self.sidebar.startup();
+      self.update("none", {});
       self.sidebar.selectChild(self.layers, false);
     },
 
