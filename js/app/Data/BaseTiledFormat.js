@@ -270,10 +270,10 @@ define([
       getSelectionInfo(0, true);
     },
 
-    search: function(query, cb) {
+    search: function(query, offset, limit, cb) {
       var self = this;
 
-      var data = {query: query};
+      var data = {query: query, offset: offset, limit: limit};
       /* FIXME: JSON encoding is not unambiguous, so using it as a key
        * is not a good idea... */
       data = JSON.stringify(data);
