@@ -4,7 +4,7 @@ define([
   "async",
   "jQuery",
   "app/Visualization/KeyBindings",
-  "app/LoadingInfo",
+  "app/LoadingInfo"
 ], function(
   Class,
   Dialog,
