@@ -23,6 +23,7 @@ define([
   "app/Data/Ajax",
   "app/Data/EmptyFormat",
   "lodash",
+  "async",
   "jQuery",
   "app/PopupAuth",
   "app/LangExtensions"
@@ -39,6 +40,7 @@ define([
   Ajax,
   EmptyFormat,
   _,
+  async,
   $,
   PopupAuth
 ) {
@@ -390,13 +392,16 @@ define([
         item.value.dereference();
       });
 
-      wantedTileBounds.map(function (tilebounds) {
+      LoadingInfo.main.add(self.url);
+
+      async.each(wantedTileBounds, function (tilebounds, cb) {
         tilebounds = tilebounds.toString();
-        setTimeout(function () {
-          if (self.wantedTiles[tilebounds]) {
-            self.wantedTiles[tilebounds].load();
-          }
-        }, 0);
+        if (self.wantedTiles[tilebounds]) {
+          self.wantedTiles[tilebounds].load();
+        }
+        cb();
+      }, function (err) {
+        LoadingInfo.main.remove(self.url);
       });
     },
 
