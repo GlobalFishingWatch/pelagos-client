@@ -87,17 +87,21 @@ define([
       var results = $(self.dialog.containerNode).find('.results');
       if (err) {
         results.html('<div class="error">An error occured: ' + err.toString() + '<div>');
-      } else if (res.length == 0) {
+      } else if (res.total == 0) {
         results.html('<div class="no-results">No results found</div>');
       } else {
-        $(self.dialog.containerNode).find('.paging').show();
+        if (res.offset > 0 || res.total > res.offset + res.entries.length) {
+          $(self.dialog.containerNode).find('.paging').show();
 
-        $(self.dialog.containerNode).find(".start").html(res.offset);
-        $(self.dialog.containerNode).find(".end").html(res.offset + res.entries.length);
-        $(self.dialog.containerNode).find(".total").html(res.total);
+          $(self.dialog.containerNode).find(".start").html(res.offset);
+          $(self.dialog.containerNode).find(".end").html(res.offset + res.entries.length);
+          $(self.dialog.containerNode).find(".total").html(res.total);
 
-        if (res.offset <= 0) $(self.dialog.containerNode).find(".prev").attr({disabled: 'disabled'});
-        if (res.offset + res.limit  >= res.total) $(self.dialog.containerNode).find(".next").attr({disabled: 'disabled'});
+          if (res.offset <= 0) $(self.dialog.containerNode).find(".prev").attr({disabled: 'disabled'});
+          if (res.offset + res.limit  >= res.total) $(self.dialog.containerNode).find(".next").attr({disabled: 'disabled'});
+        } else {
+          $(self.dialog.containerNode).find('.paging').hide();
+        }
 
         results.html('<table class="table result-table">' +
                      '  <tr>' +
