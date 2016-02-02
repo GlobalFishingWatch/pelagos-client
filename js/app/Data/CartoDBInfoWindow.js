@@ -26,7 +26,7 @@ define([
 
         if (field.title && actualTitle) {
           result.title = actualTitle;
-        } else if (attr.title) {
+        } else if (field.title) {
           // Remove '_' character from titles
           result.title = field.title.replace(/_/g,' ');
         }

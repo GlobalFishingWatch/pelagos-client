@@ -111,6 +111,28 @@ define([
       return _.merge({}, defaults, config);
     },
 
+    unmergeDefaults: function (defaults, config) {
+      var self = this;
+
+      config = _.clone(config);
+
+      var unmerge = function(defaults, config) {
+        for (var key in defaults) {
+          if (typeof(defaults[key]) == 'object') {
+            config[key] = unmerge(defaults[key], config[key]);
+            if (Object.keys(config[key]).length == 0) {
+              delete config[key];
+            }
+          } else {
+            delete config[key];
+          }
+        }
+        return config;
+      };
+
+      return unmerge(defaults, config);
+    },
+
     toJSON: function () {
       var self = this;
       return {
@@ -173,7 +195,8 @@ define([
     save: function (cb) {
       var self = this;
 
-      $.post(self.workspaceSaveUrl, Json.encode(self, "  "), function (data) {
+      var data = Json.encode(self.unmergeDefaults(self.defaultConfig, Json.decode(Json.encode(self, "  "))));
+      $.post(self.workspaceSaveUrl, data, function (data) {
         data = Json.decode(data);
         cb(self.workspaceSaveUrl + "/" + data.id);
       }, 'text');
