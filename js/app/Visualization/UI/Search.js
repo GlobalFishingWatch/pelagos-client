@@ -26,11 +26,12 @@ define([
           '<div class="search-loading">' +
           '  <img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg">' +
           '</div>' +
+          '<div class="results" style="max-height: 300px; overflow: auto;"></div>' +
           '<div class="paging" style="display: hidden;">' +
           '  <button class="prev">Prev</button>' +
           '  <span class="start"></span>-<span class="end"></span> of <span class="total"></span>' +
-          '  <button class="next">Next</button></div>' +
-          '<div class="results" style="max-height: 300px; overflow: auto;"></div>',
+          '  <button class="next">Next</button>' +
+          '</div>',
         actionBarTemplate: '' +
           '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
           '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
