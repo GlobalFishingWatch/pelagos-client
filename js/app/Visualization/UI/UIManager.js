@@ -8,6 +8,7 @@ define([
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
+  "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/Performance",
   "app/Visualization/UI/Help",
   "app/ObjectTemplate",
@@ -25,6 +26,7 @@ function (
   SidePanelManager,
   BasicSidebar,
   Search,
+  AnimationLibrary,
   Performance,
   Help,
   ObjectTemplate,
@@ -475,6 +477,7 @@ function (
       var self = this;
 
       self.search = new Search(self.visualization);
+      self.library = new AnimationLibrary(self.visualization);
       self.performance = new Performance(self.visualization);
       self.help = new Help(self.visualization);
       cb();

@@ -226,7 +226,7 @@ define([
       self.events.triggerEvent("update", update);
     },
 
-    listSources: function (cb) {
+    listAvailableSources: function (cb) {
       var self = this;
 
       var sources = {};
@@ -256,7 +256,7 @@ define([
       });
     },
 
-    listSourceAnimations: function (source, cb) {
+    listAvailableSourceAnimations: function (source, cb) {
       Ajax.get(source.workspace_url, {}, function (err, data) {
         if (err) {
           cb(err);
