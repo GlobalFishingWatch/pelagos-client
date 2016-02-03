@@ -256,6 +256,25 @@ define([
       });
     },
 
+    listSourceAnimations: function (source, cb) {
+      Ajax.get(source.workspace_url, {}, function (err, data) {
+        if (err) {
+          cb(err);
+        } else {
+          cb(null, data.map.animations.filter(function (animation) {
+            if (animation.is_main != undefined) {
+              return animation.is_main;
+            }
+            try {
+              return animation.args.source.args.url == source.tile_url
+            } catch (err) {
+              return false;
+            }
+          }));
+        }
+      });
+    },
+
     printTree: function (args) {
       var self = this;
       args = args || {};
