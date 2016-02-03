@@ -42,26 +42,22 @@ define([
           '</div>'
       });
 
-      self.container = new BorderContainer({style: "min-height: 300px; height: 100%; width: 100%;"});
+      self.container = new BorderContainer({style: "min-height: 300px; height: 100%; width: 100%; padding: 0; margin: 0;", liveSplitters: true});
       self.dialog.addChild(self.container);
 
-      self.container.addChild(new ContentPane({region: 'top', content: '' +
+      self.container.addChild(new ContentPane({region: 'top', style: 'border: none; padding: 0; padding-bottom: 10px; margin: 0; overflow: hidden;', content: '' +
         '<input type="text" class="query" style="width: 100%;" placeholder="Search by name or tag"></input>' +
         '<div class="search-loading">' +
         '  <img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg">' +
         '</div>'
       }));
 
-      self.listsContainer = new BorderContainer({region: 'center', liveSplitters: true});
-      self.container.addChild(self.listsContainer);
+      self.sourcesList = new ContentPane({region: 'center', content: '', class: 'sourcesList', style: 'border: none; padding: 0; margin: 0;'});
+      self.animationsList = new ContentPane({region: 'right', splitter: true, content: '', class: 'animationsList', style: 'border: none; padding: 0; margin: 0; width: 150px'});
+      self.container.addChild(self.sourcesList);
+      self.container.addChild(self.animationsList);
 
-      self.listsContainer.addChild(new ContentPane({'class': 'sources', region: 'center', content: '&nbsp;'}));
-      self.listsContainer.addChild(new ContentPane({'class': 'animations', region: 'right', content: '&nbsp;'}));
-
-
-      $(self.dialog.closeButton).on('click', function () {
-        self.dialog.hide();
-      });
+      self.dialog.startup();
 
       $(self.dialog.containerNode).find(".query").keyup(function(event) {
         if (event.which == 13) {
@@ -69,22 +65,17 @@ define([
         }
       });
 
-      self.dialog.startup();
+      $(self.dialog.closeButton).on('click', function () {
+        self.dialog.hide();
+      });
     },
 
-    displayAnimationsForSource: function (event) {
+    displayAnimationLibraryDialog: function () {
       var self = this;
-      var name = $(event.target).data('name');
-
-      $(self.dialog.containerNode).find('.animations').html('');
-      self.dataManager.listAvailableSourceAnimations(self.sources[name], function (err, animations) {
-        animations.map(function (animation) {
-          var row = $("<div></div>");
-          row.text(animation.args.title);
-          row.attr({title: animation.type});
-          $(self.dialog.containerNode).find('.animations').append(row);
-        });
-      });
+      $(self.sourcesList.containerNode).html('');
+      $(self.animationsList.containerNode).html('');
+      self.dialog.show();
+      self.performSearch();
     },
 
     performSearch: function (query) {
@@ -114,8 +105,8 @@ define([
         }
         results.sort();
 
-        $(self.dialog.containerNode).find('.sources').html('');
-        $(self.dialog.containerNode).find('.animations').html('');
+        $(self.sourcesList.containerNode).html('');
+        $(self.animationsList.containerNode).html('');
 
         results.map(function (key) {
           var label = key;
@@ -125,20 +116,37 @@ define([
           var source = $("<div>" +  label + "</div>");
           source.data('name', key);
           source.click(self.displayAnimationsForSource.bind(self));
-          $(self.dialog.containerNode).find('.sources').append(source);
+          $(self.sourcesList.containerNode).append(source);
         });
-
         $(self.dialog.containerNode).find('.search-loading').hide();
       });
     },
 
-    displayAnimationLibraryDialog: function () {
+    displayAnimationsForSource: function (event) {
       var self = this;
-      $(self.dialog.containerNode).find('.sources').html('');
-      $(self.dialog.containerNode).find('.animations').html('');
-      self.dialog.show();
-      self.performSearch();
-    }
+      var name = $(event.target).data('name');
 
+      $(self.animationsList.containerNode).html('');
+      self.dataManager.listAvailableSourceAnimations(self.sources[name], function (err, animations) {
+        animations.map(function (animation) {
+          var row = $("<div></div>");
+          row.text(animation.args.title);
+          row.attr({title: animation.type});
+
+          row.data('animation', animation);
+          row.click(self.addAnimation.bind(self));
+
+          $(self.animationsList.containerNode).append(row);
+        });
+      });
+    },
+
+    addAnimation: function (event) {
+      var self = this;
+      var animation = $(event.target).data('animation');
+
+      self.animationManager.addAnimation(animation, function () {});
+      self.dialog.hide();
+    }
   });
 });
