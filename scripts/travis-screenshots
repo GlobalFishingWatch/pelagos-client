@@ -1,0 +1,24 @@
+#! /bin/bash
+
+# Decrypt the deployment key
+openssl aes-256-cbc -K $encrypted_1645300b04d0_key -iv $encrypted_1645300b04d0_iv -in .travis.sskey.enc -out .travis.sskey -d
+
+# Configure ssh access using the key
+mv .travis.sskey ~/.ssh/id_rsa_deploy
+chmod 0600 ~/.ssh/id_rsa_deploy
+echo -e "Host github.com\n  IdentityFile ~/.ssh/id_rsa_deploy" > ~/.ssh/config
+
+# Clone the screenshots repository
+git clone --quiet git@github.com:SkyTruth/pelagos-client-travis-screenshots.git screenshots > /dev/null
+
+# Copy all screenshots (if any) into the screenshots repository
+cp *.png screenshots || true
+
+# Push the screenshots to the repository
+cd screenshots
+git config user.email "travis@skytruth.org"
+git config user.name "Travis"
+git add -f .
+git commit --allow-empty -m "Screenshots from travis build $TRAVIS_BUILD_NUMBER"
+git push -fq origin master > /dev/null
+
