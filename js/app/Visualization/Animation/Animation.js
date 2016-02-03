@@ -1,4 +1,20 @@
-define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/GeoProjection", "app/Data/DataView", "jQuery"], function(Class, async, Shader, GeoProjection, DataView, $) {
+define([
+  "app/Class",
+  "async",
+  "app/UrlValues",
+  "app/Visualization/Animation/Shader",
+  "app/Data/GeoProjection",
+  "app/Data/DataView",
+  "jQuery"
+], function(
+  Class,
+  async,
+  UrlValues,
+  Shader,
+  GeoProjection,
+  DataView,
+  $
+) {
   var Animation = Class({
     name: "Animation",
     columns: {},
@@ -78,19 +94,7 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
     initGl: function(cb) {
       var self = this;
 
-      if (self.source.args.url.indexOf("://") == -1) {
-        if (self.source.args.url.indexOf("/") == 0) {
-          var parser = document.createElement('a');
-          parser.href = base;
-
-          base = parser.protocol + "//" + parser.host;
-          self.source.args.url = base + self.source.args.url;
-        } else {
-          var base = self.manager.visualization.workspaceUrl;
-          base = base.substr(0, base.lastIndexOf("/") + 1);
-          self.source.args.url = base + self.source.args.url;
-        }
-      }
+      self.source.args.url = UrlValues.realpath(self.manager.visualization.workspaceUrl, self.source.args.url);
 
       self.manager.visualization.data.createView({
         source: self.source,

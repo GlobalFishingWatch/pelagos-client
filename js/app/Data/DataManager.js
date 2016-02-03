@@ -3,6 +3,7 @@ define([
   "app/Bounds",
   "async",
   "lodash",
+  "app/UrlValues",
   "app/Data/Ajax",
   "app/Events",
   "app/Data/Format",
@@ -18,6 +19,7 @@ define([
   Bounds,
   async,
   _,
+  UrlValues,
   Ajax,
   Events,
   Format,
@@ -234,8 +236,15 @@ define([
           if (err) {
             cb(err);
           } else {
+            for (var name in data) {
+              for (var key in data[name]) {
+                if (key.slice(-4) == '_url') {
+                  data[name][key] = UrlValues.realpath(url, data[name][key]);
+                }
+              }
+            }
             _.assign(sources, data);
-              cb();
+            cb();
           }
         });
       }, function (err) {
