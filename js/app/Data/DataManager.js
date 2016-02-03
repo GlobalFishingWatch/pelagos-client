@@ -1,10 +1,36 @@
-define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Logging", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat", "app/Data/ClusterTestFormat"], function(Class, Bounds, _, Events, Format, DataView, Logging) {
+define([
+"app/Class",
+  "app/Bounds",
+  "async",
+  "lodash",
+  "app/Data/Ajax",
+  "app/Events",
+  "app/Data/Format",
+  "app/Data/DataView",
+  "app/Logging",
+  "app/Data/TiledBinFormat",
+  "app/Data/BinFormat",
+  "app/Data/EmptyFormat",
+  "app/Data/TiledEmptyFormat",
+  "app/Data/ClusterTestFormat"
+], function(
+  Class,
+  Bounds,
+  async,
+  _,
+  Ajax,
+  Events,
+  Format,
+  DataView,
+  Logging
+) {
   return Class({
     name: "DataManager",
     initialize: function () {
       var self = this;
 
       self.sources = {};
+      self.directories = {};
       self.events = new Events("Data.DataManager");
       self.header = {colsByName: {}};
       self.bounds = undefined;
@@ -161,6 +187,13 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
 
     handleHeader: function (source, header) {
       var self = this;
+      var directory;
+      if (source.getDirectory) {
+        directory = source.getDirectory();
+      }
+      if (directory && !self.directories[directory]) {
+        self.directories[directory] = false;
+      }
       header.source = source;
       self.updateHeader();
     },
@@ -189,6 +222,29 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       }
       self.events.triggerEvent(update.update, update);
       self.events.triggerEvent("update", update);
+    },
+
+    listSources: function (cb) {
+      var self = this;
+
+      var sources = {};
+
+      async.each(Object.keys(self.directories), function (url, cb) {
+        Ajax.get(url, {}, function (err, data) {
+          if (err) {
+            cb(err);
+          } else {
+            _.assign(sources, data);
+              cb();
+          }
+        });
+      }, function (err) {
+          if (err) {
+            cb(err);
+          } else {
+            cb(null, sources);
+          }
+      });
     },
 
     printTree: function (args) {
