@@ -287,12 +287,6 @@ define([
       node.find("label").attr({"for":"cmn-toggle-" + self.idCounter});
       self.idCounter++;
 
-      if (!animation.title) animation.title = animation.toString();
-      node.find(".layer-label").html(animation.title);
-
-      if (!animation.color) animation.color = 'orange';
-      node.find("input").addClass('cmn-toggle-' + animation.color);
-
       node.find("input").change(function (event) {
         animation.setVisible(event.target.checked);
       });
@@ -415,6 +409,17 @@ define([
           }
         }
       }
+
+      animation.events.on({updated: self.updatedHandler.bind(self, animation, node)});
+      self.updatedHandler(animation, node);
+    },
+
+    updatedHandler: function (animation, node, e) {
+      if (!animation.title) animation.title = animation.toString();
+      node.find(".layer-label").html(animation.title);
+
+      if (!animation.color) animation.color = 'orange';
+      node.find("input").addClass('cmn-toggle-' + animation.color);
 
       if (animation.visible) {
         node.find("input").attr('checked','checked');
