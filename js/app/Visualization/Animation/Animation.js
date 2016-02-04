@@ -1,5 +1,6 @@
 define([
   "app/Class",
+  "app/Events",
   "async",
   "app/UrlValues",
   "app/Visualization/Animation/Shader",
@@ -8,6 +9,7 @@ define([
   "jQuery"
 ], function(
   Class,
+  Events,
   async,
   UrlValues,
   Shader,
@@ -52,6 +54,8 @@ define([
       }
       self.manager = manager;
       self.dataUpdates = 0;
+
+      self.events = new Events('Visualization.Animation');
     },
 
     setVisible: function (visible) {
