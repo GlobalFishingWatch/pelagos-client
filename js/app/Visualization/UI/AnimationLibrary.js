@@ -133,6 +133,7 @@ define([
           row.text(animation.args.title);
           row.attr({title: animation.type});
 
+          row.data('name', name);
           row.data('animation', animation);
           row.click(self.addAnimation.bind(self));
 
@@ -143,7 +144,10 @@ define([
 
     addAnimation: function (event) {
       var self = this;
+      var name = $(event.target).data('name');
       var animation = $(event.target).data('animation');
+
+      animation.args.title = name + ": " + animation.args.title;
 
       self.animationManager.addAnimation(animation, function () {});
       self.dialog.hide();
