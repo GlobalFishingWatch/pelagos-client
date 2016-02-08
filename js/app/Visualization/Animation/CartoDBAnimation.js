@@ -1,6 +1,7 @@
 define([
   "require",
   "app/Class",
+  "app/Events",
   "app/LoadingInfo",
   "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/ObjectToTable",
@@ -9,6 +10,7 @@ define([
 ], function(
   require,
   Class,
+  Events,
   LoadingInfo,
   CartoDBInfoWindow,
   ObjectToTable,
@@ -28,12 +30,13 @@ define([
       self.args = args;
       if (args) $.extend(self, args);
       self.manager = manager;
+      self.events = new Events('Visualization.Animation');
     },
 
     destroy: function () {
       var self = this;
-      self.layer.setMap(null);
-      // FIXME: DO we need to call destroy or something like that on self.layer?
+
+      self.layer.remove();
     },
 
     initGl: function(cb) {

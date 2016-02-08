@@ -1,4 +1,15 @@
-define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, Shader, Animation) {
+define([
+  "require",
+  "app/Class",
+  "app/Events",
+  "app/Visualization/Animation/Shader",
+  "app/Visualization/Animation/Animation"
+], function(require,
+  Class,
+  Events,
+  Shader,
+  Animation
+) {
   var MapsEngineAnimation = Class(Animation, {
     name: "MapsEngineAnimation",
 
@@ -12,6 +23,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
       self.args = args;
       if (args) $.extend(self, args);
       self.manager = manager;
+      self.events = new Events('Visualization.Animation');
     },
 
     destroy: function () {

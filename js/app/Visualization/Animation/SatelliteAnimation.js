@@ -1,12 +1,14 @@
 define([
   "require",
   "app/Class",
+  "app/Events",
   "app/LoadingInfo",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation"
 ], function(
   require,
   Class,
+  Events,
   LoadingInfo,
   ObjectToTable,
   Animation
@@ -24,6 +26,7 @@ define([
       self.args = args;
       if (args) $.extend(self, args);
       self.manager = manager;
+      self.events = new Events('Visualization.Animation');
     },
 
     destroy: function () {

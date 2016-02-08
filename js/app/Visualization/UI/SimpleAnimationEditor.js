@@ -147,7 +147,8 @@ define([
         '    <option value="grey">Grey</option>' +
         '  </select></td></tr>' +
         '</table>' +
-        '<button class="save">Save</button'
+        '<button class="save">Save</button> ' +
+        '<button class="delete">Delete</button>'
       });
 
       $(editor.containerNode).find('.title').val(animation.title);
@@ -159,6 +160,10 @@ define([
         animation.title = $(editor.containerNode).find('.title').val();
         animation.color = $(editor.containerNode).find('.color').val();
         animation.events.triggerEvent("updated");
+        self.setEditor();
+      });
+      $(editor.containerNode).find('.delete').click(function () {
+        self.animationManager.removeAnimation(animation);
         self.setEditor();
       });
 
