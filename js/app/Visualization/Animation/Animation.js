@@ -20,6 +20,8 @@ define([
   var Animation = Class({
     name: "Animation",
 
+    color: "orange",
+
     initialize: function(manager, args) {
       var self = this;
 
