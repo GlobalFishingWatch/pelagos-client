@@ -32,8 +32,7 @@ define([
 
     destroy: function () {
       var self = this;
-      self.layer.setMap(null);
-      // FIXME: DO we need to call destroy or something like that on self.layer?
+      self.layer.remove();
     },
 
     initGl: function(cb) {
