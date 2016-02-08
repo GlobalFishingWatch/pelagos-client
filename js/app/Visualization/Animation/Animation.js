@@ -13,6 +13,8 @@ define(["app/Class", "async", "app/Visualization/Animation/Shader", "app/Data/Ge
     programSpecs: {},
     separateSeries: false,
 
+    color: "orange",
+
     initialize: function(manager, args) {
       var self = this;
 
