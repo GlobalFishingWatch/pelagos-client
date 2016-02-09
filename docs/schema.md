@@ -32,7 +32,13 @@ Tiles are loaded from under any of the provided fallback urls by adding the tile
 
     http://myproject.appspot.com/tile/mytileset/135,-11.25,157.5,0
 
-For information on the exact details of how bounds are calculated, look at [tileParamsForRegion()](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/BaseTiledFormat.js#L188).
+Alternatively, if you're using temporal tiling a time range and a bounding box:
+
+    http://myproject.appspot.com/tile/mytileset/2014-12-06T00:00:00,2015-01-05T00:00:00;-180,0,-168.75,5.625
+
+The time range is specified on the format YYYY-MM-DDThh:mm:ss.ddd (ddd is second decimals). Start should be a time which when represented as a unix timestamp, is divisible by temporalExtents. End should be start + temporalExtents.
+
+For information on the exact details of how bounds are calculated, look at [tileParamsForRegion()](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/TileBounds.js#L6).
 
 ## Queries
 
