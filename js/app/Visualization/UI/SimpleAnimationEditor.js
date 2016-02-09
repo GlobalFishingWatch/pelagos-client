@@ -91,8 +91,6 @@ define([
         'remove': self.updateListHandler
       });
       self.updateList();
-      self.addCartoDBAnimation();
-      self.display();
     },
 
     updateList: function () {
@@ -141,28 +139,24 @@ define([
         '  <tr><th>Title:</th><td><input class="title" type="text"></td></tr>' +
         '  <tr><th>Type:</th><td class="type"></td></tr>' +
         '  <tr><th>Url:</th><td><input class="url" type="text" disabled="disabled"></td></tr>' +
-        '  <tr><th>Color:</th><td><select class="color">' +
-        '    <option value="orange">Orange</option>' +
-        '    <option value="purple">Purple</option>' +
-        '    <option value="blue">Blue</option>' +
-        '    <option value="blue2">Light blue</option>' +
-        '    <option value="green">Light green</option>' +
-        '    <option value="green2">Green</option>' +
-        '    <option value="grey">Grey</option>' +
-        '  </select></td></tr>' +
+        '  <tr><th>Color:</th><td class="color"></td></tr>' +
         '</table>' +
         '<button class="save">Save</button> ' +
         '<button class="delete">Delete</button>'
       });
 
+      var colorDropdown = new ColorDropdown();
+      colorDropdown.placeAt($(editor.containerNode).find('.color')[0]);
+      colorDropdown.startup();
+
       $(editor.containerNode).find('.title').val(animation.title);
       $(editor.containerNode).find('.type').text(animation.name);
       $(editor.containerNode).find('.url').val(animation.args.source.args.url);
-      $(editor.containerNode).find('.color [value="' + animation.color + '"]').attr({selected: 'selected'});
+      colorDropdown.set("value", animation.color);
 
       $(editor.containerNode).find('.save').click(function () {
         animation.title = $(editor.containerNode).find('.title').val();
-        animation.color = $(editor.containerNode).find('.color').val();
+        animation.color = colorDropdown.get("value");
         animation.events.triggerEvent("updated");
         self.setEditor();
       });
@@ -187,14 +181,14 @@ define([
         '<button class="add">Add animation</button'
       });
 
-      var colorDropdown = new ColorDropdown({});
-        colorDropdown.placeAt($(editor.containerNode).find('.color')[0]);
-        colorDropdown.startup();
+      var colorDropdown = new ColorDropdown();
+      colorDropdown.placeAt($(editor.containerNode).find('.color')[0]);
+      colorDropdown.startup();
 
       $(editor.containerNode).find('.add').click(function () {
         var title = $(editor.containerNode).find('.title').val();
         var url = $(editor.containerNode).find('.url').val();
-        var color = $(editor.containerNode).find('.color').val();
+        var color = colorDropdown.get("value");
 
         if (url.length == 0) {
           alert("You must provide a layer URL");
