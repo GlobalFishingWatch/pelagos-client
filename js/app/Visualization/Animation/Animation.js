@@ -89,6 +89,7 @@ define([
       args.title = self.title;
       args.visible = self.visible;
       args.source = self.source;
+      args.color = self.color;
       return {
         args: _.extend({}, self.args, args),
         "type": self.name
