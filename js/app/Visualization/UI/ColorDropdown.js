@@ -24,7 +24,7 @@ define([
     templateString: '<div>' +
                     '  <div data-dojo-type="dijit/form/DropDownButton" data-dojo-attach-point="button">' +
                     '    <span>${title}</span>' +
-                    '    <div data-dojo-type="dijit/TooltipDialog" data-dojo-attach-point="dialog" >' +
+                    '    <div data-dojo-type="dijit/layout/ContentPane" data-dojo-attach-point="dialog" style="background: white;">' +
                     '      <div data-dojo-type="dojox/widget/ColorPicker" data-dojo-attach-point="picker" data-dojo-attach-event="change: change"></div>' +
                     '    </div>' +
                     '  </div>' +

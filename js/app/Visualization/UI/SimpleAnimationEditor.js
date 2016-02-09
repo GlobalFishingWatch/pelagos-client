@@ -8,6 +8,7 @@ define([
   "jQuery",
   "app/Visualization/KeyBindings",
   "app/LoadingInfo",
+  "app/Visualization/UI/ColorDropdown"
 ], function(
   Class,
   Dialog,
@@ -17,7 +18,8 @@ define([
   async,
   $,
   KeyBindings,
-  LoadingInfo
+  LoadingInfo,
+  ColorDropdown
 ){
   return Class({
     name: "SimpleAnimationEdtor",
@@ -89,6 +91,8 @@ define([
         'remove': self.updateListHandler
       });
       self.updateList();
+      self.addCartoDBAnimation();
+      self.display();
     },
 
     updateList: function () {
@@ -178,18 +182,14 @@ define([
         '  <tr><th>Title:</th><td><input class="title" type="text"></td></tr>' +
         '  <tr><th>Type:</th><td class="type">CartoDBAnimation</td></tr>' +
         '  <tr><th>Url:</th><td><input class="url" type="text"></td></tr>' +
-        '  <tr><th>Color:</th><td><select class="color">' +
-        '    <option value="orange">Orange</option>' +
-        '    <option value="purple">Purple</option>' +
-        '    <option value="blue">Blue</option>' +
-        '    <option value="blue2">Light blue</option>' +
-        '    <option value="green">Light green</option>' +
-        '    <option value="green2">Green</option>' +
-        '    <option value="grey">Grey</option>' +
-        '  </select></td></tr>' +
+        '  <tr><th>Color:</th><td class="color"></td></tr>' +
         '</table>' +
         '<button class="add">Add animation</button'
       });
+
+      var colorDropdown = new ColorDropdown({});
+        colorDropdown.placeAt($(editor.containerNode).find('.color')[0]);
+        colorDropdown.startup();
 
       $(editor.containerNode).find('.add').click(function () {
         var title = $(editor.containerNode).find('.title').val();
