@@ -98,6 +98,8 @@ define([
       $(self.list.containerNode).html('');
 
       visualization.animations.animations.map(function (animation) {
+        /* FIXME: Horrible hack to conform to UX */
+        if (animation.name != 'CartoDBAnimation') return;
         var row = $("<div></div>");
         row.text(animation.title);
         var description = animation.name;
