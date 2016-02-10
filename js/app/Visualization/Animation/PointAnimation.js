@@ -51,7 +51,7 @@ define([
       if (program.uniforms.doShade) {
         program.gl.uniform1i(program.uniforms.doShade, 1);
       }
-      Animation.prototype.drawProgram.apply(self, arguments);
+      DataAnimation.prototype.drawProgram.apply(self, arguments);
     },
 
     getDrawMode: function (program) {
