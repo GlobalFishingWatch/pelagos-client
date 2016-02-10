@@ -221,6 +221,27 @@ body {
   }
 }
 
+.library-dialog {
+  .query {
+    height: 2em;
+  }
+  .search-loading {
+    position: relative;
+    top: -1.6em;
+    margin-right: 0.3em;
+    float: right;
+    display: none;
+  }
+  .sourcesList, .animationsList {
+    div:nth-child(odd) {
+      background-color: #ccc;
+    }
+    div:hover {
+      background-color: #d2cece;
+    }
+  }
+}
+
 .search-dialog {
   .query {
     height: 2em;
@@ -592,8 +613,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
     /* toggle styles */
     #layers {
-      margin-top: -38pt;
-
       .layer-list {
         display: table;
         width: 100%;
@@ -691,7 +710,9 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           -o-transition: margin 0.4s, background 0.4s;
           transition: margin 0.4s, background 0.4s;
           background-color: #fff; 
-          border: solid .25rem;
+          border-style: solid;
+          border-width: .25rem;
+          border-color: inherit;
         }
       }
 
@@ -708,93 +729,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       &:checked + .switch-line {
         background-repeat: repeat-x;
         background-position: center center;
-      }
-    }
-
-
-    /* colors */
-    /* heatmap */
-    input.cmn-toggle-orange {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #ef4323; 
-      }
-      &:checked + .switch-line:after {
-        background-color: #ef4323; 
-      }
-      + .switch-line:after {
-        border-color: #ef4323;
-      }
-    }
-    /* oceana */
-    input.cmn-toggle-purple {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #692897; 
-      }
-      &:checked + .switch-line:after {
-        background-color: #692897; 
-      }
-      + .switch-line:after {
-        border-color: #692897;
-      }
-    }
-    /* eez */
-    input.cmn-toggle-blue {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #4666af; 
-      }
-      &:checked + .switch-line:after {
-        background-color: #4666af; 
-      }
-      + .switch-line:after {
-        border-color: #4666af;
-      }
-    }
-    /* bathymetry */
-    input.cmn-toggle-blue2 {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #9daed4; 
-      }
-      &:checked + .switch-line:after {
-        background-color: #9daed4; 
-      }
-      + .switch-line:after {
-        border-color: #9daed4;
-      }
-    }
-    /* mpa */
-    input.cmn-toggle-green {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #4cae4e;
-      }
-      &:checked + .switch-line:after {
-        background-color: #4cae4e; 
-      }
-      + .switch-line:after {
-        border-color: #4cae4e;
-      }
-    }
-    /* world heritage */
-    input.cmn-toggle-green2 {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #0e5c39;
-      }
-      &:checked + .switch-line:after {
-        background-color: #0e5c39; 
-      }
-      + .switch-line:after {
-        border-color: #0e5c39;
-      }
-    }
-    /* vessel tracks */
-    input.cmn-toggle-grey {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #757575;
-      }
-      &:checked + .switch-line:after {
-        background-color: #757575; 
-      }
-      + .switch-line:after {
-        border-color: #757575;
       }
     }
 

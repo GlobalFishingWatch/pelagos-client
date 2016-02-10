@@ -1,5 +1,15 @@
-define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, Shader, Animation) {
-  var DebugAnimation = Class(Animation, {
+define([
+  "require",
+  "app/Class",
+  "app/Visualization/Animation/Shader",
+  "app/Visualization/Animation/DataAnimation"
+], function(
+  require,
+  Class,
+  Shader,
+  DataAnimation
+) {
+  var DebugAnimation = Class(DataAnimation, {
     name: "DebugAnimation",
 
     columns: {
@@ -25,7 +35,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
       return program.gl.POINTS;
     }
   });
-  Animation.animationClasses.DebugAnimation = DebugAnimation;
+  DataAnimation.animationClasses.DebugAnimation = DebugAnimation;
 
   return DebugAnimation;
 });

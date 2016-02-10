@@ -104,6 +104,15 @@ define([
           });
           dialog.addChild(addbutton);
 
+          var librarybutton = new Button({
+            label: "From library",
+            onClick: function(){
+              self.sidePanels.ui.library.displayAnimationLibraryDialog();
+              dialog.onCancel();
+            }
+          });
+          dialog.addChild(librarybutton);
+
           var cancelbutton = new Button({
             label: "Cancel",
             onClick: function(){

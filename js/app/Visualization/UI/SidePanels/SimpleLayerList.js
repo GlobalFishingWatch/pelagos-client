@@ -24,10 +24,13 @@ define([
       self.visualization = self.sidePanels.visualization;
 
       self.ui = new ContentPane({title: 'Layers', content:"" +
+          "<a class='edit-layers' style='font-weight: bold; position: absolute; right: 0.5em; margin-top: -1.5em; z-index: 1000000;'><i class='fa fa-pencil-square-o'></i></a>" +
           "<div id='layers'>" +
-          "  <h2>Layers</h2>" +
           "  <form class='layer-list'></form>" +
           "</div>"});
+      $(self.ui.containerNode).find(".edit-layers").click(function () {
+        self.visualization.ui.simpleAnimationEditor.display();
+      });
       self.sidePanels.sidebarContainer.addChild(self.ui);
       self.node = $(self.ui.containerNode);
 

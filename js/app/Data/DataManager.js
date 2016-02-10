@@ -1,10 +1,38 @@
-define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "app/Data/DataView", "app/Logging", "app/Data/TiledBinFormat", "app/Data/BinFormat", "app/Data/EmptyFormat", "app/Data/TiledEmptyFormat", "app/Data/ClusterTestFormat"], function(Class, Bounds, _, Events, Format, DataView, Logging) {
+define([
+"app/Class",
+  "app/Bounds",
+  "async",
+  "lodash",
+  "app/UrlValues",
+  "app/Data/Ajax",
+  "app/Events",
+  "app/Data/Format",
+  "app/Data/DataView",
+  "app/Logging",
+  "app/Data/TiledBinFormat",
+  "app/Data/BinFormat",
+  "app/Data/EmptyFormat",
+  "app/Data/TiledEmptyFormat",
+  "app/Data/ClusterTestFormat"
+], function(
+  Class,
+  Bounds,
+  async,
+  _,
+  UrlValues,
+  Ajax,
+  Events,
+  Format,
+  DataView,
+  Logging
+) {
   return Class({
     name: "DataManager",
     initialize: function () {
       var self = this;
 
       self.sources = {};
+      self.directories = {};
       self.events = new Events("Data.DataManager");
       self.header = {colsByName: {}};
       self.bounds = undefined;
@@ -161,6 +189,13 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
 
     handleHeader: function (source, header) {
       var self = this;
+      var directory;
+      if (source.getDirectory) {
+        directory = source.getDirectory();
+      }
+      if (directory && !self.directories[directory]) {
+        self.directories[directory] = false;
+      }
       header.source = source;
       self.updateHeader();
     },
@@ -189,6 +224,55 @@ define(["app/Class", "app/Bounds", "lodash", "app/Events", "app/Data/Format", "a
       }
       self.events.triggerEvent(update.update, update);
       self.events.triggerEvent("update", update);
+    },
+
+    listAvailableSources: function (cb) {
+      var self = this;
+
+      var sources = {};
+
+      async.each(Object.keys(self.directories), function (url, cb) {
+        Ajax.get(url, {}, function (err, data) {
+          if (err) {
+            cb(err);
+          } else {
+            for (var name in data) {
+              for (var key in data[name]) {
+                if (key.slice(-4) == '_url') {
+                  data[name][key] = UrlValues.realpath(url, data[name][key]);
+                }
+              }
+            }
+            _.assign(sources, data);
+            cb();
+          }
+        });
+      }, function (err) {
+          if (err) {
+            cb(err);
+          } else {
+            cb(null, sources);
+          }
+      });
+    },
+
+    listAvailableSourceAnimations: function (source, cb) {
+      Ajax.get(source.workspace_url, {}, function (err, data) {
+        if (err) {
+          cb(err);
+        } else {
+          cb(null, data.map.animations.filter(function (animation) {
+            if (animation.is_main != undefined) {
+              return animation.is_main;
+            }
+            try {
+              return animation.args.source.args.url == source.tile_url
+            } catch (err) {
+              return false;
+            }
+          }));
+        }
+      });
     },
 
     printTree: function (args) {
