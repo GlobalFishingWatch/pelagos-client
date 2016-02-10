@@ -80,6 +80,7 @@ function(Class,
 
       self.indrag = false;
       self.inPanZoom = false;
+      self.animationIdCounter = 0;
     },
 
     init: function (cb) {
@@ -524,6 +525,7 @@ function(Class,
     addAnimationInstance: function (animationInstance, cb) {
       var self = this;
 
+      animationInstance.id = self.animationIdCounter++;
       animationInstance.addingToManager = true;
       animationInstance.initGl(function () { 
         animationInstance.initUpdates(function () {
