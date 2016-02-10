@@ -4,14 +4,16 @@ define([
   "jQuery",
   "app/ObjectTemplate",
   "app/Visualization/UI/SidePanels/InfoUI",
-  "app/Visualization/UI/SidePanels/SimpleLayerList"
+  "app/Visualization/UI/SidePanels/SimpleLayerList",
+  "app/Visualization/UI/SidePanels/Filters"
 ], function(
   Class ,
   AccordionContainer,
   $,
   ObjectTemplate,
   InfoUI,
-  SimpleLayerList
+  SimpleLayerList,
+  Filters
 ) {
   return Class({
     name: "BasicSidebar",
@@ -49,8 +51,18 @@ define([
       self.node.find(".blades").prepend(self.sidebarContainer.domNode);
       self.sidebarContainer.startup();
 
+      // FIXME: Hack. Eventually, the sidebar will be a real widget,
+      // and this duplication will not be necessary
+      self.sidebarContainer.ui = ui;
+      self.sidebarContainer.visualization = self.ui.visualization;
+      self.sidebarContainer.animationManager = self.visualization.animations;
+
+
       self.info = new InfoUI(self);
       self.layers = new SimpleLayerList(self);
+
+      self.filters = new Filters();
+      self.sidebarContainer.addChild(self.filters);
 
       self.node.find("#activate_help").click(function () {
         self.visualization.ui.help.displayHelpDialog();
