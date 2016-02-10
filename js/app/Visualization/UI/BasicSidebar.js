@@ -3,24 +3,25 @@ define([
   "dijit/layout/AccordionContainer",
   "jQuery",
   "app/ObjectTemplate",
-  "app/Visualization/UI/SidePanels/SimpleInfoUI",
+  "app/Visualization/UI/SidePanels/InfoUI",
   "app/Visualization/UI/SidePanels/SimpleLayerList"
 ], function(
   Class ,
   AccordionContainer,
   $,
   ObjectTemplate,
-  SimpleInfoUI,
+  InfoUI,
   SimpleLayerList
 ) {
   return Class({
     name: "BasicSidebar",
 
-    initialize: function (visualization) {
+    initialize: function (ui) {
       var self = this;
 
-      self.visualization = visualization;
-      self.animationManager = visualization.animations;
+      self.ui = ui;
+      self.visualization = self.ui.visualization;
+      self.animationManager = self.visualization.animations;
 
       self.node = $(new ObjectTemplate('' +        
         '<div id="w" class="expanded">' +
@@ -48,7 +49,7 @@ define([
       self.node.find(".blades").prepend(self.sidebarContainer.domNode);
       self.sidebarContainer.startup();
 
-      self.info = new SimpleInfoUI(self);
+      self.info = new InfoUI(self);
       self.layers = new SimpleLayerList(self);
 
       self.node.find("#activate_help").click(function () {

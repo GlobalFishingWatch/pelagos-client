@@ -12,11 +12,14 @@ define([
       var self = this;
 
       self.ui = ui;
+      self.visualization = self.ui.visualization;
+      self.animationManager = self.visualization.animations;
 
       self.sidebarContainer = new AccordionContainer({region: 'right', splitter:true});
       if (self.ui.visualization.state.getValue('edit')) {
         self.ui.container.addChild(self.sidebarContainer);
-      }    
+      }
+      self.sidebarContainer.startup();
       self.ui.visualization.state.events.on({'edit': function (data) {
         if (data.new_value) {
           self.ui.container.addChild(self.sidebarContainer);
