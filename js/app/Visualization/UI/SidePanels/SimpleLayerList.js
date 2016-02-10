@@ -2,6 +2,7 @@ define([
   "app/Class",
   "app/Logging",
   "jQuery",
+  "app/CountryCodes",
   "dijit/layout/ContentPane",
   "dijit/form/HorizontalSlider",
   "dojo/dom",
@@ -11,6 +12,7 @@ define([
   Class,
   Logging,
   $,
+  CountryCodes,
   ContentPane,
   HorizontalSlider
 ){
