@@ -16,6 +16,7 @@ define([
   FilterEditor
 ){
   var Filters = declare("Filters", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+    baseClass: 'Filters',
     templateString: '<div class="${baseClass}">' +
                     '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
                     '</div>',
@@ -56,6 +57,7 @@ define([
   });
 
   Filters.AnimationFilters = declare("AnimationFilters", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+    baseClass: 'Filters-AnimationFilters',
     templateString: '<div class="${baseClass}">' +
                     '  <h2 data-dojo-attach-point="titleNode">${animation.title}</h2>' +
                     '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode" style="width: 100%;"></table>' +
@@ -87,10 +89,11 @@ define([
   };
 
   Filters.Filter = declare("Filter", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
+    baseClass: 'Filters-Filter',
     templateString: '<tr>' +
-                    '  <th>${sourcename}</th>' +
-                    '  <td data-dojo-attach-point="selectionNode"></td>' +
-                    '  <td><i class="fa fa-cog" data-dojo-attach-event="click:edit"></i></td>' +
+                    '  <th class="${baseClass}-sourcename">${sourcename}</th>' +
+                    '  <td class="${baseClass}-selection" data-dojo-attach-point="selectionNode"></td>' +
+                    '  <td class="${baseClass}-actions"><i class="fa fa-cog" data-dojo-attach-event="click:edit"></i></td>' +
                     '</tr>',
     animation: null,
     sourcename: null,
