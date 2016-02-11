@@ -4,14 +4,16 @@ define([
   "dijit/_WidgetBase",
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
-  "dijit/_Container"
+  "dijit/_Container",
+  "app/Visualization/UI/FilterEditor"
 ], function(
   declare,
   domStyle,
   _WidgetBase,
   _TemplatedMixin,
   _WidgetsInTemplateMixin,
-  _Container
+  _Container,
+  FilterEditor
 ){
   var Filters = declare("Filters", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
     templateString: '<div class="${baseClass}">' +
@@ -64,17 +66,10 @@ define([
     startup: function () {
       var self = this;
       self.inherited(arguments);
-
-      var selection = self.animation.data_view.selections.selections.active_category;
-      var name = "active_category";
-
       Filters.filteredSourceCols(self.animation).map(function (sourcename) {
-        var source = self.animation.data_view.source.header.colsByName[sourcename];
-
         self.addChild(new Filters.Filter({
           animation: self.animation,
           sourcename: sourcename,
-          source: source
         }));
       });
     }
@@ -95,14 +90,17 @@ define([
     templateString: '<tr>' +
                     '  <th>${sourcename}</th>' +
                     '  <td data-dojo-attach-point="selectionNode"></td>' +
-                    '  <td><i class="fa fa-cog" data-dojo-attach-point="selectionNode"></i></td>' +
+                    '  <td><i class="fa fa-cog" data-dojo-attach-event="click:edit"></i></td>' +
                     '</tr>',
     animation: null,
     sourcename: null,
-    source: null,
     startup: function () {
       var self = this;
       self.inherited(arguments);
+    },
+    edit: function () {
+      var self = this;
+      new FilterEditor({animation: self.animation, sourcename: self.sourcename}).show();
     }
   });
 
