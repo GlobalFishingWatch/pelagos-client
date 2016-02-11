@@ -100,6 +100,30 @@ define([
     startup: function () {
       var self = this;
       self.inherited(arguments);
+      var selection = self.animation.data_view.selections.selections.active_category;
+      selection.events.on({update: self.rangeUpdated.bind(self)});
+      self.rangeUpdated();
+    },
+    rangeUpdated: function () {
+      var self = this;
+      var selection = self.animation.data_view.selections.selections.active_category;
+      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
+      var range = selection.data[self.sourcename];
+
+      var title = 'All';
+      if (range.length != 2 || range[0] != Number.NEGATIVE_INFINITY || range[1] != Number.POSITIVE_INFINITY) {
+        var choicesById = {};
+        for (var name in source.choices) {
+          choicesById[source.choices[name]] = name;
+        }
+
+        var names = [];
+        for (var i = 0; i < range.length; i+=2) {
+          names.push(choicesById[range[i]]);
+        }
+        title = names.join(", ");
+      }
+      self.selectionNode.innerHTML = title;
     },
     edit: function () {
       var self = this;
