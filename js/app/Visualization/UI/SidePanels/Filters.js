@@ -4,14 +4,16 @@ define([
   "dijit/_WidgetBase",
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
+  "dijit/_Container"
 ], function(
   declare,
   domStyle,
   _WidgetBase,
   _TemplatedMixin,
-  _WidgetsInTemplateMixin
+  _WidgetsInTemplateMixin,
+  _Container
 ){
-  var Filters = declare("Filters", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
+  var Filters = declare("Filters", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
     templateString: '<div class="${baseClass}">' +
                     '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
                     '</div>',
@@ -51,10 +53,10 @@ define([
     }
   });
 
-  Filters.AnimationFilters = declare("AnimationFilters", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
+  Filters.AnimationFilters = declare("AnimationFilters", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
     templateString: '<div class="${baseClass}">' +
                     '  <h2 data-dojo-attach-point="titleNode">${animation.title}</h2>' +
-                    '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode"></table>' +
+                    '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode" style="width: 100%;"></table>' +
                     '</div>',
 
     animation: null,
