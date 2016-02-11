@@ -5,7 +5,8 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
-  "app/Visualization/UI/FilterEditor"
+  "app/Visualization/UI/FilterEditor",
+  "app/Visualization/UI/FilterEditorFlags"
 ], function(
   declare,
   domStyle,
@@ -13,7 +14,8 @@ define([
   _TemplatedMixin,
   _WidgetsInTemplateMixin,
   _Container,
-  FilterEditor
+  FilterEditor,
+  FilterEditorFlags
 ){
   var Filters = declare("Filters", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
     baseClass: 'Filters',
@@ -127,7 +129,13 @@ define([
     },
     edit: function () {
       var self = this;
-      new FilterEditor({animation: self.animation, sourcename: self.sourcename}).show();
+      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
+
+      var cls = FilterEditor;
+      if (source.choices_type == 'ISO 3166-1 alpha-2') {
+        cls = FilterEditorFlags;
+      }
+      new cls({animation: self.animation, sourcename: self.sourcename}).show();
     }
   });
 

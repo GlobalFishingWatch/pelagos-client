@@ -789,12 +789,15 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   }
 }
 
-.imageselector {
-  .choices {
-    line-height: 0;
-    .choice {
+.FlagSelector {
+  .FlagSelector-choices {
+    line-height: 15px;
+    overflow: auto;
+    width:200px;
+    max-height: 200px;
+    .FlagSelector-choice {
       border: 2px solid white;
-      &.selected, &:hover {
+      &.FlagSelector-selected, &:hover {
         border: 2px solid blue;
       }
     }
