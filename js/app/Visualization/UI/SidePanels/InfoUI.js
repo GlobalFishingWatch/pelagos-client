@@ -1,98 +1,120 @@
 define([
-  "app/Class",
-  "app/Logging",
-  "jQuery",
+  "dojo/_base/declare",
+  "dojo/dom-style",
+  "dijit/_WidgetBase",
+  "dijit/_TemplatedMixin",
+  "dijit/_WidgetsInTemplateMixin",
+  "dijit/_Container",
+  "dijit/layout/_ContentPaneResizeMixin",
   "app/CountryCodes",
-  "dijit/layout/ContentPane",
-  "dojo/dom",
-  "dojo/parser",
-  "dojo/domReady!"
+  "jQuery"
 ], function(
-  Class,
-  Logging,
-  $,
+  declare,
+  domStyle,
+  _WidgetBase,
+  _TemplatedMixin,
+  _WidgetsInTemplateMixin,
+  _Container,
+  _ContentPaneResizeMixin,
   CountryCodes,
-  ContentPane
+  $
 ){
-  return Class({
-    name: "SimpleInfoUI",
-    initialize: function (sidePanels) {
+  return declare("InfoUI", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container, _ContentPaneResizeMixin], {
+    baseClass: 'InfoUI',
+    title: 'Info',
+    app: app,
+    templateString: '<div class="${baseClass}">' +
+                    '  <div class="action_icons">'+
+                    '    <a id="activate_search" class="activate_search" href="javascript:undefined" data-dojo-attach-event="click:activateSearch"><i class="fa fa-search"></i></a>' +
+                    '    <a class="download_kml" target="_new" href="javascript:undefined" style="display: none;" data-dojo-attach-point="downloadNode"><i class="fa fa-download" title="Download as KML"></i></a>' +
+                    '  </div>' +
+                    '  <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
+                    '  <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
+                         '<img style="width: 20px;" src="${app.dirs.img}/loader/spinner.min.svg">'+
+                      '</div>' +
+                    '  <div id="vessel_identifiers ${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
+                    '</div>',
+    startup: function () {
       var self = this;
-
-      self.sidePanels = sidePanels;
-      self.visualization = self.sidePanels.visualization;
-
-      self.ui = new ContentPane({title: 'Info', content: "<div id='vessel_identifiers'></div>"});
-      self.sidePanels.sidebarContainer.addChild(self.ui);
-      self.node = $(self.ui.containerNode);
+      self.inherited(arguments);
+      self.visualization = self.getParent().visualization;
 
       self.visualization.animations.events.on({
         'info-loading': self.updateLoading.bind(self),
         'info': self.update.bind(self, "none"),
         'info-error': self.update.bind(self, "#ff0000")
       });
-      self.update("none", {});
+      self.clear();
+    },
+
+    activateSearch: function () {
+      var self = this;
+      self.visualization.ui.search.displaySearchDialog();
+    },
+
+    setDefaultTitle: function () {
+      var self = this;
+      $(self.titleNode).html("Vessel Information");
+    },
+
+    clear: function () {
+      var self = this;
+
+      self.setDefaultTitle();
+      $(self.containerNode).html(
+        '<table class="vessel_id">' +
+        '  <tbody>' +
+        '    <tr>' +
+        '      <th>Name</th>' +
+        '      <td class="vesselname">---</td>' +
+        '    </tr>' +
+        '    <tr>' +
+        '      <th>Class</th>' +
+        '      <td class="vesselclass">---</td>' +
+        '    </tr>' +
+        '    <tr>' +
+        '      <th>Flag</th>' +
+        '      <td class="flag">---</td>' +
+        '    </tr>' +
+        '    <tr>' +
+        '      <th>IMO</th>' +
+        '      <td class="imo">---<td>' +
+        '    </tr>' +
+        '    <tr>' +
+        '      <th>MMSI</th>' +
+        '      <td class="mmsi">---</td>' +
+        '    </tr>' +
+        '    <tr>' +
+        '      <th>Callsign</th>' +
+        '      <td class="callsign">---</td>' +
+        '    </tr>' +
+        '  </tbody>' +
+        '</table>'
+      );
+      $(self.loadingNode).hide();
+      $(self.containerNode).show();
     },
 
     updateLoading: function () {
       var self = this;
-      self.node.find("#vessel_identifiers").html(
-        '      <h2>Vessel Information</h2>' +
-        '      <div class="loading-vessel-info" style=""><img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg"></div>'
-      );
+
+      self.setDefaultTitle();
+      $(self.containerNode).hide();
+      $(self.loadingNode).show();
     },
 
     update: function (color, event) {
       var self = this;
 
-      var vesselIdNode = self.node.find("#vessel_identifiers");
+      var vesselIdNode = $(self.containerNode);
+      $(self.downloadNode).hide();
 
       var data = event.data;
       if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
-        vesselIdNode.html(
-          '      <div class="action_icons">'+
-          '        <a id="activate_search" class="activate_search" href="javascript:undefined"><i class="fa fa-search"></i></a>' +
-          '      </div>' +
-          '      <h2>Vessel Information</h2>' +
-          '      <table class="vessel_id">' +
-          '        <tbody>' +
-          '          <tr>' +
-          '            <th>Name</th>' +
-          '            <td class="vesselname">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>Class</th>' +
-          '            <td class="vesselclass">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>Flag</th>' +
-          '            <td class="flag">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>IMO</th>' +
-          '            <td class="imo">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>MMSI</th>' +
-          '            <td class="mmsi">---</td>' +
-          '          </tr>' +
-          '          <tr>' +
-          '            <th>Callsign</th>' +
-          '            <td class="callsign">---</td>' +
-          '          </tr>' +
-          '        </tbody>' +
-          '      </table>'
-        );
-
-        self.node.find("#activate_search").click(function () {
-          self.visualization.ui.search.displaySearchDialog();
-        });
-        
-        var tableNode =  self.node.find(".vessel_id");
-
+        self.clear();
         if (data) {
+          var tableNode =  vesselIdNode.find(".vessel_id");
           tableNode.find(".callsign").html(data.callsign || "---");
-
 
           var flag;
           if (data.flagstate)
@@ -166,37 +188,37 @@ define([
 
           tableNode.find(".vesselname").html(data.vesselname || "---");
 
-/*
-          if (data.link) {
-            var link = $("<a target='_new'>");
-            link.attr({href: data.link});
-            self.node.find("#vessel_identifiers h2").wrapInner(link);
-          }
-*/
-
           if (event.layerInstance.data_view.source.header.kml) {
-            var link = $('<a class="download_kml" target="_new"><i class="fa fa-download" title="Download as KML"></i></a>');
             var query = event.layerInstance.data_view.source.getSelectionQuery(
               event.layerInstance.data_view.selections.selections[event.category]);
 
-            link.attr({
+            $(self.downloadNode).attr({
                 href: (event.layerInstance.data_view.source.getUrl('export', query, -1) +
                      "/sub/" +
                      query +
                      "/export")
             });
-            self.node.find(".action_icons").append(link);
+            $(self.downloadNode).show();
           }
         }
       } else {
-        vesselIdNode.html('<h2>' + event.layer + '</h2>');
-        vesselIdNode.append(data.toString());
+        $(self.titleNode).html(event.layer);
+        vesselIdNode.html(data.toString());
       }
 
       vesselIdNode.css({color: color});
 
-      self.sidePanels.sidebarContainer.resize();
-      self.sidePanels.sidebarContainer.selectChild(self.ui, true);
+      $(self.loadingNode).hide();
+      $(self.containerNode).show();
+
+      var ancestor = self;
+      while (ancestor = ancestor.getParent()) {
+        if (ancestor.selectChild) {
+          ancestor.resize();
+          ancestor.selectChild(self, true);
+          break;
+        }
+      }
     }
   });
 });

@@ -28,7 +28,10 @@ define([
         }
       }});
 
-      self.info = new InfoUI(self);
+      self.sidebarContainer.visualization = self.visualization;
+
+      self.info = new InfoUI();
+      self.sidebarContainer.addChild(self.info);
       self.animations = new AnimationManagerUI(self);
       self.logging = new LoggingUI(self);
       self.data = new DataUI(self);
