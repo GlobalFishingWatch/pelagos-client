@@ -6,6 +6,7 @@ define([
   "app/SpaceTime",
   "app/ObjectTemplate",
   "async",
+  "lodash",
   "app/Logging",
   "app/Visualization/KeyModifiers",
   "app/Visualization/KeyBindings",
@@ -35,6 +36,7 @@ function(Class,
   SpaceTime,
   ObjectTemplate,
   async,
+  _,
   Logging,
   KeyModifiers,
   KeyBindings,
@@ -243,15 +245,17 @@ function(Class,
       onAdd();
     },
 
-    search: function(query, cb) {
+    search: function(query, offset, limit, cb) {
       var self = this;
 
       Logging.main.log(
         "Visualization.Animation.AnimationManager.search",
         {
           query: query,
+          offset: offset,
+          limit: limit,
           toString: function () {
-            return this.query;
+            return this.query + " [" + this.offset.toString() + " / " + this.limit.toString() + "]";;
           }
         }
       );
@@ -264,9 +268,21 @@ function(Class,
         }
       }
 
-      async.concat(searchers, function (searcher, cb) {
-        searcher(query, cb);
-      }, cb);
+      var res = {total: 0, entries: []};
+      async.each(searchers, function (searcher, cb) {
+        searcher(query, offset, limit, function (err, item) {
+          if (err) return cb(err);
+          if (item) {
+            var tmp =_.extend({}, res, item);
+            tmp.total = res.total + item.total;
+            tmp.entries = res.entries.concat(item.entries);
+            res = tmp;
+          }
+          cb(null);
+        });
+      }, function (err) {
+        cb(err, err ? null : res);
+      });
     },
 
     /* Uses the selectionGl canvases to get a source animation, tile
@@ -324,11 +340,11 @@ function(Class,
 
       if (rowidx) {
         var animation = self.animations[rowidx[0]];
-        if (animation.data_view) {
+        if (animation && animation.data_view) {
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
         }
 
-        if (animation.select([rowidx[1], rowidx[2]], type, true, e)) {
+        if (animation && animation.select([rowidx[1], rowidx[2]], type, true, e)) {
           return animation;
         }
       } else {
@@ -566,12 +582,12 @@ function(Class,
 
         if (err) {
           category = 'info-error';
-          event.error = err;
-          event.toString = function () { return this.error.toString(); };
+          event.data = err;
+          event.toString = function () { return this.data.toString(); };
         } else if (data && data.error) {
           category = 'info-error';
-          event.data = data;
-          event.toString = function () { return this.data.error; };
+          event.data = data.error;
+          event.toString = function () { return this.data.toString(); };
         } else if (data) {
           category = 'info';
           event.data = data;
@@ -652,7 +668,7 @@ function(Class,
 
           if (err) {
             self.handleSelectionInfo(animation, selectionEvent, err, null);
-          } else {
+          } else if (data) {
             data.toString = function () {
               var content = ["<table class='table table-striped table-bordered'>"];
               if (data.name) {
@@ -677,6 +693,10 @@ function(Class,
               return content.join('\n');
             };
             self.handleSelectionInfo(animation, selectionEvent, null, data);
+          } else {
+            // We got an error call before, but now something has
+            // changed and we're retrying the load...
+            self.events.triggerEvent('info-loading', {});
           }
         });
 

@@ -1,36 +1,27 @@
 sudo: false
 language: python
-
 python:
-  - "2.7"
-
+- '2.7'
 env:
-  - TESTEM_PATH="node_modules/testem/" TESTEM_SUFFIX=".js"
-
+- TESTEM_PATH="node_modules/testem/" TESTEM_SUFFIX=".js"
 addons:
   apt:
     packages:
-      - libglapi-mesa
-      - libosmesa6
-      - mesa-utils
+    - libglapi-mesa
+    - libosmesa6
+    - mesa-utils
 cache:
   directories:
-    - $HOME/.cache/pip
-    - node_modules
-
+  - "$HOME/.cache/pip"
+  - node_modules
 before_install:
   - pip install --upgrade pip
   - npm install testem
-
 before_script:
   - make all
-  - scripts/travis-checkout-data.sh
   - LIBGL_DEBUG=verbose xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l glxinfo
-
 script:
   - make unit-tests
   - make integration-tests
-
-after_script:
-  - cp *.png travis-data || true
-  - scripts/travis-upload-data.sh
+after_failure:
+  - scripts/travis-screenshots

@@ -28,6 +28,7 @@ define(["app/Class", "app/Events"], function(Class, Events) {
     remove: function (key) {
       var self = this;
       var value = self.data[key];
+      if (value === undefined) return;
       delete self.data[key];
       if (value && value.request) {
         var response = undefined;

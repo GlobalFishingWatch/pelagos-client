@@ -54,21 +54,16 @@ define([
       self.sidebar = new AccordionContainer({splitter:true});
       $(self.sidebar.domNode).addClass("basic-sidebar");
       self.node.find(".blades").prepend(self.sidebar.domNode);
-      self.sidebar.startup();
 
-      self.info = new ContentPane({title: 'Info', content: "<div id='vessel_identifiers'></div>", doLayout: false});
+      self.info = new ContentPane({title: 'Info', content: "<div id='vessel_identifiers'></div>"});
       self.sidebar.addChild(self.info);
-      self.sidebar.layout();
 
       self.layers = new ContentPane({title: 'Layers', content:"" +
           "<div id='layers'>" +
           "  <h2>Layers</h2>" +
-          "  <form class='layer-list'></form" +
-          "</div>", doLayout: false});
+          "  <form class='layer-list'></form>" +
+          "</div>"});
       self.sidebar.addChild(self.layers);
-      self.sidebar.layout();
-
-      self.update("none", {});
 
       self.node.find("#activate_help").click(function () {
         self.visualization.ui.help.displayHelpDialog();
@@ -102,6 +97,8 @@ define([
         self.node.toggle(!data.new_value);
       }});
 
+      self.sidebar.startup();
+      self.update("none", {});
       self.sidebar.selectChild(self.layers, false);
     },
 
@@ -116,9 +113,11 @@ define([
     update: function (color, event) {
       var self = this;
 
+      var vesselIdNode = self.node.find("#vessel_identifiers");
+
       var data = event.data;
       if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
-        self.node.find("#vessel_identifiers").html(
+        vesselIdNode.html(
           '      <div class="action_icons">'+
           '        <a id="activate_search" class="activate_search" href="javascript:undefined"><i class="fa fa-search"></i></a>' +
           '      </div>' +
@@ -157,8 +156,10 @@ define([
           self.visualization.ui.search.displaySearchDialog();
         });
         
+        var tableNode =  self.node.find(".vessel_id");
+
         if (data) {
-          self.node.find(".vessel_id .callsign").html(data.callsign || "---");
+          tableNode.find(".callsign").html(data.callsign || "---");
 
 
           var flag;
@@ -169,17 +170,17 @@ define([
 
           if (flag) {
             if (CountryCodes.codeToName[flag] != undefined) {
-              self.node.find(".vessel_id .flag").html(CountryCodes.codeToName[flag]);
-              self.node.find(".vessel_id .flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + flag.toLowerCase() + '.png"><br>');
+              tableNode.find(".flag").html(CountryCodes.codeToName[flag]);
+              tableNode.find(".flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + flag.toLowerCase() + '.png"><br>');
             } else {
-              self.node.find(".vessel_id .flag").html(flag);
+              tableNode.find(".flag").html(flag);
             }
           } else {
-            self.node.find(".vessel_id .flag").html("---");
+            tableNode.find(".flag").html("---");
           }
 
           var setMultiLinkField = function (field, url_prefix) {
-            var node = self.node.find(".vessel_id ." + field);
+            var node = tableNode.find("." + field);
             if (data[field]) {
               node.html("");
               var first = true;
@@ -222,16 +223,16 @@ define([
           if (data.vesselclass) {
             var cls = getClass(data.vesselclass);
             if (cls) {
-              self.node.find(".vessel_id .vesselclass").html(cls.name);
-              self.node.find(".vessel_id .vesselclass").prepend('<img src="' + app.dirs.img + cls.icon + '"><br>');
+              tableNode.find(".vesselclass").html(cls.name);
+              tableNode.find(".vesselclass").prepend('<img src="' + app.dirs.img + cls.icon + '"><br>');
             } else {
-              self.node.find(".vessel_id .vesselclass").html(data.vesselclass);
+              tableNode.find(".vesselclass").html(data.vesselclass);
             }
           } else {
-            self.node.find(".vessel_id .vesselclass").html("---");
+            tableNode.find(".vesselclass").html("---");
           }
 
-          self.node.find(".vessel_id .vesselname").html(data.vesselname || "---");
+          tableNode.find(".vesselname").html(data.vesselname || "---");
 
 /*
           if (data.link) {
@@ -256,13 +257,11 @@ define([
           }
         }
       } else {
-        self.node.find("#vessel_identifiers").html(
-          '<h2>' + event.layer + '</h2>' +
-          data.toString());
-        self.node.find("#vessel_identifiers table").attr({"class": "vessel_id"});
+        vesselIdNode.html('<h2>' + event.layer + '</h2>');
+        vesselIdNode.append(data.toString());
       }
 
-      self.node.find("#vessel_identifiers").css({color: color});
+      vesselIdNode.css({color: color});
 
       self.sidebar.resize();
 

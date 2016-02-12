@@ -2,6 +2,7 @@ define([
   "require",
   "app/Class",
   "app/LoadingInfo",
+  "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation",
   "cartodb"
@@ -9,6 +10,7 @@ define([
   require,
   Class,
   LoadingInfo,
+  CartoDBInfoWindow,
   ObjectToTable,
   Animation,
   cartodb
@@ -79,38 +81,29 @@ define([
      * system. But all of this layer is a bit of a hack :) */
     handleClick: function (type, event, latlng, pos, data, layerIndex) {
       var self = this;
- 
-      var url = "CartoDB://" + self.source.args.url + "?" + JSON.stringify(data);
 
       if (type == 'selected') {
         self.manager.events.triggerEvent('info-loading', {});
       }
+
+      var url = "CartoDB://" + self.source.args.url + "?" + JSON.stringify(data);
+
       LoadingInfo.main.add(url, true);
 
-      self.sql.execute(
-        (  self.layer.getSubLayer(layerIndex).getSQL()
-         + ' where '
-         + Object.keys(data).map(function (key) {
-             return key + ' = {{' + key + '}}';
-           }).join(' and ')),
-        data
-      ).done(function(data) {
+      new CartoDBInfoWindow(data.cartodb_id, self.layer).fetch(function(html) {
         LoadingInfo.main.remove(url);
-        if (data.error) {
-          self.manager.handleInfo(self, type, data.error, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
-        } else {
-          data = data.rows[0];
-          delete data.the_geom;
-          delete data.the_geom_webmercator;
-          data.toString = function () {
-            return ObjectToTable(this);
-          };
-          self.selected = true;
-          self.manager.handleInfo(self, type, undefined, data, {latitude: latlng[0], longitude: latlng[1]});
-        }
-      }).error(function(errors) {
-        LoadingInfo.main.remove(url);
-        self.manager.handleInfo(self, type, errors, undefined, {latitude: latlng.lat(), longitude: latlng.lng()});
+
+        var data = {
+          html: html,
+          toString: function () { return this.html; }
+        };
+
+        var selectionData = {
+          latitude: latlng[0],
+          longitude: latlng[1]
+        };
+
+        self.manager.handleInfo(self, type, undefined, data, selectionData);
       });
     },
 
