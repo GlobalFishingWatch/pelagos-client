@@ -88,8 +88,8 @@ define([
         'add': self.addHandler.bind(self),
         'remove': self.removeHandler.bind(self),
         'info-loading': self.updateLoading.bind(self),
-        'info': self.update.bind(self, "none"),
-        'info-error': self.update.bind(self, "#ff0000")
+        'info': self.update.bind(self, self.colors.info),
+        'info-error': self.update.bind(self, self.colors.error)
       });
 
       self.node.toggle(!self.visualization.state.getValue('edit'));
@@ -98,7 +98,7 @@ define([
       }});
 
       self.sidebar.startup();
-      self.update("none", {});
+      self.update(self.colors.info, {});
       self.sidebar.selectChild(self.layers, false);
     },
 
@@ -110,12 +110,21 @@ define([
       );
     },
 
+    colors: {
+      info: 'none',
+      'error': "#ff0000"
+    },
+
     update: function (color, event) {
       var self = this;
 
       var vesselIdNode = self.node.find("#vessel_identifiers");
 
       var data = event.data;
+      if (data && data.level && self.colors[data.level]) {
+        color = self.colors[data.level];
+      }
+
       if (!data || Object.keys(data).filter(function (name) { return name != 'toString'; }).length == 0 || data.vesselname || data.mmsi || data.imo || data.callsign) {
         vesselIdNode.html(
           '      <div class="action_icons">'+
