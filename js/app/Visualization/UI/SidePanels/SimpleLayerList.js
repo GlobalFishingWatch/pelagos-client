@@ -1,134 +1,137 @@
 define([
-  "app/Class",
-  "app/Logging",
-  "jQuery",
-  "app/CountryCodes",
-  "dijit/layout/ContentPane",
+  "dojo/_base/declare",
+  "dojo/dom-style",
+  "dijit/_WidgetBase",
+  "dijit/_TemplatedMixin",
+  "dijit/_WidgetsInTemplateMixin",
+  "dijit/_Container",
+  "app/Visualization/UI/SidePanels/AnimationListBase",
   "dijit/form/HorizontalSlider",
-  "dojo/dom",
-  "dojo/parser",
-  "dojo/domReady!"
+  "jQuery"
 ], function(
-  Class,
-  Logging,
-  $,
-  CountryCodes,
-  ContentPane,
-  HorizontalSlider
+  declare,
+  domStyle,
+  _WidgetBase,
+  _TemplatedMixin,
+  _WidgetsInTemplateMixin,
+  _Container,
+  AnimationListBase,
+  HorizontalSlider,
+  $
 ){
-  return Class({
-    name: "SimpleLayerList",
-    initialize: function (sidePanels) {
+  var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
+    baseClass: 'SimpleLayerList',
+    title: 'Layers',
+    templateString: '' +
+        '<div class="${baseClass}">' +
+        '  <a class="edit-layers" style="font-weight: bold; position: absolute; right: 0.5em; margin-top: -2em; z-index: 1000000;" data-dojo-attach-event="click:edit">' +
+            '<i class="fa fa-pencil-square-o"></i>' +
+        '  </a>' +
+        '  <div id="layers">' +
+        '    <form class="layer-list" data-dojo-attach-point="containerNode"></form>' +
+        '  </div>' +
+          '</div>',
+    edit: function () {
       var self = this;
+      self.visualization.ui.simpleAnimationEditor.display();
+    }
+  });
 
-      self.sidePanels = sidePanels;
-      self.sidebarContainer = self.sidePanels.sidebarContainer;
-      self.visualization = self.sidePanels.visualization;
+  SimpleLayerList.AnimationWidget = declare("AnimationWidget", [AnimationListBase.AnimationWidget], {
+    baseClass: 'Filters-AnimationWidget',
 
-      self.ui = new ContentPane({title: 'Layers', content:"" +
-          "<a class='edit-layers' style='font-weight: bold; position: absolute; right: 0.5em; margin-top: -1.5em; z-index: 1000000;'><i class='fa fa-pencil-square-o'></i></a>" +
-          "<div id='layers'>" +
-          "  <form class='layer-list'></form>" +
-          "</div>"});
-      $(self.ui.containerNode).find(".edit-layers").click(function () {
-        self.visualization.ui.simpleAnimationEditor.display();
-      });
-      self.sidePanels.sidebarContainer.addChild(self.ui);
-      self.node = $(self.ui.containerNode);
+    idCounter: 0,
 
-      self.visualization.animations.events.on({
-        'add': self.addHandler.bind(self),
-        'remove': self.removeHandler.bind(self)
-      });
+    templateString: '' +
+      '<div class="layer-row">' +
+      '  <label class="switch">' +
+      '    <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggle">' +
+      '    <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
+      '  </label>' +
+      '  <div class="layer-label">' +
+          '<span data-dojo-attach-point="labelNode"></span>' +
+          '<div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
+            '<div class="intensity-label">Intensity:</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>',
 
-      self.idCounter = 0;
-
-      self.sidebarContainer.selectChild(self.ui, false);
+    toggle: function () {
+      var self = this;
+      self.animation.setVisible(self.inputNode.checked);
+      if (self.animation.constructor.prototype.name == "ClusterAnimation") {
+        $(self.intensityNode).toggle(self.inputNode.checked);
+      }
     },
 
-    addHandler: function (event) {
+    startup: function () {
       var self = this;
-      var animation = event.animation
+      self.inherited(arguments);
+      self.idCounter = self.constructor.prototype.idCounter++;
 
-      var node = $('' +
-        '<div class="layer-row">' +
-        '  <label class="switch">' +
-        '    <input class="cmn-toggle" type="checkbox">' +
-        '    <div class="switch-line"></div>' +
-        '  </label>' +
-        '  <div class="layer-label"></div>' +
-        '</div>');
-
-      node.find(".cmn-toggle").attr({id:"cmn-toggle-" + self.idCounter});
-      node.find("label").attr({"for":"cmn-toggle-" + self.idCounter});
-      self.idCounter++;
-
-      node.find("input").change(function (event) {
-        animation.setVisible(event.target.checked);
-      });
-
-      animation.basicSidebarNode = node;
-      self.node.find(".layer-list").append(node);
-
-      if (animation.constructor.prototype.name == "ClusterAnimation") {
+      if (self.animation.constructor.prototype.name == "ClusterAnimation") {
         var val2slider = function(val) { return Math.log(1 + val)/Math.log(4); };
         var slider2val = function(val) { return Math.pow(4, val) - 1; };
 
-        var maxv = val2slider(animation.data_view.header.colsByName.weight.max);
-        var minv = val2slider(animation.data_view.header.colsByName.weight.min);
-        var curv = val2slider(animation.data_view.header.colsByName.weight.source.weight);
+        var maxv = val2slider(self.animation.data_view.header.colsByName.weight.max);
+        var minv = val2slider(self.animation.data_view.header.colsByName.weight.min);
+        var curv = val2slider(self.animation.data_view.header.colsByName.weight.source.weight);
 
-        var update = undefined;
-        var refreshSwatch = function () {
-          if (update != undefined) return;
-          update = setTimeout(function () {
-            var value = slider.value;
-
-            animation.data_view.header.colsByName.weight.source.weight = slider2val(value);
-            animation.data_view.changeCol(animation.data_view.header.colsByName.weight);
-            update = undefined;
-          }, 100);
-        }
-
-        var slider = new HorizontalSlider({
+        self.intensitySlider = new HorizontalSlider({
           value:curv,
           minimum: minv,
           maximum: maxv,
           discreteValues: 100,
-          onChange: refreshSwatch,
+          onChange: self.intensityChange.bind(self),
           intermediateChanges: true
         }, "mySlider");
+        self.intensitySlider.placeAt(self.intensityNode);
+        self.intensitySlider.startup();
 
-        var intensityNode = $('<div class="intensity-slider-box"><div class="intensity-label">Intensity:</div></div>')
-        node.find(".layer-label").append(intensityNode);
-        slider.placeAt(intensityNode[0]);
-        slider.startup();
-
-        node.find("input").change(function (event) {
-          intensityNode.toggle(event.target.checked);
-        });
-      }
-
-      animation.events.on({updated: self.updatedHandler.bind(self, animation, node)});
-      self.updatedHandler(animation, node);
-    },
-
-    updatedHandler: function (animation, node, e) {
-      if (!animation.title) animation.title = animation.toString();
-      node.find(".layer-label").html(animation.title);
-
-      if (!animation.color) animation.color = 'orange';
-      node.find(".switch-line").css({'border-color': animation.color});
-
-      if (animation.visible) {
-        node.find("input").attr('checked','checked');
+        if (!self.animation.visible) {
+          $(self.intensityNode).hide();
+        }
       } else {
-        node.find("input").removeAttr('checked');
+        $(self.intensityNode).hide();
       }
+
+      self.animation.events.on({updated: self.updatedHandler.bind(self)});
+      self.updatedHandler();
     },
 
-    removeHandler: function (event) {
-      event.animation.basicSidebarNode.remove();
+    slider2val: function(val) {
+      return Math.pow(4, val) - 1;
+    },
+
+    intensityChange: function () {
+      var self = this;
+      if (self.update != undefined) return;
+      self.update = setTimeout(function () {
+        var value = self.intensitySlider.get("value");
+
+        self.animation.data_view.header.colsByName.weight.source.weight = self.slider2val(value);
+        self.animation.data_view.changeCol(self.animation.data_view.header.colsByName.weight);
+        self.update = undefined;
+      }, 100);
+    },
+
+    updatedHandler: function () {
+      var self = this;
+      var title = self.animation.title
+      if (!title) title = animation.toString();
+      $(self.labelNode).html(title);
+
+      var color = self.animation.color;
+      if (!color) color = 'orange';
+      $(self.switchNode).css({'border-color': color});
+
+      if (self.animation.visible) {
+        $(self.inputNode).attr('checked','checked');
+      } else {
+        $(self.inputNode).removeAttr('checked');
+      }
     }
   });
+
+  return SimpleLayerList;
 });

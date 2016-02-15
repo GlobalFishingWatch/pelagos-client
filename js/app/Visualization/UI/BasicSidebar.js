@@ -60,10 +60,11 @@ define([
 
       self.info = new InfoUI();
       self.sidebarContainer.addChild(self.info);
-      self.layers = new SimpleLayerList(self);
-
+      self.layers = new SimpleLayerList();
+      self.sidebarContainer.addChild(self.layers);
       self.filters = new Filters();
       self.sidebarContainer.addChild(self.filters);
+      self.sidebarContainer.selectChild(self.layers, false);
 
       self.node.find("#activate_help").click(function () {
         self.visualization.ui.help.displayHelpDialog();
