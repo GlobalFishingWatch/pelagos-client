@@ -1,29 +1,21 @@
 define([
   "dojo/_base/declare",
   "dojo/dom-style",
-  "dijit/_WidgetBase",
-  "dijit/_TemplatedMixin",
-  "dijit/_WidgetsInTemplateMixin",
-  "dijit/_Container",
-  "dijit/layout/_ContentPaneResizeMixin",
+  "app/Visualization/UI/SidePanels/SidePanelBase",
   "app/CountryCodes",
   "jQuery"
 ], function(
   declare,
   domStyle,
-  _WidgetBase,
-  _TemplatedMixin,
-  _WidgetsInTemplateMixin,
-  _Container,
-  _ContentPaneResizeMixin,
+  SidePanelBase,
   CountryCodes,
   $
 ){
-  return declare("InfoUI", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container, _ContentPaneResizeMixin], {
+  return declare("InfoUI", [SidePanelBase], {
     baseClass: 'InfoUI',
     title: 'Info',
     app: app,
-    templateString: '<div class="${baseClass}">' +
+    templateString: '<div class="${baseClass}" style="overflow: auto;">' +
                     '  <div class="action_icons">'+
                     '    <a id="activate_search" class="activate_search" href="javascript:undefined" data-dojo-attach-event="click:activateSearch"><i class="fa fa-search"></i></a>' +
                     '    <a class="download_kml" target="_new" href="javascript:undefined" style="display: none;" data-dojo-attach-point="downloadNode"><i class="fa fa-download" title="Download as KML"></i></a>' +

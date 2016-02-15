@@ -1,6 +1,7 @@
 define([
   "dojo/_base/declare",
   "dojo/dom-style",
+  "app/Visualization/UI/SidePanels/SidePanelBase",
   "dijit/_WidgetBase",
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
@@ -8,14 +9,15 @@ define([
 ], function(
   declare,
   domStyle,
+  SidePanelBase,
   _WidgetBase,
   _TemplatedMixin,
   _WidgetsInTemplateMixin,
   _Container
 ){
-  var AnimationListBase = declare("AnimationListBase", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+  var AnimationListBase = declare("AnimationListBase", [SidePanelBase], {
     baseClass: 'AnimationListBase',
-    templateString: '<div class="${baseClass}">' +
+    templateString: '<div class="${baseClass}" style="overflow: auto;">' +
                     '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
                     '</div>',
     title: 'Animation list',
