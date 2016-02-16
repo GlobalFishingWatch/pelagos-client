@@ -30,10 +30,10 @@ define([
 
       self.sidebarContainer.visualization = self.visualization;
 
-      self.info = new InfoUI();
+      self.info = new InfoUI({visualization: self.visualization});
       self.sidebarContainer.addChild(self.info);
       self.animations = new AnimationManagerUI(self);
-        self.logging = new LoggingUI({visualization: self.visualization});
+      self.logging = new LoggingUI({visualization: self.visualization});
       self.sidebarContainer.addChild(self.logging);
       self.data = new DataUI(self);
     }

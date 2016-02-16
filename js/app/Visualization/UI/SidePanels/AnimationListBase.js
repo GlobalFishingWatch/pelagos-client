@@ -18,13 +18,14 @@ define([
   var AnimationListBase = declare("AnimationListBase", [SidePanelBase], {
     baseClass: 'AnimationListBase',
     title: 'Animation list',
+    visualization: null,
+
     startup: function () {
       var self = this;
       self.inherited(arguments);
-      var parent = self.getParent();
 
       self.animationList = {};
-      parent.visualization.animations.events.on({
+      self.visualization.animations.events.on({
         'add': self.addHandler.bind(self),
         'remove': self.removeHandler.bind(self)
       });
@@ -36,6 +37,7 @@ define([
 
       if (self.animationFilter(animation)) {
         self.animationList[animation.id] = new self.constructor.AnimationWidget({
+          visualization: self.visualization,
           animation: animation
         });
         self.addChild(self.animationList[animation.id]);
@@ -63,6 +65,7 @@ define([
                     '  <h2 data-dojo-attach-point="titleNode">${animation.title}</h2>' +
                     '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode" style="width: 100%;"></table>' +
                     '</div>',
+    visualization: null,
     animation: null
   });
 

@@ -29,7 +29,6 @@ define([
     startup: function () {
       var self = this;
       self.inherited(arguments);
-      self.visualization = self.getParent().visualization;
 
       self.visualization.animations.events.on({
         'info-loading': self.updateLoading.bind(self),

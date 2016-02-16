@@ -58,11 +58,11 @@ define([
       self.sidebarContainer.animationManager = self.visualization.animations;
 
 
-      self.info = new InfoUI();
+      self.info = new InfoUI({visualization: self.visualization});
       self.sidebarContainer.addChild(self.info);
-      self.layers = new SimpleLayerList();
+      self.layers = new SimpleLayerList({visualization: self.visualization});
       self.sidebarContainer.addChild(self.layers);
-      self.filters = new Filters();
+      self.filters = new Filters({visualization: self.visualization});
       self.sidebarContainer.addChild(self.filters);
       self.sidebarContainer.selectChild(self.layers, false);
 
