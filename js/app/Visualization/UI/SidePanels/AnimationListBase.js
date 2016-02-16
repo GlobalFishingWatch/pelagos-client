@@ -17,9 +17,6 @@ define([
 ){
   var AnimationListBase = declare("AnimationListBase", [SidePanelBase], {
     baseClass: 'AnimationListBase',
-    templateString: '<div class="${baseClass}" style="overflow: auto;">' +
-                    '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
-                    '</div>',
     title: 'Animation list',
     startup: function () {
       var self = this;
