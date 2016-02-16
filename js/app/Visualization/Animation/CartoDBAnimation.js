@@ -18,20 +18,9 @@ define([
   var CartoDBAnimation = Class(Animation, {
     name: "CartoDBAnimation",
 
-    columns: {},
-    programSpecs: {},
-
-    initialize: function(manager, args) {
-      var self = this;
-
-      self.visible = true;
-      self.args = args;
-      if (args) $.extend(self, args);
-      self.manager = manager;
-    },
-
     destroy: function () {
       var self = this;
+
       self.layer.remove();
     },
 
@@ -131,19 +120,6 @@ define([
         self.selected = false;
         self.manager.events.triggerEvent('info', {});
       }
-    },
-
-    toString: function () {
-      var self = this;
-      return self.name + ": " + self.source.args.url;
-    },
-
-    toJSON: function () {
-      var self = this;
-      return {
-        args: _.extend({}, self.args, {source: self.source, title: self.title, visible: self.visible}),
-        "type": self.name
-      };
     }
   });
   Animation.animationClasses.CartoDBAnimation = CartoDBAnimation;

@@ -1,5 +1,15 @@
-define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, Shader, Animation) {
-  var TileAnimation = Class(Animation, {
+define([
+  "require",
+  "app/Class",
+  "app/Visualization/Animation/Shader",
+  "app/Visualization/Animation/DataAnimation"
+], function(
+  require,
+  Class,
+  Shader,
+  DataAnimation
+) {
+  var TileAnimation = Class(DataAnimation, {
     name: "TileAnimation",
 
     columns: {},
@@ -25,7 +35,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
         hover: -1,
         selected: -1};
 
-      Animation.prototype.initGl.call(self, gl, function () {
+      DataAnimation.prototype.initGl.call(self, gl, function () {
         Object.values(self.programs).map(function (program) {
           program.pointArrayBuffer = program.gl.createBuffer();
         });
@@ -64,7 +74,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
       Object.values(self.programs).map(function (program) {
         Shader.programLoadArray(program.gl, program.pointArrayBuffer, self.rawLatLonData, program);
       });
-      Animation.prototype.updateData.call(self);
+      DataAnimation.prototype.updateData.call(self);
     },
 
     drawProgram: function (program) {
@@ -89,10 +99,10 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
 
       self.selections[type] = tileidx;
 
-      return Animation.prototype.select.call(self, x, y, type, replace);
+      return DataAnimation.prototype.select.call(self, x, y, type, replace);
     }
   });
-  Animation.animationClasses.TileAnimation = TileAnimation;
+  DataAnimation.animationClasses.TileAnimation = TileAnimation;
 
   return TileAnimation;
 });

@@ -88,54 +88,36 @@ define([
         return;
       }
 
-      var doLoad = function (withCredentials) {
-        var url = self.url + "/header";
-        var request = new XMLHttpRequest();
-        request.open('GET', url, true);
-        request.withCredentials = withCredentials;
-        Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, {request: request});
-        request.onreadystatechange = function() {
-          if (request.readyState === 4) {
-            LoadingInfo.main.remove(url);
-            if (Ajax.isSuccess(request, url)) {
-              var data = JSON.parse(request.responseText);
+      Ajax.get(self.url + "/header", self.header, function (err, data) {
+        if (err) {
+          self.handleError(err);
+        } else {
+          self.header = data;
 
-              self.header = data;
-
-              if (self.header.alternatives == undefined) {
-                self.header.alternatives = [self.url];
-              }
-
-              if (data.colsByName) {
-                Object.values(data.colsByName).map(function (col) {
-                  col.typespec = Pack.typemap.byname[col.type];
-                });
-                data.colsByName.rowidx = {
-                  "type": "Int32",
-                  typespec: Pack.typemap.byname.Int32,
-                  hidden: true
-                };
-              }
-              self.headerIsLoaded = true;
-              var e = {update: "header", header: data};
-              self.events.triggerEvent(e.update, e);
-              self.events.triggerEvent("update", e);
-              if (self.initialZoom) {
-                self.zoomTo(self.initialZoom);
-              }
-            } else {
-              if (withCredentials) {
-                doLoad(false);
-              } else {
-                self.handleError(Ajax.makeError(request, url, "header"));
-              }
-            }
+          if (self.header.alternatives == undefined) {
+            self.header.alternatives = [self.url];
           }
-        };
-        request.send(null);
-      };
-      doLoad(true);
+
+          if (data.colsByName) {
+            Object.values(data.colsByName).map(function (col) {
+              col.typespec = Pack.typemap.byname[col.type];
+            });
+            data.colsByName.rowidx = {
+              "type": "Int32",
+              typespec: Pack.typemap.byname.Int32,
+              hidden: true
+            };
+          }
+          self.headerIsLoaded = true;
+          var e = {update: "header", header: data};
+          self.events.triggerEvent(e.update, e);
+          self.events.triggerEvent("update", e);
+          if (self.initialZoom) {
+            self.zoomTo(self.initialZoom);
+          }
+        }
+      });
+
       self.events.triggerEvent("load");
     },
 
