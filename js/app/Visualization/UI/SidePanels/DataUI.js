@@ -1,73 +1,117 @@
 define([
-  "app/Class",
-  "app/Logging",
+  "dojo/_base/declare",
+  "dojo/dom-style",
   "app/Data/BaseTiledFormat",
-  "jQuery",
-  "dijit/Fieldset",
+  "app/Visualization/UI/SidePanels/SidePanelBase",
+  "app/Visualization/UI/TemplatedContainer",
   "dijit/form/HorizontalSlider",
-  "dojox/layout/FloatingPane",
-  "dijit/layout/ContentPane",
-  "dijit/Menu",
-  "dijit/MenuItem",
-  "dijit/popup",
-  "dojo/dom",
-  "dojo/parser",
-  "dojo/domReady!"
-], function(Class, Logging, BaseTiledFormat, $, Fieldset, HorizontalSlider, FloatingPane, ContentPane, Menu, MenuItem, popup){
-  return Class({
-    name: "DataUI",
-    initialize: function (sidePanels) {
+  "jQuery"
+], function(
+  declare,
+  domStyle,
+  BaseTiledFormat,
+  SidePanelBase,
+  TemplatedContainer,
+  HorizontalSlider,
+  $
+){
+  var DataUI = declare("DataUI", [SidePanelBase], {
+    baseClass: 'DataUI',
+    title: 'Data',
+    startup: function () {
       var self = this;
+      self.inherited(arguments);
 
-      self.sidePanels = sidePanels;
-
-      self.ui = new ContentPane({title: "Data"});
-
-
-      var widget = new ContentPane({
-        content: "Tiles per screen",
-        style: "padding-top: 0; padding-bottom: 8px;"
+      self.tilesPerScreen = new self.constructor.TilesPerScreen({
+        visualization: self.visualization
       });
-      widget.addChild(new HorizontalSlider({
+      self.addChild(self.tilesPerScreen);
+
+      self.stats = new self.constructor.Stats({
+        visualization: self.visualization
+      });
+      self.addChild(self.stats);
+
+      self.tileList = new self.constructor.TileList({
+        visualization: self.visualization
+      });
+      self.addChild(self.tileList);
+    }
+  });
+
+  DataUI.TilesPerScreen = declare("TilesPerScreen", [TemplatedContainer], {
+    baseClass: 'TilesPerScreen',
+    templateString: '' +
+      '<div class="${baseClass}" style="overflow: auto;">' +
+      '  Tiles per screen:' +
+      '  <span class="${baseClass}Container" data-dojo-attach-point="containerNode"></span>' +
+      '  <span class="value" style="float: right;" data-dojo-attach-point="valueNode"></span>' +
+      '</div>',
+    visualization: null,
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      self.addChild(new HorizontalSlider({
         "class": "pull-right",
         value: BaseTiledFormat.prototype.tilesPerScreen,
         minimum: 4,
         maximum: 128,
         intermediateChanges: false,
         style: "width:200px;",
-        onChange: function (value) {
-          value = Math.round(value);
-          $(widget.domNode).find('.value').html(value.toPrecision(3));
-          BaseTiledFormat.prototype.tilesPerScreen = value;
-          self.sidePanels.ui.visualization.data.zoomTo(self.sidePanels.ui.visualization.data.bounds);
-        }
+        onChange: self.change.bind(self)
       }));
-      $(widget.domNode).append("<span class='value' style='float: right;'>");
-      $(widget.domNode).find('.value').html(BaseTiledFormat.prototype.tilesPerScreen);
-      self.ui.addChild(widget);
+    },
 
-      $(self.sidePanels.ui.visualization.animations.stats.domElement).css({
+    change: function (value) {
+      var self = this;
+
+      value = Math.round(value);
+      self.valueNode.innerHTML = value.toPrecision(3);
+      BaseTiledFormat.prototype.tilesPerScreen = value;
+      self.visualization.data.zoomTo(self.visualization.data.bounds);
+    }
+  });
+
+  DataUI.Stats = declare("Stats", [TemplatedContainer], {
+    visualization: null,
+    baseClass: 'Stats',
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      $(self.visualization.animations.stats.domElement).css({
         position: 'initial',
         margin: '5pt'
       });
-      $(self.ui.domNode).append(self.sidePanels.ui.visualization.animations.stats.domElement);
-
-      $(self.ui.domNode).append("<pre class='source-stats'>");
-
-      self.sidePanels.sidebarContainer.addChild(self.ui);
-      self.sidePanels.sidebarContainer.layout();
-
-      var updater = undefined;
-      self.sidePanels.ui.visualization.data.events.on({
-        update: function () {
-          if (updater == undefined) {
-            updater = setTimeout(function () {
-              $(self.ui.domNode).find('.source-stats').text(self.sidePanels.ui.visualization.data.printTree());
-              updater = undefined;
-            });
-          }
-        }
-      });
+      $(self.containerNode).append(self.visualization.animations.stats.domElement);
     }
   });
+
+  DataUI.TileList = declare("TileList", [TemplatedContainer], {
+    templateString: '<pre class="${baseClass}"></pre>',
+    visualization: null,
+    baseClass: 'TileList',
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      self.visualization.data.events.on({
+        update: self.update.bind(self)
+      });
+    },
+
+    update: function () {
+      var self = this;
+      if (self.updater == undefined) {
+        self.updater = setTimeout(function () {
+          self.domNode.innerHTML = self.visualization.data.printTree();
+          self.updater = undefined;
+        });
+      }
+    }
+  });
+
+  return DataUI;
 });

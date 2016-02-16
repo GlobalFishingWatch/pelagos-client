@@ -35,7 +35,8 @@ define([
       self.animations = new AnimationManagerUI(self);
       self.logging = new LoggingUI({visualization: self.visualization});
       self.sidebarContainer.addChild(self.logging);
-      self.data = new DataUI(self);
+      self.data = new DataUI({visualization: self.visualization});
+      self.sidebarContainer.addChild(self.data);
     }
   });
 });
