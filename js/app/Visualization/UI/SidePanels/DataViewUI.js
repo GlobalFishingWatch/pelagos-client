@@ -80,7 +80,7 @@ define([
     templateString: '' +
       '<div class="${baseClass}">' +
       '  <div>${name} from ${selection.sortcols.0}</div>' +
-      '  <select multiple="true" data-dojo-attch-point="selectNode" data-dojo-attach-event="change:change"></select>' +
+      '  <select multiple="true" data-dojo-attach-point="selectNode" data-dojo-attach-event="change:change"></select>' +
       '</div>',
     baseClass: 'DataViewUI-SelectionsUI-SelectionUI',
     visualization: null,
@@ -120,13 +120,14 @@ define([
     change: function () {
       var self = this;
       var selectionselect = $(self.selectNode);
+      var sourcename = self.selection.sortcols[0];
 
       self.selection.clearRanges();
       var values = selectionselect.val();
       if (values) {
         values.map(function (value) {
           var data = {};
-          data[sourcename] = value;
+          data[sourcename] = parseFloat(value);
           self.selection.addDataRange(data, data);
         });
       } else {
