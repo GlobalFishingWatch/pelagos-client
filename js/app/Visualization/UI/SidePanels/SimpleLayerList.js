@@ -38,7 +38,7 @@ define([
   });
 
   SimpleLayerList.AnimationWidget = declare("AnimationWidget", [AnimationListBase.AnimationWidget], {
-    baseClass: 'Filters-AnimationWidget',
+    baseClass: 'SimpleLayerList-AnimationWidget',
 
     idCounter: 0,
 

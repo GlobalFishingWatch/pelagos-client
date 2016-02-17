@@ -61,12 +61,19 @@ define([
 
   AnimationListBase.AnimationWidget = declare("AnimationWidget", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
     baseClass: 'AnimationListBase-AnimationWidget',
-    templateString: '<div class="${baseClass}">' +
-                    '  <h2 data-dojo-attach-point="titleNode">${animation.title}</h2>' +
-                    '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode" style="width: 100%;"></table>' +
-                    '</div>',
+    templateString: '' +
+      '<div class="${baseClass}">' +
+      '  <h2 data-dojo-attach-point="titleNode">${animation.title}</h2>' +
+      '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode" style="width: 100%;"></table>' +
+      '</div>',
     visualization: null,
-    animation: null
+    animation: null,
+
+    remove: function () {
+      var self = this;
+
+      self.visualization.animations.removeAnimation(self.animation);
+    }
   });
 
   return AnimationListBase;
