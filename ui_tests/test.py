@@ -121,8 +121,8 @@ class HomeTest(unittest.TestCase):
             actions.click()
             actions.perform()
 
-            server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="imo"]'))
-            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//td[text()="27200"]'))
+            server.wait_for(lambda: not server.is_element_present('//div[@id="vessel_identifiers"]//table//td[@class="imo"]'))
+            self.failUnless(server.is_element_present('//div[@id="vessel_identifiers"]//table//td[text()="27200"]'))
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
@@ -148,7 +148,7 @@ class HomeTest(unittest.TestCase):
             point = self.latLng2Point({'lat':22.5, 'lng':0.0})
             self.assertEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup not present at x,y")
             moveTimeslider(-272)
-            time.sleep(2)
+            time.sleep(5)
             server.wait_for(lambda: self.animationHasLoaded("ClusterAnimation"))
             self.assertNotEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup present at x,y when timeslider has moved")
 
@@ -235,8 +235,8 @@ class HomeTest(unittest.TestCase):
             actions.click()
             actions.perform()
 
-            server.wait_for(lambda: not server.is_element_present('//table[@class="vessel_id"]//td[@class="vesselname" and text()="---"]'))
-            self.failUnless(server.is_element_present('//table[@class="vessel_id"]//*[text()="27200"]'))
+            server.wait_for(lambda: not server.is_element_present('//div[@id="vessel_identifiers"]//table//td[@class="vesselname" and text()="---"]'))
+            self.failUnless(server.is_element_present('//div[@id="vessel_identifiers"]//table//*[text()="27200"]'))
         except:
             name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
