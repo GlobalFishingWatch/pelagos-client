@@ -132,7 +132,7 @@ define([
       var self = this;
 
       var title = self.animation.title
-      if (!title) title = animation.toString();
+      if (!title) title = self.animation.toString();
       $(self.titleInputNode).val(title);
       $(self.titleNode).html(title);
 

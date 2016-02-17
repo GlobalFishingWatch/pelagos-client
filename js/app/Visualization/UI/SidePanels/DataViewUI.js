@@ -402,7 +402,7 @@ define([
          self.dataview.changeUniform(self.spec);
        }
      }));
-     $(self.domNode).find('.value').val(spec.value.toPrecision(3));
+     $(self.domNode).find('.value').val(self.spec.value.toPrecision(3));
    }
   });
 
