@@ -30,7 +30,7 @@ define([
         '  <div id="layers">' +
         '    <form class="layer-list" data-dojo-attach-point="containerNode"></form>' +
         '  </div>' +
-          '</div>',
+        '</div>',
     edit: function () {
       var self = this;
       self.visualization.ui.simpleAnimationEditor.display();
