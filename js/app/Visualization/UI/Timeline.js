@@ -1,5 +1,21 @@
-define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLabel', 'jQuery', 'less', 'app/LangExtensions'], function (Class, Events, Interval, TimeLabel, $, less) {
-
+define([
+  'app/Class',
+  'app/Events',
+  'app/Interval',
+  'app/Visualization/UI/TimeLabel',
+  'app/Visualization/UI/DateTimeDropdown',
+  'jQuery',
+  'less',
+  'app/LangExtensions'
+], function (
+  Class,
+  Events,
+  Interval,
+  TimeLabel,
+  DateTimeDropdown,
+  $,
+  less
+) {
   var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('app/Visualization/UI/Timeline.less') + '" />');
   $('head').append(lessnode);
   less.sheets.push(lessnode[0]);
@@ -9,6 +25,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
   $("body").append(temp);
   var pixelsPerPt = temp.innerWidth() / 10000;
   temp.remove();
+
 
   return Class({
     name: 'Timeline',
@@ -200,6 +217,24 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       self.rightContext = self.context;
       self.setRange(self.windowStart, self.windowEnd);
       self.lastHoverTime = undefined;
+
+
+      self.startInput = new DateTimeDropdown({style: "display: none"});
+      self.startInput.placeAt(self.node.find('.startLabel')[0]);
+
+      self.node.find('.startLabel').mousedown(function (e) { self.eatEvent(e); });
+      self.node.find('.startLabel').mousedown(function (e) { self.eatEvent(e); });
+
+      self.node.find('.startLabel').click(function (e) {
+        self.startLabel.hide();
+        self.startInput.set("value", self.windowStart);
+        $(self.startInput.domNode).show();
+        $(self.startInput.domNode).focus();
+      });
+      $(self.startInput.domNode).find("input").blur(function (e) {
+        self.startLabel.show();
+        $(self.startInput.domNode).hide();
+      });
     },
 
     setRangeFromOffset: function (offset, type) {
