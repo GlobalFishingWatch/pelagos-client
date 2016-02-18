@@ -9,6 +9,11 @@ define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Forma
       TypedMatrixParser.prototype.initialize.call(self, self.url);
     },
 
+    getDirectory: function () {
+      var self = this;
+      return self.url.slice(0, self.url.lastIndexOf("/"));
+    },
+
     zoomTo: function () {
       var self = this;
 

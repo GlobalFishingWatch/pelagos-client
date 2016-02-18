@@ -22,7 +22,7 @@ define(["app/Class", "app/Logging"], function(Class, Logging) {
     un: function(args) {
       var self = this;
       for (var name in args) {
-        if (name != 'scope') {
+        if (name != 'scope' && self.handlers[name]) {
           self.handlers[name] = self.handlers[name].filter(function (item) {
             return item.handler != args[name] || item.scope != args.scope
           });

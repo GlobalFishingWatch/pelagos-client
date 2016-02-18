@@ -1,5 +1,15 @@
-define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation"], function(require, Class, Shader, Animation) {
-  var ClusterAnimation = Class(Animation, {
+define([
+  "require",
+  "app/Class",
+  "app/Visualization/Animation/Shader",
+  "app/Visualization/Animation/DataAnimation"
+], function(
+  require,
+  Class,
+  Shader,
+  DataAnimation
+) {
+  var ClusterAnimation = Class(DataAnimation, {
     name: "ClusterAnimation",
 
     columns: {
@@ -33,7 +43,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
 
     selections: $.extend(
       {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
-      Animation.prototype.selections
+      DataAnimation.prototype.selections
     ),
 
     programSpecs: {
@@ -54,7 +64,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
       return program.gl.POINTS;
     }
   });
-  Animation.animationClasses.ClusterAnimation = ClusterAnimation;
+  DataAnimation.animationClasses.ClusterAnimation = ClusterAnimation;
 
   return ClusterAnimation;
 });

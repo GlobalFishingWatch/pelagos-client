@@ -1,5 +1,15 @@
-define(["require", "app/Class", "app/Visualization/Animation/Animation", "jQuery"], function(require, Class, Animation, $) {
-  var ArrowAnimation = Class(Animation, {
+define([
+  "require",
+  "app/Class",
+  "app/Visualization/Animation/DataAnimation",
+  "jQuery"
+], function(
+  require,
+  Class,
+  DataAnimation,
+  $
+) {
+  var ArrowAnimation = Class(DataAnimation, {
     name: "ArrowAnimation",
 
     columns: {
@@ -20,7 +30,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Animation", "jQuery
 
     selections: $.extend(
       {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
-      Animation.prototype.selections
+      DataAnimation.prototype.selections
     ),
 
     programSpecs: {
@@ -42,7 +52,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Animation", "jQuery
       return program.gl.POINTS;
     }
   });
-  Animation.animationClasses.ArrowAnimation = ArrowAnimation;
+  DataAnimation.animationClasses.ArrowAnimation = ArrowAnimation;
 
   return ArrowAnimation;
 });

@@ -1,4 +1,12 @@
-define(["app/Class", "app/Visualization/Animation/Animation", "app/Visualization/Animation/PointAnimation"], function(Class, Animation, PointAnimation) {
+define([
+  "app/Class",
+  "app/Visualization/Animation/DataAnimation",
+  "app/Visualization/Animation/PointAnimation"
+], function(
+  Class,
+  DataAnimation,
+  PointAnimation
+) {
   var LineAnimation = Class(PointAnimation, {
     name: "LineAnimation",
 
@@ -11,7 +19,7 @@ define(["app/Class", "app/Visualization/Animation/Animation", "app/Visualization
       if (program.uniforms.doShade) {
         program.gl.uniform1i(program.uniforms.doShade, 0);
       }
-      Animation.prototype.drawProgram.apply(self, arguments);
+      DataAnimation.prototype.drawProgram.apply(self, arguments);
     },
 
     getDrawMode: function (program) {
@@ -20,7 +28,7 @@ define(["app/Class", "app/Visualization/Animation/Animation", "app/Visualization
       return program.gl.LINES;
     }
   });
-  Animation.animationClasses.LineAnimation = LineAnimation;
+  DataAnimation.animationClasses.LineAnimation = LineAnimation;
 
   return LineAnimation;
 });

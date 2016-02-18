@@ -1,5 +1,17 @@
-define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visualization/Animation/Animation", "jQuery"], function(require, Class, Shader, Animation, $) {
-  var PointAnimation = Class(Animation, {
+define([
+  "require",
+  "app/Class",
+  "app/Visualization/Animation/Shader",
+  "app/Visualization/Animation/DataAnimation",
+  "jQuery"
+], function(
+  require,
+  Class,
+  Shader,
+  DataAnimation,
+  $
+) {
+  var PointAnimation = Class(DataAnimation, {
     name: "PointAnimation",
 
     columns: {
@@ -16,7 +28,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
 
     selections: $.extend(
       {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
-      Animation.prototype.selections
+      DataAnimation.prototype.selections
     ),
 
     programSpecs: {
@@ -47,7 +59,7 @@ define(["require", "app/Class", "app/Visualization/Animation/Shader", "app/Visua
       return program.gl.POINTS;
     }
   });
-  Animation.animationClasses.PointAnimation = PointAnimation;
+  DataAnimation.animationClasses.PointAnimation = PointAnimation;
 
   return PointAnimation;
 });

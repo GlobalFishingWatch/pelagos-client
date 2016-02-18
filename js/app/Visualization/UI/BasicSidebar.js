@@ -59,10 +59,14 @@ define([
       self.sidebar.addChild(self.info);
 
       self.layers = new ContentPane({title: 'Layers', content:"" +
+          "<a class='edit-layers' style='font-weight: bold; position: absolute; right: 0.5em; margin-top: -1.5em; z-index: 1000000;'><i class='fa fa-pencil-square-o'></i></a>" +
           "<div id='layers'>" +
-          "  <h2>Layers</h2>" +
           "  <form class='layer-list'></form>" +
           "</div>"});
+      $(self.layers.containerNode).find(".edit-layers").click(function () {
+        self.visualization.ui.simpleAnimationEditor.display();
+      });
+
       self.sidebar.addChild(self.layers);
 
       self.node.find("#activate_help").click(function () {
@@ -287,12 +291,6 @@ define([
       node.find("label").attr({"for":"cmn-toggle-" + self.idCounter});
       self.idCounter++;
 
-      if (!animation.title) animation.title = animation.toString();
-      node.find(".layer-label").html(animation.title);
-
-      if (!animation.color) animation.color = 'orange';
-      node.find("input").addClass('cmn-toggle-' + animation.color);
-
       node.find("input").change(function (event) {
         animation.setVisible(event.target.checked);
       });
@@ -415,6 +413,17 @@ define([
           }
         }
       }
+
+      animation.events.on({updated: self.updatedHandler.bind(self, animation, node)});
+      self.updatedHandler(animation, node);
+    },
+
+    updatedHandler: function (animation, node, e) {
+      if (!animation.title) animation.title = animation.toString();
+      node.find(".layer-label").html(animation.title);
+
+      if (!animation.color) animation.color = 'orange';
+      node.find(".switch-line").css({'border-color': animation.color});
 
       if (animation.visible) {
         node.find("input").attr('checked','checked');
