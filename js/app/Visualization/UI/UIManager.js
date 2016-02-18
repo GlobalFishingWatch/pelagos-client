@@ -471,7 +471,7 @@ function (
       );
 
       self.sidePanels = new SidePanelManager(self);
-      self.sideBar = new BasicSidebar(self.visualization);
+      self.sideBar = new BasicSidebar(self);
       cb();
     },
 

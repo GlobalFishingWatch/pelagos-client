@@ -1,5 +1,6 @@
 define([
-  "app/Class",
+  "dojo/_base/declare",
+  "app/Visualization/UI/TemplatedContainer",
   "app/Logging",
   "jQuery",
   "dijit/Fieldset",
@@ -13,91 +14,312 @@ define([
   "dojo/dom",
   "dojo/parser",
   "dojo/domReady!"
-], function(Class, Logging, $, Fieldset, HorizontalSlider, MultiSelect, FloatingPane, ContentPane, Menu, MenuItem, popup){
-  return Class({
-    name: "DataViewUI",
-    initialize: function (dataview) {
+], function(
+  declare,
+  TemplatedContainer,
+  Logging,
+  $,
+  Fieldset,
+  HorizontalSlider,
+  MultiSelect,
+  FloatingPane,
+  ContentPane,
+  Menu,
+  MenuItem,
+  popup
+){
+
+  var DataViewUI = declare("DataViewUI", [TemplatedContainer], {
+    baseClass: 'DataViewUI',
+    visualization: null,
+    dataview: null,
+    startup: function () {
       var self = this;
+      self.inherited(arguments);
 
-      self.dataview = dataview;
+      self.selections = new self.constructor.SelectionsUI({
+        visualization: self.visualization,
+        dataview: self.dataview
+      });
+      self.addChild(self.selections);
 
-      self.generateUI();
+      self.cols = new self.constructor.ColsUI({
+        visualization: self.visualization,
+        dataview: self.dataview
+      });
+      self.addChild(self.cols);
+
+      self.uniforms = new self.constructor.UniformsUI({
+        visualization: self.visualization,
+        dataview: self.dataview
+      });
+      self.addChild(self.uniforms);
+    }
+  });
+
+  DataViewUI.SelectionsUI = declare("SelectionsUI", [TemplatedContainer], {
+    baseClass: 'DataViewUI-SelectionsUI',
+    visualization: null,
+    dataview: null,
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      Object.items(self.dataview.selections.selections).map(function (item) {
+        self.addChild(new self.constructor.SelectionUI({
+          visualization: self.visualization,
+          dataview: self.dataview,
+          name: item.key,
+          selection: item.value
+        }));
+      });
+    }
+  });
+
+  DataViewUI.SelectionsUI.SelectionUI = declare("SelectionUI", [TemplatedContainer], {
+    templateString: '' +
+      '<div class="${baseClass}">' +
+      '  <div>${name} from ${selection.sortcols.0}</div>' +
+      '  <select multiple="true" data-dojo-attach-point="selectNode" data-dojo-attach-event="change:change"></select>' +
+      '</div>',
+    baseClass: 'DataViewUI-SelectionsUI-SelectionUI',
+    visualization: null,
+    dataview: null,
+    name: 'unknown',
+    selection: null,
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      var sourcename = self.selection.sortcols[0];
+      var source = self.dataview.source.header.colsByName[sourcename];
+
+      if (   self.selection.hidden
+          || self.selection.sortcols.length != 1
+          || !source
+             || !source.choices) {
+        $(self.domNode).hide();
+        return;
+      }
+
+      var selectionselect = $(self.selectNode);
+      var choices = Object.keys(source.choices);
+      choices.sort();
+      choices.map(function (key) {
+        var value = source.choices[key];
+        var option = $("<option>");
+        option.text(key);
+        option.attr({value:value});
+        if (self.selection.data[sourcename].indexOf(value) != -1) {
+          option.attr({selected:'true'});
+        }
+        selectionselect.append(option);
+      })
     },
 
-    generateSourceUI: function (colwidget, spec, source) {
+    change: function () {
+      var self = this;
+      var selectionselect = $(self.selectNode);
+      var sourcename = self.selection.sortcols[0];
+
+      self.selection.clearRanges();
+      var values = selectionselect.val();
+      if (values) {
+        values.map(function (value) {
+          var data = {};
+          data[sourcename] = parseFloat(value);
+          self.selection.addDataRange(data, data);
+        });
+      } else {
+        var startData = {};
+        var endData = {};
+        startData[sourcename] = -1.0/0.0;
+        endData[sourcename] = 1.0/0.0;
+        self.selection.addDataRange(startData, endData);
+      }
+    }
+  });
+
+  DataViewUI.ColsUI = declare("ColsUI", [TemplatedContainer], {
+    baseClass: 'DataViewUI-ColsUI',
+    visualization: null,
+    dataview: null,
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      Object.values(self.dataview.header.colsByName).map(function (spec) {
+        if (spec.hidden) return;
+
+        self.addChild(new self.constructor.ColUI({
+          visualization: self.visualization,
+          dataview: self.dataview,
+          spec: spec
+        }));
+      });
+    }
+  });
+
+  DataViewUI.ColsUI.ColUI = declare("ColUI", [TemplatedContainer], {
+    templateString: '' +
+      '<div class="${baseClass}">' +
+      '  ${spec.name}' +
+      '  <a href="javascript:void(0);" class="add" data-dojo-attach-event="click:add" data-dojo-attach-point="addNode">' +
+          '<i class="fa fa-plus-square"></i>' +
+        '</a>' +
+      '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
+      '</div>',
+    baseClass: 'DataViewUI-ColsUI-ColUI',
+    visualization: null,
+    dataview: null,
+    spec: null,
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      Object.items(self.spec.source).map(function (source) {
+        self.addChild(new self.constructor.SourceUI({
+          visualization: self.visualization,
+          dataview: self.dataview,
+          spec: self.spec,
+          source: source
+        }));
+      });
+    },
+
+    add: function () {
       var self = this;
 
-      var sourcespec = self.dataview.header.colsByName[source.key];
+      self.dataview.getAvailableColumns(function (err, availableColumns) {
+        var sourceselect = new Menu({
+          onMouseLeave: function () {
+            popup.close(sourceselect);
+          }
+        });
+        availableColumns.map(function (colname) {
+          sourceselect.addChild(new MenuItem({
+            label: colname,
+            onClick: function(evt) {
+              self.spec.source[colname] = 0.0;
+
+              self.addChild(new self.constructor.SourceUI({
+                visualization: self.visualization,
+                dataview: self.dataview,
+                spec: self.spec,
+                source: {key:colname, value: 0.0}
+              }));
+            }
+          }));
+        });
+        sourceselect.addChild(new MenuItem({
+          label: "[Constant value]",
+          onClick: function(evt) {
+            self.spec.source._ = 0.0;
+            self.addChild(new self.constructor.SourceUI({
+              visualization: self.visualization,
+              dataview: self.dataview,
+              spec: self.spec,
+              source: {key:"_", value: 0.0}
+            }));
+          }
+        }));
+        popup.open({
+          popup: sourceselect,
+          onExecute : function() { 
+            popup.close(sourceselect);
+          }, 
+          onCancel : function() { 
+            popup.close(sourceselect);
+          }, 
+          around: self.addNode
+        });
+      });
+    }
+  });
+
+  DataViewUI.ColsUI.ColUI.SourceUI = declare("SourceUI", [TemplatedContainer], {
+    templateString: '' +
+      '<div class="${baseClass}">' +
+      '  <a href="javascript:void(0);" class="remove" data-dojo-attach-event="click:remove">' +
+          '<i class="fa fa-minus-square"></i>' +
+      '   <span data-dojo-attach-point="labelNode"></span>' +
+      '  </a>' +
+      '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
+      '</div>',
+    baseClass: 'DataViewUI-ColsUI-ColUI-SourceUI',
+    visualization: null,
+    dataview: null,
+    spec: null,
+    source: null,
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      var sourcespec = self.dataview.header.colsByName[self.source.key];
       var min = -1.0;
       var max = 1.0;
-      if (spec.min != undefined && spec.max != undefined) {
+      if (self.spec.min != undefined && self.spec.max != undefined) {
         if (sourcespec != undefined && sourcespec.min != undefined && sourcespec.max != undefined) {
-          max = spec.max / sourcespec.max;
-          min = -spec.max / sourcespec.max;
+          max = self.spec.max / sourcespec.max;
+          min = -self.spec.max / sourcespec.max;
         } else {
-          min = -spec.max;
-          max = spec.max;
+          min = -self.spec.max;
+          max = self.spec.max;
         }
       }
       var label = "[Constant value]";
-      if (source.key != "_") label = source.key;
+      if (self.source.key != "_") label = self.source.key;
+      self.labelNode.innerHTML = label;
 
-      var sourcewidget = new ContentPane({
-        content: "<a href='javascript:void(0);' class='remove' style='float:left;'><i class='fa fa-minus-square'></i> " + label + "</a>",
-        style: "padding-top: 0; padding-bottom: 8px;"
-      });
-      $(sourcewidget.domNode).find("a.remove").click(function () {
-        delete spec.source[source.key];
-        sourcewidget.destroy();
-      })
       Logging.main.log(
-        "DataViewUI.source." + spec.name + "." + source.key,
+        "DataViewUI.source." + self.spec.name + "." + self.source.key,
         {
           toString: function () {
             return this.column + " [" + this.min + ", " + this.max + "] = " + this.value + " * " + this.source;
           },
-          column: spec.name,
+          column: self.spec.name,
           min: min,
           max: max,
-          value: source.value,
-          source: source.key
+          value: self.source.value,
+          source: self.source.key
         }
       );
-      if (source.value != null) {
-        if (source.value < min) {
-          min = source.value;
+      if (self.source.value != null) {
+        if (self.source.value < min) {
+          min = self.source.value;
         }
-        if (source.value > max) {
-          max = source.value;
+        if (self.source.value > max) {
+          max = self.source.value;
         }
         var valuewidget = $("<input type='text' class='value'>");
         var sliderwidget = new HorizontalSlider({
-          name: source.key,
+          name: self.source.key,
           "class": "pull-right",
-          value: source.value,
+          value: self.source.value,
           minimum: min,
           maximum: max,
           intermediateChanges: true,
           style: "width:200px;",
           onChange: function (value) {
             Logging.main.log(
-              "DataViewUI.set." + spec.name + "." + source.key,
+              "DataViewUI.set." + self.spec.name + "." + self.source.key,
               {
                 toString: function () {
                   return this.column + " = " + this.value + " * " + this.source;
                 },
-                column: spec.name,
+                column: self.spec.name,
                 value: value,
-                source: source.key
+                source: self.source.key
               }
             );
             valuewidget.val(value.toPrecision(3));
-            spec.source[source.key] = value;
-            self.dataview.changeCol(spec);
+            self.spec.source[self.source.key] = value;
+            self.dataview.changeCol(self.spec);
           }
         });
-        sourcewidget.addChild(sliderwidget);
-        $(sourcewidget.domNode).append(valuewidget);
+        self.addChild(sliderwidget);
+        $(self.containerNode).append(valuewidget);
         valuewidget.change(function () {
           var value = parseFloat(valuewidget.val());
           if (value < sliderwidget.get("minimum")) {
@@ -108,165 +330,81 @@ define([
           }
           sliderwidget.set("value", value);
         });
-        valuewidget.val(source.value.toPrecision(3));
+        valuewidget.val(self.source.value.toPrecision(3));
       } else {
-        $(sourcewidget.domNode).append($("<span class='value null-value'>Automatic</span>"));
+        $(self.containerNode).append($("<span class='value null-value'>Automatic</span>"));
       }
-      colwidget.addChild(sourcewidget);
     },
 
-    generateSelectionUI: function (ui, name, selection) {
+    remove: function () {
       var self = this;
-
-      if (selection.hidden) return;
-      if (selection.sortcols.length != 1) return;
-      var sourcename = selection.sortcols[0]
-      var source = self.dataview.source.header.colsByName[sourcename];
-      if (!source || !source.choices) return;
-
-      var selectionwidget = new ContentPane({
-        content: "<div>" + name + " from " + sourcename + "</div>",
-        style: "padding-top: 0; padding-bottom: 0;"
-      });
-
-      var selectionselect = $("<select multiple='true'>");
-      var choices = Object.keys(source.choices);
-      choices.sort();
-      choices.map(function (key) {
-        var value = source.choices[key];
-        var option = $("<option>");
-        option.text(key);
-        option.attr({value:value});
-        if (selection.data[sourcename].indexOf(value) != -1) {
-          option.attr({selected:'true'});
-        }
-        selectionselect.append(option);
-      })
-      selectionselect.change(function () {
-        selection.clearRanges();
-        var values = selectionselect.val();
-        if (values) {
-          values.map(function (value) {
-            var data = {};
-            data[sourcename] = value;
-            selection.addDataRange(data, data);
-          });
-        } else {
-          var startData = {};
-          var endData = {};
-          startData[sourcename] = -1.0/0.0;
-          endData[sourcename] = 1.0/0.0;
-          selection.addDataRange(startData, endData);
-        }
-      });
-
-      $(selectionwidget.domNode).append(selectionselect);
-
-      ui.addChild(selectionwidget);
-    },
-
-    generateUniformUI: function(ui, spec) {
-      var self = this;
-
-      var uniformwidget = new ContentPane({
-        content: spec.name,
-        style: "padding-top: 0; padding-bottom: 8px;"
-      });
-      uniformwidget.addChild(new HorizontalSlider({
-        name: spec.name,
-        "class": "pull-right",
-        value: spec.value,
-        minimum: spec.min,
-        maximum: spec.max,
-        intermediateChanges: true,
-        style: "width:200px;",
-        onChange: function (value) {
-          Logging.main.log(
-            "DataViewUI.set." + spec.name,
-            {
-              toString: function () {
-                return this.column + " = " + this.value;
-              },
-              column: spec.name,
-              value: value
-            }
-          );
-          $(uniformwidget.domNode).find('.value').val(value.toPrecision(3));
-          spec.value = value;
-          self.dataview.changeUniform(spec);
-        }
-      }));
-      $(uniformwidget.domNode).append("<input type='text' class='value'>");
-      var label = "";
-      label = spec.value.toPrecision(3);
-      $(uniformwidget.domNode).find('.value').val(label);
-
-      ui.addChild(uniformwidget);
-    },
-
-    generateUI: function () {
-      var self = this;
-
-      var ui = new ContentPane({"class": 'DataViewUI'});
-
-      Object.items(self.dataview.selections.selections).map(function (item) {
-        self.generateSelectionUI(ui, item.key, item.value);
-      });
-
-      Object.values(self.dataview.header.colsByName).map(function (spec) {
-        if (spec.hidden) return;
-
-        var colwidget = new ContentPane({
-          content: spec.name + " <a href='javascript:void(0);' class='add'><i class='fa fa-plus-square'></i></a>",
-          style: "padding-top: 0; padding-bottom: 0;"
-        });
-        $(colwidget.domNode).find("a.add").click(function () {
-          self.dataview.getAvailableColumns(function (err, availableColumns) {
-            var sourceselect = new Menu({
-              onMouseLeave: function () {
-                popup.close(sourceselect);
-              }
-            });
-            availableColumns.map(function (colname) {
-              sourceselect.addChild(new MenuItem({
-                label: colname,
-                onClick: function(evt) {
-                  spec.source[colname] = 0.0;
-                  self.generateSourceUI(colwidget, spec, {key:colname, value: 0.0});
-                }
-              }));
-            });
-            sourceselect.addChild(new MenuItem({
-              label: "[Constant value]",
-              onClick: function(evt) {
-                spec.source._ = 0.0;
-                self.generateSourceUI(colwidget, spec, {key:"_", value: 0.0});
-              }
-            }));
-            popup.open({
-              popup: sourceselect,
-              onExecute : function() { 
-                popup.close(sourceselect);
-              }, 
-              onCancel : function() { 
-                popup.close(sourceselect);
-              }, 
-              around: $(colwidget.domNode).find("a.add")[0]
-            });
-          });
-        });
-        Object.items(spec.source).map(function (source) {
-          self.generateSourceUI(colwidget, spec, source);
-        });
-        ui.addChild(colwidget);
-      });
-      Object.items(self.dataview.header.uniforms).map(function (spec) {
-        if (spec.hidden) return;
-        self.generateUniformUI(ui, spec.value);
-      });
-
-      ui.startup();
-      self.ui = ui;
+      delete self.spec.source[self.source.key];
+      self.destroy();
     }
   });
+
+  DataViewUI.UniformsUI = declare("UniformsUI", [TemplatedContainer], {
+    baseClass: 'DataViewUI-UniformsUI',
+    visualization: null,
+    dataview: null,
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      Object.values(self.dataview.header.uniforms).map(function (spec) {
+        if (spec.hidden) return;
+
+        self.addChild(new self.constructor.UniformUI({
+          visualization: self.visualization,
+          dataview: self.dataview,
+          spec: spec
+        }));
+      });
+    }
+  });
+
+  DataViewUI.UniformsUI.UniformUI = declare("UniformUI", [TemplatedContainer], {
+   templateString: '' +
+     '<div class="${baseClass}">' +
+     '  ${spec.name}' +
+     '  <span class="${baseClass}Container" data-dojo-attach-point="containerNode"></span>' +
+     '  <input type="text" class="value">' +
+     '</div>',
+   baseClass: 'DataViewUI-UniformsUI-UniformUI',
+   visualization: null,
+   dataview: null,
+   spec: null,
+   startup: function () {
+     var self = this;
+     self.inherited(arguments);
+
+     self.addChild(new HorizontalSlider({
+       name: self.spec.name,
+       "class": "pull-right",
+       value: self.spec.value,
+       minimum: self.spec.min,
+       maximum: self.spec.max,
+       intermediateChanges: true,
+       style: "width:200px;",
+       onChange: function (value) {
+         Logging.main.log(
+           "DataViewUI.set." + self.spec.name,
+           {
+             toString: function () {
+               return this.column + " = " + this.value;
+             },
+             column: self.spec.name,
+             value: value
+           }
+         );
+         $(self.domNode).find('.value').val(value.toPrecision(3));
+         self.spec.value = value;
+         self.dataview.changeUniform(self.spec);
+       }
+     }));
+     $(self.domNode).find('.value').val(self.spec.value.toPrecision(3));
+   }
+  });
+
+  return DataViewUI;
 });

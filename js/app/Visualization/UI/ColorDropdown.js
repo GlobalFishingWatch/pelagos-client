@@ -64,7 +64,7 @@ define([
         dir: textBox.dir,
         lang: textBox.lang,
         value: value,
-        textDir: textBox.textDir,
+        textDir: textBox.textDir
       });
 
       this.inherited(arguments);
