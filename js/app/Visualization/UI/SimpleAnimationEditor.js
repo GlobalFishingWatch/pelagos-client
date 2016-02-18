@@ -49,7 +49,7 @@ define([
       self.container = new BorderContainer({style: "min-height: 300px; height: 100%; width: 100%; padding: 0; margin: 0;", liveSplitters: true});
       self.dialog.addChild(self.container);
 
-      self.actions = new ContentPane({region: 'top', class: 'actions', style: 'border: none; padding: 0; margin: 0;', content: ''});
+      self.actions = new ContentPane({region: 'top', 'class': 'actions', style: 'border: none; padding: 0; margin: 0;', content: ''});
 
       self.addcartodbbutton = new Button({
         label: "Add CartoDB",
@@ -68,9 +68,9 @@ define([
       self.actions.addChild(self.librarybutton);
       self.container.addChild(self.actions);
 
-      self.list = new ContentPane({region: 'center', content: '', class: 'list', style: 'border: none; padding: 0; margin: 0;'});
+      self.list = new ContentPane({region: 'center', content: '', 'class': 'list', style: 'border: none; padding: 0; margin: 0;'});
       self.container.addChild(self.list);
-      self.editorPane = new ContentPane({region: 'right', splitter: true, class: 'editor-pane', style: 'border: none; padding: 10px; margin: 0; width: 50%;', content: ''});
+      self.editorPane = new ContentPane({region: 'right', splitter: true, 'class': 'editor-pane', style: 'border: none; padding: 10px; margin: 0; width: 50%;', content: ''});
       self.container.addChild(self.editorPane);
 
       self.dialog.startup();
@@ -136,7 +136,7 @@ define([
       var self = this;
       var animation = $(event.target).data('animation');
 
-      var editor = new ContentPane({class: 'editor', style: 'border: none; padding: 0; margin: 0; width: 100%; height: 100%;', content: '' +
+      var editor = new ContentPane({'class': 'editor', style: 'border: none; padding: 0; margin: 0; width: 100%; height: 100%;', content: '' +
         '<table>' +
         '  <tr><th>Title:</th><td><input class="title" type="text"></td></tr>' +
         '  <tr><th>Type:</th><td class="type"></td></tr>' +
@@ -173,7 +173,7 @@ define([
     addCartoDBAnimation: function (event) {
       var self = this;
 
-      var editor = new ContentPane({class: 'editor', style: 'border: none; padding: 0; margin: 0; width: 100%; height: 100%;', content: '' +
+      var editor = new ContentPane({'class': 'editor', style: 'border: none; padding: 0; margin: 0; width: 100%; height: 100%;', content: '' +
         '<table>' +
         '  <tr><th>Title:</th><td><input class="title" type="text"></td></tr>' +
         '  <tr><th>Type:</th><td class="type">CartoDBAnimation</td></tr>' +

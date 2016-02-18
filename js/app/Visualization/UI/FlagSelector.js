@@ -4,7 +4,7 @@ define([
   "dijit/_WidgetBase",
   "dijit/_TemplatedMixin",
   "dijit/form/_FormValueMixin",
-  "jQuery",
+  "jQuery"
 ], function(
   declare,
   CountryCodes,

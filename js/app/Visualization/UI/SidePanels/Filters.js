@@ -49,7 +49,7 @@ define([
       Filters.filteredSourceCols(self.animation).map(function (sourcename) {
         self.addChild(new Filters.Filter({
           animation: self.animation,
-          sourcename: sourcename,
+          sourcename: sourcename
         }));
       });
     }
