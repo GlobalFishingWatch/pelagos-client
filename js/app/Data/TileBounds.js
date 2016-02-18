@@ -161,7 +161,9 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       obj.update(res);
       return obj;
     } else {
-      return TileBounds.world;
+      obj = obj.clone();
+      obj.update(TileBounds.world);
+      return obj;
     }
   };
 
