@@ -83,6 +83,7 @@ define([
 
         var data = {
           html: html,
+          report: self.report,
           toString: function () { return this.html; }
         };
 

@@ -43,7 +43,6 @@ define([
 
       var infoWindowData = self.layer.getInfowindowData(0);
       if (!infoWindowData) {
-        // TODO: Push error into callback
         return;
       }
 
