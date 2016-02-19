@@ -118,7 +118,7 @@ define([
     updatedHandler: function () {
       var self = this;
       var title = self.animation.title
-      if (!title) title = animation.toString();
+      if (!title) title = self.animation.toString();
       $(self.labelNode).html(title);
 
       var color = self.animation.color;
