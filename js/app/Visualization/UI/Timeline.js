@@ -50,6 +50,17 @@ define([
     showRightLabelAtWidth: undefined,
     showCenterLabelAtWidth: undefined,
 
+    /* Valid positions: 'inside', 'top-left', 'top-right' */
+    startLabelPosition: 'inside',
+    lengthLabelPosition: 'inside',
+    endLabelPosition: 'inside',
+
+    startLabelTitle: false,
+    lengthLabelTitle: false,
+    endLabelTitle: false,
+
+    dragHandles: true,
+
     backgroundCss: {background: '#ff8888'},
     rangemarks: [
       /* Example ranges. The first one is a white background range
@@ -115,14 +126,16 @@ define([
      * for quanta labels, before we have any real qantas. */
     templateString: '' +
       '<div class="${baseClass} timeline">' +
+      '  <div class="bubble top-left"><span class="left"></span><span class="center"></span><span class="right"></span></div>' +
+      '  <div class="bubble top-right"></span><span class="center"></span><span class="right"></span></div>' +
       '  <div class="overlay">' +
       '    <div class="leftFrame"></div>' +
       '    <div class="window">' +
       '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle leftDragHandle">' +
       '      <div class="frame">' +
-      '        <div class="startLabel"><span></span></div>' +
-      '        <div class="lengthLabel"><span></span></div>' +
-      '        <div class="endLabel"><span></span></div>' +
+      '        <span class="left"><div class="startLabel"><span></span></div></span>' +
+      '        <span class="center"><div class="lengthLabel"><span></span></div></span>' +
+      '        <span class="right"><div class="endLabel"><span></span></div></span>' +
       '      </div>' +
       '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle rightDragHandle">' +
       '    </div>' +
@@ -150,6 +163,42 @@ define([
       '  </div>' +
       '</div>',
 
+    _setLabelPositionAttr: function (label, position, value) {
+      var self = this;
+      self._set(label + "Position", value);
+
+      var labelNode =  $(self.domNode).find('.' + label);
+
+      labelNode.detach();
+
+      var dst;
+      if (value == 'inside') {
+        dst = $(self.domNode).find('.overlay .frame');
+      } else {
+        dst = $(self.domNode).find('.bubble.' + value);
+      }
+      dst.find('.' + position).append(labelNode);
+    },
+
+    _setStartLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("startLabel", "left", value);
+    },
+
+    _setLengthLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("lengthLabel", "center", value);
+    },
+
+    _setEndLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("endLabel", "right", value);
+    },
+
+    _setDragHandlesAttr: function (value) {
+      var self = this;
+      $(self.domNode).find('.dragHandle').toggle(value);
+    },
 
     startup: function () {
       var self = this;
@@ -157,8 +206,6 @@ define([
 
       self.events = new Events('Timeline');
       self.node = $(self.domNode);
-      self.overlayNode = self.node.find('.overlay');
-      self.underlayNode = self.node.find('.underlay');
       self.lineVisibilityNode = self.node.find('.line-visibility');
       self.zoomInNode = self.node.find('.zoomIn');
       self.zoomOutNode = self.node.find('.zoomOut');
@@ -230,7 +277,12 @@ define([
       ['start', 'end'].map(function (side) {
         var input = side + 'Input';
         var label = '.' + side + 'Label';
-        self[input] = new DateTimeDropdown({style: "display: none"});
+        self[input] = new DateTimeDropdown({
+          style: "display: none",
+          _onBlur: function () {
+            self.editRange(side, false);
+          }
+        });
         self[input].placeAt(self.node.find(label)[0]);
         $(self[input].domNode).keypress(function () {
           if (event.which == 13) {
@@ -241,9 +293,6 @@ define([
 
         self.node.find(label).click(function (e) {
           self.editRange(side, true);
-        });
-        $(self[input].domNode).find("input").blur(function (e) {
-          self.editRange(side, false);
         });
       });
     },
@@ -464,11 +513,17 @@ define([
         date: self.windowStart,
         stepLength: self.stepLength
       }));
+      if (self.startLabelTitle) {
+        self.startLabel.prepend(self.startLabelTitle);
+      }
       self.startLabel.attr({title: self.windowStart.rfcstring().replace("T", " ")});
       self.lengthLabel.html(self.windowLengLabels.formatInterval({
         interval: (  self.windowTimeLabels.floorDate({date: self.windowEnd, stepLength:self.stepLength})
                    - self.windowTimeLabels.floorDate({date: self.windowStart, stepLength:self.stepLength}))
       }));
+      if (self.lengthLabelTitle) {
+        self.lengthLabel.prepend(self.lengthLabelTitle);
+      }
       self.lengthLabel.attr({title: self.windowLengHoverLabels.formatInterval({
         interval: self.windowEnd - self.windowStart
       })});
@@ -476,6 +531,9 @@ define([
         date: self.windowEnd,
         stepLength: self.stepLength
       }));
+      if (self.endLabelTitle) {
+        self.endLabel.prepend(self.endLabelTitle);
+      }
       self.endLabel.attr({title: self.windowEnd.rfcstring().replace("T", " ")});
     },
 

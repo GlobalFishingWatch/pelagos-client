@@ -15,9 +15,10 @@ define([
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
+  "app/Visualization/KeyBindings",
   "async",
-  "jQuery"],
-function (
+  "jQuery"
+], function (
   Class,
   Dialog,
   LoadingInfo,
@@ -34,6 +35,7 @@ function (
   ObjectTemplate,
   BorderContainer,
   ContentPane,
+  KeyBindings,
   async,
   $) {
   return Class({
@@ -179,6 +181,52 @@ function (
       self.timeline = new Timeline({'class': 'main-timeline'});
       self.timeline.placeAt(self.visualization.node[0]);
       self.timeline.startup();
+
+
+      /* FIXME: The following code to be removed once testing of the
+       * new design is done */
+
+      var setDesign = function (design) {
+        Object.items(design).map(function (item) {
+          self.timeline.set(item.key, item.value);
+        });
+      };
+      var designs = [
+        {
+          startLabelPosition: 'top-left',
+          lengthLabelPosition: 'inside',
+          endLabelPosition: 'top-left',
+
+          startLabelTitle: 'FROM ',
+          lengthLabelTitle: false,
+          endLabelTitle: 'TO ',
+
+          dragHandles: true
+        },
+        {
+          startLabelPosition: 'inside',
+          lengthLabelPosition: 'inside',
+          endLabelPosition: 'inside',
+
+          startLabelTitle: false,
+          lengthLabelTitle: false,
+          endLabelTitle: false,
+
+          dragHandles: false
+        }
+      ];
+      var designIdx = 1;
+      setDesign(designs[0]);
+      KeyBindings.register(
+        ['Alt', 'T'], null, 'General',
+        'Switch between timeline designs',
+        function () {
+          setDesign(designs[designIdx % designs.length]);
+          designIdx++;
+        }
+      );
+
+
 
       var setRange = function (e) {
         if (updating) return;
