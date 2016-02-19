@@ -118,11 +118,13 @@ define([
       '  <div class="overlay">' +
       '    <div class="leftFrame"></div>' +
       '    <div class="window">' +
+      '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle leftDragHandle">' +
       '      <div class="frame">' +
       '        <div class="startLabel"><span></span></div>' +
       '        <div class="lengthLabel"><span></span></div>' +
       '        <div class="endLabel"><span></span></div>' +
       '      </div>' +
+      '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle rightDragHandle">' +
       '    </div>' +
       '    <div class="rightFrame"></div>' +
       '  </div>' +
@@ -746,9 +748,9 @@ define([
 
       var pos = self.getFirstPosition(self.getEventPositions(e));
 
-      if (pos.pageX >= winPos.left && pos.pageX <= winPos.innerLeft) {
+      if (pos.pageX <= winPos.innerLeft) {
         self.dragStart('windowResizeLeft', e);
-      } else if (pos.pageX >= winPos.innerRight && pos.pageX <= winPos.right) {
+      } else if (pos.pageX >= winPos.innerRight) {
         self.dragStart('windowResizeRight', e);
       }
     },

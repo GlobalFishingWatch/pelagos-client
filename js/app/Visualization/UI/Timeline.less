@@ -9,7 +9,7 @@
   -o-transform: rotate(@angle);
 }
 
-.timeline {
+.Timeline {
   cursor: pointer;
   z-index: 0;
   font-family: 'Roboto', sans-serif; 
@@ -76,6 +76,19 @@
       padding-left: 4pt;
       padding-right: 4pt;
       cursor: col-resize;
+
+      .dragHandle {
+        position: absolute;
+        top: 50%;
+        margin-top: -15px;
+      }
+      .leftDragHandle {
+        margin-left: -14px;
+      }
+      .rightDragHandle {
+        right: 0;
+        margin-right: -9px;
+      }
 
       .frame {
         cursor: pointer;
