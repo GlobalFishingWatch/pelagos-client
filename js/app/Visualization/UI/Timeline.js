@@ -174,6 +174,10 @@ define([
       self.zoomOutNode.mousedown(function (e) { self.eatEvent(e); });
       self.windowNode.mousedown(self.windowDragStart.bind(self));
 
+      self.node.find('.startLabel, .endLabel').mousedown(function (e) {
+        if (event.stopPropagation) event.stopPropagation();
+      });
+
       self.node.mousedown(self.dragStart.bind(self, 'moveTimeline'));
       $(document).mousemove(self.move.bind(self));
       $(document).mouseup(self.dragEnd.bind(self));
@@ -218,23 +222,48 @@ define([
       self.setRange(self.windowStart, self.windowEnd);
       self.lastHoverTime = undefined;
 
+      ['start', 'end'].map(function (side) {
+        var input = side + 'Input';
+        var label = '.' + side + 'Label';
+        self[input] = new DateTimeDropdown({style: "display: none"});
+        self[input].placeAt(self.node.find(label)[0]);
+        $(self[input].domNode).keypress(function () {
+          if (event.which == 13) {
+            self.editRange(side, false);
+            event.preventDefault();
+          }
+        });
 
-      self.startInput = new DateTimeDropdown({style: "display: none"});
-      self.startInput.placeAt(self.node.find('.startLabel')[0]);
-
-      self.node.find('.startLabel').mousedown(function (e) { self.eatEvent(e); });
-      self.node.find('.startLabel').mousedown(function (e) { self.eatEvent(e); });
-
-      self.node.find('.startLabel').click(function (e) {
-        self.startLabel.hide();
-        self.startInput.set("value", self.windowStart);
-        $(self.startInput.domNode).show();
-        $(self.startInput.domNode).focus();
+        self.node.find(label).click(function (e) {
+          self.editRange(side, true);
+        });
+        $(self[input].domNode).find("input").blur(function (e) {
+          self.editRange(side, false);
+        });
       });
-      $(self.startInput.domNode).find("input").blur(function (e) {
-        self.startLabel.show();
-        $(self.startInput.domNode).hide();
-      });
+    },
+
+    editRange: function (side, beginEdit) {
+      var self = this;
+      var studlySide = side.slice(0, 1).toUpperCase() + side.slice(1);
+      var label = self[side + 'Label'];
+      var input = self[side + 'Input'];
+
+      if (beginEdit) {
+        input.set("value", self['window' + studlySide]);
+        label.hide();
+        $(input.domNode).show();
+        input.focus();
+      } else {
+        label.show();
+        $(input.domNode).hide();
+        var res = {
+          windowStart: self.windowStart,
+          windowEnd: self.windowEnd
+        };
+        res['window' + studlySide] = input.get("value");
+        self.setRange(res.windowStart, res.windowEnd);
+      }
     },
 
     setRangeFromOffset: function (offset, type) {
