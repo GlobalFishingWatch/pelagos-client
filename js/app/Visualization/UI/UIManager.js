@@ -176,10 +176,9 @@ function (
       var self = this;
       var updating = false;
 
-      self.timelineNode = $('<div class="main-timeline">');
-      self.visualization.node.append(self.timelineNode);
-
-      self.timeline = new Timeline({node: self.timelineNode});
+      self.timeline = new Timeline({'class': 'main-timeline'});
+      self.timeline.placeAt(self.visualization.node[0]);
+      self.timeline.startup();
 
       var setRange = function (e) {
         if (updating) return;

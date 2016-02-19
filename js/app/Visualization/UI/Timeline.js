@@ -1,5 +1,9 @@
 define([
-  'app/Class',
+  "dojo/_base/declare",
+  "dijit/_WidgetBase",
+  "dijit/_TemplatedMixin",
+  "dijit/_WidgetsInTemplateMixin",
+  "dijit/_Container",
   'app/Events',
   'app/Interval',
   'app/Visualization/UI/TimeLabel',
@@ -8,7 +12,11 @@ define([
   'less',
   'app/LangExtensions'
 ], function (
-  Class,
+  declare,
+  _WidgetBase,
+  _TemplatedMixin,
+  _WidgetsInTemplateMixin,
+  _Container,
   Events,
   Interval,
   TimeLabel,
@@ -26,9 +34,8 @@ define([
   var pixelsPerPt = temp.innerWidth() / 10000;
   temp.remove();
 
-
-  return Class({
-    name: 'Timeline',
+  return declare("Timeline", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+    baseClass: 'Timeline',
 
     zoomSize: 1.2,
     hiddenContext: 2, // total space, as a multiple of visible size
@@ -100,58 +107,54 @@ define([
       intervalPrecisionLimit: undefined
     }),
 
+    app: app,
 
-    /**** External API ****/
 
-    initialize: function (args) {
+    /* Note about the one quanta in each tickmarks bar: This is just
+     * to be able to measure its height to calculate the font size
+     * for quanta labels, before we have any real qantas. */
+    templateString: '' +
+      '<div class="${baseClass} timeline">' +
+      '  <div class="overlay">' +
+      '    <div class="leftFrame"></div>' +
+      '    <div class="window">' +
+      '      <div class="frame">' +
+      '        <div class="startLabel"><span></span></div>' +
+      '        <div class="lengthLabel"><span></span></div>' +
+      '        <div class="endLabel"><span></span></div>' +
+      '      </div>' +
+      '    </div>' +
+      '    <div class="rightFrame"></div>' +
+      '  </div>' +
+      '  <div class="line-visibility">' +
+      '    <div class="line">' +
+      '      <div class="rangemarks"></div>' +
+      '      <div class="tickmarks-container">' +
+      '        <div class="tickmarks top"><div class="quanta"><div class="frame"><div class="quanta-label">&nbsp;</div></div></div></div>' +
+      '        <div class="tickmarks bottom"><div class="quanta"><div class="frame"><div class="quanta-label">&nbsp;</div></div></div></div>' +
+      '      </div>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="underlay">' +
+      '    <div class="leftFrame"></div>' +
+      '    <div class="window">' +
+      '      <div class="frame"></div>' +
+      '    </div>' +
+      '    <div class="rightFrame"></div>' +
+      '  </div>' +
+      '  <div class="zoom">' +
+      '    <a class="zoomIn"><img src="${app.dirs.img}/smaller_increments.png"> more increments</a>' +
+      '    <a class="zoomOut"><img src="${app.dirs.img}/larger_increments.png"> fewer increments</a>' +
+      '  </div>' +
+      '</div>',
+
+
+    startup: function () {
       var self = this;
-
-      $.extend(self, args);
-
-      self.node = $(self.node);
+      self.inherited(arguments);
 
       self.events = new Events('Timeline');
-
-      self.node.addClass('timeline');
-
-      /* Note about the one quanta in each tickmarks bar: This is just
-       * to be able to measure its height to calculate the font size
-       * for quanta labels, before we have any real qantas. */
-
-      self.node.append(
-        "<div class='overlay'>" +
-        "  <div class='leftFrame'></div>" +
-        "  <div class='window'>" +
-        "    <div class='frame'>" +
-        "      <div class='startLabel'><span></span></div>" +
-        "      <div class='lengthLabel'><span></span></div>" +
-        "      <div class='endLabel'><span></span></div>" +
-        "    </div>" +
-        "  </div>" +
-        "  <div class='rightFrame'></div>" +
-        "</div>" +
-        "<div class='line-visibility'>" +
-        "  <div class='line'>" +
-        "    <div class='rangemarks'></div>" +
-        "    <div class='tickmarks-container'>" +
-        "      <div class='tickmarks top'><div class='quanta'><div class='frame'><div class='quanta-label'>&nbsp;</div></div></div></div>" +
-        "      <div class='tickmarks bottom'><div class='quanta'><div class='frame'><div class='quanta-label'>&nbsp;</div></div></div></div>" +
-        "    </div>" +
-        "  </div>" +
-        "</div>" +
-        "<div class='underlay'>" +
-        "  <div class='leftFrame'></div>" +
-        "  <div class='window'>" +
-        "    <div class='frame'></div>" +
-        "  </div>" +
-        "  <div class='rightFrame'></div>" +
-        "</div>" +
-        "<div class='zoom'>" +
-        "  <a class='zoomIn'><img src='" + app.dirs.img + "/smaller_increments.png'> more increments</a>" +
-        "  <a class='zoomOut'><img src='" + app.dirs.img + "/larger_increments.png'> fewer increments</a>" +
-        "</div>"
-      );
-
+      self.node = $(self.domNode);
       self.overlayNode = self.node.find('.overlay');
       self.underlayNode = self.node.find('.underlay');
       self.lineVisibilityNode = self.node.find('.line-visibility');
@@ -242,6 +245,8 @@ define([
         });
       });
     },
+
+    /**** External API ****/
 
     editRange: function (side, beginEdit) {
       var self = this;
