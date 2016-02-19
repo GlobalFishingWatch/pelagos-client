@@ -66,8 +66,8 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
 
   TileBounds.rangeSize = 1000 * 60 * 60 * 24 * 30;
 
-  TileBounds.tileParamsForRange = function(range, rangeSize) {
-    if (typeof(rangeSize) != "numeric") rangeSize = TileBounds.rangeSize;
+  TileBounds.tileParamsForRange = function(range, tilesPerScreen, rangeSize) {
+    if (typeof(rangeSize) != "number") rangeSize = TileBounds.rangeSize;
     var range = new Timerange(range);
 
     var res = {
@@ -82,27 +82,28 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       }
     };
 
-    res.tilestart = Math.floor(range.start.getTime() / TileBounds.rangeSize) * TileBounds.rangeSize;
-    res.tileend = Math.ceil(range.end.getTime() / TileBounds.rangeSize) * TileBounds.rangeSize;
+    res.tilestart = Math.floor(range.start.getTime() / rangeSize) * rangeSize;
+    res.tileend = Math.ceil(range.end.getTime() / rangeSize) * rangeSize;
 
     return res;
   };
 
   TileBounds.tileBoundsForRange = function(bounds, tilesPerScreen, rangeSize) {
     /* Returns a list of tile bounds covering a region. */
+    if (typeof(rangeSize) != "number") rangeSize = TileBounds.rangeSize;
 
     var params = TileBounds.tileParamsForRange(bounds, tilesPerScreen, rangeSize);
     Logging.main.log("Data.BaseTiledFormat.tileBoundsForRange", params);
 
     res = [];
-    for (var t = params.tilestart; t < params.tileend; t += TileBounds.rangeSize) {
+    for (var t = params.tilestart; t < params.tileend; t += rangeSize) {
       res.push(new Timerange([
-        new Date(t), new Date(t + TileBounds.rangeSize)]));
+        new Date(t), new Date(t + rangeSize)]));
     }
 
     return {
       set: res,
-      tilesPerScreen: Math.ceil(tilesPerScreen / (params.length / TileBounds.rangeSize)),
+      tilesPerScreen: Math.ceil(tilesPerScreen / (params.length / rangeSize)),
       params: params
     };
   };
@@ -168,6 +169,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
   };
 
   TileBounds.zoomLevelForTileBounds = function (bounds) {
+    bounds = bounds.getBounds();
     return Math.max(
       0,
       Math.floor(Math.min(
