@@ -144,7 +144,25 @@ Labels for such a menu should be added to the column specification under colsByN
             "Strawberry": 2.0
           }
         }
-      },
+      }
+
+An optional interpretation of the labels can be supplied:
+
+      "colsByName": {
+        "category": {
+          "type": "Float32",
+          "min": -1.0,
+          "max": 2.0, 
+          "choices_type": "ISO 3166-1 alpha-2",
+          "choices": {
+            "SE": 0.0,
+            "FI": 1.0,
+            "DK": 2.0
+            "IS": 3.0
+            "NO": 4.0
+          }
+        }
+      }
 
 # The workspace secification
 A workspace is a JSON file loadable from a URL. If the URL contains a query ?id=SOMEID, then the url without the query will be used to save new workspaces to using a POST request.

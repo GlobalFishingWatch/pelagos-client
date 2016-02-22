@@ -34,7 +34,7 @@ define(["app/Class"], function(Class) {
 
     toString: function () {
       var self = this;
-      return self.start.rfcstring() + "," + self.end.rfcstring();
+      return self.start.toISOString() + "," + self.end.toISOString();
     },
 
     contains: function(t, inclusive) {
@@ -147,7 +147,7 @@ define(["app/Class"], function(Class) {
 
     toJSON: function () {
       var self = this;
-      return {start:self.start.rfcstring(), end:self.end.rfcstring()}
+      return {start:self.start.toISOString(), end:self.end.toISOString()}
     }
   });
   return Timerange;

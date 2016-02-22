@@ -301,6 +301,23 @@ body {
   }
 }
 
+
+.Filters {
+  .Filters-AnimationFilters {
+    margin-bottom: 10px;
+    h2 {
+      color: #767777;
+      font-size: 100%;
+      padding: 0;
+      margin: 0;
+      font-weight: 500;
+    }
+    .Filters-Filter-sourcename {
+      width: 100%;
+    }
+  }
+}
+
 .control_box {
   width:48pt;
   height: 80pt;
@@ -474,8 +491,51 @@ body {
   }
 }
 
+.AnimationManagerUI {
+  overflow: auto;
+  padding-top: 0;
+  padding-bottom: 0;
 
+  .AnimationManagerUI-AnimationWidget {
+    padding-top: 0;
+    padding-bottom: 0px;
+    padding-left: 2px;
+    clear: both;
+  }
+}
 
+.DataViewUI-SelectionsUI-SelectionUI {
+  padding-top: 0;
+  padding-bottom: 0;
+  clear: both;
+}
+
+.DataViewUI-UniformsUI-UniformUI {
+  padding-top: 0;
+  padding-bottom: 8px;
+  clear: both;
+}
+
+.DataViewUI-ColsUI-ColUI {
+  padding-top: 0;
+  padding-bottom: 0;
+  clear: both;
+
+  .DataViewUI-ColsUI-ColUIContainer {
+    padding-left: 2em;
+
+    .DataViewUI-ColsUI-ColUI-SourceUI {
+      padding-top: 0;
+      padding-bottom: 8px;
+      clear: both;
+
+      .remove {
+        float:left;
+      }
+
+    }
+  }
+}
 
 
 
@@ -645,24 +705,24 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    #layers, #vessel_identifiers {
+    #layers, .InfoUI {
       padding: 0 5%;
       word-wrap: break-word;
     }
 
-    #layers h2, #vessel_identifiers h2 {
+    #layers h2, .InfoUI h2 {
       color: #767777;
-      border-bottom: solid 1px #767777;
+      border-bottom: solid 1px #ddd;
       font-size: 100%;
       padding-top: 0.5rem;
       font-weight: 500;
     }
 
-    #vessel_identifiers .cartodb-popup-content h4 {
+    .InfoUI .cartodb-popup-content h4 {
       margin: 0 0 0 0;
     }
 
-    #vessel_identifiers .cartodb-popup-content p {
+    .InfoUI .cartodb-popup-content p {
       margin: 0 0 1rem 0;
     }
 
@@ -827,12 +887,15 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   }
 }
 
-.imageselector {
-  .choices {
-    line-height: 0;
-    .choice {
+.FlagSelector {
+  .FlagSelector-choices {
+    line-height: 15px;
+    overflow: auto;
+    width:200px;
+    max-height: 200px;
+    .FlagSelector-choice {
       border: 2px solid white;
-      &.selected, &:hover {
+      &.FlagSelector-selected, &:hover {
         border: 2px solid blue;
       }
     }
@@ -848,7 +911,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     font-size: 200%;
   }
 
-  #layers h2, #vessel_identifiers h2 {
+  #layers h2, .InfoUI h2 {
     font-size: 200%;
   }
 

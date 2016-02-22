@@ -6,7 +6,7 @@ define([
   "async",
   "jQuery",
   "app/Visualization/KeyBindings",
-  "app/LoadingInfo",
+  "app/LoadingInfo"
 ], function(
   Class,
   Dialog,
@@ -52,8 +52,8 @@ define([
         '</div>'
       }));
 
-      self.sourcesList = new ContentPane({region: 'center', content: '', class: 'sourcesList', style: 'border: none; padding: 0; margin: 0;'});
-      self.animationsList = new ContentPane({region: 'right', splitter: true, content: '', class: 'animationsList', style: 'border: none; padding: 0; margin: 0; width: 150px'});
+      self.sourcesList = new ContentPane({region: 'center', content: '', 'class': 'sourcesList', style: 'border: none; padding: 0; margin: 0;'});
+      self.animationsList = new ContentPane({region: 'right', splitter: true, content: '', 'class': 'animationsList', style: 'border: none; padding: 0; margin: 0; width: 150px'});
       self.container.addChild(self.sourcesList);
       self.container.addChild(self.animationsList);
 
