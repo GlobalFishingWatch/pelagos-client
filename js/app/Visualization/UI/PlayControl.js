@@ -66,6 +66,7 @@ define([
       var value = self.visualization.state.getValue("paused");
       $(self.domNode).find(".paused").toggle(value);
       $(self.domNode).find(".playing").toggle(!value);
+      $(self.domNode).find(".share").toggle(value);
     },
 
     setLength: function (event) {
