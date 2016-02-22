@@ -203,7 +203,9 @@ define([
           lengthLabelTitle: false,
           endLabelTitle: 'TO ',
 
-          dragHandles: true
+          dragHandles: true,
+
+          zoomPosition: 'right'
         },
         {
           startLabelPosition: 'inside',
@@ -214,7 +216,9 @@ define([
           lengthLabelTitle: false,
           endLabelTitle: false,
 
-          dragHandles: false
+          dragHandles: false,
+
+          zoomPosition: 'left'
         }
       ];
       var designIdx = 1;

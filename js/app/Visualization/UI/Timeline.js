@@ -61,6 +61,8 @@ define([
 
     dragHandles: true,
 
+    zoomPosition: 'left',
+
     backgroundCss: {background: '#ff8888'},
     rangemarks: [
       /* Example ranges. The first one is a white background range
@@ -198,6 +200,11 @@ define([
     _setDragHandlesAttr: function (value) {
       var self = this;
       $(self.domNode).find('.dragHandle').toggle(value);
+    },
+
+    _setZoomPositionAttr: function (value) {
+      var self = this;
+      $(self.domNode).find('.zoom').attr({'class': 'zoom ' + value});
     },
 
     startup: function () {
