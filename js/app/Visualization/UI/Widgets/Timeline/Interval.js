@@ -24,11 +24,9 @@
 */
 
 define([
-  "dojo/_base/declare",
-  "lodash"
+  "dojo/_base/declare"
 ], function (
-  declare,
-  _
+  declare
 ) {
   var Interval = declare("TimeLabel", [], {
     keys: ["years", "months", "days", "hours", "minutes", "seconds", "milliseconds"],
@@ -48,7 +46,9 @@ define([
           self[key] = arg1[key] - arg2[key];
         });
       } else {
-        _.extend(self, arg1);
+        for (var key in arg1) {
+          self[key] = arg1[key];
+        }
         if (self.asMilliseconds == undefined) {
           // Aproximate it :)
           var d = new Date(Date.UTC(1970, 1, 1));

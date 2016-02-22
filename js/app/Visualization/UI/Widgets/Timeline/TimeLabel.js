@@ -1,17 +1,17 @@
 define([
   "dojo/_base/declare",
-  './Interval',
-  "lodash"
+  './Interval'
 ], function (
   declare,
-  Interval,
-  _
+  Interval
 ) {
   return declare("TimeLabel", [], {
     constructor: function (args) {
       var self = this;
 
-      _.extend(self, args);
+      for (var key in args) {
+        self[key] = args[key];
+      }
     },
 
     intervals: {
@@ -139,7 +139,14 @@ define([
         }
       }
 
-      return _.flatten(_.zip([""].concat(separators), resDateList)).join('');
+      separators = [""].concat(separators);
+
+      var res = [];
+      for (var i = 0; i < resDateList.length; i++) {
+        res.push(separators[i]);
+        res.push(resDateList[i]);
+      }
+      return res.join('');
     },
 
     formatInterval: function (args) {
