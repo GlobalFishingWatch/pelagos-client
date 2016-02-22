@@ -127,7 +127,7 @@ define([
     templateString: '' +
       '<div class="${baseClass} timeline">' +
       '  <div class="bubble top-left"><span class="left"></span><span class="center"></span><span class="right"></span></div>' +
-      '  <div class="bubble top-right"></span><span class="center"></span><span class="right"></span></div>' +
+      '  <div class="bubble top-right"><span class="left"></span><span class="center"></span><span class="right"></span></div>' +
       '  <div class="overlay">' +
       '    <div class="leftFrame"></div>' +
       '    <div class="window">' +

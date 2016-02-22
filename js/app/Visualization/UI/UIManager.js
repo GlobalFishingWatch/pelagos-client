@@ -195,9 +195,9 @@ define([
       };
       var designs = [
         {
-          startLabelPosition: 'top-left',
+          startLabelPosition: 'top-right',
           lengthLabelPosition: 'inside',
-          endLabelPosition: 'top-left',
+          endLabelPosition: 'top-right',
 
           startLabelTitle: 'FROM ',
           lengthLabelTitle: false,
@@ -224,10 +224,12 @@ define([
         'Switch between timeline designs',
         function () {
           setDesign(designs[designIdx % designs.length]);
+          self.controlButtonsNode.toggle(designIdx % designs.length == designs.length - 1);
+          $(self.playControl.domNode).toggle(designIdx % designs.length != designs.length - 1);
           designIdx++;
         }
       );
-
+      self.controlButtonsNode.toggle(false);
 
 
       var setRange = function (e) {
