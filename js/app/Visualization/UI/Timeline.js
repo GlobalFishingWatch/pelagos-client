@@ -5,8 +5,8 @@ define([
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
   'app/Interval',
-  'app/Visualization/UI/TimeLabel',
-  'app/Visualization/UI/DateTimeDropdown',
+  './TimeLabel',
+  './DateTimeDropdown',
   'jQuery',
   'less'
 ], function (
