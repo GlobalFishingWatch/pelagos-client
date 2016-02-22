@@ -8,8 +8,7 @@ define([
   'app/Visualization/UI/TimeLabel',
   'app/Visualization/UI/DateTimeDropdown',
   'jQuery',
-  'less',
-  'app/LangExtensions'
+  'less'
 ], function (
   declare,
   _WidgetBase,
@@ -673,9 +672,9 @@ define([
     },
 
     getXorder: function (positions) {
-      return Object.values(
-        positions
-      ).sort(function (a, b) {
+      return Object.keys(positions).map(function (key) {
+        return positions[key];
+      }).sort(function (a, b) {
         return a.pageX - b.pageX;
       }).map(function (pos) {
         return pos.identifier.toString();
@@ -849,7 +848,7 @@ define([
 
     dragStart_moveTimeline: function (e) {
       var self = this;
-      var touchesNr = Object.values(self.dragData.startPositions).length;
+      var touchesNr = Object.keys(self.dragData.startPositions).length;
 
       if (touchesNr == 1) {
         self.dragData.type = "moveTimeline_pointer";
