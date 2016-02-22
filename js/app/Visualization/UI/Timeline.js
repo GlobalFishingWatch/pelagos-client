@@ -4,7 +4,6 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
-  'app/Events',
   'app/Interval',
   'app/Visualization/UI/TimeLabel',
   'app/Visualization/UI/DateTimeDropdown',
@@ -17,7 +16,6 @@ define([
   _TemplatedMixin,
   _WidgetsInTemplateMixin,
   _Container,
-  Events,
   Interval,
   TimeLabel,
   DateTimeDropdown,
@@ -215,8 +213,6 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      self.events = new Events('Timeline');
-
       self.node = $(self.domNode);
       self.lineVisibilityNode = self.node.find('.line-visibility');
       self.leftFrameNode = self.node.find('.leftFrame');
@@ -273,9 +269,6 @@ define([
 
     /**** External API ****/
 
-    editRangeStart: function () { this.editRange('start', true); },
-    editRangeEnd: function () { this.editRange('end', true); },
-
     editRange: function (side, beginEdit) {
       var self = this;
       var studlySide = side.slice(0, 1).toUpperCase() + side.slice(1);
@@ -312,7 +305,7 @@ define([
 
       self.updateRange();
 
-      self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
+      self.emit(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
     },
 
     setRange: function (windowStart, windowEnd, type) {
@@ -336,7 +329,7 @@ define([
 
       self.updateRange();
 
-      self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
+      self.emit(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
     },
 
     zoom: function (factor, middle) {
@@ -703,6 +696,9 @@ define([
 
     /**** Input event handling ****/
 
+    editRangeStart: function () { this.editRange('start', true); },
+    editRangeEnd: function () { this.editRange('end', true); },
+
     zoomWheel: function(event) {
       var self = this;
       if (event.deltaY > 0) {
@@ -738,7 +734,7 @@ define([
         if (   coords.left <= pos.pageX && pos.pageX <= coords.right
             && coords.top <= pos.pageY && pos.pageY <= coords.bottom) {
           self.lastHoverTime = self.pixelPositionToTime(pos.pageX);
-          self.events.triggerEvent('hover', {time: self.lastHoverTime});
+          self.emit('hover', {time: self.lastHoverTime});
         }
       }
     },
@@ -812,7 +808,7 @@ define([
 
     dragStart_windowResizeLeft: function (e) {
       var self = this;
-      self.events.triggerEvent('user-update-start', {type:'window-resize-left'});
+      self.emit('user-update-start', {type:'window-resize-left'});
       self.dragStartWindowStart = self.windowStart;
     },
     drag_windowResizeLeft: function (e) {
@@ -832,7 +828,7 @@ define([
 
     dragStart_windowResizeRight: function (e) {
       var self = this;
-      self.events.triggerEvent('user-update-start', {type:'window-resize-right'});
+      self.emit('user-update-start', {type:'window-resize-right'});
       self.dragStartWindowEnd = self.windowEnd;
     },
     drag_windowResizeRight: function (e) {
@@ -873,7 +869,7 @@ define([
 
       self.dragData.startXorder = self.getXorder(self.dragData.startPositions);
 
-      self.events.triggerEvent('user-update-start', {type:'move-timeline'});
+      self.emit('user-update-start', {type:'move-timeline'});
     },
     drag_moveTimeline_pointer: function (e) {
       var self = this;
@@ -882,7 +878,7 @@ define([
     },
     dragEnd_moveTimeline_pointer: function (e) {
       var self = this;
-      self.events.triggerEvent('set-range', {start: self.windowStart, end: self.windowEnd});
+      self.emit('set-range', {start: self.windowStart, end: self.windowEnd});
     },
 
     dragStart_moveTimeline_multiTouch: function (e) {
@@ -897,7 +893,7 @@ define([
       self.dragData.timeRight = self.dragData.startPositions[right].time.getTime();
       self.dragData.timeWidth = self.dragData.timeRight - self.dragData.timeLeft;
 
-      self.events.triggerEvent('user-update-start', {type:'move-timeline'});
+      self.emit('user-update-start', {type:'move-timeline'});
     },
     drag_moveTimeline_multiTouch: function (e) {
       var self = this;
@@ -934,7 +930,7 @@ define([
     },
     dragEnd_moveTimeline_multiTouch: function (e) {
       var self = this;
-      self.events.triggerEvent('set-range', {start: self.windowStart, end: self.windowEnd});
+      self.emit('set-range', {start: self.windowStart, end: self.windowEnd});
     }
   });
 });

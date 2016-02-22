@@ -249,15 +249,13 @@ define([
         }
       }
 
-      self.timeline.events.on({
-        'set-range': setRange,
-        'temporary-range': setRange,
-        'user-update-start': function (e) {
-          self.visualization.state.setValue("paused", true);
-        },
-        'hover': function (e) {
-          self.visualization.state.setValue("timeFocus", e.time);
-        }
+      self.timeline.on('set-range', setRange);
+      self.timeline.on('temporary-range', setRange);
+      self.timeline.on('user-update-start', function (e) {
+        self.visualization.state.setValue("paused", true);
+      });
+      self.timeline.on('hover', function (e) {
+        self.visualization.state.setValue("timeFocus", e.time);
       });
 
       var daySliderUpdateMinMax = function() {
