@@ -1,8 +1,14 @@
-define(['app/Class', 'app/Interval', "lodash"], function (Class, Interval, _) {
-  return Class({
-    name: 'TimeLabel',
-
-    initialize: function (args) {
+define([
+  "dojo/_base/declare",
+  'app/Interval',
+  "lodash"
+], function (
+  declare,
+  Interval,
+  _
+) {
+  return declare("TimeLabel", [], {
+    constructor: function (args) {
       var self = this;
 
       _.extend(self, args);
