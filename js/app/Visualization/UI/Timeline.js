@@ -127,17 +127,17 @@ define([
      * to be able to measure its height to calculate the font size
      * for quanta labels, before we have any real qantas. */
     templateString: '' +
-      '<div class="${baseClass} timeline">' +
+      '<div class="${baseClass} timeline" data-dojo-attach-event="touchstart:timelineMousedown,mousedown:timelineMousedown,mousewheel:zoomWheel,selectstart:eatEvent" unselectable="on">' +
       '  <div class="bubble top-left"><span class="left"></span><span class="center"></span><span class="right"></span></div>' +
       '  <div class="bubble top-right"><span class="left"></span><span class="center"></span><span class="right"></span></div>' +
       '  <div class="overlay">' +
       '    <div class="leftFrame"></div>' +
-      '    <div class="window">' +
+      '    <div class="window" data-dojo-attach-event="touchstart:windowDragStart,mousedown:windowDragStart">' +
       '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle leftDragHandle">' +
       '      <div class="frame">' +
-      '        <span class="left"><div class="startLabel"><span></span></div></span>' +
+      '        <span class="left"><div class="startLabel" data-dojo-attach-event="mousedown:stopPropagation,click:editRangeStart"><span></span></div></span>' +
       '        <span class="center"><div class="lengthLabel"><span></span></div></span>' +
-      '        <span class="right"><div class="endLabel"><span></span></div></span>' +
+      '        <span class="right"><div class="endLabel" data-dojo-attach-event="mousedown:stopPropagation,click:editRangeEnd"><span></span></div></span>' +
       '      </div>' +
       '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle rightDragHandle">' +
       '    </div>' +
@@ -160,8 +160,12 @@ define([
       '    <div class="rightFrame"></div>' +
       '  </div>' +
       '  <div class="zoom">' +
-      '    <a class="zoomIn"><img src="${app.dirs.img}/smaller_increments.png"> more increments</a>' +
-      '    <a class="zoomOut"><img src="${app.dirs.img}/larger_increments.png"> fewer increments</a>' +
+      '    <a class="zoomIn" data-dojo-attach-event="touchstart:zoomIn,click:zoomIn,mousedown:eatEvent">' +
+            '<img src="${app.dirs.img}/smaller_increments.png"> more increments' +
+          '</a>' +
+      '    <a class="zoomOut" data-dojo-attach-event="touchstart:zoomOut,click:zoomOut,mousedown:eatEvent">' +
+            '<img src="${app.dirs.img}/larger_increments.png"> fewer increments' +
+          '</a>' +
       '  </div>' +
       '</div>',
 
@@ -212,10 +216,9 @@ define([
       self.inherited(arguments);
 
       self.events = new Events('Timeline');
+
       self.node = $(self.domNode);
       self.lineVisibilityNode = self.node.find('.line-visibility');
-      self.zoomInNode = self.node.find('.zoomIn');
-      self.zoomOutNode = self.node.find('.zoomOut');
       self.leftFrameNode = self.node.find('.leftFrame');
       self.windowNode = self.node.find('.window');
       self.windowFrameNode = self.node.find('.window .frame');
@@ -227,42 +230,10 @@ define([
       self.rangemarksNode = self.node.find('.rangemarks');
       self.tickmarksNode = self.node.find('.tickmarks');
 
-      self.zoomInNode.click(self.zoomIn.bind(self, undefined));
-      self.zoomOutNode.click(self.zoomOut.bind(self, undefined));
-      self.zoomInNode.mousedown(function (e) { self.eatEvent(e); });
-      self.zoomOutNode.mousedown(function (e) { self.eatEvent(e); });
-      self.windowNode.mousedown(self.windowDragStart.bind(self));
-
-      self.node.find('.startLabel, .endLabel').mousedown(function (e) {
-        if (event.stopPropagation) event.stopPropagation();
-      });
-
-      self.node.mousedown(self.dragStart.bind(self, 'moveTimeline'));
       $(document).mousemove(self.move.bind(self));
       $(document).mouseup(self.dragEnd.bind(self));
-
-
-      self.zoomInNode.on('touchstart', self.zoomIn.bind(self, undefined));
-      self.zoomOutNode.on('touchstart', self.zoomOut.bind(self, undefined));
-      self.zoomInNode.on('touchstart', function (e) { self.eatEvent(e); });
-      self.zoomOutNode.on('touchstart', function (e) { self.eatEvent(e); });
-      self.windowNode.on('touchstart', self.windowDragStart.bind(self));
-
-      self.node.on('touchstart', self.dragStart.bind(self, 'moveTimeline'));
       $(document).on('touchmove', self.move.bind(self));
       $(document).on('touchend', self.dragEnd.bind(self));
-
-      self.node.mousewheel(function(event, delta, deltaX, deltaY) {
-        if (deltaY > 0) {
-          self.zoomIn(event);
-        } else if (deltaY < 0) {
-          self.zoomOut(event);
-        }
-        else
-          self.eatEvent(event);
-      });
-
-      self.node.attr('unselectable', 'on').css('user-select', 'none').on('selectstart', false);
 
       self.lineNode.css({'width': self.hiddenContext * 100.0 + '%'});
       self.tickmarksNode.css({"height": (100 / self.tickmarksNode.length) + "%"});
@@ -297,14 +268,13 @@ define([
             event.preventDefault();
           }
         });
-
-        self.node.find(label).click(function (e) {
-          self.editRange(side, true);
-        });
       });
     },
 
     /**** External API ****/
+
+    editRangeStart: function () { this.editRange('start', true); },
+    editRangeEnd: function () { this.editRange('end', true); },
 
     editRange: function (side, beginEdit) {
       var self = this;
@@ -719,6 +689,11 @@ define([
       });
     },
 
+    stopPropagation: function (e) {
+      if (e == undefined) return;
+      if (e.stopPropagation) e.stopPropagation();
+    },
+
     eatEvent: function (e) {
       if (e == undefined) return;
       if (e.preventDefault) e.preventDefault();
@@ -728,16 +703,26 @@ define([
 
     /**** Input event handling ****/
 
+    zoomWheel: function(event) {
+      var self = this;
+      if (event.deltaY > 0) {
+        self.zoom(self.zoomSize, self.pixelPositionToTime(event.pageX));
+      } else if (event.deltaY < 0) {
+        self.zoom(1 / self.zoomSize, self.pixelPositionToTime(event.pageX));
+      } else {
+        self.eatEvent(event);
+      }
+    },
+
     zoomOut: function (e) {
       var self = this;
-      self.zoom(self.zoomSize, e && self.pixelPositionToTime(e.pageX));
+      self.zoom(self.zoomSize);
       self.eatEvent(e);
     },
 
     zoomIn: function (e) {
       var self = this;
-
-      self.zoom(1 / self.zoomSize, e && self.pixelPositionToTime(e.pageX));
+      self.zoom(1 / self.zoomSize);
       self.eatEvent(e);
     },
 
@@ -756,6 +741,11 @@ define([
           self.events.triggerEvent('hover', {time: self.lastHoverTime});
         }
       }
+    },
+
+    timelineMousedown: function (e) {
+      var self = this;
+      self.dragStart('moveTimeline', e);
     },
 
     dragStart: function (type, e) {
