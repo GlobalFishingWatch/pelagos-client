@@ -8,7 +8,7 @@ define([
   "jQuery",
   "app/Visualization/KeyBindings",
   "app/LoadingInfo",
-  "app/Visualization/UI/ColorDropdown"
+  "app/Visualization/UI/Widgets/ColorDropdown"
 ], function(
   Class,
   Dialog,

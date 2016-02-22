@@ -1,7 +1,7 @@
 define([
   "dojo/_base/declare",
   "app/Visualization/UI/FilterEditorBase",
-  "app/Visualization/UI/FlagSelector"
+  "app/Visualization/UI/Widgets/FlagSelector"
 ], function(
   declare,
   FilterEditorBase,

@@ -9,17 +9,36 @@
   -o-transform: rotate(@angle);
 }
 
-.timeline {
+.Timeline {
   cursor: pointer;
   z-index: 0;
   font-family: 'Roboto', sans-serif; 
+  user-select: none;
+
+  .bubble {
+    &.top-left,&.top-right {
+      position: absolute;
+      bottom: 100%;
+    }
+    &.top-right {
+      right: 0;
+    }
+    > * {
+      display: inline-block;
+      margin-right: 10px;
+    }
+  }
 
   .zoom {
     z-index: 2;
-    position: relative;
+    position: absolute;
     display: block;
     padding: 0;
-    top: -300%;
+    top: 0;
+
+    &.right {
+      right: 0;
+    }
 
     .zoomIn, .zoomOut {
       display: block;
@@ -76,6 +95,19 @@
       padding-left: 4pt;
       padding-right: 4pt;
       cursor: col-resize;
+
+      .dragHandle {
+        position: absolute;
+        top: 50%;
+        margin-top: -15px;
+      }
+      .leftDragHandle {
+        margin-left: -14px;
+      }
+      .rightDragHandle {
+        right: 0;
+        margin-right: -9px;
+      }
 
       .frame {
         cursor: pointer;

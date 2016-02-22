@@ -24,7 +24,7 @@ define([
     title: 'Layers',
     templateString: '' +
         '<div class="${baseClass}" style="overflow: auto;">' +
-        '  <a class="edit-layers" style="font-weight: bold; position: absolute; right: 0.5em; margin-top: -2em; z-index: 1000000;" data-dojo-attach-event="click:edit">' +
+        '  <a class="edit-layers" style="font-weight: bold; position: absolute; right: 1.5em; margin-top: -1.5em; z-index: 1000000;" data-dojo-attach-event="click:edit">' +
             '<i class="fa fa-pencil-square-o"></i>' +
         '  </a>' +
         '  <div id="layers">' +

@@ -23,13 +23,15 @@
    console.log("Month - week: " + week.subtractFrom(month).toString());
 */
 
-define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
-  Interval = Class({
-    name: 'Interval',
-
+define([
+  "dojo/_base/declare"
+], function (
+  declare
+) {
+  var Interval = declare("TimeLabel", [], {
     keys: ["years", "months", "days", "hours", "minutes", "seconds", "milliseconds"],
 
-    initialize: function (arg1, arg2) {
+    constructor: function (arg1, arg2) {
       var self = this;
       
       self.keys.map(function (key) { self[key] = 0; });
@@ -44,7 +46,9 @@ define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
           self[key] = arg1[key] - arg2[key];
         });
       } else {
-        _.extend(self, arg1);
+        for (var key in arg1) {
+          self[key] = arg1[key];
+        }
         if (self.asMilliseconds == undefined) {
           // Aproximate it :)
           var d = new Date(Date.UTC(1970, 1, 1));

@@ -1,6 +1,29 @@
-define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLabel', 'jQuery', 'less', 'app/LangExtensions'], function (Class, Events, Interval, TimeLabel, $, less) {
-
-  var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('app/Visualization/UI/Timeline.less') + '" />');
+define([
+  "require",
+  "dojo/_base/declare",
+  "dijit/_WidgetBase",
+  "dijit/_TemplatedMixin",
+  "dijit/_WidgetsInTemplateMixin",
+  "dijit/_Container",
+  './Interval',
+  './TimeLabel',
+  '../DateTimeDropdown',
+  'jQuery',
+  'less'
+], function (
+  require,
+  declare,
+  _WidgetBase,
+  _TemplatedMixin,
+  _WidgetsInTemplateMixin,
+  _Container,
+  Interval,
+  TimeLabel,
+  DateTimeDropdown,
+  $,
+  less
+) {
+  var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('./Timeline.less') + '" />');
   $('head').append(lessnode);
   less.sheets.push(lessnode[0]);
   less.refresh(true);
@@ -10,8 +33,8 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
   var pixelsPerPt = temp.innerWidth() / 10000;
   temp.remove();
 
-  return Class({
-    name: 'Timeline',
+  return declare("Timeline", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+    baseClass: 'Timeline',
 
     zoomSize: 1.2,
     hiddenContext: 2, // total space, as a multiple of visible size
@@ -25,6 +48,19 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
     splitTickmarksOnLargerUnitBoundaries: false,
     showRightLabelAtWidth: undefined,
     showCenterLabelAtWidth: undefined,
+
+    /* Valid positions: 'inside', 'top-left', 'top-right' */
+    startLabelPosition: 'inside',
+    lengthLabelPosition: 'inside',
+    endLabelPosition: 'inside',
+
+    startLabelTitle: false,
+    lengthLabelTitle: false,
+    endLabelTitle: false,
+
+    dragHandles: true,
+
+    zoomPosition: 'left',
 
     backgroundCss: {background: '#ff8888'},
     rangemarks: [
@@ -83,63 +119,103 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       intervalPrecisionLimit: undefined
     }),
 
+    app: app,
 
-    /**** External API ****/
 
-    initialize: function (args) {
+    /* Note about the one quanta in each tickmarks bar: This is just
+     * to be able to measure its height to calculate the font size
+     * for quanta labels, before we have any real qantas. */
+    templateString: '' +
+      '<div class="${baseClass} timeline" data-dojo-attach-event="touchstart:timelineMousedown,mousedown:timelineMousedown,mousewheel:zoomWheel,selectstart:eatEvent" unselectable="on">' +
+      '  <div class="bubble top-left"><span class="left"></span><span class="center"></span><span class="right"></span></div>' +
+      '  <div class="bubble top-right"><span class="left"></span><span class="center"></span><span class="right"></span></div>' +
+      '  <div class="overlay">' +
+      '    <div class="leftFrame"></div>' +
+      '    <div class="window" data-dojo-attach-event="touchstart:windowDragStart,mousedown:windowDragStart">' +
+      '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle leftDragHandle">' +
+      '      <div class="frame">' +
+      '        <span class="left"><div class="startLabel" data-dojo-attach-event="mousedown:stopPropagation,click:editRangeStart"><span></span></div></span>' +
+      '        <span class="center"><div class="lengthLabel"><span></span></div></span>' +
+      '        <span class="right"><div class="endLabel" data-dojo-attach-event="mousedown:stopPropagation,click:editRangeEnd"><span></span></div></span>' +
+      '      </div>' +
+      '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle rightDragHandle">' +
+      '    </div>' +
+      '    <div class="rightFrame"></div>' +
+      '  </div>' +
+      '  <div class="line-visibility">' +
+      '    <div class="line">' +
+      '      <div class="rangemarks"></div>' +
+      '      <div class="tickmarks-container">' +
+      '        <div class="tickmarks top"><div class="quanta"><div class="frame"><div class="quanta-label">&nbsp;</div></div></div></div>' +
+      '        <div class="tickmarks bottom"><div class="quanta"><div class="frame"><div class="quanta-label">&nbsp;</div></div></div></div>' +
+      '      </div>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="underlay">' +
+      '    <div class="leftFrame"></div>' +
+      '    <div class="window">' +
+      '      <div class="frame"></div>' +
+      '    </div>' +
+      '    <div class="rightFrame"></div>' +
+      '  </div>' +
+      '  <div class="zoom">' +
+      '    <a class="zoomIn" data-dojo-attach-event="touchstart:zoomIn,click:zoomIn,mousedown:eatEvent">' +
+            '<img src="${app.dirs.img}/smaller_increments.png"> more increments' +
+          '</a>' +
+      '    <a class="zoomOut" data-dojo-attach-event="touchstart:zoomOut,click:zoomOut,mousedown:eatEvent">' +
+            '<img src="${app.dirs.img}/larger_increments.png"> fewer increments' +
+          '</a>' +
+      '  </div>' +
+      '</div>',
+
+    _setLabelPositionAttr: function (label, position, value) {
       var self = this;
+      self._set(label + "Position", value);
 
-      $.extend(self, args);
+      var labelNode =  $(self.domNode).find('.' + label);
 
-      self.node = $(self.node);
+      labelNode.detach();
 
-      self.events = new Events('Timeline');
+      var dst;
+      if (value == 'inside') {
+        dst = $(self.domNode).find('.overlay .frame');
+      } else {
+        dst = $(self.domNode).find('.bubble.' + value);
+      }
+      dst.find('.' + position).append(labelNode);
+    },
 
-      self.node.addClass('timeline');
+    _setStartLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("startLabel", "left", value);
+    },
 
-      /* Note about the one quanta in each tickmarks bar: This is just
-       * to be able to measure its height to calculate the font size
-       * for quanta labels, before we have any real qantas. */
+    _setLengthLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("lengthLabel", "center", value);
+    },
 
-      self.node.append(
-        "<div class='overlay'>" +
-        "  <div class='leftFrame'></div>" +
-        "  <div class='window'>" +
-        "    <div class='frame'>" +
-        "      <div class='startLabel'><span></span></div>" +
-        "      <div class='lengthLabel'><span></span></div>" +
-        "      <div class='endLabel'><span></span></div>" +
-        "    </div>" +
-        "  </div>" +
-        "  <div class='rightFrame'></div>" +
-        "</div>" +
-        "<div class='line-visibility'>" +
-        "  <div class='line'>" +
-        "    <div class='rangemarks'></div>" +
-        "    <div class='tickmarks-container'>" +
-        "      <div class='tickmarks top'><div class='quanta'><div class='frame'><div class='quanta-label'>&nbsp;</div></div></div></div>" +
-        "      <div class='tickmarks bottom'><div class='quanta'><div class='frame'><div class='quanta-label'>&nbsp;</div></div></div></div>" +
-        "    </div>" +
-        "  </div>" +
-        "</div>" +
-        "<div class='underlay'>" +
-        "  <div class='leftFrame'></div>" +
-        "  <div class='window'>" +
-        "    <div class='frame'></div>" +
-        "  </div>" +
-        "  <div class='rightFrame'></div>" +
-        "</div>" +
-        "<div class='zoom'>" +
-        "  <a class='zoomIn'><img src='" + app.dirs.img + "/smaller_increments.png'> more increments</a>" +
-        "  <a class='zoomOut'><img src='" + app.dirs.img + "/larger_increments.png'> fewer increments</a>" +
-        "</div>"
-      );
+    _setEndLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("endLabel", "right", value);
+    },
 
-      self.overlayNode = self.node.find('.overlay');
-      self.underlayNode = self.node.find('.underlay');
+    _setDragHandlesAttr: function (value) {
+      var self = this;
+      $(self.domNode).find('.dragHandle').toggle(value);
+    },
+
+    _setZoomPositionAttr: function (value) {
+      var self = this;
+      $(self.domNode).find('.zoom').attr({'class': 'zoom ' + value});
+    },
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      self.node = $(self.domNode);
       self.lineVisibilityNode = self.node.find('.line-visibility');
-      self.zoomInNode = self.node.find('.zoomIn');
-      self.zoomOutNode = self.node.find('.zoomOut');
       self.leftFrameNode = self.node.find('.leftFrame');
       self.windowNode = self.node.find('.window');
       self.windowFrameNode = self.node.find('.window .frame');
@@ -151,38 +227,10 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       self.rangemarksNode = self.node.find('.rangemarks');
       self.tickmarksNode = self.node.find('.tickmarks');
 
-      self.zoomInNode.click(self.zoomIn.bind(self, undefined));
-      self.zoomOutNode.click(self.zoomOut.bind(self, undefined));
-      self.zoomInNode.mousedown(function (e) { self.eatEvent(e); });
-      self.zoomOutNode.mousedown(function (e) { self.eatEvent(e); });
-      self.windowNode.mousedown(self.windowDragStart.bind(self));
-
-      self.node.mousedown(self.dragStart.bind(self, 'moveTimeline'));
       $(document).mousemove(self.move.bind(self));
       $(document).mouseup(self.dragEnd.bind(self));
-
-
-      self.zoomInNode.on('touchstart', self.zoomIn.bind(self, undefined));
-      self.zoomOutNode.on('touchstart', self.zoomOut.bind(self, undefined));
-      self.zoomInNode.on('touchstart', function (e) { self.eatEvent(e); });
-      self.zoomOutNode.on('touchstart', function (e) { self.eatEvent(e); });
-      self.windowNode.on('touchstart', self.windowDragStart.bind(self));
-
-      self.node.on('touchstart', self.dragStart.bind(self, 'moveTimeline'));
       $(document).on('touchmove', self.move.bind(self));
       $(document).on('touchend', self.dragEnd.bind(self));
-
-      self.node.mousewheel(function(event, delta, deltaX, deltaY) {
-        if (deltaY > 0) {
-          self.zoomIn(event);
-        } else if (deltaY < 0) {
-          self.zoomOut(event);
-        }
-        else
-          self.eatEvent(event);
-      });
-
-      self.node.attr('unselectable', 'on').css('user-select', 'none').on('selectstart', false);
 
       self.lineNode.css({'width': self.hiddenContext * 100.0 + '%'});
       self.tickmarksNode.css({"height": (100 / self.tickmarksNode.length) + "%"});
@@ -200,6 +248,49 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       self.rightContext = self.context;
       self.setRange(self.windowStart, self.windowEnd);
       self.lastHoverTime = undefined;
+
+      ['start', 'end'].map(function (side) {
+        var input = side + 'Input';
+        var label = '.' + side + 'Label';
+        self[input] = new DateTimeDropdown({
+          style: "display: none",
+          _onBlur: function () {
+            self.editRange(side, false);
+          }
+        });
+        self[input].placeAt(self.node.find(label)[0]);
+        $(self[input].domNode).keypress(function () {
+          if (event.which == 13) {
+            self.editRange(side, false);
+            event.preventDefault();
+          }
+        });
+      });
+    },
+
+    /**** External API ****/
+
+    editRange: function (side, beginEdit) {
+      var self = this;
+      var studlySide = side.slice(0, 1).toUpperCase() + side.slice(1);
+      var label = self[side + 'Label'];
+      var input = self[side + 'Input'];
+
+      if (beginEdit) {
+        input.set("value", self['window' + studlySide]);
+        label.hide();
+        $(input.domNode).show();
+        input.focus();
+      } else {
+        label.show();
+        $(input.domNode).hide();
+        var res = {
+          windowStart: self.windowStart,
+          windowEnd: self.windowEnd
+        };
+        res['window' + studlySide] = input.get("value");
+        self.setRange(res.windowStart, res.windowEnd);
+      }
     },
 
     setRangeFromOffset: function (offset, type) {
@@ -215,7 +306,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
 
       self.updateRange();
 
-      self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
+      self.emit(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
     },
 
     setRange: function (windowStart, windowEnd, type) {
@@ -239,7 +330,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
 
       self.updateRange();
 
-      self.events.triggerEvent(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
+      self.emit(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
     },
 
     zoom: function (factor, middle) {
@@ -393,11 +484,17 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
         date: self.windowStart,
         stepLength: self.stepLength
       }));
+      if (self.startLabelTitle) {
+        self.startLabel.prepend(self.startLabelTitle);
+      }
       self.startLabel.attr({title: self.windowStart.rfcstring().replace("T", " ")});
       self.lengthLabel.html(self.windowLengLabels.formatInterval({
         interval: (  self.windowTimeLabels.floorDate({date: self.windowEnd, stepLength:self.stepLength})
                    - self.windowTimeLabels.floorDate({date: self.windowStart, stepLength:self.stepLength}))
       }));
+      if (self.lengthLabelTitle) {
+        self.lengthLabel.prepend(self.lengthLabelTitle);
+      }
       self.lengthLabel.attr({title: self.windowLengHoverLabels.formatInterval({
         interval: self.windowEnd - self.windowStart
       })});
@@ -405,6 +502,9 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
         date: self.windowEnd,
         stepLength: self.stepLength
       }));
+      if (self.endLabelTitle) {
+        self.endLabel.prepend(self.endLabelTitle);
+      }
       self.endLabel.attr({title: self.windowEnd.rfcstring().replace("T", " ")});
     },
 
@@ -574,13 +674,18 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
     },
 
     getXorder: function (positions) {
-      return Object.values(
-        positions
-      ).sort(function (a, b) {
+      return Object.keys(positions).map(function (key) {
+        return positions[key];
+      }).sort(function (a, b) {
         return a.pageX - b.pageX;
       }).map(function (pos) {
         return pos.identifier.toString();
       });
+    },
+
+    stopPropagation: function (e) {
+      if (e == undefined) return;
+      if (e.stopPropagation) e.stopPropagation();
     },
 
     eatEvent: function (e) {
@@ -592,16 +697,29 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
 
     /**** Input event handling ****/
 
+    editRangeStart: function () { this.editRange('start', true); },
+    editRangeEnd: function () { this.editRange('end', true); },
+
+    zoomWheel: function(event) {
+      var self = this;
+      if (event.deltaY > 0) {
+        self.zoom(self.zoomSize, self.pixelPositionToTime(event.pageX));
+      } else if (event.deltaY < 0) {
+        self.zoom(1 / self.zoomSize, self.pixelPositionToTime(event.pageX));
+      } else {
+        self.eatEvent(event);
+      }
+    },
+
     zoomOut: function (e) {
       var self = this;
-      self.zoom(self.zoomSize, e && self.pixelPositionToTime(e.pageX));
+      self.zoom(self.zoomSize);
       self.eatEvent(e);
     },
 
     zoomIn: function (e) {
       var self = this;
-
-      self.zoom(1 / self.zoomSize, e && self.pixelPositionToTime(e.pageX));
+      self.zoom(1 / self.zoomSize);
       self.eatEvent(e);
     },
 
@@ -617,9 +735,14 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
         if (   coords.left <= pos.pageX && pos.pageX <= coords.right
             && coords.top <= pos.pageY && pos.pageY <= coords.bottom) {
           self.lastHoverTime = self.pixelPositionToTime(pos.pageX);
-          self.events.triggerEvent('hover', {time: self.lastHoverTime});
+          self.emit('hover', {time: self.lastHoverTime});
         }
       }
+    },
+
+    timelineMousedown: function (e) {
+      var self = this;
+      self.dragStart('moveTimeline', e);
     },
 
     dragStart: function (type, e) {
@@ -677,16 +800,16 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
 
       var pos = self.getFirstPosition(self.getEventPositions(e));
 
-      if (pos.pageX >= winPos.left && pos.pageX <= winPos.innerLeft) {
+      if (pos.pageX <= winPos.innerLeft) {
         self.dragStart('windowResizeLeft', e);
-      } else if (pos.pageX >= winPos.innerRight && pos.pageX <= winPos.right) {
+      } else if (pos.pageX >= winPos.innerRight) {
         self.dragStart('windowResizeRight', e);
       }
     },
 
     dragStart_windowResizeLeft: function (e) {
       var self = this;
-      self.events.triggerEvent('user-update-start', {type:'window-resize-left'});
+      self.emit('user-update-start', {type:'window-resize-left'});
       self.dragStartWindowStart = self.windowStart;
     },
     drag_windowResizeLeft: function (e) {
@@ -706,7 +829,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
 
     dragStart_windowResizeRight: function (e) {
       var self = this;
-      self.events.triggerEvent('user-update-start', {type:'window-resize-right'});
+      self.emit('user-update-start', {type:'window-resize-right'});
       self.dragStartWindowEnd = self.windowEnd;
     },
     drag_windowResizeRight: function (e) {
@@ -727,7 +850,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
 
     dragStart_moveTimeline: function (e) {
       var self = this;
-      var touchesNr = Object.values(self.dragData.startPositions).length;
+      var touchesNr = Object.keys(self.dragData.startPositions).length;
 
       if (touchesNr == 1) {
         self.dragData.type = "moveTimeline_pointer";
@@ -747,7 +870,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
 
       self.dragData.startXorder = self.getXorder(self.dragData.startPositions);
 
-      self.events.triggerEvent('user-update-start', {type:'move-timeline'});
+      self.emit('user-update-start', {type:'move-timeline'});
     },
     drag_moveTimeline_pointer: function (e) {
       var self = this;
@@ -756,7 +879,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
     },
     dragEnd_moveTimeline_pointer: function (e) {
       var self = this;
-      self.events.triggerEvent('set-range', {start: self.windowStart, end: self.windowEnd});
+      self.emit('set-range', {start: self.windowStart, end: self.windowEnd});
     },
 
     dragStart_moveTimeline_multiTouch: function (e) {
@@ -771,7 +894,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
       self.dragData.timeRight = self.dragData.startPositions[right].time.getTime();
       self.dragData.timeWidth = self.dragData.timeRight - self.dragData.timeLeft;
 
-      self.events.triggerEvent('user-update-start', {type:'move-timeline'});
+      self.emit('user-update-start', {type:'move-timeline'});
     },
     drag_moveTimeline_multiTouch: function (e) {
       var self = this;
@@ -808,7 +931,7 @@ define(['app/Class', 'app/Events', 'app/Interval', 'app/Visualization/UI/TimeLab
     },
     dragEnd_moveTimeline_multiTouch: function (e) {
       var self = this;
-      self.events.triggerEvent('set-range', {start: self.windowStart, end: self.windowEnd});
+      self.emit('set-range', {start: self.windowStart, end: self.windowEnd});
     }
   });
 });
