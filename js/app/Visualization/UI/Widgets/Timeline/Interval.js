@@ -23,13 +23,17 @@
    console.log("Month - week: " + week.subtractFrom(month).toString());
 */
 
-define(['app/Class', 'lodash', 'app/LangExtensions'], function (Class, _) {
-  Interval = Class({
-    name: 'Interval',
-
+define([
+  "dojo/_base/declare",
+  "lodash"
+], function (
+  declare,
+  _
+) {
+  var Interval = declare("TimeLabel", [], {
     keys: ["years", "months", "days", "hours", "minutes", "seconds", "milliseconds"],
 
-    initialize: function (arg1, arg2) {
+    constructor: function (arg1, arg2) {
       var self = this;
       
       self.keys.map(function (key) { self[key] = 0; });
