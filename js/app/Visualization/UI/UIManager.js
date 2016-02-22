@@ -5,6 +5,7 @@ define([
   "app/UrlValues",
   "app/Visualization/KeyBindings",
   "app/Visualization/UI/Timeline",
+  "app/Visualization/UI/PlayControl",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
@@ -25,6 +26,7 @@ define([
   UrlValues,
   KeyBindings,
   Timeline,
+  PlayControl,
   SidePanelManager,
   BasicSidebar,
   Search,
@@ -395,6 +397,10 @@ define([
 
     initPlayButton: function(cb) {
       var self = this;
+
+      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization});
+      self.playControl.placeAt($("body")[0]);
+      self.playControl.startup();
 
       KeyBindings.register(
         ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
