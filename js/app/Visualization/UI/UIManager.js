@@ -4,7 +4,7 @@ define([
   "app/LoadingInfo",
   "app/UrlValues",
   "app/Visualization/KeyBindings",
-  "app/Visualization/UI/Timeline",
+  "app/Visualization/UI/Widgets/Timeline/Timeline",
   "app/Visualization/UI/PlayControl",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",

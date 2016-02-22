@@ -1,6 +1,6 @@
 define([
   "dojo/_base/declare",
-  'app/Interval',
+  './Interval',
   "lodash"
 ], function (
   declare,

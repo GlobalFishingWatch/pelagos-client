@@ -4,7 +4,7 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
-  "app/Visualization/UI/TimeLabel",
+  "app/Visualization/UI/Widgets/Timeline/TimeLabel",
   'jQuery',
   'app/LangExtensions'
 ], function (

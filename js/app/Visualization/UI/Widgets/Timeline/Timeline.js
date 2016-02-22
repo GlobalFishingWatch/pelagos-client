@@ -1,15 +1,17 @@
 define([
+  "require",
   "dojo/_base/declare",
   "dijit/_WidgetBase",
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
-  'app/Interval',
+  './Interval',
   './TimeLabel',
-  './DateTimeDropdown',
+  '../DateTimeDropdown',
   'jQuery',
   'less'
 ], function (
+  require,
   declare,
   _WidgetBase,
   _TemplatedMixin,
@@ -21,7 +23,7 @@ define([
   $,
   less
 ) {
-  var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('app/Visualization/UI/Timeline.less') + '" />');
+  var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('./Timeline.less') + '" />');
   $('head').append(lessnode);
   less.sheets.push(lessnode[0]);
   less.refresh(true);
