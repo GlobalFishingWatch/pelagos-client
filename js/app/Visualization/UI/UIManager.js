@@ -4,7 +4,8 @@ define([
   "app/LoadingInfo",
   "app/UrlValues",
   "app/Visualization/KeyBindings",
-  "app/Visualization/UI/Timeline",
+  "app/Visualization/UI/Widgets/Timeline/Timeline",
+  "app/Visualization/UI/PlayControl",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
@@ -15,15 +16,17 @@ define([
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
+  "app/Visualization/KeyBindings",
   "async",
-  "jQuery"],
-function (
+  "jQuery"
+], function (
   Class,
   Dialog,
   LoadingInfo,
   UrlValues,
   KeyBindings,
   Timeline,
+  PlayControl,
   SidePanelManager,
   BasicSidebar,
   Search,
@@ -34,6 +37,7 @@ function (
   ObjectTemplate,
   BorderContainer,
   ContentPane,
+  KeyBindings,
   async,
   $) {
   return Class({
@@ -176,10 +180,61 @@ function (
       var self = this;
       var updating = false;
 
-      self.timelineNode = $('<div class="main-timeline">');
-      self.visualization.node.append(self.timelineNode);
+      self.timeline = new Timeline({'class': 'main-timeline'});
+      self.timeline.placeAt(self.visualization.node[0]);
+      self.timeline.startup();
 
-      self.timeline = new Timeline({node: self.timelineNode});
+
+      /* FIXME: The following code to be removed once testing of the
+       * new design is done */
+
+      var setDesign = function (design) {
+        Object.items(design).map(function (item) {
+          self.timeline.set(item.key, item.value);
+        });
+      };
+      var designs = [
+        {
+          startLabelPosition: 'top-right',
+          lengthLabelPosition: 'inside',
+          endLabelPosition: 'top-right',
+
+          startLabelTitle: 'FROM ',
+          lengthLabelTitle: false,
+          endLabelTitle: 'TO ',
+
+          dragHandles: true,
+
+          zoomPosition: 'right'
+        },
+        {
+          startLabelPosition: 'inside',
+          lengthLabelPosition: 'inside',
+          endLabelPosition: 'inside',
+
+          startLabelTitle: false,
+          lengthLabelTitle: false,
+          endLabelTitle: false,
+
+          dragHandles: false,
+
+          zoomPosition: 'left'
+        }
+      ];
+      var designIdx = 1;
+      setDesign(designs[0]);
+      KeyBindings.register(
+        ['Alt', 'T'], null, 'General',
+        'Switch between timeline designs',
+        function () {
+          setDesign(designs[designIdx % designs.length]);
+          self.controlButtonsNode.toggle(designIdx % designs.length == designs.length - 1);
+          $(self.playControl.domNode).toggle(designIdx % designs.length != designs.length - 1);
+          designIdx++;
+        }
+      );
+      self.controlButtonsNode.toggle(false);
+
 
       var setRange = function (e) {
         if (updating) return;
@@ -194,15 +249,13 @@ function (
         }
       }
 
-      self.timeline.events.on({
-        'set-range': setRange,
-        'temporary-range': setRange,
-        'user-update-start': function (e) {
-          self.visualization.state.setValue("paused", true);
-        },
-        'hover': function (e) {
-          self.visualization.state.setValue("timeFocus", e.time);
-        }
+      self.timeline.on('set-range', setRange);
+      self.timeline.on('temporary-range', setRange);
+      self.timeline.on('user-update-start', function (e) {
+        self.visualization.state.setValue("paused", true);
+      });
+      self.timeline.on('hover', function (e) {
+        self.visualization.state.setValue("timeFocus", e.time);
       });
 
       var daySliderUpdateMinMax = function() {
@@ -348,6 +401,10 @@ function (
 
     initPlayButton: function(cb) {
       var self = this;
+
+      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization});
+      self.playControl.placeAt($("body")[0]);
+      self.playControl.startup();
 
       KeyBindings.register(
         ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
