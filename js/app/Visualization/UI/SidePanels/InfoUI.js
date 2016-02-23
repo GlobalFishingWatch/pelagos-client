@@ -24,7 +24,7 @@ define([
                     '  <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
                          '<img style="width: 20px;" src="${app.dirs.img}/loader/spinner.min.svg">'+
                       '</div>' +
-                    '  <div id="vessel_identifiers ${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
+                    '  <div id="vessel_identifiers" class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
                     '</div>',
     startup: function () {
       var self = this;
