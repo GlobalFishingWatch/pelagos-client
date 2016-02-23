@@ -26,7 +26,15 @@ define([
     animationFilter: function (animation) {
       var self = this;
       return self.constructor.filteredSourceCols(animation).length > 0;
-    }
+    },
+
+    EmptyWidget: declare("EmptyWidget", [AnimationListBase.prototype.EmptyWidget], {
+      baseClass: 'Filters-EmptyWidget',
+      templateString: '' +
+        '<div class="${baseClass}" style="padding: 8px;">' +
+        '  <em>The current workspace has no filterable animations.<em>' +
+        '</div>'
+    })
   });
 
   Filters.filteredSourceCols = function (animation) {

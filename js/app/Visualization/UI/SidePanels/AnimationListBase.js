@@ -19,10 +19,14 @@ define([
     baseClass: 'AnimationListBase',
     title: 'Animation list',
     visualization: null,
+    count: 0,
 
     startup: function () {
       var self = this;
       self.inherited(arguments);
+
+      self.emptyWidget = new self.EmptyWidget({visualization: self.visualization});
+      self.addChild(self.emptyWidget);
 
       self.animationList = {};
       self.visualization.animations.events.on({
@@ -40,6 +44,10 @@ define([
           visualization: self.visualization,
           animation: animation
         });
+        if (self.count == 0) {
+          self.removeChild(self.emptyWidget);
+        }
+        self.count++;
         self.addChild(self.animationList[animation.id]);
       }
     },
@@ -51,12 +59,25 @@ define([
       if (self.animationList[animation.id]) {
         self.removeChild(self.animationList[animation.id]);
         delete self.animationList[animation.id];
+        self.count--;
+        if (self.count == 0) {
+          self.addChild(self.emptyWidget);
+        }
       }
     },
 
     animationFilter: function (animation) {
       return true;
-    }
+    },
+
+    EmptyWidget: declare("EmptyWidget", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+      baseClass: 'AnimationListBase-EmptyWidget',
+      templateString: '' +
+        '<div class="${baseClass}" style="padding: 8px;">' +
+        '  <em>No animations available<em>' +
+        '</div>',
+      visualization: null
+    })
   });
 
   AnimationListBase.AnimationWidget = declare("AnimationWidget", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
