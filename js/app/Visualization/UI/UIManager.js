@@ -16,7 +16,6 @@ define([
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
-  "app/Visualization/KeyBindings",
   "async",
   "jQuery"
 ], function (
@@ -37,7 +36,6 @@ define([
   ObjectTemplate,
   BorderContainer,
   ContentPane,
-  KeyBindings,
   async,
   $) {
   return Class({
