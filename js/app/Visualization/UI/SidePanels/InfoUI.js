@@ -22,7 +22,7 @@ define([
                     '  </div>' +
                     '  <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
                     '  <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
-                         '<img style="width: 20px;" src="${app.dirs.img}/loader/spinner.min.svg">'+
+                         '<img style="width: 20px;" src="${app.dirs.loader}">'+
                       '</div>' +
                     '  <div id="vessel_identifiers" class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
                     '</div>',
