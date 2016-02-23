@@ -950,6 +950,8 @@ function(Class,
 
       return {animations: self.animations.filter(function (animation) {
                 return animation.selectionAnimationFor == undefined;
+              }).map(function (animation) {
+                return animation.toJSON()
               }),
               options: self.mapOptions};
     }
