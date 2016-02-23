@@ -141,7 +141,7 @@ class HomeTest(unittest.TestCase):
 
             def moveTimeslider(offset):
                 actions = ActionChains(driver)
-                actions.drag_and_drop_by_offset(driver.find_element_by_xpath('//div[@class="main-timeline timeline"]//div[@class="window"]'), offset, 0)
+                actions.drag_and_drop_by_offset(driver.find_element_by_xpath('//div[@class="Timeline timeline main-timeline"]//div[@class="window"]'), offset, 0)
                 actions.perform()
 
             server.wait_for(lambda: self.animationHasLoaded("ClusterAnimation"))
