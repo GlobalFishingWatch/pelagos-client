@@ -24,7 +24,7 @@ define([
         content: '' +
           '<input type="text" class="query" style="width: 100%;" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
           '<div class="search-loading">' +
-          '  <img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg">' +
+          '  <img style="width: 20px;" src="' + app.dirs.loader + '">' +
           '</div>' +
           '<div class="results" style="max-height: 300px; overflow: auto;"></div>' +
           '<div class="paging" style="display: hidden;">' +

@@ -48,7 +48,7 @@ define([
       self.container.addChild(new ContentPane({region: 'top', style: 'border: none; padding: 0; padding-bottom: 10px; margin: 0; overflow: hidden;', content: '' +
         '<input type="text" class="query" style="width: 100%;" placeholder="Search by name or tag"></input>' +
         '<div class="search-loading">' +
-        '  <img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg">' +
+        '  <img style="width: 20px;" src="' + app.dirs.loader + '">' +
         '</div>'
       }));
 

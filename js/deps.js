@@ -24,6 +24,12 @@
     app.paths.app = app.paths.script.concat(['app']);
   }
 
+  if (navigator.appName == 'Microsoft Internet Explorer' || /MSIE/i.test(navigator.userAgent) || /Edge/i.test(navigator.userAgent)) {
+    app.paths.loader = app.paths.img.concat(["loader", "spinner.min.gif"]);
+  } else {
+    app.paths.loader = app.paths.img.concat(["loader", "spinner.min.svg"]);
+  }
+
   app.dirs = app.dirs || {};
   for (var name in app.paths) {
     app.dirs[name] = app.paths[name].join("/");
