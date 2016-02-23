@@ -139,7 +139,7 @@ define(["app/Class", "app/Data/Format", "app/Data/SelectionManager", "app/Data/P
       return _.extend({}, self.args, {
         columns: cols,
         uniforms: self.uniforms,
-        selections: self.selections.selections
+        selections: self.selections.toJSON()
       });
     },
 

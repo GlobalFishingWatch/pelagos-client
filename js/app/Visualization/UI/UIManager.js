@@ -547,7 +547,7 @@ define([
       var self = this;
       return {
         logo: self.config.logo,
-        sideBar: self.sideBar
+        sideBar: self.sideBar.toJSON()
       };
     },
 

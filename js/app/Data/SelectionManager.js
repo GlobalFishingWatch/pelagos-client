@@ -55,7 +55,17 @@ define(["app/Class", "app/Events", "app/Data/Selection", "lodash"], function(Cla
       } else {
         cb("No selection information available for " + self.source.toString());
       }
-    }
+    },
+
+    toJSON: function () {
+      var self = this;
+      var res = {};
+      for (var key in self.selections) {
+        res[key] = self.selections[key].toJSON();
+      }
+      return res;
+    },
+
   });
 });
 

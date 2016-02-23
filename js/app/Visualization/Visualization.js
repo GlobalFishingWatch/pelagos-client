@@ -137,8 +137,8 @@ define([
       var self = this;
       return {
         state: self.state.values,
-        map: self.animations,
-        ui: self.ui
+        map: self.animations.toJSON(),
+        ui: self.ui.toJSON()
       };
     },
 
