@@ -66,8 +66,8 @@ define([
       async.series([
         self.initButtons.bind(self),
         self.initLoadSpinner.bind(self),
-        self.initTimeline.bind(self),
         self.initPlayButton.bind(self),
+        self.initTimeline.bind(self),
         self.initLoopButton.bind(self),
         self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
@@ -187,37 +187,47 @@ define([
        * new design is done */
 
       var setDesign = function (design) {
-        Object.items(design).map(function (item) {
+        Object.items(design.timeline).map(function (item) {
           self.timeline.set(item.key, item.value);
         });
+        self.controlButtonsNode.toggle(design.controlButtons);
+        $(self.playControl.domNode).toggle(design.playControl);
       };
       var designs = [
         {
-          startLabelPosition: 'top-right',
-          lengthLabelPosition: 'inside',
-          endLabelPosition: 'top-right',
+          controlButtons: true,
+          playControl: false,
+          timeline: {
+            startLabelPosition: 'inside',
+            lengthLabelPosition: 'inside',
+            endLabelPosition: 'inside',
 
-          startLabelTitle: 'FROM ',
-          lengthLabelTitle: false,
-          endLabelTitle: 'TO ',
+            startLabelTitle: false,
+            lengthLabelTitle: false,
+            endLabelTitle: false,
 
-          dragHandles: true,
+            dragHandles: false,
 
-          zoomPosition: 'right'
+            zoomPosition: 'left'
+          }
         },
         {
-          startLabelPosition: 'inside',
-          lengthLabelPosition: 'inside',
-          endLabelPosition: 'inside',
+          controlButtons: false,
+          playControl: true,
+          timeline: {
+            startLabelPosition: 'top-right',
+            lengthLabelPosition: 'inside',
+            endLabelPosition: 'top-right',
 
-          startLabelTitle: false,
-          lengthLabelTitle: false,
-          endLabelTitle: false,
+            startLabelTitle: 'FROM ',
+            lengthLabelTitle: false,
+            endLabelTitle: 'TO ',
 
-          dragHandles: false,
+            dragHandles: true,
 
-          zoomPosition: 'left'
-        }
+            zoomPosition: 'right'
+          }
+        },
       ];
       var designIdx = 1;
       setDesign(designs[0]);
@@ -226,13 +236,9 @@ define([
         'Switch between timeline designs',
         function () {
           setDesign(designs[designIdx % designs.length]);
-          self.controlButtonsNode.toggle(designIdx % designs.length == designs.length - 1);
-          $(self.playControl.domNode).toggle(designIdx % designs.length != designs.length - 1);
           designIdx++;
         }
       );
-      self.controlButtonsNode.toggle(false);
-
 
       var setRange = function (e) {
         if (updating) return;
