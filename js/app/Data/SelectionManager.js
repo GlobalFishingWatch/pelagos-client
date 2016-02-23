@@ -64,7 +64,7 @@ define(["app/Class", "app/Events", "app/Data/Selection", "lodash"], function(Cla
         res[key] = self.selections[key].toJSON();
       }
       return res;
-    },
+    }
 
   });
 });
