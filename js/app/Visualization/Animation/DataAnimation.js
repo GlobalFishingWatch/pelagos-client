@@ -342,8 +342,11 @@ define([
           if (err) {
             cb(err, res)
           } else {
-            res.entries.map(function (item) {
-              item.animation = self;
+            res.entries = res.entries.map(function (item) {
+              return {
+                data: item,
+                animation: self
+              }
             });
             cb(err, res);
           }

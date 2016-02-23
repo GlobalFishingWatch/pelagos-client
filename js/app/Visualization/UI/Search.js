@@ -112,16 +112,16 @@ define([
                      '    <th class="callsign">Callsign</th>' +
                      '  </tr>' +
                      '</table>');
-        res.entries.map(function (info) {
+        res.entries.map(function (item) {
           var row = $('<tr><td><a class="vesselname"></a></td><td><a class="imo"></a></td><td><a class="mmsi"></a></td><td><a class="callsign"></a></td></tr>');
-          row.find(".vesselname").html(info.vesselname);
-          row.find(".imo").html(info.imo);
-          row.find(".mmsi").html(info.mmsi);
-          row.find(".callsign").html(info.callsign);
+          row.find(".vesselname").html(item.data.vesselname);
+          row.find(".imo").html(item.data.imo);
+          row.find(".mmsi").html(item.data.mmsi);
+          row.find(".callsign").html(item.data.callsign);
           row.find('a').attr({href: "javascript: void(0);"});
           row.find('a').click(function () {
-            info.zoomToSelectionAnimations = true;
-            info.animation.data_view.selections.selections.selected.addDataRange(info, info, true);
+            item.data.zoomToSelectionAnimations = true;
+            item.animation.data_view.selections.selections.selected.addDataRange(item.data, item.data, true);
             self.dialog.hide();
           });
 
