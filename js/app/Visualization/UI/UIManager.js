@@ -547,7 +547,8 @@ define([
       self.performance.startup();
       self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
       self.simpleAnimationEditor.startup();
-      self.help = new Help(self.visualization);
+      self.help = new Help({visualization: self.visualization});
+      self.help.startup();
       cb();
     },
 
