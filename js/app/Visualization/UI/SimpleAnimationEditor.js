@@ -33,7 +33,7 @@ define([
       '  </div>' +
       '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'center\'" class="list" style="border: none; padding: 0; margin: 0;" data-dojo-attach-point="list">' +
       '  </div>' +
-      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'right\'" class="list" style="border: none; padding: 10px; margin: 0; width: 50%" data-dojo-attach-point="editorPane">' +
+      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'right\'" style="border: none; padding: 10px; margin: 0; width: 50%" data-dojo-attach-point="editorPane">' +
       '  </div>' +
       '</div>',
 

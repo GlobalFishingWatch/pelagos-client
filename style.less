@@ -242,6 +242,26 @@ body {
   }
 }
 
+.stripedList {
+  div:nth-child(odd) {
+    background-color: #ccc;
+  }
+  div:hover {
+    background-color: #d2cece;
+  }
+}
+
+.stripedLinkList {
+  .stripedList();
+  cursor: pointer;
+}
+
+.simple-animation-editor-dialog {
+  .list {
+    .stripedLinkList();
+  }
+}
+
 .library-dialog {
   .query {
     height: 2em;
@@ -254,12 +274,7 @@ body {
     display: none;
   }
   .sourcesList, .animationsList {
-    div:nth-child(odd) {
-      background-color: #ccc;
-    }
-    div:hover {
-      background-color: #d2cece;
-    }
+    .stripedLinkList();
   }
 }
 

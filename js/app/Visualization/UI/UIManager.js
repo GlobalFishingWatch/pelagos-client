@@ -541,7 +541,8 @@ define([
 
       self.search = new Search({visualization: self.visualization});
       self.search.startup();
-      self.library = new AnimationLibrary(self.visualization);
+      self.library = new AnimationLibrary({visualization: self.visualization});
+      self.library.startup();
       self.performance = new Performance({visualization: self.visualization});
       self.performance.startup();
       self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
