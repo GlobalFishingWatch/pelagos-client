@@ -1,6 +1,6 @@
 define([
   "app/Class",
-  "dijit/Dialog",
+  "./Widgets/TemplatedDialog",
   "app/LoadingInfo",
   "app/UrlValues",
   "app/Visualization/KeyBindings",
