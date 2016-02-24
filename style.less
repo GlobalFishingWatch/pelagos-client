@@ -53,6 +53,16 @@ label {
   overflow: visible;
 }
 
+.dijitAccordionChildWrapper .titleButtons {
+  font-weight: bold;
+  position: absolute;
+  right: 1.5em;
+  margin-top: -1.5em;
+  color: #ffffff;
+  a {
+    color: #ffffff;
+  }
+}
 
 #test, #visualization {
   position: absolute;
@@ -113,13 +123,16 @@ body {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
 }
 
+.dijitDialog .dijitDialogCloseIcon {
+  color: #ffffff;
+}
+
 .claro .dijitDialogTitleBar {
   -moz-border-bottom-colors: none;
   -moz-border-left-colors: none;
   -moz-border-right-colors: none;
   -moz-border-top-colors: none;
   background-color: #ef4223;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
   background-repeat: repeat-x;
   border-color: #b8bda7 #b8bda7 #ef4223;
   border-image: none;
@@ -673,16 +686,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     #divide {
       border-bottom: solid 1px #dfe0e1;
       margin: 3rem 2.5% 0 2.5%;
-    }
-
-    .action_icons {
-      float: right;
-      margin-top: 0.2em;
-
-      #activate_search {
-        float: right;
-        margin-right: 0.5em;
-      }
     }
 
     /* Vessel Info styles */

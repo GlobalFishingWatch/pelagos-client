@@ -15,17 +15,18 @@ define([
     baseClass: 'InfoUI',
     title: 'Info',
     app: app,
-    templateString: '<div class="${baseClass}" style="overflow: auto;">' +
-                    '  <div class="action_icons">'+
-                    '    <a id="activate_search" class="activate_search" href="javascript:undefined" data-dojo-attach-event="click:activateSearch"><i class="fa fa-search"></i></a>' +
-                    '    <a class="download_kml" target="_new" href="javascript:undefined" style="display: none;" data-dojo-attach-point="downloadNode"><i class="fa fa-download" title="Download as KML"></i></a>' +
-                    '  </div>' +
-                    '  <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
-                    '  <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
-                         '<img style="width: 20px;" src="${app.dirs.loader}">'+
-                      '</div>' +
-                    '  <div id="vessel_identifiers" class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
-                    '</div>',
+    templateString: '' +
+      '<div class="${baseClass}" style="overflow: auto;">' +
+      '  <div class="titleButtons">' +
+      '    <a id="activate_search" class="activate_search" href="javascript:undefined" data-dojo-attach-event="click:activateSearch"><i class="fa fa-search"></i></a>' +
+      '    <a class="download_kml" target="_new" href="javascript:undefined" style="display: none;" data-dojo-attach-point="downloadNode"><i class="fa fa-download" title="Download as KML"></i></a>' +
+      '  </div>' +
+      '  <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
+      '  <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
+           '<img style="width: 20px;" src="${app.dirs.loader}">'+
+        '</div>' +
+      '  <div id="vessel_identifiers" class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
+      '</div>',
     startup: function () {
       var self = this;
       self.inherited(arguments);
