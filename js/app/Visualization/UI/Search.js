@@ -11,7 +11,6 @@ define([
   KeyBindings
 ){
   return declare("Search", [Dialog], {
-    name: "Search",
     style: "width: 50%;",
     title: "Search",
     "class": 'search-dialog',
