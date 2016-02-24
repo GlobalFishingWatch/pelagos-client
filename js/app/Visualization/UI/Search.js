@@ -1,8 +1,9 @@
 define([
   "app/Class",
-  "dijit/Dialog",
+  "./Widgets/TemplatedDialog",
   "jQuery",
-  "app/Visualization/KeyBindings"
+  "app/Visualization/KeyBindings",
+  "dijit/form/Button"
 ], function(Class, Dialog, $, KeyBindings){
   return Class({
     name: "Search",

@@ -1,6 +1,6 @@
 define([
   "app/Class",
-  "dijit/Dialog",
+  "./Widgets/TemplatedDialog",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
   "dijit/form/Button",
