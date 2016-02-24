@@ -1,6 +1,6 @@
 define([
   "app/Class",
-  "dijit/Dialog",
+  "./Widgets/TemplatedDialog",
   "async",
   "jQuery",
   "app/Visualization/KeyBindings",
