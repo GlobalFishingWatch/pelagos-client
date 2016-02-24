@@ -1,5 +1,5 @@
 define([
-  "app/Class",
+  "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
@@ -10,7 +10,7 @@ define([
   "app/LoadingInfo",
   "app/Visualization/UI/Widgets/ColorDropdown"
 ], function(
-  Class,
+  declare,
   Dialog,
   BorderContainer,
   ContentPane,
@@ -21,72 +21,43 @@ define([
   LoadingInfo,
   ColorDropdown
 ){
-  return Class({
-    name: "SimpleAnimationEdtor",
-    initialize: function (visualization) {
-      var self = this;
+  return declare("SimpleAnimationEdtor", [Dialog], {
+    style: "width: 50%;",
+    title: "Animation editor",
+    "class": 'simple-animation-editor-dialog',
+    contentTemplate: '' +
+      '<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="liveSplitters: true" style="min-height: 300px; height: 100%; width: 100%; padding: 0; margin: 0;">' +
+      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'top\'" class="actions" style="border: none; padding: 0; margin: 0;" data-dojo-attach-point="container">' +
+      '    <div data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:addCartoDBAnimation">Add CartoDB</div>' +
+      '    <div data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:addFromLibrary">From library</div>' +
+      '  </div>' +
+      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'center\'" class="list" style="border: none; padding: 0; margin: 0;" data-dojo-attach-point="list">' +
+      '  </div>' +
+      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'right\'" class="list" style="border: none; padding: 10px; margin: 0; width: 50%" data-dojo-attach-point="editorPane">' +
+      '  </div>' +
+      '</div>',
 
-      self.visualization = visualization;
-      self.animationManager = visualization.animations;
-      self.dataManager = self.visualization.data;
+    actionBarTemplate: '' +
+      '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+      '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-event="click:hide">Close</button>' +
+      '</div>',
+
+    visualization: null,
+    addFromLibrary: function () {
+      var self = this;
+      self.visualization.ui.library.displayAnimationLibraryDialog();
+    },
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
 
       KeyBindings.register(
         ['Ctrl', 'Alt', 'G'], null, 'General',
         'Simple animation editor', self.display.bind(self)
       );
 
-      self.dialog = new Dialog({
-        style: "width: 50%;",
-        title: "Animation editor",
-        "class": 'simple-animation-editor-dialog',
-        content: '',
-        actionBarTemplate: '' +
-          '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-          '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-          '</div>'
-      });
-
-      self.container = new BorderContainer({style: "min-height: 300px; height: 100%; width: 100%; padding: 0; margin: 0;", liveSplitters: true});
-      self.dialog.addChild(self.container);
-
-      self.actions = new ContentPane({region: 'top', 'class': 'actions', style: 'border: none; padding: 0; margin: 0;', content: ''});
-
-      self.addcartodbbutton = new Button({
-        label: "Add CartoDB",
-        onClick: function(){
-          self.addCartoDBAnimation();
-        }
-      });
-      self.actions.addChild(self.addcartodbbutton);
-
-      self.librarybutton = new Button({
-        label: "From library",
-        onClick: function(){
-          self.visualization.ui.library.displayAnimationLibraryDialog();
-        }
-      });
-      self.actions.addChild(self.librarybutton);
-      self.container.addChild(self.actions);
-
-      self.list = new ContentPane({region: 'center', content: '', 'class': 'list', style: 'border: none; padding: 0; margin: 0;'});
-      self.container.addChild(self.list);
-      self.editorPane = new ContentPane({region: 'right', splitter: true, 'class': 'editor-pane', style: 'border: none; padding: 10px; margin: 0; width: 50%;', content: ''});
-      self.container.addChild(self.editorPane);
-
-      self.dialog.startup();
-
-      $(self.dialog.containerNode).find(".query").keyup(function(event) {
-        if (event.which == 13) {
-          self.performSearch($(self.dialog.containerNode).find(".query").val());
-        }
-      });
-
-      $(self.dialog.closeButton).on('click', function () {
-        self.dialog.hide();
-      });
-
       self.updateListHandler = self.updateList.bind(self)
-      self.animationManager.events.on({
+      self.visualization.animations.events.on({
         'add': self.updateListHandler,
         'remove': self.updateListHandler
       });
@@ -163,7 +134,7 @@ define([
         self.setEditor();
       });
       $(editor.containerNode).find('.delete').click(function () {
-        self.animationManager.removeAnimation(animation);
+        self.visualization.animations.removeAnimation(animation);
         self.setEditor();
       });
 
@@ -218,7 +189,7 @@ define([
 
     display: function () {
       var self = this;
-      self.dialog.show();
+      self.show();
     }
   });
 });

@@ -539,10 +539,13 @@ define([
     initPopups: function (cb) {
       var self = this;
 
-      self.search = new Search(self.visualization);
+      self.search = new Search({visualization: self.visualization});
+      self.search.startup();
       self.library = new AnimationLibrary(self.visualization);
-      self.performance = new Performance(self.visualization);
-      self.simpleAnimationEditor = new SimpleAnimationEditor(self.visualization);
+      self.performance = new Performance({visualization: self.visualization});
+      self.performance.startup();
+      self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
+      self.simpleAnimationEditor.startup();
       self.help = new Help(self.visualization);
       cb();
     },
