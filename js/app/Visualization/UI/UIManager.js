@@ -227,7 +227,7 @@ define([
 
             zoomPosition: 'right'
           }
-        },
+        }
       ];
       var designIdx = 1;
       setDesign(designs[0]);
