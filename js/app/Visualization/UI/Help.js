@@ -1,6 +1,6 @@
 define([
   "app/Class",
-  "dijit/Dialog",
+  "./Widgets/TemplatedDialog",
   "jQuery",
   "app/Visualization/KeyBindings"
 ], function(Class, Dialog, $, KeyBindings){

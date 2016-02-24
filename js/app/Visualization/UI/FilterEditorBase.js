@@ -1,6 +1,6 @@
 define([
   "dojo/_base/declare",
-  "dijit/Dialog",
+  "./Widgets/TemplatedDialog",
   "dijit/form/Button"
 ], function(
   declare,
