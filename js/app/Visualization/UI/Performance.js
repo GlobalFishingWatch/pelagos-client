@@ -1,61 +1,54 @@
 define([
-  "app/Class",
+  "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
   "async",
   "jQuery",
   "app/Visualization/KeyBindings",
   "app/LoadingInfo"
 ], function(
-  Class,
+  declare,
   Dialog,
   async,
   $,
   KeyBindings,
   LoadingInfo
 ){
-  return Class({
-    name: "Performance",
-    initialize: function (visualization) {
-      var self = this;
+  return declare("Performance", [Dialog], {
+    style: "width: 50%;",
+    title: "Performance",
+    "class": 'performance-dialog',
+    content: '' +
+      '<table class="results"></table>',
+    actionBarTemplate: '' +
+      '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+      '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-event="click:hide" data-dojo-attach-point="closeButton" data-dojo-props="disabled:true">Close</button>' +
+      '</div>',
 
-      self.visualization = visualization;
-      self.animationManager = visualization.animations;
+    visualization: null,
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
 
       KeyBindings.register(
         ['Ctrl', 'Alt', 'P'], null, 'General',
         'Performance', self.displayPerformanceDialog.bind(self)
       );
-
-      self.dialog = new Dialog({
-        style: "width: 50%;",
-        title: "Performance",
-        "class": 'performance-dialog',
-        content: '' +
-          '<table class="results"></table>',
-        actionBarTemplate: '' +
-          '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-          '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton" disabled="disabled">Close</button>' +
-          '</div>'
-      });
-
-      $(self.dialog.closeButton).on('click', function () {
-        self.dialog.hide();
-      });
     },
 
     displayPerformanceDialog: function () {
       var self = this;
-      $(self.dialog.containerNode).find('.results').html('');
-      $(self.dialog.containerNode).css({background: "#ffffff"});
-      $(self.dialog.closeButton).attr({disabled:'disabled'});
-      self.dialog.show();
+      $(self.containerNode).find('.results').html('');
+      $(self.containerNode).css({background: "#ffffff"});
+      self.closeButton.set("disabled", true);
+      self.show();
       async.series([
         self.timeTask.bind(self, 'tileLoading', 3),
         self.timeTask.bind(self, 'cachedTileLoading', 10),
         self.timeTask.bind(self, 'rendering', 500)
       ], function () {
-        $(self.dialog.containerNode).css({background: "#55ff55"});
-        $(self.dialog.closeButton).removeAttr('disabled');
+        $(self.containerNode).css({background: "#55ff55"});
+        self.closeButton.set("disabled", false);
       });
     },
 
@@ -63,7 +56,7 @@ define([
       var self = this;
 
       var row = $("<tr><th class='name'>" + name + " (" + count.toString() + ")</th><td class='result'>In progress...</td></tr>");
-      $(self.dialog.containerNode).find('.results').append(row);
+      $(self.containerNode).find('.results').append(row);
 
       var fns = [];
       if (self[name + '_pre']) {
