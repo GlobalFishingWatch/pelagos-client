@@ -15,26 +15,35 @@ define([
     baseClass: 'InfoUI',
     title: 'Info',
     app: app,
+
+    colors: {
+      info: 'none',
+      warning: '#ff5500',
+      error: '#ff0000'
+    },
+
     templateString: '' +
       '<div class="${baseClass}" style="overflow: auto;">' +
-      '  <div class="titleButtons">' +
-      '    <a id="activate_search" class="activate_search" href="javascript:undefined" data-dojo-attach-event="click:activateSearch"><i class="fa fa-search"></i></a>' +
-      '    <a class="download_kml" target="_new" href="javascript:undefined" style="display: none;" data-dojo-attach-point="downloadNode"><i class="fa fa-download" title="Download as KML"></i></a>' +
+      '  <div class="wrapper">' +
+      '    <div class="titleButtons">' +
+      '      <a id="activate_search" class="activate_search" href="javascript:undefined" data-dojo-attach-event="click:activateSearch"><i class="fa fa-search"></i></a>' +
+      '      <a class="download_kml" target="_new" href="javascript:undefined" style="display: none;" data-dojo-attach-point="downloadNode"><i class="fa fa-download" title="Download as KML"></i></a>' +
+      '    </div>' +
+      '    <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
+      '    <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
+             '<img style="width: 20px;" src="${app.dirs.loader}">'+
+          '</div>' +
+      '    <div id="vessel_identifiers" class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' + 
       '  </div>' +
-      '  <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
-      '  <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
-           '<img style="width: 20px;" src="${app.dirs.loader}">'+
-        '</div>' +
-      '  <div id="vessel_identifiers" class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
       '</div>',
-    startup: function () {
+   startup: function () {
       var self = this;
       self.inherited(arguments);
 
       self.visualization.animations.events.on({
         'info-loading': self.updateLoading.bind(self),
-        'info': self.update.bind(self, "none"),
-        'info-error': self.update.bind(self, "#ff0000")
+        'info': self.update.bind(self, self.colors.info),
+        'info-error': self.update.bind(self, self.colors.error)
       });
       self.clear();
     },
@@ -196,6 +205,10 @@ define([
       } else {
         $(self.titleNode).html(event.layer);
         vesselIdNode.html(data.toString());
+      }
+
+      if (data.level && self.colors[data.level]) {
+        color = self.colors[data.level]
       }
 
       vesselIdNode.css({color: color});
