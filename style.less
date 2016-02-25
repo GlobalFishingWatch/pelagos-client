@@ -324,6 +324,9 @@ body {
 
 
 .Filters {
+  .FiltersContainer {
+    padding: 5px;
+  }
   .Filters-AnimationFilters {
     margin-bottom: 10px;
     h2 {
@@ -334,7 +337,18 @@ body {
       font-weight: 500;
     }
     .Filters-Filter-sourcename {
-      width: 100%;
+      width: 50%;
+      text-align: left;
+    }
+    .Filters-Filter-selection {
+      width: 50%;
+      text-align: right;
+    }
+    .Filters-Filter-actions {
+      text-align: right;
+      * {
+        cursor: pointer;
+      }
     }
   }
 }
