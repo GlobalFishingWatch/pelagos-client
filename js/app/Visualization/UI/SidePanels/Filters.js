@@ -76,31 +76,11 @@ define([
       var self = this;
       self.inherited(arguments);
       var selection = self.animation.data_view.selections.selections.active_category;
-      selection.events.on({update: self.rangeUpdated.bind(self)});
-      self.rangeUpdated();
+      self.display = new (self.getEditorClass().prototype.Display)({animation: self.animation, sourcename: self.sourcename});
+      self.display.placeAt(self.selectionNode);
+      self.display.startup();
     },
-    rangeUpdated: function () {
-      var self = this;
-      var selection = self.animation.data_view.selections.selections.active_category;
-      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
-      var range = selection.data[self.sourcename];
-
-      var title = 'All';
-      if (range.length != 2 || range[0] != Number.NEGATIVE_INFINITY || range[1] != Number.POSITIVE_INFINITY) {
-        var choicesById = {};
-        for (var name in source.choices) {
-          choicesById[source.choices[name]] = name;
-        }
-
-        var names = [];
-        for (var i = 0; i < range.length; i+=2) {
-          names.push(choicesById[range[i]]);
-        }
-        title = names.join(", ");
-      }
-      self.selectionNode.innerHTML = title;
-    },
-    edit: function () {
+    getEditorClass: function () {
       var self = this;
       var source = self.animation.data_view.source.header.colsByName[self.sourcename];
 
@@ -108,7 +88,11 @@ define([
       if (source.choices_type == 'ISO 3166-1 alpha-2') {
         cls = FilterEditorFlags;
       }
-      new cls({animation: self.animation, sourcename: self.sourcename}).show();
+      return cls;
+    },
+    edit: function () {
+      var self = this;
+      new (self.getEditorClass())({animation: self.animation, sourcename: self.sourcename}).show();
     }
   });
 

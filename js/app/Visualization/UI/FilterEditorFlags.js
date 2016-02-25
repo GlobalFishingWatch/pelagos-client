@@ -1,9 +1,11 @@
 define([
   "dojo/_base/declare",
+  "app/CountryCodes",
   "app/Visualization/UI/FilterEditorBase",
   "app/Visualization/UI/Widgets/FlagSelector"
 ], function(
   declare,
+  CountryCodes,
   FilterEditorBase,
   FlagSelector
 ){
@@ -45,6 +47,21 @@ define([
           return source.choices[key];
         })
       );
-    }
+    },
+
+    Display: declare("Display", [FilterEditorBase.prototype.Display], {
+      rangeUpdated: function () {
+        var self = this;
+
+        var list = self.getItemList();
+        var title = self.noFilterTitle;;
+        if (list.length > 0) {
+          title = list.map(function (item) {
+            return '<img src="' + app.dirs.img + '/flags/png/' + item.name.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[item.name.toUpperCase()] + '" style="margin: 1px; vertical-align: middle;">';
+          }).join("");
+        }
+        self.containerNode.innerHTML = title;
+      }
+    })
   });
 });
