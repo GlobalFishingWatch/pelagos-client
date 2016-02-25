@@ -15,6 +15,13 @@ define([
     baseClass: 'InfoUI',
     title: 'Info',
     app: app,
+
+    colors: {
+      info: 'none',
+      warning: '#ff5500',
+      error: '#ff0000'
+    },
+
     templateString: '' +
       '<div class="${baseClass}" style="overflow: auto;">' +
       '  <div class="wrapper">' +
@@ -35,8 +42,8 @@ define([
 
       self.visualization.animations.events.on({
         'info-loading': self.updateLoading.bind(self),
-        'info': self.update.bind(self, "none"),
-        'info-error': self.update.bind(self, "#ff0000")
+        'info': self.update.bind(self, self.colors.info),
+        'info-error': self.update.bind(self, self.colors.error)
       });
       self.clear();
     },
@@ -198,6 +205,10 @@ define([
       } else {
         $(self.titleNode).html(event.layer);
         vesselIdNode.html(data.toString());
+      }
+
+      if (data.level && self.colors[data.level]) {
+        color = self.colors[data.level]
       }
 
       vesselIdNode.css({color: color});
