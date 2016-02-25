@@ -77,7 +77,9 @@ define([
          obj
         );
 
-        cb($(popupHtml).find('.cartodb-popup-content'));
+        var html = $(popupHtml).find('.cartodb-popup-content');
+
+        cb(html, data);
       });
     }
   });

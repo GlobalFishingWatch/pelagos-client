@@ -1,12 +1,14 @@
 define([
   "dojo/_base/declare",
   "dojo/dom-style",
+  "app/Visualization/UI/GenerateReportDialog",
   "app/Visualization/UI/SidePanels/SidePanelBase",
   "app/CountryCodes",
   "jQuery"
 ], function(
   declare,
   domStyle,
+  GenerateReportDialog,
   SidePanelBase,
   CountryCodes,
   $
@@ -269,6 +271,18 @@ define([
       $(self.reportNode).hide();
 
       if (event.data.report) {
+
+        $(self.reportNode).on("click", function() {
+          var report = {
+            spec: event.data.report,
+            data: event.data.polygonData,
+            state: self.visualization.state
+          };
+
+          var dialog = new GenerateReportDialog(report);
+
+          dialog.show();
+        });
 
         $(self.reportNode).show();
       }
