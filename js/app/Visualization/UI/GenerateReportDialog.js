@@ -31,51 +31,63 @@ define([
 
     constructor: function(report) {
       this.report = report;
+      this.templates = {
+        prompt: new ObjectTemplate(this.report.spec.promptTemplate),
+        url: new ObjectTemplate(this.report.spec.urlTemplate),
+        context: {}
+      };
     },
 
     startup: function() {
       var self = this;
       self.inherited(arguments);
 
-      var promptTemplate = new ObjectTemplate(self.report.spec.promptTemplate);
-      var urlTemplate = new ObjectTemplate(self.report.spec.urlTemplate);
-
       var keys = self._getPolygonFieldKeys();
+
       // Keys may be direct, which means that they are copied from the polygon
       // values as they are, or splittable, which means that the polygon value
       // is actually a multivalued field and should be splitted into multiple
       // possible values for the field
       var splittableKeys = keys[0];
       var directKeys = keys[1];
-      var templateContext = self._getBaseTemplateContext(directKeys);
+      var baseContext = self._getBaseTemplateContext(directKeys);
 
-      // For splittable fields we need to take the possible options, create
-      // select fields to pick between the options and default to the first
-      // option
+      // Multivalued fields default to the first value
       var multivaluedTemplateContext = self._getMultivaluedTemplateContext(splittableKeys);
+      var takeFirst = function(values) {
+        return values[0];
+      };
+      var defaultValues = _.mapValues(multivaluedTemplateContext, takeFirst);
+      self.templates.context = _.assign(baseContext, defaultValues);
+
+      // Multivalued fields allow selection of a single value through select
+      // fields
       _.each(multivaluedTemplateContext, function(values, key) {
         var options = _.map(values, function(value) {
           return "<option>" + value + "</option>";
         });
 
-        var control = $("<select>" + options.join(" ") + "</select>");
+        var label =
+          '<label for="' + key + '">' +
+            self.report.spec.polygonFields[key].label +
+          ':&nbsp;</label>'
+
+        var select =
+          '<select name="' + key + '">' + options.join(" ") + '</select>';
+
+        var control = $(label + select);
+
         control.on("change", function() {
-          alert("Changed");
+          self.templates.context[key] = $(this).val();
+
+          var prompt = self.templates.prompt.eval(self.templates.context);
+          $(self.promptNode).html(prompt);
         });
 
         $(self.configurationContainerNode).append(control);
       });
 
-      // Default to the first value
-      var takeFirst = function(values) {
-        return values[0];
-      };
-      var defaultValues = _.mapValues(multivaluedTemplateContext, takeFirst);
-      var actualContext = _.assign(templateContext, defaultValues);
-
-      var prompt = promptTemplate.eval(actualContext);
-      var url = urlTemplate.eval(actualContext);
-
+      var prompt = self.templates.prompt.eval(self.templates.context);
       $(self.promptNode).html(prompt);
 
       if (_.isEmpty(multivaluedTemplateContext)) {
@@ -83,6 +95,33 @@ define([
       } else {
         $(self.configurationNode).show();
       }
+    },
+
+    getReportUrl: function() {
+      var self = this;
+
+      // We have to translate datetimes from the template context into postable
+      // timestamps, and uri-encode the rest of the properties
+      var urlize = function(result, value, key) {
+        if (key == "beginTime" || key == "endTime") {
+          result[key] = value.getTime();
+        } else {
+          result[key] = encodeURIComponent(value);
+        }
+      };
+
+      var urlContext =
+        _(self.templates.context)
+        .transform(urlize, {})
+        .value();
+
+      // We also have to translate other keys into URI-encoded strings
+
+
+      var animation = self.report.animations.getReportableAnimation();
+      return "" +
+        animation.args.source.args.url +
+        self.templates.url.eval(urlContext);
     },
 
     _getPolygonFieldKeys: function() {
@@ -144,22 +183,23 @@ define([
 
     constructor: function(report) {
       this.report = report;
+      this.reportDialog = new ReportDialogContents(this.report);
     },
 
     startup: function() {
       var self = this;
       self.inherited(arguments);
 
-      self.addChild(new ReportDialogContents(self.report));
+      self.addChild(self.reportDialog);
     },
 
     handleAccept: function() {
-      alert("Accepted");
+      var url = this.reportDialog.getReportUrl();
+      console.log("Generating report at " + url);
       this.hide();
     },
 
     handleCancel: function() {
-      alert("Canceled");
       this.hide();
     }
   });

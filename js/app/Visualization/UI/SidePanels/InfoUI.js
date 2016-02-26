@@ -269,19 +269,18 @@ define([
       var self = this;
 
       $(self.reportNode).hide();
+      $(self.reportNode).off("click");
 
-      if (event.data.report) {
-
+      if (event.data.report && self.visualization.animations.getReportableAnimation()) {
         $(self.reportNode).on("click", function() {
           var report = {
             spec: event.data.report,
             data: event.data.polygonData,
-            state: self.visualization.state
+            state: self.visualization.state,
+            animations: self.visualization.animations
           };
 
-          var dialog = new GenerateReportDialog(report);
-
-          dialog.show();
+          new GenerateReportDialog(report).show();
         });
 
         $(self.reportNode).show();

@@ -306,6 +306,26 @@ function(Class,
       );
     },
 
+    getReportableAnimation: function() {
+      var self = this;
+
+      var predicate = function(animation) {
+        var hasSourceUrl =
+          animation.args &&
+          animation.args.source &&
+          animation.args.source.args &&
+          animation.args.source.args.url;
+
+        var isReportable =
+          animation.args &&
+          animation.args.reportable
+
+        return hasSourceUrl && isReportable;
+      };
+
+     return _.find(self.animations, predicate);
+    },
+
     handleMouse: function (e, type) {
       var self = this;
 
