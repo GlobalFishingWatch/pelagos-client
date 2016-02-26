@@ -1,6 +1,6 @@
 define([
-  "app/Class",
-  "dijit/Dialog",
+  "dojo/_base/declare",
+  "./Widgets/TemplatedDialog",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
   "async",
@@ -8,7 +8,7 @@ define([
   "app/Visualization/KeyBindings",
   "app/LoadingInfo"
 ], function(
-  Class,
+  declare,
   Dialog,
   BorderContainer,
   ContentPane,
@@ -17,72 +17,61 @@ define([
   KeyBindings,
   LoadingInfo
 ){
-  return Class({
-    name: "AnimationLibrary",
-    initialize: function (visualization) {
-      var self = this;
+  return declare("AnimationLibrary", [Dialog], {
+    style: "width: 50%;",
+    title: "Animation library",
+    "class": 'library-dialog',
+    app: app,
+    contentTemplate: '' +
+      '<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="liveSplitters: true" style="min-height: 300px; height: 100%; width: 100%; padding: 0; margin: 0;">' +
 
-      self.visualization = visualization;
-      self.animationManager = visualization.animations;
-      self.dataManager = self.visualization.data;
+      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'top\'" style="border: none; padding: 0; padding-bottom: 10px; margin: 0; overflow: hidden;">' +
+      '    <input type="text" class="query" style="width: 100%;" placeholder="Search by name or tag" data-dojo-attach-event="keyup:queryQueyUp"></input>' +
+      '    <div class="search-loading">' +
+      '      <img style="width: 20px;" src="${app.dirs.loader}">' +
+      '    </div>' +
+      '  </div>' +
+      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-attach-point="sourcesList" data-dojo-props="region:\'center\'" style="border: none; padding: 0; margin: 0;" class="sourcesList"></div>' +
+      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-attach-point="animationsList" data-dojo-props="region:\'right\', splitter: true" style="border: none; padding: 0; margin: 0; width: 150px;" class="animationsList"></div>' +
+      '</div>',
+
+    actionBarTemplate: '' +
+      '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+      '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-event="click:hide">Close</button>' +
+      '</div>',
+
+    visualization: null,
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
 
       KeyBindings.register(
         ['Ctrl', 'Alt', 'A'], null, 'General',
         'Add animation', self.displayAnimationLibraryDialog.bind(self)
       );
+    },
 
-      self.dialog = new Dialog({
-        style: "width: 50%;",
-        title: "Animation library",
-        "class": 'library-dialog',
-        content: '',
-        actionBarTemplate: '' +
-          '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-          '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-          '</div>'
-      });
-
-      self.container = new BorderContainer({style: "min-height: 300px; height: 100%; width: 100%; padding: 0; margin: 0;", liveSplitters: true});
-      self.dialog.addChild(self.container);
-
-      self.container.addChild(new ContentPane({region: 'top', style: 'border: none; padding: 0; padding-bottom: 10px; margin: 0; overflow: hidden;', content: '' +
-        '<input type="text" class="query" style="width: 100%;" placeholder="Search by name or tag"></input>' +
-        '<div class="search-loading">' +
-        '  <img style="width: 20px;" src="' + app.dirs.loader + '">' +
-        '</div>'
-      }));
-
-      self.sourcesList = new ContentPane({region: 'center', content: '', 'class': 'sourcesList', style: 'border: none; padding: 0; margin: 0;'});
-      self.animationsList = new ContentPane({region: 'right', splitter: true, content: '', 'class': 'animationsList', style: 'border: none; padding: 0; margin: 0; width: 150px'});
-      self.container.addChild(self.sourcesList);
-      self.container.addChild(self.animationsList);
-
-      self.dialog.startup();
-
-      $(self.dialog.containerNode).find(".query").keyup(function(event) {
-        if (event.which == 13) {
-          self.performSearch($(self.dialog.containerNode).find(".query").val());
-        }
-      });
-
-      $(self.dialog.closeButton).on('click', function () {
-        self.dialog.hide();
-      });
+    queryQueyUp: function (event) {
+      var self = this;
+      if (event.which == 13) {
+        self.performSearch($(event.target).val());
+      }
     },
 
     displayAnimationLibraryDialog: function () {
       var self = this;
       $(self.sourcesList.containerNode).html('');
       $(self.animationsList.containerNode).html('');
-      self.dialog.show();
+      self.show();
       self.performSearch();
     },
 
     performSearch: function (query) {
       var self = this;
 
-      $(self.dialog.containerNode).find('.search-loading').show();
-      self.dataManager.listAvailableSources(function (err, sources) {
+      $(self.containerNode).find('.search-loading').show();
+      self.visualization.data.listAvailableSources(function (err, sources) {
         self.sources = sources;
         var results = [];
         if (!query) {
@@ -118,7 +107,7 @@ define([
           source.click(self.displayAnimationsForSource.bind(self));
           $(self.sourcesList.containerNode).append(source);
         });
-        $(self.dialog.containerNode).find('.search-loading').hide();
+        $(self.containerNode).find('.search-loading').hide();
       });
     },
 
@@ -127,7 +116,7 @@ define([
       var name = $(event.target).data('name');
 
       $(self.animationsList.containerNode).html('');
-      self.dataManager.listAvailableSourceAnimations(self.sources[name], function (err, animations) {
+      self.visualization.data.listAvailableSourceAnimations(self.sources[name], function (err, animations) {
         animations.map(function (animation) {
           var row = $("<div></div>");
           row.text(animation.args.title);
@@ -149,8 +138,8 @@ define([
 
       animation.args.title = name + ": " + animation.args.title;
 
-      self.animationManager.addAnimation(animation, function () {});
-      self.dialog.hide();
+      self.visualization.animations.addAnimation(animation, function () {});
+      self.hide();
     }
   });
 });
