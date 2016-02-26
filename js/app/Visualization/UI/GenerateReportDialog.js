@@ -4,6 +4,7 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/_Container",
   "dijit/Dialog",
+  "dijit/form/Select",
   "app/ObjectTemplate",
   "lodash",
   "jQuery"
@@ -13,6 +14,7 @@ define([
   _TemplatedMixin,
   _Container,
   Dialog,
+  Select,
   ObjectTemplate,
   _,
   $
@@ -51,7 +53,18 @@ define([
       // select fields to pick between the options and default to the first
       // option
       var multivaluedTemplateContext = self._getMultivaluedTemplateContext(splittableKeys);
-      // TODO: Create the select fields for picking between the possible values
+      _.each(multivaluedTemplateContext, function(values, key) {
+        var options = _.map(values, function(value) {
+          return "<option>" + value + "</option>";
+        });
+
+        var control = $("<select>" + options.join(" ") + "</select>");
+        control.on("change", function() {
+          alert("Changed");
+        });
+
+        $(self.configurationContainerNode).append(control);
+      });
 
       // Default to the first value
       var takeFirst = function(values) {
@@ -64,6 +77,12 @@ define([
       var url = urlTemplate.eval(actualContext);
 
       $(self.promptNode).html(prompt);
+
+      if (_.isEmpty(multivaluedTemplateContext)) {
+        $(self.configurationNode).hide();
+      } else {
+        $(self.configurationNode).show();
+      }
     },
 
     _getPolygonFieldKeys: function() {
