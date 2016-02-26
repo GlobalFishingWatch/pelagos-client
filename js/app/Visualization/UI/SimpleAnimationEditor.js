@@ -154,7 +154,7 @@ define([
         '<button class="add">Add animation</button'
       });
 
-      var colorDropdown = new ColorDropdown();
+      var colorDropdown = new ColorDropdown({value: "#0000ff"});
       colorDropdown.placeAt($(editor.containerNode).find('.color')[0]);
       colorDropdown.startup();
 
