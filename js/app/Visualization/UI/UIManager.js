@@ -406,7 +406,9 @@ define([
     initPlayButton: function(cb) {
       var self = this;
 
-      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization});
+      /* FIXME: The display: none to be removed once testing of the
+       * new design is done */
+      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization, style: "display: none;"});
       self.playControl.placeAt($("body")[0]);
       self.playControl.startup();
 
