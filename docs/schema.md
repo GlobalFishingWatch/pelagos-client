@@ -1,10 +1,16 @@
 # Tileset schema
 
-The workspace is the highest configuration item for the system. It represents the whole state of what the user is currently viewing. The workspace defines a set of animations. Each animation has a data source and some configuratation. A data source for an animation can either be a single tile file given by its URL or a tileset directory following the tileset URL structure, given as a base URL.
+The workspace is the highest configuration item for the system. It represents
+the whole state of what the user is currently viewing. The workspace defines a
+set of animations. Each animation has a data source and some configuratation. A
+data source for an animation can either be a single tile file given by its URL
+or a tileset directory following the tileset URL structure, given as a base
+URL.
 
 This schema document describes the schemas for each part in this stack:
 
-* Tile binary file format (documented [here](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/TypedMatrixParser.js))
+* Tile binary file format (documented
+  [here](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/TypedMatrixParser.js))
 * The tileset URL structure
 * The tileset header
 * The workspace specification
@@ -13,317 +19,465 @@ This schema document describes the schemas for each part in this stack:
   * Configuration options for workspace file
   * Column schemas
 
-
 # The tileset URL structure
+
 ## Header
+
 A tileset always has a header file under the base url:
 
-    http://myproject.appspot.com/tile/mytileset/header
+```
+http://myproject.appspot.com/tile/mytileset/header
+```
 
 ## Fallback URLS
-The header file can the specify a set of new base url:s to use for tile fetches as well as selection info and selection track queries.
 
-The base urls are specified as a list of fallback levels. For each level there can be multiple urls, used in a round-robin fashion. The client starts by trying to load a tile using the lowest fallback level. If a request returns a 404 error, the next higher fallback level is attempted, until all are exhausted.
+The header file can the specify a set of new base url:s to use for tile fetches
+as well as selection info and selection track queries.
 
-This allows you to deploy a pre-generated set of tiles for low zoom levels to a static serving host, while dynamically filling in that set for the higher zoom levels.
+The base urls are specified as a list of fallback levels. For each level there
+can be multiple urls, used in a round-robin fashion. The client starts by
+trying to load a tile using the lowest fallback level. If a request returns a
+404 error, the next higher fallback level is attempted, until all are
+exhausted.
+
+This allows you to deploy a pre-generated set of tiles for low zoom levels to a
+static serving host, while dynamically filling in that set for the higher zoom
+levels.
 
 ## Tiles
+
 Tiles are loaded from under any of the provided fallback urls by adding the tile bounding box:
 
-    http://myproject.appspot.com/tile/mytileset/135,-11.25,157.5,0
+```
+http://myproject.appspot.com/tile/mytileset/135,-11.25,157.5,0
+```
 
 Alternatively, if you're using temporal tiling a time range and a bounding box:
 
-    http://myproject.appspot.com/tile/mytileset/2014-12-06T00:00:00,2015-01-05T00:00:00;-180,0,-168.75,5.625
+```
+http://myproject.appspot.com/tile/mytileset/2014-12-06T00:00:00,2015-01-05T00:00:00;-180,0,-168.75,5.625
+```
 
-The time range is specified on the format YYYY-MM-DDThh:mm:ss.ddd (ddd is second decimals). Start should be a time which when represented as a unix timestamp, is divisible by temporalExtents. End should be start + temporalExtents.
+The time range is specified on the format YYYY-MM-DDThh:mm:ss.ddd (ddd is
+second decimals). Start should be a time which when represented as a unix
+timestamp, is divisible by temporalExtents. End should be start +
+temporalExtents.
 
-For information on the exact details of how bounds are calculated, look at [tileParamsForRegion()](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/TileBounds.js#L6).
+For information on the exact details of how bounds are calculated, look at
+[tileParamsForRegion()](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/TileBounds.js#L6).
 
 ## Queries
 
-A tileset can provide subset tilesets or information for queries. Queries are made up of one or more columnname=value pairs separated by commas, one for each sortcol (see the section on selections below for information about sortcols). If the main tileset resides under
+A tileset can provide subset tilesets or information for queries. Queries are
+made up of one or more columnname=value pairs separated by commas, one for each
+sortcol (see the section on selections below for information about sortcols).
+If the main tileset resides under
 
-    http://myproject.appspot.com/tile/mytileset/
+```
+http://myproject.appspot.com/tile/mytileset/
+```
 
-the subset tileset will reside under 
+the subset tileset will reside under
 
-    http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../
+```
+http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../
+```
 
-and detailed information about the selection in a json file under 
+and detailed information about the selection in a json file under
 
-    http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../info
+```
+http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../info
+```
 
-The info json file should contain a json structure with name: value pairs that will be rendered as an information table for the user.
+The info json file should contain a json structure with name: value pairs that
+will be rendered as an information table for the user.
 
-Special rendering for AIS vessel information will be done if the structure contains any of the fields vesselname, mmsi, imo or callsign.
+Special rendering for AIS vessel information will be done if the structure
+contains any of the fields vesselname, mmsi, imo or callsign.
 
-In all other cases, fields will be rendered as two columns, names and values. If a field named *name* is present, it will be used as a header, and if a field named *link* is present, the title will be made into a link pointing to this value (which must be an URL). Fields whose values are URLs will be rendered as links (and the value column left blank).
+In all other cases, fields will be rendered as two columns, names and values.
+If a field named *name* is present, it will be used as a header, and if a field
+named *link* is present, the title will be made into a link pointing to this
+value (which must be an URL). Fields whose values are URLs will be rendered as
+links (and the value column left blank).
 
 # The tileset header
+
 The tileset header specifies how to load tiles, and what columns to expect.
 
-    {
-      "tilesetName": "Default name for animation", 
+```
+{
+  "tilesetName": "Default name for animation",
 
-      /* Urls to load files from for different purposes.
+  /* Urls to load files from for different purposes.
 
-         Each entry in the list is a fallback level (ordered from
-         first level to attempt to last). Each level is a list of urls
-         to try in a round-robin fashion.
+     Each entry in the list is a fallback level (ordered from
+     first level to attempt to last). Each level is a list of urls
+     to try in a round-robin fashion.
 
-         Setting urls to a list of lists, instead of an object, is a
-         shortcut syntax for only setting the "default" member. */
-      "urls": {
-        "default": [
-          [
-            "http://storage.googleapis.com/myproject/tiles/mytileset-3.2.4"
-          ], 
-          [
-            "http://t0.myproject.appspot.com/tiles/mytileset/3.2.4", 
-            "http://t1.myproject.appspot.com/tiles/mytileset/3.2.4", 
-            "http://t2.myproject.appspot.com/tiles/mytileset/3.2.4", 
-            "http://t3.myproject.appspot.com/tiles/mytileset/3.2.4"
-          ]
-        ],
-        "selection-info": [
-          [
-            "http://storage.googleapis.com/myproject/vesseltracks"
-          ]
-        ]
-      },
+     Setting urls to a list of lists, instead of an object, is a
+     shortcut syntax for only setting the "default" member. */
+  "urls": {
+    "default": [
+      [
+        "http://storage.googleapis.com/myproject/tiles/mytileset-3.2.4"
+      ],
+      [
+        "http://t0.myproject.appspot.com/tiles/mytileset/3.2.4",
+        "http://t1.myproject.appspot.com/tiles/mytileset/3.2.4",
+        "http://t2.myproject.appspot.com/tiles/mytileset/3.2.4",
+        "http://t3.myproject.appspot.com/tiles/mytileset/3.2.4"
+      ]
+    ],
+    "selection-info": [
+      [
+        "http://storage.googleapis.com/myproject/vesseltracks"
+      ]
+    ]
+  },
 
-      /* Default is to query /info/series/SERIESNR for selection
-         information (it should return json). If set to true, sortcols
-         from the selection object is used to determine the path:
-         /info/NAME1/VALUE1/NAME2/VALUE2.../NAMEN/VALUEN */
+  /* Default is to query /info/series/SERIESNR for selection
+     information (it should return json). If set to true, sortcols
+     from the selection object is used to determine the path:
+     /info/NAME1/VALUE1/NAME2/VALUE2.../NAMEN/VALUEN */
 
-      "infoUsesSelection": false,
+  "infoUsesSelection": false,
 
-      /* Column specifications. Note: All tiles should adhere to this
-         format, or extend it. Extra columns in tiles will be mostly
-         ignored. Maps a column name to a specification containing column
-         type, min and max values, and opptional configuration for the
-         column mapper editor.
-     */
+  /* Column specifications. Note: All tiles should adhere to this
+     format, or extend it. Extra columns in tiles will be mostly
+     ignored. Maps a column name to a specification containing column
+     type, min and max values, and opptional configuration for the
+     column mapper editor.
+ */
 
-      "colsByName": {
-        "datetime": {
-          "type": "Float32",
-          "min": 1414799949824.0,
-          "max": 1425168007168.0, 
-          "hidden": true /* Don't show in animation editor interface */
-        }
-      },
-      
-      /* Wether this tileset has subset tilesets for series / seriesgroupp queries */
-      "seriesTilesets": true,
-
-      /* If set to a numeric value temporal tiling will be enabled,
-         and the value specifies the length (in milliseconds) of a
-         temporal tile. */
-      "temporalExtents": 2592000000,
-
+  "colsByName": {
+    "datetime": {
+      "type": "Float32",
+      "min": 1414799949824.0,
+      "max": 1425168007168.0,
+      "hidden": true /* Don't show in animation editor interface */
     }
+  },
+
+  /* Wether this tileset has subset tilesets for series / seriesgroupp queries */
+  "seriesTilesets": true,
+
+  /* If set to a numeric value temporal tiling will be enabled,
+     and the value specifies the length (in milliseconds) of a
+     temporal tile. */
+  "temporalExtents": 2592000000,
+}
+```
 
 # Choices
 
-Columns that only contain a discrete number of different values can be used to produce a drop-down menu that allows the user to select/display a subset of the points sharing a certain value. See the section on selections below for more information on this.
+Columns that only contain a discrete number of different values can be used to
+produce a drop-down menu that allows the user to select/display a subset of the
+points sharing a certain value. See the section on selections below for more
+information on this.
 
-Labels for such a menu should be added to the column specification under colsByName:
+Labels for such a menu should be added to the column specification under
+colsByName:
 
-      "colsByName": {
-        "category": {
-          "type": "Float32",
-          "min": -1.0,
-          "max": 2.0, 
-          "choices": {
-            "Unknown": -1.0
-            "Chocolate": 0.0,
-            "Vanilla": 1.0,
-            "Strawberry": 2.0
-          }
-        }
-      }
+```
+"colsByName": {
+  "category": {
+    "type": "Float32",
+    "min": -1.0,
+    "max": 2.0,
+    "choices": {
+      "Unknown": -1.0
+      "Chocolate": 0.0,
+      "Vanilla": 1.0,
+      "Strawberry": 2.0
+    }
+  }
+}
+```
 
 An optional interpretation of the labels can be supplied:
 
-      "colsByName": {
-        "category": {
-          "type": "Float32",
-          "min": -1.0,
-          "max": 2.0, 
-          "choices_type": "ISO 3166-1 alpha-2",
-          "choices": {
-            "SE": 0.0,
-            "FI": 1.0,
-            "DK": 2.0
-            "IS": 3.0
-            "NO": 4.0
-          }
-        }
-      }
+```
+"colsByName": {
+  "category": {
+    "type": "Float32",
+    "min": -1.0,
+    "max": 2.0,
+    "choices_type": "ISO 3166-1 alpha-2",
+    "choices": {
+      "SE": 0.0,
+      "FI": 1.0,
+      "DK": 2.0
+      "IS": 3.0
+      "NO": 4.0
+    }
+  }
+}
+```
 
 # The workspace secification
-A workspace is a JSON file loadable from a URL. If the URL contains a query ?id=SOMEID, then the url without the query will be used to save new workspaces to using a POST request.
 
-    {
-      "state": {
-        "title": "Window title", 
+A workspace is a JSON file loadable from a URL. If the URL contains a query
+?id=SOMEID, then the url without the query will be used to save new workspaces
+to using a POST request.
 
-        /* Time window end */
-        "time": {"__jsonclass__": ["Date", "2015-03-01T00:00:07.168Z"]}, 
-        /* Time window size in milliseconds */
-        "timeExtent": 10368057344, 
+```
+{
+  "state": {
+    "title": "Window title",
 
-        /* Screen center and zoom, google maps semantics */
-        "lon": -169.69070434570312, 
-        "lat": -7.453709339338128, 
-        "zoom": 4, 
+    /* Time window end */
+    "time": {"__jsonclass__": ["Date", "2015-03-01T00:00:07.168Z"]},
+    /* Time window size in milliseconds */
+    "timeExtent": 10368057344,
 
-        /* Animation state */
-        "paused": true, 
-        "loop": true,
-      },
-      "map": {
-        /* Google maps styling and other options */
-        "options": {
-          "mapTypeId": "roadmap", 
-          "styles": [
-            {"featureType": "road", "stylers": [{"visibility": "off"}]}
-          ]
-        },
+    /* Screen center and zoom, google maps semantics */
+    "lon": -169.69070434570312,
+    "lat": -7.453709339338128,
+    "zoom": 4,
 
-        /* Overlay animation confirguration. See below. */
-        "animations": []
-      }
-    }
+    /* Animation state */
+    "paused": true,
+    "loop": true,
+  },
+  "map": {
+    /* Google maps styling and other options */
+    "options": {
+      "mapTypeId": "roadmap",
+      "styles": [
+        {"featureType": "road", "stylers": [{"visibility": "off"}]}
+      ]
+    },
+
+    /* Overlay animation confirguration. See below. */
+    "animations": []
+  }
+}
+```
 
 ## Animaton configuration
 
-Animations represents layers of data overlaid on the basemap. Each animation visualizes some source data. There is no hard-coded schema for source data. Instead, the animation configuration dynamically maps source data to the values needed by the visualization. The user may also dynamically change this mapping using sliders or buttons in the editing UI or a custom UI.
+Animations represents layers of data overlaid on the basemap. Each animation
+visualizes some source data. There is no hard-coded schema for source data.
+Instead, the animation configuration dynamically maps source data to the values
+needed by the visualization. The user may also dynamically change this mapping
+using sliders or buttons in the editing UI or a custom UI.
 
-Each animation definition contains a title, a type and a set of arguments. The arguments contain at least a source definition, with a source type and loader arguments.
+Each animation definition contains a title, a type and a set of arguments. The
+arguments contain at least a source definition, with a source type and loader
+arguments.
 
-    {
-      "title": "My animation"
-      "type": "MyAnimationClass"
-      "visible": true, /* Visibility checkbox status */
-      "args": {
-        /* Source configuration, see below */
-        "source": {}
-        }
+```
+{
+  "type": "MyAnimationClass"
 
-        /* Not all animation classes supports these. See below for specification. */
-        "uniforms": {},
-        "columns": {},
-        "selections": {}
-      }
-    }
+  "args": {
+
+    "title": "My animation"
+
+    /* Visibility checkbox status */
+    "visible": true,
+
+    /* Indicates that this layer supports reporting, allowing other layers to
+       run reports related to this one. For example, you may have a vessel activity
+       animation which displays the locations of different vessels, and a EEZ layer
+       which displays the EEZ boundaries. In that case, you may have a report that
+       shows the vessels inside each EEZ. To support this, you would configure the
+       vessel activity layer as reportable, and the EEZ animation would report fields
+       indicating how the report is displayed and generated. */
+    "reportable": true,
+
+    /* Settings for report generation. When an animation has these settings,
+       it allows the user to generate a report over another animation, marked with the
+       `reportable` property. */
+    "report": {
+      /* This field configures the way selected polygon fields are processed
+         for the url and prompt templates */
+      "polygonFields": {
+        /* Here we are making the `boundary` field available in the templates.
+           We are making it a splitable field, which means that the boundary field in the
+           selected polygon actually contains multiple values, such as "Egypt - Greece",
+           and the user should select one of them, either "Egypt" or "Greece" */
+        "boundary": {
+          "split": "-",
+          "label": "EEZ"
+        },
+
+        /* Here we are publishing another field from the polygon, in this case one that
+           is directly available in the templates */
+        "country": {}
+      },
+
+      /* Template used to create the url which generates the report. The template
+         fields are extracted from the selection information of this animation (for
+         example, in the eez case, which is a cartodb animation, they are the fields of
+         the info window */
+      "urlTemplate": "sub/eez=%(boundary)s",
+
+      /* Template used to create the text message displayed to the user to
+         confirm the generation of the report. The same properties that are available on
+         the `urlTemplate` field are available here, plus the `beginTime` and `endTime`
+         properties, which are extracted from the current timeslider values */
+      "promptTemplate": "Generate report on the EEZ %(boundary)s from %(beginTime)s to %(endTime)?",s
+    },
+
+    /* Source configuration, see below */
+    "source": {},
+
+    /* Not all animation classes supports these. See below for specification. */
+    "uniforms": {},
+    "columns": {},
+    "selections": {}
+  }
+
+}
+```
 
 ### Animation source configuration
 
 The animation data source can be either a tileset:
 
-    {
-      "type": "TiledBinFormat",
-      "args": {
-        "url": "http://myproject.appspot.com/tile/mytileset"
-      }
-    }
+```
+{
+  "type": "TiledBinFormat",
+  "args": {
+    "url": "http://myproject.appspot.com/tile/mytileset"
+  }
+}
+```
 
 or a single tile file:
 
-    {
-      "type": "BinFormat"
-      "args": {
-        "url": "http://myproject.appspot.com/file.bin"
-      }
-    }
+```
+{
+  "type": "BinFormat"
+  "args": {
+    "url": "http://myproject.appspot.com/file.bin"
+  }
+}
+```
 
 ### Uniforms
-Uniforms are simple slider values input to the animation. They are defined as a mapping from names to min-max-current specifications. Each animation defines what uniforms it needs and possible value ranges.
 
-    "uniforms": {
-      "blue": {
-        "value": 0.4, 
-        "max": 1, 
-        "min": 0
-      }
-    }
+Uniforms are simple slider values input to the animation. They are defined as a
+mapping from names to min-max-current specifications. Each animation defines
+what uniforms it needs and possible value ranges.
+
+```
+"uniforms": {
+  "blue": {
+    "value": 0.4,
+    "max": 1,
+    "min": 0
+  }
+}
+```
 
 ### Columns
-Column specifications map data source columns and selections to animation columns. Each column consist of a name, a type, a min value and a max value that each needs to correspond to the requirements of the animation class, and a source polynomial.
 
-The source polynomial is represented as a mapping from source column names and selection names to values. The values represent the constant factors in front of each source variable in the polynomial. The special source name "_" represents the constant term in the polynomial. For example the polynomial weight = 0.4*speed + 0.4*size+0.2*1 is represented as
+Column specifications map data source columns and selections to animation
+columns. Each column consist of a name, a type, a min value and a max value
+that each needs to correspond to the requirements of the animation class, and a
+source polynomial.
 
-    "columns": {
-      "weight": {
-        "type": "Float32", 
-        "source": {
-          "speed": 0.4,
-          "size": 0.4,
-          "_": 0.2
-        }, 
-        "max": 1, 
-        "min": 0
-      }
+The source polynomial is represented as a mapping from source column names and
+selection names to values. The values represent the constant factors in front
+of each source variable in the polynomial. The special source name `_`
+represents the constant term in the polynomial. For example the polynomial
+`weight = 0.4*speed + 0.4*size+0.2*1` is represented as
+
+```
+"columns": {
+  "weight": {
+    "type": "Float32",
+    "source": {
+      "speed": 0.4,
+      "size": 0.4,
+      "_": 0.2
+    },
+    "max": 1,
+    "min": 0
+  }
+}
+```
+
+There is also a special "magic" constant value null, that represents the number
+of variable polynomial terms. This is intended to easily represent logical and.
+For example the logical expression not (timerange and active_category) can be
+represented using the polynomial filter = -1*timerange + -1*active_category + 2
+(with 0 = False and 1 = True):
+
+```
+"columns": {
+  "filter": {
+    "type": "Float32"
+    "source": {
+      "timerange": -1,
+      "active_category": -1,
+      "_": null
     }
-
-There is also a special "magic" constant value null, that represents the number of variable polynomial terms. This is intended to easily represent logical and. For example the logical expression not (timerange and active_category) can be represented using the polynomial filter = -1*timerange + -1*active_category + 2 (with 0 = False and 1 = True):
-
-    "columns": {
-      "filter": {
-        "type": "Float32"
-        "source": {
-          "timerange": -1, 
-          "active_category": -1, 
-          "_": null
-        }
-      }, 
-    }
+  },
+}
+```
 
 ### Selections
-Selections represent ways the user can select subsets of points to highlight them or query information about them. The set of available  selections is hard-coded to info,hover,selected,timerange and active_category. These represent points queried for information by a right-click, points hovered over with the mouse, points selected  by a left click, points currently in view based on the timeslider and points selected by a point category filter respectively.
+
+Selections represent ways the user can select subsets of points to highlight
+them or query information about them. The set of available  selections is
+hard-coded to info,hover,selected,timerange and active_category. These
+represent points queried for information by a right-click, points hovered over
+with the mouse, points selected  by a left click, points currently in view
+based on the timeslider and points selected by a point category filter
+respectively.
 
 Selection are defined as:
 
-    "selections": {
-      "selected": {
-        "header": {"length": 0}, 
-        "data": {"seriesgroup": []}, 
-        "sortcols": ["seriesgroup"]
-      }
-    }
+```
+"selections": {
+  "selected": {
+    "header": {"length": 0},
+    "data": {"seriesgroup": []},
+    "sortcols": ["seriesgroup"]
+  }
+}
+```
 
-sortcols contains one or more data source column names. The selection can represent a range of input data whose values lie between two extremes for each sortcol. Even a range where the upper and lower bound are the same can contain multiple points, if not all data source columns are listed in sortcols.
+sortcols contains one or more data source column names. The selection can
+represent a range of input data whose values lie between two extremes for each
+sortcol. Even a range where the upper and lower bound are the same can contain
+multiple points, if not all data source columns are listed in sortcols.
 
-The default sortcols is ["seriesgroup"] for all selections apart from active_category, for which it is ["category"].
+The default sortcols is ["seriesgroup"] for all selections apart from
+active_category, for which it is ["category"].
 
-data and header contains values representing a current selection. It is recommended to generate these values by loading the workspace, changing the selections and then saving the workspace.
+data and header contains values representing a current selection. It is
+recommended to generate these values by loading the workspace, changing the
+selections and then saving the workspace.
 
 # Generic column specification
 
-* series - track id for track drawing animations
-* timestamp - timestamp for the "timerange" selection
+* `series` - track id for track drawing animations
+* `timestamp` - timestamp for the "timerange" selection
 
 # ClusterAnimation
 
-* filter - 0 or below to draw point, above 0 hides point
-* latitude - coordinate for point in wgs84
-* longitude - coordinate for point in wgs84
-* sigma - standard deviation of points inside a cluster represented by a single point in meters.
-* weight - luminosity of point, between 0 and 1
-* red - between 0 and 1, color for top luminosity
-* green - between 0 and 1, color for top luminosity
-* blue - between 0 and 1, color for top luminosity
-* selected_red - between 0 and 1, color for top luminosity for selected points
-* selected_green - between 0 and 1, color for top luminosity for selected points
-* selected_blue - between 0 and 1, color for top luminosity for selected points
-* hover_red - between 0 and 1, color for top luminosity for points hovered over
-* hover_green - between 0 and 1, color for top luminosity for points hovered over
-* hover_blu - between 0 and 1, color for top luminosity for points hovered over
+* `filter` - 0 or below to draw point, above 0 hides point
+* `latitude` - coordinate for point in wgs84
+* `longitude` - coordinate for point in wgs84
+* `sigma` - standard deviation of points inside a cluster represented by a single point in meters.
+* `weight` - luminosity of point, between 0 and 1
+* `red` - between 0 and 1, color for top luminosity
+* `green` - between 0 and 1, color for top luminosity
+* `blue` - between 0 and 1, color for top luminosity
+* `selected_red` - between 0 and 1, color for top luminosity for selected points
+* `selected_green` - between 0 and 1, color for top luminosity for selected points
+* `selected_blue` - between 0 and 1, color for top luminosity for selected points
+* `hover_red` - between 0 and 1, color for top luminosity for points hovered over
+* `hover_green` - between 0 and 1, color for top luminosity for points hovered over
+* `hover_blu` - between 0 and 1, color for top luminosity for points hovered over
 
 ## Standard configuration
 
-If points are to be grouped in larger units than single tracks e.g. all tracks for the same vessel, it is recommended to add a column caled seriesgroup with a unique value for each such vessel.
+If points are to be grouped in larger units than single tracks e.g. all tracks
+for the same vessel, it is recommended to add a column caled seriesgroup with a
+unique value for each such vessel.
