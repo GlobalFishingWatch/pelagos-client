@@ -78,11 +78,13 @@ define([
 
       LoadingInfo.main.add(url, true);
 
-      new CartoDBInfoWindow(data.cartodb_id, self.layer).fetch(function(html) {
+      new CartoDBInfoWindow(data.cartodb_id, self.layer).fetch(function(html, polygonData) {
         LoadingInfo.main.remove(url);
 
         var data = {
           html: html,
+          report: self.report,
+          polygonData: polygonData,
           toString: function () { return this.html; }
         };
 

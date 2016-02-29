@@ -43,7 +43,6 @@ define([
 
       var infoWindowData = self.layer.getInfowindowData(0);
       if (!infoWindowData) {
-        // TODO: Push error into callback
         return;
       }
 
@@ -78,7 +77,9 @@ define([
          obj
         );
 
-        cb($(popupHtml).find('.cartodb-popup-content'));
+        var html = $(popupHtml).find('.cartodb-popup-content');
+
+        cb(html, data);
       });
     }
   });
