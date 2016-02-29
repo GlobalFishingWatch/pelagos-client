@@ -36,7 +36,7 @@
     "stats.js": "r14",
     "font-awesome": "~4.4.0",
     "easyXDM": "~2.4.17",
-    "cartodb.js": "https://github.com/SkyTruth/cartodb.js-bower.git#3.15.8-skytruth-1",
+    "cartodb.js": "https://github.com/SkyTruth/cartodb.js-bower.git#3.15.8-skytruth-3",
     "dojo-theme-flat": "https://github.com/Esri/dojo-theme-flat.git"
   }
 }
