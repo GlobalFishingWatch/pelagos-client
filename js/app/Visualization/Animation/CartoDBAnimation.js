@@ -53,6 +53,14 @@ define([
         self.setVisible(self.visible);
 
         cb();
+      }).on("error", function () {
+        self.handleError();
+        self.manager.visualization.data.events.triggerEvent("error", {
+          url: self.source.args.url,
+          toString: function () {
+            return 'Unable to load CartoDB layer ' + this.url;
+          }
+        });
       });
     },
 
