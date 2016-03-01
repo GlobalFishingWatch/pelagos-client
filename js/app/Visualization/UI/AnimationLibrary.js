@@ -72,6 +72,13 @@ define([
 
       $(self.containerNode).find('.search-loading').show();
       self.visualization.data.listAvailableSources(function (err, sources) {
+        $(self.containerNode).find('.search-loading').hide();
+
+        if (!sources) {
+          $(self.sourcesList.containerNode).html('<div class="error">Unable to retrieve library: ' + err.toString() + '</div>');
+          return;
+        }
+
         self.sources = sources;
         var results = [];
         if (!query) {
@@ -83,7 +90,7 @@ define([
             } else {
               if (sources[name].tags) {
                 for (var i = 0; i < sources[name].tags.length; i++) {
-                  if (sources[name].tags[i].indexOf(query)) {
+                  if (sources[name].tags[i].indexOf(query) != -1) {
                     results.push(name);
                     break;
                   }
@@ -107,7 +114,6 @@ define([
           source.click(self.displayAnimationsForSource.bind(self));
           $(self.sourcesList.containerNode).append(source);
         });
-        $(self.containerNode).find('.search-loading').hide();
       });
     },
 
