@@ -262,6 +262,9 @@ define([
           cb(err);
         } else {
           cb(null, data.map.animations.filter(function (animation) {
+            if (source.filter == false) {
+              return true;
+            }
             if (animation.is_main != undefined) {
               return animation.is_main;
             }
