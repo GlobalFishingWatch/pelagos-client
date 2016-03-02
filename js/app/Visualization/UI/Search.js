@@ -124,6 +124,7 @@ define([
           row.find('a').attr({href: "javascript: void(0);"});
           row.find('a').click(function () {
             item.data.zoomToSelectionAnimations = true;
+            item.animation.data_view.selections.selections.selected.rawInfo = false;
             item.animation.data_view.selections.selections.selected.addDataRange(item.data, item.data, true);
             self.hide();
           });
