@@ -115,9 +115,6 @@ define([
         .transform(urlize, {})
         .value();
 
-      // We also have to translate other keys into URI-encoded strings
-
-
       var animation = self.report.animations.getReportableAnimation();
       return "" +
         animation.args.source.args.url +

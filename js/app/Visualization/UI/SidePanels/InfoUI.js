@@ -118,9 +118,14 @@ define([
       self._setupDownloadLink(event);
       self._setupReportLink(event);
 
-      if (data.level && self.colors[data.level]) {
-        color = self.colors[data.level]
+      if (
+        event.data &&
+        event.data.level &&
+        self.colors[event.data.level]) {
+
+        color = self.colors[event.data.level]
       }
+
       $(self.containerNode).css({color: color});
 
       $(self.loadingNode).hide();
@@ -271,7 +276,11 @@ define([
       $(self.reportNode).hide();
       $(self.reportNode).off("click");
 
-      if (event.data.report && self.visualization.animations.getReportableAnimation()) {
+      if (
+        event.data &&
+        event.data.report &&
+        self.visualization.animations.getReportableAnimation()) {
+
         $(self.reportNode).on("click", function() {
           var report = {
             spec: event.data.report,
