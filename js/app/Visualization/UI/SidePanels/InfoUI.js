@@ -18,7 +18,7 @@ define([
     title: 'Info',
     app: app,
     colors: {
-      info: 'none',
+      info: 'inherit',
       warning: '#ff5500',
       error: '#ff0000'
     },
