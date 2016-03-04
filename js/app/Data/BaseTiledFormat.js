@@ -108,10 +108,10 @@ define([
               hidden: true
             };
           }
-          self.headerIsLoaded = true;
           var e = {update: "header", header: data};
           self.events.triggerEvent(e.update, e);
           self.events.triggerEvent("update", e);
+          self.initialZoomHandled = true;
           if (self.initialZoom) {
             self.zoomTo(self.initialZoom);
           }
@@ -305,7 +305,7 @@ define([
         return;
       }
 
-      if (!self.headerIsLoaded) {
+      if (!self.headerIsLoaded || !self.initialZoomHandled) {
         /* Don't start loading tiles before we have a header and know
          * what URL alternatives there are. */
         self.initialZoom = bounds;
