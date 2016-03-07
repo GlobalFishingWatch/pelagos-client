@@ -241,7 +241,6 @@ define([
       );
 
       var setRange = function (e) {
-        if (updating) return;
         var timeExtent = e.end - e.start;
 
         if (timeExtent < self.visualization.state.getValue("timeExtent")) {
@@ -252,15 +251,6 @@ define([
           self.visualization.state.setValue("timeExtent", timeExtent);
         }
       }
-
-      self.timeline.on('set-range', setRange);
-      self.timeline.on('temporary-range', setRange);
-      self.timeline.on('user-update-start', function (e) {
-        self.visualization.state.setValue("paused", true);
-      });
-      self.timeline.on('hover', function (e) {
-        self.visualization.state.setValue("timeFocus", e.time);
-      });
 
       var daySliderUpdateMinMax = function() {
         if (updating) return;
@@ -340,14 +330,18 @@ define([
         }
 
         updating = true;
-        if (adjusted) {
-          self.visualization.state.setValue("time", end);
-          self.visualization.state.setValue("timeExtent", end - start);
-        }
         self.timeline.setRange(start, end);
         updating = false;
       };
 
+      self.timeline.on('set-range', setRange);
+      self.timeline.on('temporary-range', setRange);
+      self.timeline.on('user-update-start', function (e) {
+        self.visualization.state.setValue("paused", true);
+      });
+      self.timeline.on('hover', function (e) {
+        self.visualization.state.setValue("timeFocus", e.time);
+      });
       self.visualization.state.events.on({
         time: daySliderUpdateValue,
         timeExtent: daySliderUpdateValue
