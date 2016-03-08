@@ -68,6 +68,8 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/SpaceTime", "app/Data/Ti
 
   return Class(BaseTest, {
 
+/* FIXME: These tests are broken by https://github.com/SkyTruth/pelagos-server/issues/1012
+
     name: "TiledEmptyFormat",
     "Loading tiles": function (cb) {
       QUnit.expect(2);
@@ -174,6 +176,6 @@ define(["app/Class", "QUnit", "app/Test/BaseTest", "app/SpaceTime", "app/Data/Ti
         });
         p.load()
     }
-
+*/
   });
 });
