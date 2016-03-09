@@ -50,7 +50,9 @@ define([
 
     updateData: function() {
       var self = this;
-      self.tiles = self.data_view.source.getContent();
+      self.tiles = Object.values(
+        self.data_view.source.tileCache
+      );
 
       self.rawLatLonData = new Float32Array(self.tiles.length*5*2);
       self.tilecount = self.tiles.length;
@@ -99,6 +101,16 @@ define([
         program.gl.uniform1f(program.uniforms.tileidx_selected, self.selections.selected);
         program.gl.uniform1f(program.uniforms.tileidx_hover, self.selections.hover);
         program.gl.uniform1f(program.uniforms.tileidx, i);
+        program.gl.uniform1f(
+          program.uniforms.status,
+          {
+            error: -1,
+            pending: 0,
+            receiving: 1,
+            loaded: 2
+          }[self.tiles[i].getStatus()]
+        );
+
         program.gl.drawArrays(program.gl.LINE_STRIP, i*5, 5);
       }
     },

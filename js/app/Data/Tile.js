@@ -135,6 +135,29 @@ define([
       return self.bounds.toString();
     },
 
+    getStatus: function () {
+      var self = this;
+
+      if (self.content && self.content.error) {
+        return "error";
+      } else {
+        if (self.content.loadingStarted) {
+          if (self.content.allIsLoaded) {
+            return "loaded";
+          } else {
+            return "receiving";
+          }
+        } else {
+          return "pending";
+        }
+      }
+    },
+
+    isWanted: function () {
+      var self = this;
+     return !!self.manager.wantedTiles[self.bounds.toString()];
+    },
+
     printTree: function (args) {
       var self = this;
 
@@ -153,20 +176,8 @@ define([
         "Level: " + TileBounds.zoomLevelForTileBounds(self.bounds)
       ];
       if (self.content && self.content.header) flags.push("Rows: " + self.content.header.length);
-      if (self.manager.wantedTiles[key]) flags.push("wanted");
-      if (self.content && self.content.error) {
-        flags.push("error");
-      } else {
-        if (self.content.loadingStarted) {
-          if (self.content.allIsLoaded) {
-            flags.push("loaded");
-          } else {
-            flags.push("receiving");
-          }
-        } else {
-          flags.push("pending");
-        }
-      }
+      if (self.isWanted()) flags.push("wanted");
+      flags.push(self.getStatus());
       if (self.content && self.content.header && self.content.header.tags) flags = flags.concat(self.content.header.tags);
 
       var res = indent + key + " (" + flags.join(", ") + ")";
