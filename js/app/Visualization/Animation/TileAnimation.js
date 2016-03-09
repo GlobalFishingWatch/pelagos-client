@@ -28,16 +28,18 @@ define([
       }
     },
 
-    initGl: function(gl, cb) {
+    initGl: function(cb) {
       var self = this;
 
       self.selections = {
         hover: -1,
         selected: -1};
 
-      DataAnimation.prototype.initGl.call(self, gl, function () {
-        Object.values(self.programs).map(function (program) {
-          program.pointArrayBuffer = program.gl.createBuffer();
+      DataAnimation.prototype.initGl.call(self, function () {
+        Object.values(self.programs).map(function (programs) {
+          programs.map(function (program) {
+            program.pointArrayBuffer = program.gl.createBuffer();
+          });
         });
 
         cb();
@@ -70,9 +72,11 @@ define([
         });
       });
 
-      self.gl.useProgram(self.programs.program);
-      Object.values(self.programs).map(function (program) {
-        Shader.programLoadArray(program.gl, program.pointArrayBuffer, self.rawLatLonData, program);
+      Object.values(self.programs).map(function (programs) {
+        programs.map(function (program) {
+          program.gl.useProgram(program);
+          Shader.programLoadArray(program.gl, program.pointArrayBuffer, self.rawLatLonData, program);
+        });
       });
       DataAnimation.prototype.updateData.call(self);
     },
@@ -94,7 +98,7 @@ define([
 
     select: function (x, y, type, replace) {
       var self = this;
-      var rowidx = self.getRowidxAtPos(x, y);
+      var rowidx = self.manager.getRowidxAtPos(x, y);
       var tileidx = rowidx ? rowidx[0] : -1;
 
       self.selections[type] = tileidx;
