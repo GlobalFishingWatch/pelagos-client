@@ -1,4 +1,12 @@
-define(["app/Class", "app/Events"], function(Class, Events) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/Data/TileBounds"
+], function(
+  Class,
+  Events,
+  TileBounds
+) {
   return Class({
     name: "Tile",
     initialize: function(manager, bounds) {
@@ -125,6 +133,73 @@ define(["app/Class", "app/Events"], function(Class, Events) {
     toString: function () {
       var self = this;
       return self.bounds.toString();
+    },
+
+    printTree: function (args) {
+      var self = this;
+
+      var indent = args.indent || '';
+      var depth = args.depth || 0;
+
+      var key = self.bounds.toString();
+
+      if (args.printed === undefined) args.printed = {};
+      var again = args.printed[key] || false;
+      args.printed[key] = true;
+
+      var flags = [
+        "Idx: " + self.idx.toString(),
+        "Usage: " + self.usage.toString(),
+        "Level: " + TileBounds.zoomLevelForTileBounds(self.bounds)
+      ];
+      if (self.content && self.content.header) flags.push("Rows: " + self.content.header.length);
+      if (self.manager.wantedTiles[key]) flags.push("wanted");
+      if (self.content && self.content.error) {
+        flags.push("error");
+      } else {
+        if (self.content.loadingStarted) {
+          if (self.content.allIsLoaded) {
+            flags.push("loaded");
+          } else {
+            flags.push("receiving");
+          }
+        } else {
+          flags.push("pending");
+        }
+      }
+      if (self.content && self.content.header && self.content.header.tags) flags = flags.concat(self.content.header.tags);
+
+      var res = indent + key + " (" + flags.join(", ") + ")";
+
+      if (args.maxdepth != undefined && depth > args.maxdepth) {
+        res += " ...\n";
+      } else if (again && !args.expand) {
+        res += " (see above)\n";
+      } else {
+        res += "\n";
+
+        if (self.replacement) {
+          if (self.replacement_is_known_complete) {
+            res += indent + "  Replaced by known complete ancestor:\n";
+          } else {
+            res += indent + "  Replaced by nearest ancestor:\n";
+          }
+          args.depth = depth + 1;
+          args.indent = indent + "    ";
+          res += self.replacement.printTree(args);
+        }
+
+        if (self.overlaps.length) {
+          res += indent + "  Overlaps:\n";
+          self.overlaps.map(function (overlap) {
+            args.depth = depth + 1;
+            args.indent = indent + "    ";
+            res += overlap.printTree(args);
+          });
+        }
+      }
+
+      return res;
     },
 
     toJSON: function () {

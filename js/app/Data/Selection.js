@@ -49,16 +49,8 @@ define(["app/Class", "app/Events", './TileBounds', "lodash"], function(Class, Ev
           self.data.source.push(source.toString());
 
           if (self.data.tile == undefined) self.data.tile = [];
-          self.data.tile.push(startTile.toString());
-          self.data.tile.push(endTile.toString());
-
-          if (self.data.tile_level == undefined) self.data.tile_level = [];
-          self.data.tile_level.push(TileBounds.zoomLevelForTileBounds(startTile.bounds));
-          self.data.tile_level.push(TileBounds.zoomLevelForTileBounds(endTile.bounds));
-
-          if (self.data.tags == undefined) self.data.tags = [];
-          self.data.tags.push(startTile.content.header.tags ? startTile.content.header.tags.join(", ") : "");
-          self.data.tags.push(endTile.content.header.tags ? endTile.content.header.tags.join(", ") : "");
+          self.data.tile.push(startTile.printTree({}));
+          self.data.tile.push(startTile.printTree({}));
 
           cols.map(function (col) {
             if (self.data[col] == undefined) self.data[col] = [];

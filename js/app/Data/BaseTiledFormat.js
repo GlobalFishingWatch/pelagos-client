@@ -495,66 +495,7 @@ define([
       var self = this;
       args = args || {};
 
-      var printed = {};
-
-      var printTree = function (indent, depth, tile) {
-        depth = depth || 0;
-
-        var key = tile.bounds.toString();
-
-        var again = printed[key] || false;
-        printed[key] = true;
-
-        var flags = [
-          "Idx: " + tile.idx.toString(),
-          "Usage: " + tile.usage.toString(),
-          "Level: " + TileBounds.zoomLevelForTileBounds(tile.bounds)
-        ];
-        if (tile.content && tile.content.header) flags.push("Rows: " + tile.content.header.length);
-        if (self.wantedTiles[key]) flags.push("wanted");
-        if (tile.content && tile.content.error) {
-          flags.push("error");
-        } else {
-          if (tile.content.loadingStarted) {
-            if (tile.content.allIsLoaded) {
-              flags.push("loaded");
-            } else {
-              flags.push("receiving");
-            }
-          } else {
-            flags.push("pending");
-          }
-        }
-        if (tile.content && tile.content.header && tile.content.header.tags) flags = flags.concat(tile.content.header.tags);
-
-        var res = indent + key + " (" + flags.join(", ") + ")";
-
-        if (args.maxdepth != undefined && depth > args.maxdepth) {
-          res += " ...\n";
-        } else if (again && !args.expand) {
-          res += " (see above)\n";
-        } else {
-          res += "\n";
-
-          if (tile.replacement) {
-            if (tile.replacement_is_known_complete) {
-              res += indent + "  Replaced by known complete ancestor:\n";
-            } else {
-              res += indent + "  Replaced by nearest ancestor:\n";
-            }
-            res += printTree(indent + "    ", depth+1, tile.replacement);
-          }
-
-          if (tile.overlaps.length) {
-            res += indent + "  Overlaps:\n";
-            tile.overlaps.map(function (overlap) {
-              res += printTree(indent + "    ", depth+1, overlap);
-            });
-          }
-        }
-
-        return res;
-      }
+      args.printed = {};
 
       var filter = function (tile) { return true; };
       if (args.covers) {
@@ -574,15 +515,21 @@ define([
       var loaded = wantedTiles.map(function (tile) { return tile.content.allIsLoaded ? 1 : 0; }).reduce(function (a, b) { return a + b }, 0);
       var errored = wantedTiles.map(function (tile) { return tile.content.error ? 1 : 0; }).reduce(function (a, b) { return a + b }, 0);
       res += indent + 'Wanted tiles (Rows: ' + rows + ', Loaded: ' + loaded + ', Errors: ' + errored + '):\n'
-      res += wantedTiles.map(printTree.bind(self, indent + "  ", 0)).join("");
+      res += wantedTiles.map(function (tile) {
+        args.indent = indent + "  ";
+        args.depth = 0;
+        return tile.printTree.bind(args);
+      }).join("");
 
       if (!args.coveredBy && !args.covers) {
         res += indent + 'Forgotten tiles:\n'
         res += Object.values(self.tileCache).filter(function (tile) {
-          return !printed[tile.bounds.toString()];
-        }).map(
-          printTree.bind(self, indent + "  ", 0)
-        ).join("");
+          return !args.printed[tile.bounds.toString()];
+        }).map(function (tile) {
+          args.indent = indent + "  ";
+          args.depth = 0;
+          return tile.printTree(args);
+        }).join("");
       }
 
       return res;

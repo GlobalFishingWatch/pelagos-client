@@ -1,4 +1,17 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Timerange, SpaceTime, Format, Tile, Pack, Logging, Ajax, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/Bounds",
+  "app/Timerange",
+  "app/Logging",
+  "app/LangExtensions"
+], function(
+  Class,
+  Events,
+  Bounds,
+  Timerange,
+  Logging
+) {
   var TileBounds = Class({name: "TileBounds"});
 
   TileBounds.world = new Bounds([-180, -90, 180, 90]);
