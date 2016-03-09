@@ -507,23 +507,27 @@ define([
 
         var flags = [
           "Idx: " + tile.idx.toString(),
-          "Usage: " + tile.usage.toString()
+          "Usage: " + tile.usage.toString(),
+          "Level: " + TileBounds.zoomLevelForTileBounds(tile.bounds)
         ];
-        if (tile.content.loadingStarted) {
-          if (tile.content.allIsLoaded) {
-            flags.push("loaded");
-          } else {
-            flags.push("receiving");
-          }
-        } else {
-          flags.push("pending");
-        }
         if (tile.content && tile.content.header) flags.push("Rows: " + tile.content.header.length);
         if (self.wantedTiles[key]) flags.push("wanted");
-        if (tile.content.error) flags.push("error");
+        if (tile.content && tile.content.error) {
+          flags.push("error");
+        } else {
+          if (tile.content.loadingStarted) {
+            if (tile.content.allIsLoaded) {
+              flags.push("loaded");
+            } else {
+              flags.push("receiving");
+            }
+          } else {
+            flags.push("pending");
+          }
+        }
         if (tile.content && tile.content.header && tile.content.header.tags) flags = flags.concat(tile.content.header.tags);
 
-        var res = indent + key + "(" + flags.join(", ") + ")";
+        var res = indent + key + " (" + flags.join(", ") + ")";
 
         if (args.maxdepth != undefined && depth > args.maxdepth) {
           res += " ...\n";
