@@ -2,12 +2,14 @@ define([
   "require",
   "app/Class",
   "app/Visualization/Animation/Shader",
-  "app/Visualization/Animation/DataAnimation"
+  "app/Visualization/Animation/DataAnimation",
+  "./ObjectToTable"
 ], function(
   require,
   Class,
   Shader,
-  DataAnimation
+  DataAnimation,
+  ObjectToTable
 ) {
   var TileAnimation = Class(DataAnimation, {
     name: "TileAnimation",
@@ -48,13 +50,13 @@ define([
 
     updateData: function() {
       var self = this;
-      var tiles = self.data_view.source.getContent();
+      self.tiles = self.data_view.source.getContent();
 
-      self.rawLatLonData = new Float32Array(tiles.length*5*2);
-      self.tilecount = tiles.length;
+      self.rawLatLonData = new Float32Array(self.tiles.length*5*2);
+      self.tilecount = self.tiles.length;
 
       var i = 0;
-      tiles.map(function (tile) {
+      self.tiles.map(function (tile) {
         var height = tile.bounds.top - tile.bounds.bottom;
         var width = tile.bounds.right - tile.bounds.left;
         var marginy = height / 50;
@@ -88,7 +90,12 @@ define([
       Shader.programBindArray(program.gl, program.pointArrayBuffer, program, "worldCoord", 2, program.gl.FLOAT);
       program.gl.uniformMatrix4fv(program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
 
+      program.gl.uniform1f(
+        program.uniforms.animationidx,
+        self.manager.animations.indexOf(self));
+
       for (var i = 0; i < self.tilecount; i++) {
+
         program.gl.uniform1f(program.uniforms.tileidx_selected, self.selections.selected);
         program.gl.uniform1f(program.uniforms.tileidx_hover, self.selections.hover);
         program.gl.uniform1f(program.uniforms.tileidx, i);
@@ -96,14 +103,44 @@ define([
       }
     },
 
-    select: function (x, y, type, replace) {
+    select: function (rowidx, type, replace, event) {
       var self = this;
-      var rowidx = self.manager.getRowidxAtPos(x, y);
       var tileidx = rowidx ? rowidx[0] : -1;
 
       self.selections[type] = tileidx;
 
-      return DataAnimation.prototype.select.call(self, x, y, type, replace);
+      if (tileidx != -1) {
+        var data = {
+          tile: self.tiles[tileidx].printTree({}),
+          toString: function () {
+            return ObjectToTable(this);
+          }
+        };
+
+        if (event.pageX != undefined) {
+          var offset = self.manager.node.offset();
+          x = event.pageX - offset.left;
+          y = event.pageY - offset.top;
+        } else {
+          x = event.pixel.x;
+          y = event.pixel.y;
+        }
+
+        var latlng = self.manager.map.getProjection().fromPointToLatLng(new google.maps.Point(x, y));
+
+        var selectionData = {
+          latitude: latlng[0],
+          longitude: latlng[1]
+        };
+
+        if (type != 'hover') {
+          self.manager.handleInfo(self, type, undefined, data, selectionData);
+        }
+        self.manager.triggerUpdate();
+        return true;
+      }
+      self.manager.triggerUpdate();
+      return false;
     }
   });
   DataAnimation.animationClasses.TileAnimation = TileAnimation;

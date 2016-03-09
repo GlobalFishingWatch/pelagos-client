@@ -271,7 +271,7 @@ define([
       $(self.reportNode).hide();
       $(self.reportNode).off("click");
 
-      if (event.data.report && self.visualization.animations.getReportableAnimation()) {
+      if (event.data && event.data.report && self.visualization.animations.getReportableAnimation()) {
         $(self.reportNode).on("click", function() {
           var report = {
             spec: event.data.report,
