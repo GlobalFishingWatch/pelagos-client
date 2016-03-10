@@ -38,6 +38,7 @@ define([
     actionBarTemplate: '' +
       '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
       '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-event="click:hide">Close</button>' +
+      '  <button data-dojo-type="dijit/form/Button" type="submit" disabled="disabled" data-dojo-attach-point="addButton" data-dojo-attach-event="click:add">Add</button>' +
       '</div>',
 
     visualization: null,
@@ -50,6 +51,9 @@ define([
         ['Ctrl', 'Alt', 'A'], null, 'General',
         'Add animation', self.displayAnimationLibraryDialog.bind(self)
       );
+    },
+
+    add: function () {
     },
 
     queryQueyUp: function (event) {
@@ -130,21 +134,31 @@ define([
 
           row.data('name', name);
           row.data('animation', animation);
-          row.click(self.addAnimation.bind(self));
+          row.click(self.selectAnimation.bind(self));
 
           $(self.animationsList.containerNode).append(row);
         });
       });
+
+      $(self.sourcesList.containerNode).find("*").removeClass("selected");
+      $(event.target).addClass("selected");
+
+      self.addButton.set("disabled", true);
     },
 
-    addAnimation: function (event) {
+    selectAnimation: function (event) {
       var self = this;
       var name = $(event.target).data('name');
-      var animation = $(event.target).data('animation');
+      self.selectedAnimation = $(event.target).data('animation');
+      self.selectedAnimation.args.title = name + ": " + self.selectedAnimation.args.title;
+      $(self.animationsList.containerNode).find("*").removeClass("selected");
+      $(event.target).addClass("selected");
+      self.addButton.set("disabled", false);
+    },
 
-      animation.args.title = name + ": " + animation.args.title;
-
-      self.visualization.animations.addAnimation(animation, function () {});
+    add: function () {
+      var self = this;
+      self.visualization.animations.addAnimation(self.selectedAnimation, function () {});
       self.hide();
     }
   });
