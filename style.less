@@ -285,6 +285,10 @@ body {
   }
   .sourcesList, .animationsList {
     .stripedLinkList();
+    div.selected {
+      background-color: #ef4223;
+      color: #ffffff;
+    }
   }
   .error {
     color: #ef4223;
@@ -325,7 +329,7 @@ body {
       border-spacing: 0;
       tbody {
         tr:nth-child(odd) {
-          background-color: #ccc;
+          background-color: #F7F7F7;
         }
         tr {
           .imo, .mmsi, .callsign {
@@ -342,7 +346,7 @@ body {
             }
           }
           &:hover {
-            background-color: #d2cece;
+            background-color: #F0F0F0;
           }
         }
       }

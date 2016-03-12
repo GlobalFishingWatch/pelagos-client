@@ -27,8 +27,8 @@ define([
       '</div>',
     actionBarTemplate: '' +
       '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-      '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-      '  <button data-dojo-type="dijit/form/Button" type="button" data-dojo-attach-point="searchButton">Search</button>' +
+      '  <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:hide">Close</button>' +
+      '  <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:search">Search</button>' +
       '</div>',
 
     visualization: null,
@@ -44,7 +44,7 @@ define([
 
       $(self.containerNode).find(".query").keyup(function(event) {
         if (event.which == 13) {
-          self.performSearch($(self.containerNode).find(".query").val());
+          self.search();
         }
       });
 
@@ -55,13 +55,6 @@ define([
       $(self.containerNode).find(".next").click(function () {
         self.performSearch(self.currentResults.query, self.currentResults.offset + self.currentResults.limit, self.currentResults.limit);
       });
-
-      $(self.closeButton).on('click', function () {
-        self.hide();
-      });
-      $(self.searchButton).on('click', function () {
-        self.performSearch($(self.containerNode).find(".query").val());
-      });
     },
 
     displaySearchDialog: function () {
@@ -69,6 +62,11 @@ define([
       $(self.containerNode).find('.results').html('');
       $(self.containerNode).find('.paging').hide();
       self.show();
+    },
+
+    search: function () {
+      var self = this;
+      self.performSearch($(self.containerNode).find(".query").val());
     },
 
     performSearch: function (query, offset, limit) {
@@ -101,8 +99,16 @@ define([
           $(self.containerNode).find(".end").html(res.offset + res.entries.length);
           $(self.containerNode).find(".total").html(res.total);
 
-          if (res.offset <= 0) $(self.containerNode).find(".prev").attr({disabled: 'disabled'});
-          if (res.offset + res.limit  >= res.total) $(self.containerNode).find(".next").attr({disabled: 'disabled'});
+          if (res.offset <= 0) {
+            $(self.containerNode).find(".prev").attr({disabled: 'disabled'});
+          } else {
+            $(self.containerNode).find(".prev").removeAttr('disabled');
+          }
+          if (res.offset + res.limit  >= res.total) {
+            $(self.containerNode).find(".next").attr({disabled: 'disabled'});
+          } else {
+            $(self.containerNode).find(".next").removeAttr('disabled');
+          }
         } else {
           $(self.containerNode).find('.paging').hide();
         }
