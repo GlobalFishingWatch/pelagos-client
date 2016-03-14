@@ -325,11 +325,12 @@ define([
 
       }
 
-      var wantedTileBounds = TileBounds.tileBounds(
-        bounds,
-        self.tilesPerScreen,
-        self.header.temporalExtents
-      );
+      var wantedTileBounds = TileBounds.tileBounds({
+        bounds: bounds,
+        tilesPerScreen: self.tilesPerScreen,
+        temporalExtents: self.header.temporalExtents,
+        temporalExtentsBase: self.header.temporalExtentsBase
+      });
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
       var anyNewTiles = false;

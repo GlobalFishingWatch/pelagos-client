@@ -93,11 +93,26 @@
    decoding.
 */
 
-define(["app/Class", "app/Events", "app/LoadingInfo", "app/Data/Pack", "app/Logging"], function (Class, Events, LoadingInfo, Pack, Logging) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/LoadingInfo",
+  "app/Data/Pack",
+  "app/Logging",
+  "lodash"
+], function (
+  Class,
+  Events,
+  LoadingInfo,
+  Pack,
+  Logging,
+  _
+) {
   return Class({
     name: "TypedMatrixParser",
     MAGIC_COOKIE: 'tmtx',
-    initialize: function(url) {
+    withCredentials: false,
+    initialize: function(url, args) {
       var self = this;
 
       self.header = {length: 0, colsByName: {}};
@@ -112,6 +127,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Data/Pack", "app/Logg
       self.responseData = null;
 
       self.url = url;
+      if (args) _.extend(self, args);
       self.isFileUri = url.indexOf("file://") == 0;
       if (!self.events) {
         // There is an if around this so we don't overwrite an events
@@ -152,7 +168,7 @@ define(["app/Class", "app/Events", "app/LoadingInfo", "app/Data/Pack", "app/Logg
 
       LoadingInfo.main.add(self.url, {request: self.request});
       self.request.open('GET', self.url, true);
-//      self.request.withCredentials = true;
+      self.request.withCredentials = self.withCredentials;
       self.request.responseType = "arraybuffer";
       for (var key in self.headers) {
         var values = self.headers[key]

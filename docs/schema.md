@@ -63,6 +63,10 @@ second decimals). Start should be a time which when represented as a unix
 timestamp, is divisible by temporalExtents. End should be start +
 temporalExtents.
 
+Alternatively, you can specify temporalExtentsBase as a unix
+timestamp. This value is then subtracted from the time range start
+value before testing for divisibility by temporalExtents.
+
 For information on the exact details of how bounds are calculated, look at
 [tileParamsForRegion()](https://github.com/SkyTruth/pelagos-client/blob/master/js/app/Data/TileBounds.js#L6).
 
