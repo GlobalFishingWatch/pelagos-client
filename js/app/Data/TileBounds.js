@@ -70,13 +70,12 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
   };
 
   TileBounds.temporalExtents = 1000 * 60 * 60 * 24 * 30;
+  TileBounds.temporalExtentsBase = 0;
 
   TileBounds.tileParamsForRange = function(args) {
-    var bounds = args.bounds;
-    var temporalExtents = args.temporalExtents;
-
-    if (typeof(temporalExtents) != "number") temporalExtents = TileBounds.temporalExtents;
-    var range = new Timerange(bounds);
+    var temporalExtents = args.temporalExtents || TileBounds.temporalExtents;
+    var temporalExtentsBase = args.temporalExtentsBase || TileBounds.temporalExtentsBase;
+    var range = new Timerange(args.bounds);
 
     var res = {
       range: range,
@@ -90,18 +89,16 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
       }
     };
 
-    res.tilestart = Math.floor(range.start.getTime() / temporalExtents) * temporalExtents;
-    res.tileend = Math.ceil(range.end.getTime() / temporalExtents) * temporalExtents;
+    res.tilestart = temporalExtentsBase + Math.floor((range.start.getTime() - temporalExtentsBase) / temporalExtents) * temporalExtents;
+    res.tileend = temporalExtentsBase + Math.ceil((range.end.getTime() - temporalExtentsBase) / temporalExtents) * temporalExtents;
 
     return res;
   };
 
   TileBounds.tileBoundsForRange = function(args) {
     /* Returns a list of tile bounds covering a region. */
-    var temporalExtents = args.temporalExtents;
+    var temporalExtents = args.temporalExtents || TileBounds.temporalExtents;
     var tilesPerScreen = args.tilesPerScreen;
-
-    if (typeof(temporalExtents) != "number") temporalExtents = TileBounds.temporalExtents;
 
     var params = TileBounds.tileParamsForRange(args);
     Logging.main.log("Data.BaseTiledFormat.tileBoundsForRange", params);
