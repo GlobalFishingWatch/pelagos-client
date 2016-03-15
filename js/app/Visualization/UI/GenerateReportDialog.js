@@ -6,6 +6,7 @@ define([
   "dijit/Dialog",
   "dijit/form/Select",
   "app/ObjectTemplate",
+  "app/Data/Ajax",
   "lodash",
   "jQuery"
 ], function (
@@ -16,6 +17,7 @@ define([
   Dialog,
   Select,
   ObjectTemplate,
+  Ajax,
   _,
   $
 ) {
@@ -42,14 +44,13 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      var keys = self._getPolygonFieldKeys();
 
       // Keys may be direct, which means that they are copied from the polygon
       // values as they are, or splittable, which means that the polygon value
       // is actually a multivalued field and should be splitted into multiple
-      // possible values for the field
-      var splittableKeys = keys[0];
-      var directKeys = keys[1];
+      // possible values for the field. Keys that are in the report polygonKeys
+      // object are all multivalued fields.
+      var splittableKeys = self._getPolygonFieldKeys();
       var baseContext = self._getBaseTemplateContext(directKeys);
 
       // Multivalued fields default to the first value
@@ -124,14 +125,8 @@ define([
     _getPolygonFieldKeys: function() {
       var self = this;
 
-      var splittable = function (key) {
-        return !!self.report.spec.polygonFields[key].split;
-      };
-
       return _(self.report.spec.polygonFields)
-        .keys()
-        .partition(splittable)
-        .value();
+        .keys();
     },
 
     _getBaseTemplateContext: function(additionalKeys) {
@@ -144,8 +139,7 @@ define([
         endTime: time
       };
 
-      var additionalProperties = _.pick(self.report.data, additionalKeys);
-      return _.assign(result, additionalProperties);
+      return _.assign(result, self.report.data);
     },
 
     _getMultivaluedTemplateContext: function(splittableKeys) {
@@ -192,7 +186,9 @@ define([
 
     handleAccept: function() {
       var url = this.reportDialog.getReportUrl();
-      console.log("Generating report at " + url);
+      Ajax.post(url, {}, function(err, result) {
+        console.log("Got response", err, result);
+      });
       this.hide();
     },
 
