@@ -13,6 +13,7 @@
 define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/BinFormat"], function(Class, Format, BaseTiledFormat, BinFormat) {
   var TiledBinFormat = Class(BaseTiledFormat, {
     name: "TiledBinFormat",
+    withCredentials: false,
 
     getDirectory: function () {
       var self = this;
@@ -26,7 +27,8 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Bi
         tile.bounds.toString(),
         tile.fallbackLevel);
       var content = new BinFormat({
-        url: base + "/" + tile.bounds.toString()
+        url: base + "/" + tile.bounds.toString(),
+        withCredentials: self.header.tilesWithCredentials
       });
       content.setHeaders(self.headers);
       return content;
