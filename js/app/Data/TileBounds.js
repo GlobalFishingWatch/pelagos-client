@@ -103,7 +103,7 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
 
     return {
       set: res,
-      tilesPerScreen: Math.ceil(tilesPerScreen / (params.length / rangeSize)),
+      tilesPerScreen: Math.ceil(tilesPerScreen / Math.max(1, params.length / rangeSize)),
       params: params
     };
   };
