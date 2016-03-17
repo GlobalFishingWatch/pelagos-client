@@ -519,7 +519,7 @@ define([
       res += wantedTiles.map(function (tile) {
         args.indent = indent + "  ";
         args.depth = 0;
-        return tile.printTree.bind(args);
+        return tile.printTree(args);
       }).join("");
 
       if (!args.coveredBy && !args.covers) {
