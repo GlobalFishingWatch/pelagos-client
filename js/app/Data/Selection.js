@@ -1,4 +1,4 @@
-define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
+define(["app/Class", "app/Events", './TileBounds', "lodash"], function(Class, Events, TileBounds, _) {
   return Class({
     name: "Selection",
 
@@ -49,12 +49,8 @@ define(["app/Class", "app/Events", "lodash"], function(Class, Events, _) {
           self.data.source.push(source.toString());
 
           if (self.data.tile == undefined) self.data.tile = [];
-          self.data.tile.push(startTile.toString());
-          self.data.tile.push(endTile.toString());
-
-          if (self.data.tags == undefined) self.data.tags = [];
-          self.data.tags.push(startTile.content.header.tags ? startTile.content.header.tags.join(", ") : "");
-          self.data.tags.push(endTile.content.header.tags ? endTile.content.header.tags.join(", ") : "");
+          self.data.tile.push(startTile.printTree({}));
+          self.data.tile.push(startTile.printTree({}));
 
           cols.map(function (col) {
             if (self.data[col] == undefined) self.data[col] = [];
