@@ -186,18 +186,15 @@ define([
       var setMultiLinkField = function (field, url_prefix) {
         var node = tableNode.find("." + field);
         if (data[field]) {
-          node.html("");
-          var first = true;
-          data[field].split(",").map(function (value) {
-            var link = $("<a target='_blank'>");
-            link.text(value);
-            link.attr({href: url_prefix + value});
-            if (!first) {
-              node.append(", ");
-            }
-            node.append(link);
-            first = false;
-          });
+          var entries = data[field]
+	      .toString()
+	      .split(",")
+	      .map(function(value) {
+		return "<a target='_blank' href='" + url_prefix + value + "'>" + value + "</a>";
+	      })
+	      .join(", ");
+
+	  node.html(entries); 
         } else {
           node.html("---");
         }
