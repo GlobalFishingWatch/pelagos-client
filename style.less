@@ -44,7 +44,35 @@ label {
   font-weight: 700;
 }
 
+.dijitInputField[aria-hidden="true"] {
+  display: none;
+}
 
+.dijitTextBox .dijitButtonNode {
+  height: 28px;
+  width: 20px;
+  border-width: 0;
+  display: block;
+}
+
+.dijitDropDownButton .dijitArrowButtonInner:before, .dijitArrowButton:before {
+  vertical-align: middle;
+}
+
+.dijitAccordionChildWrapper {
+  overflow: visible;
+}
+
+.dijitAccordionChildWrapper .titleButtons {
+  font-weight: bold;
+  position: absolute;
+  right: 1.5em;
+  margin-top: -1.5em;
+  color: #ffffff;
+  a {
+    color: #ffffff;
+  }
+}
 
 #test, #visualization {
   position: absolute;
@@ -105,13 +133,16 @@ body {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
 }
 
+.dijitDialog .dijitDialogCloseIcon {
+  color: #ffffff;
+}
+
 .claro .dijitDialogTitleBar {
   -moz-border-bottom-colors: none;
   -moz-border-left-colors: none;
   -moz-border-right-colors: none;
   -moz-border-top-colors: none;
   background-color: #ef4223;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 100%);
   background-repeat: repeat-x;
   border-color: #b8bda7 #b8bda7 #ef4223;
   border-image: none;
@@ -221,6 +252,49 @@ body {
   }
 }
 
+.stripedList {
+  div:nth-child(odd) {
+    background-color: #ccc;
+  }
+  div:hover {
+    background-color: #d2cece;
+  }
+}
+
+.stripedLinkList {
+  .stripedList();
+  cursor: pointer;
+}
+
+.simple-animation-editor-dialog {
+  .list {
+    .stripedLinkList();
+  }
+}
+
+.library-dialog {
+  .query {
+    height: 2em;
+  }
+  .search-loading {
+    position: relative;
+    top: -1.6em;
+    margin-right: 0.3em;
+    float: right;
+    display: none;
+  }
+  .sourcesList, .animationsList {
+    .stripedLinkList();
+    div.selected {
+      background-color: #ef4223;
+      color: #ffffff;
+    }
+  }
+  .error {
+    color: #ef4223;
+  }
+}
+
 .search-dialog {
   .query {
     height: 2em;
@@ -255,7 +329,7 @@ body {
       border-spacing: 0;
       tbody {
         tr:nth-child(odd) {
-          background-color: #ccc;
+          background-color: #F7F7F7;
         }
         tr {
           .imo, .mmsi, .callsign {
@@ -272,9 +346,40 @@ body {
             }
           }
           &:hover {
-            background-color: #d2cece;
+            background-color: #F0F0F0;
           }
         }
+      }
+    }
+  }
+}
+
+
+.Filters {
+  .FiltersContainer {
+    padding: 5px;
+  }
+  .Filters-AnimationFilters {
+    margin-bottom: 10px;
+    h2 {
+      color: #767777;
+      font-size: 100%;
+      padding: 0;
+      margin: 0;
+      font-weight: 500;
+    }
+    .Filters-Filter-sourcename {
+      width: 50%;
+      text-align: left;
+    }
+    .Filters-Filter-selection {
+      width: 50%;
+      text-align: right;
+    }
+    .Filters-Filter-actions {
+      text-align: right;
+      * {
+        cursor: pointer;
       }
     }
   }
@@ -396,10 +501,108 @@ body {
   }
 }
 
+.main-playcontrol {
+  left: -20px;
+  bottom: -20px;
+  position: absolute;
+}
 
+.PlayControl {
+  text-align: center;
 
+  .share {
+    cursor:pointer;
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    -webkit-border-radius: 25px;
+    -moz-border-radius: 25px;
+    border-radius: 25px;
+    background: #70bdd0;
+    border: 2px solid #ff0000;
+    margin-bottom: 20px;
+    i {
+      font-size: 25px;
+      padding-top: 11px;
+    }
+  }
+  .main {
+    width: 200px;
+    height: 200px;
+    line-height: 200px;
+    -webkit-border-radius: 100px;
+    -moz-border-radius: 100px;
+    border-radius: 100px;
+    background: #70bdd0;
+    border: 2px solid #ff0000;
+    text-align: center;
 
+    .content {
+      line-height: 1em;
+      display: inline-block;
+      vertical-align: middle;
+      .pause, .play {
+        cursor:pointer;
+        font-size: 50px;
+        margin-bottom: 10px;
+      }
+      .speed {
+        margin-bottom: 10px;
+        .less, .more {
+          cursor:pointer;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+}
 
+.AnimationManagerUI {
+  overflow: auto;
+  padding-top: 0;
+  padding-bottom: 0;
+
+  .AnimationManagerUI-AnimationWidget {
+    padding-top: 0;
+    padding-bottom: 0px;
+    padding-left: 2px;
+    clear: both;
+  }
+}
+
+.DataViewUI-SelectionsUI-SelectionUI {
+  padding-top: 0;
+  padding-bottom: 0;
+  clear: both;
+}
+
+.DataViewUI-UniformsUI-UniformUI {
+  padding-top: 0;
+  padding-bottom: 8px;
+  clear: both;
+}
+
+.DataViewUI-ColsUI-ColUI {
+  padding-top: 0;
+  padding-bottom: 0;
+  clear: both;
+
+  .DataViewUI-ColsUI-ColUIContainer {
+    padding-left: 2em;
+
+    .DataViewUI-ColsUI-ColUI-SourceUI {
+      padding-top: 0;
+      padding-bottom: 8px;
+      clear: both;
+
+      .remove {
+        float:left;
+      }
+
+    }
+  }
+}
 
 
 
@@ -432,7 +635,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   }
 
   #expand-button, #collapse-button {
-    background-color: transparent;
+    background-color: white;
     border-bottom-left-radius: 4pt; 
     img {
       width: 4%;
@@ -464,6 +667,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     .sidebar-content {
       height: 100%;
       width: 100%;
+      overflow: hidden;
 
       .header {
         #activate_help{
@@ -531,16 +735,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       margin: 3rem 2.5% 0 2.5%;
     }
 
-    .action_icons {
-      float: right;
-      margin-top: 0.2em;
-
-      #activate_search {
-        float: right;
-        margin-right: 0.5em;
-      }
-    }
-
     /* Vessel Info styles */
     .vessel_id {
       width: 100%;
@@ -569,12 +763,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    #layers, #vessel_identifiers {
+    #layers, .InfoUI .wrapper {
       padding: 0 5%;
       word-wrap: break-word;
     }
 
-    #layers h2, #vessel_identifiers h2 {
+    #layers h2, .InfoUI h2 {
       color: #767777;
       border-bottom: solid 1px #ddd;
       font-size: 100%;
@@ -582,18 +776,16 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       font-weight: 500;
     }
 
-    #vessel_identifiers .cartodb-popup-content h4 {
+    .InfoUI .cartodb-popup-content h4 {
       margin: 0 0 0 0;
     }
 
-    #vessel_identifiers .cartodb-popup-content p {
+    .InfoUI .cartodb-popup-content p {
       margin: 0 0 1rem 0;
     }
 
     /* toggle styles */
     #layers {
-      margin-top: -38pt;
-
       .layer-list {
         display: table;
         width: 100%;
@@ -691,7 +883,9 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           -o-transition: margin 0.4s, background 0.4s;
           transition: margin 0.4s, background 0.4s;
           background-color: #fff; 
-          border: solid .25rem;
+          border-style: solid;
+          border-width: .25rem;
+          border-color: inherit;
         }
       }
 
@@ -708,93 +902,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       &:checked + .switch-line {
         background-repeat: repeat-x;
         background-position: center center;
-      }
-    }
-
-
-    /* colors */
-    /* heatmap */
-    input.cmn-toggle-orange {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #ef4323; 
-      }
-      &:checked + .switch-line:after {
-        background-color: #ef4323; 
-      }
-      + .switch-line:after {
-        border-color: #ef4323;
-      }
-    }
-    /* oceana */
-    input.cmn-toggle-purple {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #692897; 
-      }
-      &:checked + .switch-line:after {
-        background-color: #692897; 
-      }
-      + .switch-line:after {
-        border-color: #692897;
-      }
-    }
-    /* eez */
-    input.cmn-toggle-blue {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #4666af; 
-      }
-      &:checked + .switch-line:after {
-        background-color: #4666af; 
-      }
-      + .switch-line:after {
-        border-color: #4666af;
-      }
-    }
-    /* bathymetry */
-    input.cmn-toggle-blue2 {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #9daed4; 
-      }
-      &:checked + .switch-line:after {
-        background-color: #9daed4; 
-      }
-      + .switch-line:after {
-        border-color: #9daed4;
-      }
-    }
-    /* mpa */
-    input.cmn-toggle-green {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #4cae4e;
-      }
-      &:checked + .switch-line:after {
-        background-color: #4cae4e; 
-      }
-      + .switch-line:after {
-        border-color: #4cae4e;
-      }
-    }
-    /* world heritage */
-    input.cmn-toggle-green2 {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #0e5c39;
-      }
-      &:checked + .switch-line:after {
-        background-color: #0e5c39; 
-      }
-      + .switch-line:after {
-        border-color: #0e5c39;
-      }
-    }
-    /* vessel tracks */
-    input.cmn-toggle-grey {
-      + .switch-line, &:checked + .switch-line {
-        border-color: #757575;
-      }
-      &:checked + .switch-line:after {
-        background-color: #757575; 
-      }
-      + .switch-line:after {
-        border-color: #757575;
       }
     }
 
@@ -838,12 +945,15 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   }
 }
 
-.imageselector {
-  .choices {
-    line-height: 0;
-    .choice {
+.FlagSelector {
+  .FlagSelector-choices {
+    line-height: 15px;
+    overflow: auto;
+    width:200px;
+    max-height: 200px;
+    .FlagSelector-choice {
       border: 2px solid white;
-      &.selected, &:hover {
+      &.FlagSelector-selected, &:hover {
         border: 2px solid blue;
       }
     }
@@ -859,7 +969,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     font-size: 200%;
   }
 
-  #layers h2, #vessel_identifiers h2 {
+  #layers h2, .InfoUI h2 {
     font-size: 200%;
   }
 

@@ -88,54 +88,36 @@ define([
         return;
       }
 
-      var doLoad = function (withCredentials) {
-        var url = self.url + "/header";
-        var request = new XMLHttpRequest();
-        request.open('GET', url, true);
-        request.withCredentials = withCredentials;
-        Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, {request: request});
-        request.onreadystatechange = function() {
-          if (request.readyState === 4) {
-            LoadingInfo.main.remove(url);
-            if (Ajax.isSuccess(request, url)) {
-              var data = JSON.parse(request.responseText);
+      Ajax.get(self.url + "/header", self.header, function (err, data) {
+        if (err) {
+          self.handleError(err);
+        } else {
+          self.header = data;
 
-              self.header = data;
-
-              if (self.header.alternatives == undefined) {
-                self.header.alternatives = [self.url];
-              }
-
-              if (data.colsByName) {
-                Object.values(data.colsByName).map(function (col) {
-                  col.typespec = Pack.typemap.byname[col.type];
-                });
-                data.colsByName.rowidx = {
-                  "type": "Int32",
-                  typespec: Pack.typemap.byname.Int32,
-                  hidden: true
-                };
-              }
-              self.headerIsLoaded = true;
-              var e = {update: "header", header: data};
-              self.events.triggerEvent(e.update, e);
-              self.events.triggerEvent("update", e);
-              if (self.initialZoom) {
-                self.zoomTo(self.initialZoom);
-              }
-            } else {
-              if (withCredentials) {
-                doLoad(false);
-              } else {
-                self.handleError(Ajax.makeError(request, url, "header"));
-              }
-            }
+          if (self.header.alternatives == undefined) {
+            self.header.alternatives = [self.url];
           }
-        };
-        request.send(null);
-      };
-      doLoad(true);
+
+          if (data.colsByName) {
+            Object.values(data.colsByName).map(function (col) {
+              col.typespec = Pack.typemap.byname[col.type];
+            });
+            data.colsByName.rowidx = {
+              "type": "Int32",
+              typespec: Pack.typemap.byname.Int32,
+              hidden: true
+            };
+          }
+          var e = {update: "header", header: data};
+          self.events.triggerEvent(e.update, e);
+          self.events.triggerEvent("update", e);
+          self.initialZoomHandled = true;
+          if (self.initialZoom) {
+            self.zoomTo(self.initialZoom);
+          }
+        }
+      });
+
       self.events.triggerEvent("load");
     },
 
@@ -241,8 +223,9 @@ define([
               cb(null, data);
             } else {
               if (request.status == 403) {
+                data.level = 'info';
                 data.toString = function () {
-                  var res = $("<span>You are currently not authorized to perform this action. <a href='javascript: void(0);'>Log in</a> to continue.</span>");
+                  var res = $("<span>You have to be registered on GFW in order to see vessel information. You can <a href='javascript: void(0);'>register here</a>. If you are already registred, you need to <a href='javascript: void(0);'>login</a>.");
                   res.find('a').click(function () {
                     new PopupAuth(data.auth_location, function (success) {
                       if (success) {
@@ -322,7 +305,7 @@ define([
         return;
       }
 
-      if (!self.headerIsLoaded) {
+      if (!self.headerIsLoaded || !self.initialZoomHandled) {
         /* Don't start loading tiles before we have a header and know
          * what URL alternatives there are. */
         self.initialZoom = bounds;
@@ -342,11 +325,12 @@ define([
 
       }
 
-      var wantedTileBounds = TileBounds.tileBounds(
-        bounds,
-        self.tilesPerScreen,
-        self.header.temporalExtents
-      );
+      var wantedTileBounds = TileBounds.tileBounds({
+        bounds: bounds,
+        tilesPerScreen: self.tilesPerScreen,
+        temporalExtents: self.header.temporalExtents,
+        temporalExtentsBase: self.header.temporalExtentsBase
+      });
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
       var anyNewTiles = false;

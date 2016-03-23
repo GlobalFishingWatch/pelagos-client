@@ -18,22 +18,10 @@ define([
   var CartoDBAnimation = Class(Animation, {
     name: "CartoDBAnimation",
 
-    columns: {},
-    programSpecs: {},
-
-    initialize: function(manager, args) {
-      var self = this;
-
-      self.visible = true;
-      self.args = args;
-      if (args) $.extend(self, args);
-      self.manager = manager;
-    },
-
     destroy: function () {
       var self = this;
-      self.layer.setMap(null);
-      // FIXME: DO we need to call destroy or something like that on self.layer?
+
+      self.layer.remove();
     },
 
     initGl: function(cb) {
@@ -65,6 +53,14 @@ define([
         self.setVisible(self.visible);
 
         cb();
+      }).on("error", function () {
+        self.handleError();
+        self.manager.visualization.data.events.triggerEvent("error", {
+          url: self.source.args.url,
+          toString: function () {
+            return 'Unable to load CartoDB layer ' + this.url;
+          }
+        });
       });
     },
 
@@ -90,11 +86,13 @@ define([
 
       LoadingInfo.main.add(url, true);
 
-      new CartoDBInfoWindow(data.cartodb_id, self.layer).fetch(function(html) {
+      new CartoDBInfoWindow(data.cartodb_id, self.layer).fetch(function(html, polygonData) {
         LoadingInfo.main.remove(url);
 
         var data = {
           html: html,
+          report: self.report,
+          polygonData: polygonData,
           toString: function () { return this.html; }
         };
 
@@ -132,19 +130,6 @@ define([
         self.selected = false;
         self.manager.events.triggerEvent('info', {});
       }
-    },
-
-    toString: function () {
-      var self = this;
-      return self.name + ": " + self.source.args.url;
-    },
-
-    toJSON: function () {
-      var self = this;
-      return {
-        args: _.extend({}, self.args, {source: self.source, title: self.title, visible: self.visible}),
-        "type": self.name
-      };
     }
   });
   Animation.animationClasses.CartoDBAnimation = CartoDBAnimation;

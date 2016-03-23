@@ -80,6 +80,7 @@ function(Class,
 
       self.indrag = false;
       self.inPanZoom = false;
+      self.animationIdCounter = 0;
     },
 
     init: function (cb) {
@@ -305,6 +306,26 @@ function(Class,
       );
     },
 
+    getReportableAnimation: function() {
+      var self = this;
+
+      var predicate = function(animation) {
+        var hasSourceUrl =
+          animation.args &&
+          animation.args.source &&
+          animation.args.source.args &&
+          animation.args.source.args.url;
+
+        var isReportable =
+          animation.args &&
+          animation.args.reportable
+
+        return hasSourceUrl && isReportable;
+      };
+
+     return _.find(self.animations, predicate);
+    },
+
     handleMouse: function (e, type) {
       var self = this;
 
@@ -524,6 +545,7 @@ function(Class,
     addAnimationInstance: function (animationInstance, cb) {
       var self = this;
 
+      animationInstance.id = self.animationIdCounter++;
       animationInstance.addingToManager = true;
       animationInstance.initGl(function () { 
         animationInstance.initUpdates(function () {
@@ -948,6 +970,8 @@ function(Class,
 
       return {animations: self.animations.filter(function (animation) {
                 return animation.selectionAnimationFor == undefined;
+              }).map(function (animation) {
+                return animation.toJSON()
               }),
               options: self.mapOptions};
     }

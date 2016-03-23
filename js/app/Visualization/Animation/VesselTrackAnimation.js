@@ -1,6 +1,11 @@
-
-define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, Animation) {
-  var VesselTrackAnimation = Class(Animation, {
+define([
+  "app/Class",
+  "app/Visualization/Animation/DataAnimation"
+], function(
+  Class,
+  DataAnimation
+) {
+  var VesselTrackAnimation = Class(DataAnimation, {
     name: "VesselTrackAnimation",
 
     columns: {
@@ -27,7 +32,7 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
 
     selections: $.extend(
       {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
-      Animation.prototype.selections
+      DataAnimation.prototype.selections
     ),
 
     programSpecs: {
@@ -49,7 +54,7 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
 
       program.gl.useProgram(program);
       program.gl.lineWidth(2.5);
-      Animation.prototype.drawProgram.apply(self, arguments);
+      DataAnimation.prototype.drawProgram.apply(self, arguments);
     },
 
     getDrawMode: function (program) {
@@ -58,7 +63,7 @@ define(["app/Class", "app/Visualization/Animation/Animation"], function(Class, A
     }
   });
 
-  Animation.animationClasses.VesselTrackAnimation = VesselTrackAnimation;
+  DataAnimation.animationClasses.VesselTrackAnimation = VesselTrackAnimation;
 
   return VesselTrackAnimation;
 });

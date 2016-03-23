@@ -136,5 +136,23 @@ define(["app/Class", "app/LangExtensions"], function(Class) {
     return JSON.stringify(value);
   };
 
+  UrlValues.realpath = function (base, url) {
+    /* Resolves url relative to a base url */
+    if (url.indexOf("://") != -1) {
+      return url;
+    }
+
+    if (url.indexOf("/") == 0) {
+      var parser = document.createElement('a');
+      parser.href = base;
+
+      base = parser.protocol + "//" + parser.host;
+      return base + url;
+    } else {
+      base = base.substr(0, base.lastIndexOf("/") + 1);
+      return base + url;
+    }
+  };
+
   return UrlValues;
 });

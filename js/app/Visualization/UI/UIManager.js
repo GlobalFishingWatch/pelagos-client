@@ -1,31 +1,37 @@
 define([
   "app/Class",
-  "dijit/Dialog",
+  "./Widgets/TemplatedDialog",
   "app/LoadingInfo",
   "app/UrlValues",
   "app/Visualization/KeyBindings",
-  "app/Visualization/UI/Timeline",
+  "app/Visualization/UI/Widgets/Timeline/Timeline",
+  "app/Visualization/UI/PlayControl",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
+  "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/Performance",
+  "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/Help",
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
   "async",
-  "jQuery"],
-function (
+  "jQuery"
+], function (
   Class,
   Dialog,
   LoadingInfo,
   UrlValues,
   KeyBindings,
   Timeline,
+  PlayControl,
   SidePanelManager,
   BasicSidebar,
   Search,
+  AnimationLibrary,
   Performance,
+  SimpleAnimationEditor,
   Help,
   ObjectTemplate,
   BorderContainer,
@@ -60,8 +66,8 @@ function (
       async.series([
         self.initButtons.bind(self),
         self.initLoadSpinner.bind(self),
-        self.initTimeline.bind(self),
         self.initPlayButton.bind(self),
+        self.initTimeline.bind(self),
         self.initLoopButton.bind(self),
         self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
@@ -136,7 +142,7 @@ function (
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.img + '/loader/spinner.min.svg"></div>');
+      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.loader + '"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
@@ -172,13 +178,69 @@ function (
       var self = this;
       var updating = false;
 
-      self.timelineNode = $('<div class="main-timeline">');
-      self.visualization.node.append(self.timelineNode);
+      self.timeline = new Timeline({'class': 'main-timeline'});
+      self.timeline.placeAt(self.visualization.node[0]);
+      self.timeline.startup();
 
-      self.timeline = new Timeline({node: self.timelineNode});
+
+      /* FIXME: The following code to be removed once testing of the
+       * new design is done */
+
+      var setDesign = function (design) {
+        Object.items(design.timeline).map(function (item) {
+          self.timeline.set(item.key, item.value);
+        });
+        self.controlButtonsNode.toggle(design.controlButtons);
+        $(self.playControl.domNode).toggle(design.playControl);
+      };
+      var designs = [
+        {
+          controlButtons: true,
+          playControl: false,
+          timeline: {
+            startLabelPosition: 'inside',
+            lengthLabelPosition: 'inside',
+            endLabelPosition: 'inside',
+
+            startLabelTitle: false,
+            lengthLabelTitle: false,
+            endLabelTitle: false,
+
+            dragHandles: false,
+
+            zoomPosition: 'left'
+          }
+        },
+        {
+          controlButtons: false,
+          playControl: true,
+          timeline: {
+            startLabelPosition: 'top-right',
+            lengthLabelPosition: 'inside',
+            endLabelPosition: 'top-right',
+
+            startLabelTitle: 'FROM ',
+            lengthLabelTitle: false,
+            endLabelTitle: 'TO ',
+
+            dragHandles: true,
+
+            zoomPosition: 'right'
+          }
+        }
+      ];
+      var designIdx = 1;
+      setDesign(designs[0]);
+      KeyBindings.register(
+        ['Alt', 'T'], null, 'General',
+        'Switch between timeline designs',
+        function () {
+          setDesign(designs[designIdx % designs.length]);
+          designIdx++;
+        }
+      );
 
       var setRange = function (e) {
-        if (updating) return;
         var timeExtent = e.end - e.start;
 
         if (timeExtent < self.visualization.state.getValue("timeExtent")) {
@@ -189,17 +251,6 @@ function (
           self.visualization.state.setValue("timeExtent", timeExtent);
         }
       }
-
-      self.timeline.events.on({
-        'set-range': setRange,
-        'temporary-range': setRange,
-        'user-update-start': function (e) {
-          self.visualization.state.setValue("paused", true);
-        },
-        'hover': function (e) {
-          self.visualization.state.setValue("timeFocus", e.time);
-        }
-      });
 
       var daySliderUpdateMinMax = function() {
         if (updating) return;
@@ -279,14 +330,18 @@ function (
         }
 
         updating = true;
-        if (adjusted) {
-          self.visualization.state.setValue("time", end);
-          self.visualization.state.setValue("timeExtent", end - start);
-        }
         self.timeline.setRange(start, end);
         updating = false;
       };
 
+      self.timeline.on('set-range', setRange);
+      self.timeline.on('temporary-range', setRange);
+      self.timeline.on('user-update-start', function (e) {
+        self.visualization.state.setValue("paused", true);
+      });
+      self.timeline.on('hover', function (e) {
+        self.visualization.state.setValue("timeFocus", e.time);
+      });
       self.visualization.state.events.on({
         time: daySliderUpdateValue,
         timeExtent: daySliderUpdateValue
@@ -344,6 +399,12 @@ function (
 
     initPlayButton: function(cb) {
       var self = this;
+
+      /* FIXME: The display: none to be removed once testing of the
+       * new design is done */
+      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization, style: "display: none;"});
+      self.playControl.placeAt($("body")[0]);
+      self.playControl.startup();
 
       KeyBindings.register(
         ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
@@ -467,16 +528,23 @@ function (
       );
 
       self.sidePanels = new SidePanelManager(self);
-      self.sideBar = new BasicSidebar(self.visualization);
+      self.sideBar = new BasicSidebar(self);
       cb();
     },
 
     initPopups: function (cb) {
       var self = this;
 
-      self.search = new Search(self.visualization);
-      self.performance = new Performance(self.visualization);
-      self.help = new Help(self.visualization);
+      self.search = new Search({visualization: self.visualization});
+      self.search.startup();
+      self.library = new AnimationLibrary({visualization: self.visualization});
+      self.library.startup();
+      self.performance = new Performance({visualization: self.visualization});
+      self.performance.startup();
+      self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
+      self.simpleAnimationEditor.startup();
+      self.help = new Help({visualization: self.visualization});
+      self.help.startup();
       cb();
     },
 
@@ -484,7 +552,7 @@ function (
       var self = this;
       return {
         logo: self.config.logo,
-        sideBar: self.sideBar
+        sideBar: self.sideBar.toJSON()
       };
     },
 

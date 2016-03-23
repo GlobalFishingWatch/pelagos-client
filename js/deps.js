@@ -24,6 +24,12 @@
     app.paths.app = app.paths.script.concat(['app']);
   }
 
+  if (navigator.appName == 'Microsoft Internet Explorer' || /MSIE/i.test(navigator.userAgent) || /Edge/i.test(navigator.userAgent)) {
+    app.paths.loader = app.paths.img.concat(["loader", "spinner.min.gif"]);
+  } else {
+    app.paths.loader = app.paths.img.concat(["loader", "spinner.min.svg"]);
+  }
+
   app.dirs = app.dirs || {};
   for (var name in app.paths) {
     app.dirs[name] = app.paths[name].join("/");
@@ -37,7 +43,7 @@
   if (app.useBuild) {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       "$(build)s/deps.css",
-      "$(build)s/dijit/themes/claro/claro.css",
+      "$(lib)s/dojo-theme-flat/CSS/dojo/flat.css",
       {url: "$(script)s/../style.less", rel:"stylesheet/less"}
     ]);
     app.dependencies.scripts = app.dependencies.scripts.concat([
@@ -48,7 +54,7 @@
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       "$(lib)s/font-awesome/css/font-awesome.min.css",
-      "$(lib)s/dijit/themes/claro/claro.css",
+      "$(lib)s/dojo-theme-flat/CSS/dojo/flat.css",
       "$(lib)s/dojox/layout/resources/FloatingPane.css",
       "$(lib)s/dojox/layout/resources/ResizeHandle.css",
       {url: "$(script)s/../style.less", rel:"stylesheet/less"},
