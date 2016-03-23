@@ -124,7 +124,7 @@ define([
 
     return {
       set: res,
-      tilesPerScreen: Math.ceil(tilesPerScreen / (params.length / temporalExtents)),
+      tilesPerScreen: Math.ceil(tilesPerScreen / Math.max(1, params.length / temporalExtents)),
       params: params
     };
   };

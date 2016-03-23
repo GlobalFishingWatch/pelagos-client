@@ -64,7 +64,7 @@ define([
     findOverlaps: function () {
       var self = this;
       self.overlaps = Object.values(self.manager.tileCache).filter(function (tile) {
-        return tile.bounds.intersectsObj(self.bounds);
+        return tile.bounds.intersectsObj(self.bounds, {inclusive: false});
       });
       self.overlaps.map(function (tile) {
         tile.reference();
