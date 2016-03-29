@@ -675,7 +675,7 @@ function(Class,
       }
 
       if (dataView.selections.selections[type].rawInfo) {
-        var data = dataView.selections.selections[type].data;
+        var data = _.clone(dataView.selections.selections[type].data);
         data.layer = animation.title;
         data.toString = function () {
           return ObjectToTable(this);
