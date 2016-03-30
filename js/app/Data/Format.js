@@ -41,7 +41,8 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
 
       return [{
         content:self,
-        toString: function () { return ""; }
+        printTree: function () { return '[all]'; },
+        toString: function () { return  '[all]'; }
       }];
     },
 
