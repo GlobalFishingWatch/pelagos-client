@@ -12,7 +12,9 @@ JSDEPS= \
   $(LIBS)/cartodb.js/cartodb.js
 
 CSSDEPS= \
-  $(LIBS)/font-awesome/css/font-awesome.min.css
+  $(LIBS)/font-awesome/css/font-awesome.min.css \
+  $(LIBS)/cartodb.js/themes/css/cartodb.css
+
 
 DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/easyXDM/easyXDM.min.js \
