@@ -482,6 +482,7 @@ function(Class,
               north:bounds.top,
               east:bounds.right
             });
+            delete selection.data.zoomToSelectionAnimations;
           }            
         });
       }
