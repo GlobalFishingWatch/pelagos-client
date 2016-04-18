@@ -1,4 +1,17 @@
-define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime", "app/Data/Format", "app/Data/Tile", "app/Data/Pack", "app/Logging", "app/Data/Ajax", "lodash", "app/LangExtensions"], function(Class, Events, Bounds, Timerange, SpaceTime, Format, Tile, Pack, Logging, Ajax, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/Bounds",
+  "app/Timerange",
+  "app/Logging",
+  "app/LangExtensions"
+], function(
+  Class,
+  Events,
+  Bounds,
+  Timerange,
+  Logging
+) {
   var TileBounds = Class({name: "TileBounds"});
 
   TileBounds.world = new Bounds([-180, -90, 180, 90]);
@@ -100,20 +113,36 @@ define(["app/Class", "app/Events", "app/Bounds", "app/Timerange", "app/SpaceTime
     var temporalExtents = args.temporalExtents || TileBounds.temporalExtents;
     var tilesPerScreen = args.tilesPerScreen;
 
-    var params = TileBounds.tileParamsForRange(args);
-    Logging.main.log("Data.BaseTiledFormat.tileBoundsForRange", params);
+    if (typeof(temporalExtents) == "number") {
+      var params = TileBounds.tileParamsForRange(args);
+      Logging.main.log("Data.BaseTiledFormat.tileBoundsForRange", params);
 
-    res = [];
-    for (var t = params.tilestart; t < params.tileend; t += temporalExtents) {
-      res.push(new Timerange([
-        new Date(t), new Date(t + temporalExtents)]));
+      res = [];
+      for (var t = params.tilestart; t < params.tileend; t += temporalExtents) {
+        res.push(new Timerange([
+          new Date(t), new Date(t + temporalExtents)]));
+      }
+
+      return {
+        set: res,
+        tilesPerScreen: Math.ceil(tilesPerScreen / Math.max(1, params.length / temporalExtents)),
+        params: params
+      };
+    } else {
+      /* temporalExtents is a list of time ranges: [[start,end],...] */
+
+      var range = new Timerange(args.bounds);
+
+      var res = temporalExtents.map(function (tileRange) {
+        return new Timerange([new Date(tileRange[0]), new Date(tileRange[1])]);
+      }).filter(function (tileRange) {
+        return range.intersectsObj(tileRange, {inclusive: false});
+      });
+      return {
+        set: res,
+        tilesPerScreen: Math.ceil(tilesPerScreen / Math.max(1, res.length))
+      };
     }
-
-    return {
-      set: res,
-      tilesPerScreen: Math.ceil(tilesPerScreen / Math.max(1, params.length / temporalExtents)),
-      params: params
-    };
   };
 
   TileBounds.tileBounds = function(args) {

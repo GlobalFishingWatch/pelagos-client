@@ -256,7 +256,9 @@ function(Class,
           offset: offset,
           limit: limit,
           toString: function () {
-            return this.query + " [" + this.offset.toString() + " / " + this.limit.toString() + "]";;
+            var offsetLog = this.offset ? this.offset.toString() : "NULL";
+            var limitLog = this.limit ? this.limit.toString() : "NULL";
+            return this.query + " [" + offsetLog + " / " + limitLog + "]";
           }
         }
       );
@@ -480,6 +482,7 @@ function(Class,
               north:bounds.top,
               east:bounds.right
             });
+            delete selection.data.zoomToSelectionAnimations;
           }            
         });
       }
@@ -675,7 +678,7 @@ function(Class,
       }
 
       if (dataView.selections.selections[type].rawInfo) {
-        var data = dataView.selections.selections[type].data;
+        var data = _.clone(dataView.selections.selections[type].data);
         data.layer = animation.title;
         data.toString = function () {
           return ObjectToTable(this);
