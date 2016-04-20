@@ -132,6 +132,22 @@ define(["app/Class", "app/Events", './TileBounds', "lodash"], function(Class, Ev
       return false;
     },
 
+    hasSelectionInfo: function () {
+      var self = this;
+
+      /* If any of the sortcols contains only negative values, there
+       * is no selection info on the server to be fetched. */
+
+      return _.all(self.sortcols, function(col) {
+        return (
+          self.data[col] !== undefined 
+          && _.any(self.data[col], function(val) {
+            return val >= 0;
+          })
+        );
+      });
+    },
+
     toJSON: function () {
       var self = this;
       return {
