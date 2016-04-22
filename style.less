@@ -795,7 +795,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           .layer-label,
           .switch {
             display: table-cell;
-            vertical-align: middle;
             padding-top: 10px;
             vertical-align: top;
           }
@@ -806,6 +805,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           }
 
           .layer-label {
+            display: table-cell;
             color: #6D6E70;
             font-size: 90%;
             padding: 2%;
@@ -813,6 +813,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
             .intensity-slider-box .intensity-label {
               font-size: 0.8em;
             }
+          }
+
+          .layer-buttons {
+            display: table-cell;
+            vertical-align: top;
+            padding-top: 2px;
           }
         }
       }
