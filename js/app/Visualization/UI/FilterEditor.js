@@ -15,8 +15,6 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      var selection = self.animation.data_view.selections.selections.active_category;
-
       self.select = new MultiSelect({
         style: 'min-height: 200px; height: 100%; width: 100%;',
         onChange: self.handleSelectionChange.bind(self)
@@ -32,15 +30,23 @@ define([
 
         domConstruct.place('<option value="' + value + '">' + name + '</option>', self.select.domNode);
       });
+      self.setSlectValueFromFilter();
+    },
+    setSlectValueFromFilter: function () {
+      var self = this;
+      var selection = self.animation.data_view.selections.selections.active_category;
       self.select.set("value", selection.data[self.sourcename]);
     },
     handleSelectionChange: function () {
       var self = this;
-      self.setFilter(
+      var success = self.setFilter(
         self.select.get('value').map(function (x) {
           return parseInt(x);
         })
       );
+      if (!success) {
+        self.setSlectValueFromFilter();
+      }
     }
   });
 });

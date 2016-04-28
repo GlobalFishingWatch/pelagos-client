@@ -51,11 +51,14 @@ define([
       '    <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
       '  </label>' +
       '  <div class="layer-label">' +
-          '<span data-dojo-attach-point="labelNode"></span>' +
-          '<div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
-            '<div class="intensity-label">Intensity:</div>' +
-          '</div>' +
-        '</div>' +
+      '    <span data-dojo-attach-point="labelNode"></span>' +
+      '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
+      '      <div class="intensity-label">Intensity:</div>' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="layer-buttons" data-dojo-attach-point="infoNodeContainer">' +
+      '    <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
+      '  </div>' +
       '</div>',
 
     toggle: function () {
@@ -119,7 +122,7 @@ define([
 
     updatedHandler: function () {
       var self = this;
-      var title = self.animation.title
+      var title = self.animation.title;
       if (!title) title = self.animation.toString();
       $(self.labelNode).html(title);
 
@@ -131,6 +134,14 @@ define([
         $(self.inputNode).attr('checked','checked');
       } else {
         $(self.inputNode).removeAttr('checked');
+      }
+
+      var descriptionUrl = self.animation.descriptionUrl;
+      if (descriptionUrl) {
+        $(self.infoNodeContainer).show();
+        $(self.infoNode).attr("href", descriptionUrl);
+      } else {
+        $(self.infoNodeContainer).hide();
       }
     }
   });

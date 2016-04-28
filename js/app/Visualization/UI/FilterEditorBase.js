@@ -38,9 +38,27 @@ define([
       var self = this;
       self.onCancel();
     },
+    getFilter: function () {
+      var self = this;
+      var selection = self.animation.data_view.selections.selections.active_category;
+      var range = selection.data[self.sourcename];
+
+      var value = [];
+      if (range.length != 2 || range[0] != Number.NEGATIVE_INFINITY || range[1] != Number.POSITIVE_INFINITY) {
+        for (var i = 0; i < range.length; i+=2) {
+          value.push(range[i]);
+        }
+      }
+      return value;
+    },
     setFilter: function (values) {
       var self = this;
       var selection = self.animation.data_view.selections.selections.active_category;
+
+      if (values.length > selection.max_range_count) {
+        alert("You can not select more than " + selection.max_range_count + " flags at the same time.");
+        return false;
+      }
 
       selection.clearRanges();
       if (values.length) {
@@ -56,6 +74,7 @@ define([
         endData[self.sourcename] = Number.POSITIVE_INFINITY;
         selection.addDataRange(startData, endData);
       }
+      return true;
     },
 
     Display: declare("Display", [TemplatedContainer], {

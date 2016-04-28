@@ -23,30 +23,30 @@ define([
       });
       self.addChild(self.select);
 
-      var range = selection.data[self.sourcename];
-
-      var value = [];
-      if (range.length != 2 || range[0] != Number.NEGATIVE_INFINITY || range[1] != Number.POSITIVE_INFINITY) {
-        var choicesById = {};
-        for (var name in source.choices) {
-          choicesById[source.choices[name]] = name;
-        }
-
-        for (var i = 0; i < range.length; i+=2) {
-          value.push(choicesById[range[i]]);
-        }
+      self.choicesById = {};
+      for (var name in source.choices) {
+        self.choicesById[source.choices[name]] = name;
       }
 
-      self.select.set("value", value);
+      self.setSlectValueFromFilter();
+    },
+    setSlectValueFromFilter: function () {
+      var self = this;
+      self.select.set("value", self.getFilter().map(function (value) {
+        return self.choicesById[value];
+      }));
     },
     handleSelectionChange: function () {
       var self = this;
       var source = self.animation.data_view.source.header.colsByName[self.sourcename];
-      self.setFilter(
+      var success = self.setFilter(
         self.select.get('value').map(function (key) {
           return source.choices[key];
         })
       );
+      if (!success) {
+        self.setSlectValueFromFilter();
+      }
     },
 
     Display: declare("Display", [FilterEditorBase.prototype.Display], {

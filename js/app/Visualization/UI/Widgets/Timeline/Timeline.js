@@ -160,10 +160,10 @@ define([
       '  </div>' +
       '  <div class="zoom">' +
       '    <a class="zoomIn" data-dojo-attach-event="touchstart:zoomIn,click:zoomIn,mousedown:eatEvent">' +
-            '<img src="${app.dirs.img}/smaller_increments.png"> more increments' +
+            '<img src="${app.dirs.img}/smaller_increments.png"> smaller increments' +
           '</a>' +
       '    <a class="zoomOut" data-dojo-attach-event="touchstart:zoomOut,click:zoomOut,mousedown:eatEvent">' +
-            '<img src="${app.dirs.img}/larger_increments.png"> fewer increments' +
+            '<img src="${app.dirs.img}/larger_increments.png"> larger increments' +
           '</a>' +
       '  </div>' +
       '</div>',
