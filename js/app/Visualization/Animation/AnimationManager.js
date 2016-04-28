@@ -678,11 +678,19 @@ function(Class,
         return;
       }
 
-      if (selection.rawInfo || !selection.hasSelectionInfo()) {
+      if (selection.rawInfo) {
         var data = _.clone(selection.data);
         data.layer = animation.title;
         data.toString = function () {
           return ObjectToTable(this);
+        };
+        self.handleSelectionInfo(animation, selectionEvent, null, data);
+      } else if (!selection.hasSelectionInfo()) {
+        var data = {
+          layer: animation.title,
+          toString: function () {
+            return 'Cluster selected.';
+          }
         };
         self.handleSelectionInfo(animation, selectionEvent, null, data);
       } else {
