@@ -643,6 +643,7 @@ function(Class,
       var self = this;
       var dataView = animation.data_view;
       var type = selectionEvent.category;
+      var selection = dataView.selections.selections[type];
 
       if (type != 'selected' && type != 'info') return;
 
@@ -651,7 +652,7 @@ function(Class,
         {
           layer: animation.title,
           category: type,
-          query: animation.data_view.source.getSelectionQuery(dataView.selections.selections[type]),
+          query: animation.data_view.source.getSelectionQuery(selection),
           toString: function () {
             return this.layer + "/" + this.category + ": " + this.query;
           }
@@ -677,16 +678,24 @@ function(Class,
         return;
       }
 
-      if (dataView.selections.selections[type].rawInfo) {
-        var data = _.clone(dataView.selections.selections[type].data);
+      if (selection.rawInfo) {
+        var data = _.clone(selection.data);
         data.layer = animation.title;
         data.toString = function () {
           return ObjectToTable(this);
         };
         self.handleSelectionInfo(animation, selectionEvent, null, data);
+      } else if (!selection.hasSelectionInfo()) {
+        var data = {
+          layer: animation.title,
+          toString: function () {
+            return 'Cluster selected.';
+          }
+        };
+        self.handleSelectionInfo(animation, selectionEvent, null, data);
       } else {
         if (type == 'selected') {
-          self.showSelectionAnimations(animation, dataView.selections.selections[type]);
+          self.showSelectionAnimations(animation, selection);
         }
         dataView.selections.getSelectionInfo(type, function (err, data) {
           var content;
