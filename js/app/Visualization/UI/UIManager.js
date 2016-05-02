@@ -148,9 +148,11 @@ define([
       self.loadingNode.hide();
       LoadingInfo.main.events.on({
         start: function () {
+          self.loadingNode.stop();
           self.loadingNode.fadeIn();
         },
         end: function () {
+          self.loadingNode.stop();
           self.loadingNode.fadeOut();
         }
       });
