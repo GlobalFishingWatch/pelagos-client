@@ -51,7 +51,7 @@ define([
       // possible values for the field. Keys that are in the report polygonKeys
       // object are all multivalued fields.
       var splittableKeys = self._getPolygonFieldKeys();
-      var baseContext = self._getBaseTemplateContext(directKeys);
+      var baseContext = self._getBaseTemplateContext();
 
       // Multivalued fields default to the first value
       var multivaluedTemplateContext = self._getMultivaluedTemplateContext(splittableKeys);
@@ -129,7 +129,7 @@ define([
         .keys();
     },
 
-    _getBaseTemplateContext: function(additionalKeys) {
+    _getBaseTemplateContext: function() {
       var self = this;
 
       var time = self.report.state.getValue("time");
