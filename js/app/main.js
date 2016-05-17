@@ -46,7 +46,6 @@ define([
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
       "$(lib)s/font-awesome/css/font-awesome.min.css",
       "$(lib)s/dojo-theme-flat/CSS/dojo/flat.css",
-      "$(lib)s/cartodb.js/themes/css/cartodb.css",
       "$(lib)s/dojox/layout/resources/FloatingPane.css",
       "$(lib)s/dojox/layout/resources/ResizeHandle.css",
       {url: "$(script)s/../style.less", rel:"stylesheet/less"},
