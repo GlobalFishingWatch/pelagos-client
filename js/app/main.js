@@ -44,47 +44,14 @@ define([
     ]);
   } else {
     app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
-      "$(lib)s/font-awesome/css/font-awesome.min.css",
-      "$(lib)s/dojo-theme-flat/CSS/dojo/flat.css",
-      "$(lib)s/dojox/layout/resources/FloatingPane.css",
-      "$(lib)s/dojox/layout/resources/ResizeHandle.css",
-      {url: "$(script)s/../style.less", rel:"stylesheet/less"},
+      "libs/font-awesome/css/font-awesome.min.css",
+      "libs/dojo-theme-flat/CSS/dojo/flat.css",
+      "libs/dojox/layout/resources/FloatingPane.css",
+      "libs/dojox/layout/resources/ResizeHandle.css",
+      {url: "app/style.less", rel:"stylesheet/less"},
     ]);
   }
 
-  /* Expand path variables */
-  var replacePathVars = function(s) {
-    for (var varName in app.dirs) {
-      s = s.replace("$(" + varName +")s", app.dirs[varName]);
-    }
-    return s;
-  }
-
-  for (var depType in app.dependencies) {
-    app.dependencies[depType] = app.dependencies[depType].map(function (item) {
-      if (typeof(item) == 'string') {
-        return replacePathVars(item)
-      } else {
-        item.url = replacePathVars(item.url);
-        return item;
-      }
-    });
-  }
-
-
-  /* Code to load the above dependencies */
-
-  function addHeadStylesheet(stylesheet) {
-    if (typeof(stylesheet) == "string") stylesheet = {url: stylesheet};
-    var head = document.getElementsByTagName('head')[0];
-    var link = document.createElement('link');
-    link.rel = stylesheet.rel || 'stylesheet';
-    link.type = stylesheet.type || 'text/css';
-    link.href = stylesheet.url;
-    head.appendChild(link);
-  }
-
-  app.dependencies.stylesheets.map(addHeadStylesheet);
   require([
     "shims/GoogleMaps/main",
     "shims/async/main",
@@ -96,7 +63,8 @@ define([
     "shims/LogglyTracker/main",
     "shims/QUnit/main",
     "shims/stacktrace/main",
-    "shims/Stats/main"
+    "shims/Stats/main",
+    "shims/Styles",
   ], function (
      GoogleMaps,
      async,
@@ -108,8 +76,14 @@ define([
      LogglyTracker,
      QUnit,
      stacktrace,
-     Stats
+     Stats,
+     Styles
   ) {
+    app.dependencies.stylesheets.map(Styles.add);
+
+    less.registerStylesheets($("link[rel='stylesheet/less']"));
+    less.refresh();
+
     require([
       "app/UrlValues",
       "app/Visualization/Visualization",
