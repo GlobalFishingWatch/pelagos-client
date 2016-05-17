@@ -4,8 +4,8 @@ define([
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
   "dijit/form/Button",
-  "async",
-  "jQuery",
+  "shims/async/main",
+  "shims/jQuery/main",
   "app/Visualization/KeyBindings",
   "app/LoadingInfo",
   "app/Visualization/UI/Widgets/ColorDropdown"

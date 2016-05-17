@@ -1,4 +1,16 @@
-define(["app/Class", "QUnit", "app/Test/BaseTest", "app/SpaceTime", "app/Data/TiledEmptyFormat"], function(Class, QUnit, BaseTest, SpaceTime, TiledEmptyFormat) {
+define([
+  "app/Class",
+  "shims/QUnit/main",
+  "app/Test/BaseTest",
+  "app/SpaceTime",
+  "app/Data/TiledEmptyFormat"
+], function(
+  Class,
+  QUnit,
+  BaseTest,
+  SpaceTime,
+  TiledEmptyFormat
+) {
   var expectedWantedTiles = [
     "0,0,2.8125,1.40625",
     "0,1.40625,2.8125,2.8125",

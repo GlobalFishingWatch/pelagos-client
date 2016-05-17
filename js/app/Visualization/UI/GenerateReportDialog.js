@@ -7,8 +7,8 @@ define([
   "dijit/form/Select",
   "app/ObjectTemplate",
   "app/Data/Ajax",
-  "lodash",
-  "jQuery"
+  "shims/lodash/main",
+  "shims/jQuery/main"
 ], function (
   declare,
   _WidgetBase,

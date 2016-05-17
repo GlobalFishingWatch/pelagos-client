@@ -99,7 +99,7 @@ define([
   "app/LoadingInfo",
   "app/Data/Pack",
   "app/Logging",
-  "lodash"
+  "shims/lodash/main"
 ], function (
   Class,
   Events,

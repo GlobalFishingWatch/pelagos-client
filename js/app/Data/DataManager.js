@@ -1,8 +1,8 @@
 define([
 "app/Class",
   "app/Bounds",
-  "async",
-  "lodash",
+  "shims/async/main",
+  "shims/lodash/main",
   "app/UrlValues",
   "app/Data/Ajax",
   "app/Events",

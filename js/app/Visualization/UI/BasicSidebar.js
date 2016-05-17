@@ -1,7 +1,7 @@
 define([
   "app/Class",
   "dijit/layout/AccordionContainer",
-  "jQuery",
+  "shims/jQuery/main",
   "app/ObjectTemplate",
   "app/Visualization/UI/SidePanels/InfoUI",
   "app/Visualization/UI/SidePanels/SimpleLayerList",

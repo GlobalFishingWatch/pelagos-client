@@ -5,11 +5,11 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
-  './Interval',
-  './TimeLabel',
-  '../DateTimeDropdown',
-  'jQuery',
-  'less'
+  "./Interval",
+  "./TimeLabel",
+  "../DateTimeDropdown",
+  "shims/jQuery/main",
+  "shims/less/main"
 ], function (
   require,
   declare,

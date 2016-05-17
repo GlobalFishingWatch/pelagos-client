@@ -6,9 +6,9 @@ define([
   "app/Data/DataManager",
   "app/Visualization/Animation/AnimationManager",
   "app/Visualization/UI/UIManager",
-  "async",
-  "jQuery",
-  "lodash",
+  "shims/async/main",
+  "shims/jQuery/main",
+  "shims/lodash/main",
   "app/Json"
 ], function(
   Class,

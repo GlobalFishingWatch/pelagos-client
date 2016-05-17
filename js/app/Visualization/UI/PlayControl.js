@@ -5,8 +5,8 @@ define([
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
   "app/Visualization/UI/Widgets/Timeline/TimeLabel",
-  'jQuery',
-  'app/LangExtensions'
+  "shims/jQuery/main",
+  "app/LangExtensions"
 ], function (
   declare,
   _WidgetBase,

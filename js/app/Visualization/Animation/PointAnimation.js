@@ -3,7 +3,7 @@ define([
   "app/Class",
   "app/Visualization/Animation/Shader",
   "app/Visualization/Animation/DataAnimation",
-  "jQuery"
+  "shims/jQuery/main"
 ], function(
   require,
   Class,

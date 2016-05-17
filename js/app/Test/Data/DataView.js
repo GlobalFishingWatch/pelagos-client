@@ -1,4 +1,16 @@
-define(["app/Class", "QUnit", "app/Test/BaseTest", "app/Data/BinFormat", "app/Data/DataView"], function(Class, QUnit, BaseTest, BinFormat, DataView) {
+define([
+  "app/Class",
+  "shims/QUnit/main",
+  "app/Test/BaseTest",
+  "app/Data/BinFormat",
+  "app/Data/DataView"
+], function(
+  Class,
+  QUnit,
+  BaseTest,
+  BinFormat,
+  DataView
+) {
   return Class(BaseTest, {
     name: "DataView",
 

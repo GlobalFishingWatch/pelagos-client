@@ -1,4 +1,14 @@
-define(["app/Class", "app/Events", "app/Visualization/KeyModifiers", "jQuery"], function(Class, Events, KeyModifiers, $) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/Visualization/KeyModifiers",
+  "shims/jQuery/main"
+], function(
+  Class,
+  Events,
+  KeyModifiers,
+  $
+) {
   var KeyBindings = Class({name: "KeyBindings"});
 
   KeyBindings.byCategory = {};

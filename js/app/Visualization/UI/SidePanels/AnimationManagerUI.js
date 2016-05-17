@@ -12,7 +12,7 @@ define([
   "app/Visualization/Animation/Animation",
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "app/Visualization/UI/SidePanels/DataViewUI",
-  "jQuery"
+  "shims/jQuery/main"
 ], function(
   declare,
   _WidgetBase,

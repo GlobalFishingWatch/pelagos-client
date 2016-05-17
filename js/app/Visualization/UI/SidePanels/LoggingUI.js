@@ -8,7 +8,7 @@ define([
   "dijit/Menu",
   "dijit/MenuItem",
   "dijit/popup",
-  "lodash"
+  "shims/lodash/main"
 ], function(
   declare,
   domStyle,

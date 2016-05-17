@@ -3,8 +3,8 @@ define([
   "./Widgets/TemplatedDialog",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
-  "async",
-  "jQuery",
+  "shims/async/main",
+  "shims/jQuery/main",
   "app/Visualization/KeyBindings",
   "app/LoadingInfo"
 ], function(

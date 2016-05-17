@@ -4,7 +4,7 @@ define([
   "app/Visualization/UI/GenerateReportDialog",
   "app/Visualization/UI/SidePanels/SidePanelBase",
   "app/CountryCodes",
-  "jQuery"
+  "shims/jQuery/main"
 ], function(
   declare,
   domStyle,

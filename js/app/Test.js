@@ -1,7 +1,7 @@
 define(
   [
     "app/Class",
-    "QUnit",
+    "shims/QUnit/main",
     "app/Test/Events",
     "app/Test/SubscribableDict",
     "app/Test/Logging",

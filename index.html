@@ -3,13 +3,19 @@
   <head>
     <title>VectorVisual</title>
     <script type="text/javascript">
-      app = {
-        useDojo: true,
-        useBuild: false,
-        mainModule: 'app/main'
+      dojoConfig = {
+        isDebug: true,
+        async: true,
+        baseUrl: "js/libs/dojo",
+        packages: [{name: 'app', location:'/js/app', main: 'main'},
+                   {name: 'libs', location:'/js/libs', main: 'main'},
+                   {name: 'shims', location:'/js/shims', main: 'main'}]
       };
     </script>
-    <script type="text/javascript" src="js/deps.js"></script>
+    <script type="text/javascript" src="js/libs/dojo/dojo.js"></script>
+    <script>
+      require(["app/main"], function (main) {});
+    </script>
   </head>
   <body class="claro">
     <div id="visualization"></div>

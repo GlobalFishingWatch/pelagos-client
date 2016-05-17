@@ -1,4 +1,14 @@
-define(["app/Class", "QUnit", "app/Test/BaseTest", "app/SubscribableDict"], function(Class, QUnit, BaseTest, SubscribableDict) {
+define([
+  "app/Class",
+  "shims/QUnit/main",
+  "app/Test/BaseTest",
+  "app/SubscribableDict"
+], function(
+  Class,
+  QUnit,
+  BaseTest,
+  SubscribableDict
+) {
   return Class(BaseTest, {
     name: "SubscribableDict",
 

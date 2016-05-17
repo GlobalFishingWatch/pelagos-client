@@ -1,4 +1,14 @@
-define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, Events, Pack, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/Data/Pack",
+  "shims/lodash/main"
+], function(
+  Class,
+  Events,
+  Pack,
+  _
+) {
   var Format = Class({
     name: "Format",
     initialize: function(args) {

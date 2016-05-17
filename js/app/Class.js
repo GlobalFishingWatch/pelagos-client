@@ -10,7 +10,11 @@
  * debuggers when looking at both the class itself and instances.
  */
 
-define(['lodash'], function(_) {
+define([
+  "shims/lodash/main"
+], function(
+  _
+) {
   var inherit = function(cls, parent) {
     var F = function() {};
     F.prototype = parent.prototype;

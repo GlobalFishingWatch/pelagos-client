@@ -16,8 +16,8 @@ define([
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
-  "async",
-  "jQuery"
+  "shims/async/main",
+  "shims/jQuery/main"
 ], function (
   Class,
   Dialog,

@@ -1,13 +1,13 @@
 define([
   "app/Class",
   "app/Events",
-  "async",
+  "shims/async/main",
   "app/UrlValues",
   "app/Visualization/Animation/Animation",
   "app/Visualization/Animation/Shader",
   "app/Data/GeoProjection",
   "app/Data/DataView",
-  "jQuery"
+  "shims/jQuery/main"
 ], function(
   Class,
   Events,
