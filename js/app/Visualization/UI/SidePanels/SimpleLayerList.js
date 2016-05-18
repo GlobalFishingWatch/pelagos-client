@@ -24,19 +24,10 @@ define([
     title: 'Layers',
     templateString: '' +
         '<div class="${baseClass}" style="overflow: auto;">' +
-        '  <div class="titleButtons">' +
-        '    <a class="edit-layers" data-dojo-attach-event="click:edit">' +
-              '<i class="fa fa-pencil-square-o"></i>' +
-        '    </a>' +
-        '  </div>' +
         '  <div id="layers">' +
         '    <form class="layer-list" data-dojo-attach-point="containerNode"></form>' +
         '  </div>' +
-        '</div>',
-    edit: function () {
-      var self = this;
-      self.visualization.ui.simpleAnimationEditor.display();
-    }
+        '</div>'
   });
 
   SimpleLayerList.AnimationWidget = declare("AnimationWidget", [AnimationListBase.AnimationWidget], {
