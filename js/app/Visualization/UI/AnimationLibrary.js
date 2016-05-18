@@ -6,7 +6,8 @@ define([
   "shims/async/main",
   "shims/jQuery/main",
   "app/Visualization/KeyBindings",
-  "app/LoadingInfo"
+  "app/LoadingInfo",
+  "app/Visualization/UI/LoaderIcon"
 ], function(
   declare,
   Dialog,
@@ -15,7 +16,8 @@ define([
   async,
   $,
   KeyBindings,
-  LoadingInfo
+  LoadingInfo,
+  LoaderIcon
 ){
   return declare("AnimationLibrary", [Dialog], {
     style: "width: 50%;",
@@ -28,7 +30,7 @@ define([
       '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'top\'" style="border: none; padding: 0; padding-bottom: 10px; margin: 0; overflow: hidden;">' +
       '    <input type="text" class="query" style="width: 100%;" placeholder="Search by name or tag" data-dojo-attach-event="keyup:queryQueyUp"></input>' +
       '    <div class="search-loading">' +
-      '      <img style="width: 20px;" src="' + app.dirs.loader + '">' +
+      '      <img style="width: 20px;" src="' + LoaderIcon + '">' +
       '    </div>' +
       '  </div>' +
       '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-attach-point="sourcesList" data-dojo-props="region:\'center\'" style="border: none; padding: 0; margin: 0;" class="sourcesList"></div>' +

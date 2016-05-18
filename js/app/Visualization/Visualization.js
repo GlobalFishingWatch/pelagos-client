@@ -72,6 +72,7 @@ define([
 
       self.defaultConfig = {};
 
+      var root = require.toUrl("app").concat("/../..");
       async.series([
         function (cb) {
           self.ui = new UIManager(self);
@@ -88,8 +89,8 @@ define([
         function (cb) {
           self.ui.init2(cb);
         },
-        self.loadDefaults.bind(self, app.dirs.root + "/defaultConfig.json"),
-        function (cb) { self.loadDefaults(app.dirs.root + "/config.json", function () { cb(); }); },
+        self.loadDefaults.bind(self, root + "/defaultConfig.json"),
+        function (cb) { self.loadDefaults(root + "/config.json", function () { cb(); }); },
         self.load.bind(self, UrlValues.getParameter("workspace"))
       ]);
     },

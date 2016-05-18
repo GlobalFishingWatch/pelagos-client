@@ -33,17 +33,16 @@ define([
     app.dirs[name] = app.paths[name].join("/");
   }
 
-  app.dependencies = app.dependencies || {};
-  app.dependencies.stylesheets = app.dependencies.stylesheets || [];
+  var stylesheets = [];
 
   if (app.useBuild) {
-    app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
+    stylesheets = stylesheets.concat([
       "$(build)s/deps.css",
       "$(lib)s/dojo-theme-flat/CSS/dojo/flat.css",
       {url: "$(script)s/../style.less", rel:"stylesheet/less"}
     ]);
   } else {
-    app.dependencies.stylesheets = app.dependencies.stylesheets.concat([
+    stylesheets = stylesheets.concat([
       "libs/font-awesome/css/font-awesome.min.css",
       "libs/dojo-theme-flat/CSS/dojo/flat.css",
       "libs/dojox/layout/resources/FloatingPane.css",
@@ -79,7 +78,7 @@ define([
      Stats,
      Styles
   ) {
-    app.dependencies.stylesheets.map(Styles.add);
+    stylesheets.map(Styles.add);
 
     less.registerStylesheets($("link[rel='stylesheet/less']"));
     less.refresh();

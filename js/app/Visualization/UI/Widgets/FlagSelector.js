@@ -4,14 +4,16 @@ define([
   "dijit/_WidgetBase",
   "dijit/_TemplatedMixin",
   "dijit/form/_FormValueMixin",
-  "shims/jQuery/main"
+  "shims/jQuery/main",
+  "app/Visualization/UI/Paths"
 ], function(
   declare,
   CountryCodes,
   _WidgetBase,
   _TemplatedMixin,
   _FormValueMixin,
-  $
+  $,
+  Paths
 ){
   return declare("FlagSelector", [_WidgetBase, _TemplatedMixin, _FormValueMixin], {
     baseClass: 'FlagSelector',
@@ -55,7 +57,7 @@ define([
       choices.sort();
       $(self.choicesNode).html("");
       choices.map(function (key) {
-        var choice = $('<img src="' + app.dirs.img + '/flags/png/' + key.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[key] + '" class="' + self.baseClass + '-choice">');
+        var choice = $('<img src="' + Paths.img + '/flags/png/' + key.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[key] + '" class="' + self.baseClass + '-choice">');
         // choice.text(key);
         choice.data("value", key);
         choice.hover(function () {

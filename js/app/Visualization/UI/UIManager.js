@@ -17,7 +17,8 @@ define([
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
   "shims/async/main",
-  "shims/jQuery/main"
+  "shims/jQuery/main",
+  "app/Visualization/UI/Paths"
 ], function (
   Class,
   Dialog,
@@ -37,9 +38,12 @@ define([
   BorderContainer,
   ContentPane,
   async,
-  $) {
+  $,
+  Paths
+) {
   return Class({
     name: "UI",
+
     initialize: function (visualization) {
       var self = this;
       self.visualization = visualization;
@@ -99,7 +103,7 @@ define([
         + '      <button class="btn btn-default btn-xs" data-name="end"><i class="fa fa-step-forward"></i></button>'
         + '    </div>'
         + '  </a>'
-        + '</div>').eval(app.dirs));
+        + '</div>').eval(Paths));
       self.visualization.node.append(self.controlButtonsNode);
 
       self.controlButtonsNode.find(".btn").each(function () {
@@ -142,7 +146,7 @@ define([
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.loader + '"></div>');
+      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + Paths.LoaderIcon + '"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
@@ -562,7 +566,7 @@ define([
       var self = this;
 
       self.config = config;
-      data = new ObjectTemplate(self.config).eval(app.dirs);
+      data = new ObjectTemplate(self.config).eval(Paths);
 
       if (typeof(data.logo) == "string") {
         self.logoNode.append(data.logo);
