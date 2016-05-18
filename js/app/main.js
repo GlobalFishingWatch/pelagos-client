@@ -5,13 +5,11 @@ define([
 ) {
   require([
     "shims/Styles",
-    "app/UrlValues",
     "app/Visualization/Visualization",
     "shims/less/main",
     "shims/jQuery/main"
   ], function (
     Styles,
-    UrlValues,
     Visualization,
     less,
     $

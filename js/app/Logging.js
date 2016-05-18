@@ -8,7 +8,8 @@ define([
   "app/Logging/StoreDestination",
   "app/Logging/LogglyDestination",
   "app/Logging/ServerDestination",
-  "app/Logging/GoogleAnalyticsDestination"
+  "app/Logging/GoogleAnalyticsDestination",
+  "app/LangExtensions"
 ], function(
   Class,
   stacktrace,
