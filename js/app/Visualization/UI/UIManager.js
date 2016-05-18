@@ -18,6 +18,8 @@ define([
   "dijit/layout/ContentPane",
   "shims/async/main",
   "shims/jQuery/main",
+  "shims/less/main",
+  "shims/Styles",
   "app/Visualization/UI/Paths"
 ], function (
   Class,
@@ -39,10 +41,20 @@ define([
   ContentPane,
   async,
   $,
+  less,
+  Styles,
   Paths
 ) {
   return Class({
     name: "UI",
+
+    stylesheets: [
+      "libs/font-awesome/css/font-awesome.min.css",
+      "libs/dojo-theme-flat/CSS/dojo/flat.css",
+      "libs/dojox/layout/resources/FloatingPane.css",
+      "libs/dojox/layout/resources/ResizeHandle.css",
+      {url: "app/style.less", rel:"stylesheet/less"},
+    ],
 
     initialize: function (visualization) {
       var self = this;
@@ -51,6 +63,10 @@ define([
 
     init: function (cb) {
       var self = this;
+
+      self.stylesheets.map(Styles.add);
+      less.registerStylesheets($("link[rel='stylesheet/less']"));
+      less.refresh();
 
       self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
       self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});

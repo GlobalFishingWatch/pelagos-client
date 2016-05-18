@@ -75,7 +75,7 @@ function(Class,
       self.events = new Events("AnimationManager");
 
       self.visualization = visualization;
-      self.node = $("<div class='animations'>");
+      self.node = $("<div class='animations' style='width: 100%; height: 100%;'>");
       self.visualization.node.append(self.node);
 
       self.indrag = false;
