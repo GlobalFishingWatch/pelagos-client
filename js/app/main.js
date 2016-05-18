@@ -1,29 +1,23 @@
 define([
-"require"
+  "shims/async/main",
+  "shims/jQuery/main",
+  "app/Visualization/Visualization",
+  "app/Visualization/UI/UIManager"
 ], function (
-  require
+  async,
+  $,
+  Visualization,
+  UIManager
 ) {
-  require([
-    "app/Visualization/Visualization",
-    "app/Visualization/UI/UIManager",
-    "shims/async/main",
-    "shims/jQuery/main"
-  ], function (
-    Visualization,
-    UIManager,
-    async,
-    $
-  ) {
-    $(document).ready(function () {
-      visualization = new Visualization('#visualization');
-      visualization.init(function () {
-        visualization.ui = new UIManager(visualization);
-        async.series([
-          visualization.ui.init.bind(visualization.ui),
-          visualization.loadConfiguration.bind(visualization),
-          visualization.load.bind(visualization, undefined)
-        ]);
-      });
+  $(document).ready(function () {
+    visualization = new Visualization('#visualization');
+    visualization.init(function () {
+      visualization.ui = new UIManager(visualization);
+      async.series([
+        visualization.ui.init.bind(visualization.ui),
+        visualization.loadConfiguration.bind(visualization),
+        visualization.load.bind(visualization, undefined)
+      ]);
     });
   });
 });
