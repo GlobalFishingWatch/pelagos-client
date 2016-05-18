@@ -49,23 +49,18 @@ define([
       self.visualization = visualization;
     },
 
-    init1: function (cb) {
+    init: function (cb) {
       var self = this;
 
       self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
       self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
       self.container.addChild(self.animationsContainer);
 
+      $(self.animationsContainer.domNode).append(self.visualization.node.children());
       self.visualization.node.append(self.container.domNode);
       self.visualization.node = $(self.animationsContainer.domNode);
 
       self.container.startup();
-
-      cb();
-    },
-
-    init2: function (cb) {
-      var self = this;
 
       async.series([
         self.initButtons.bind(self),

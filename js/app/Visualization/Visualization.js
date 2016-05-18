@@ -75,10 +75,6 @@ define([
       var root = require.toUrl("app").concat("/../..");
       async.series([
         function (cb) {
-          self.ui = new UIManager(self);
-          self.ui.init1(cb);
-        },
-        function (cb) {
           self.data = new DataManager(self);
           self.data.init(cb);
         },
@@ -87,7 +83,8 @@ define([
           self.animations.init(cb);
         },
         function (cb) {
-          self.ui.init2(cb);
+          self.ui = new UIManager(self);
+          self.ui.init(cb);
         },
         self.loadDefaults.bind(self, root + "/defaultConfig.json"),
         function (cb) { self.loadDefaults(root + "/config.json", function () { cb(); }); },
