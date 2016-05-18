@@ -5,7 +5,6 @@ define([
   "app/UrlValues",
   "app/Data/DataManager",
   "app/Visualization/Animation/AnimationManager",
-  "app/Visualization/UI/UIManager",
   "shims/async/main",
   "shims/jQuery/main",
   "shims/lodash/main",
@@ -17,7 +16,6 @@ define([
   UrlValues,
   DataManager,
   AnimationManager,
-  UIManager,
   async,
   $,
   _,
@@ -54,7 +52,10 @@ define([
       var self = this;
 
       self.node = $(node);
+    },
 
+    init: function (cb) {
+      var self = this;
       self.state = new SubscribableDict(self.paramspec);
 
       self.state.events.on({
@@ -75,21 +76,27 @@ define([
       var root = require.toUrl("app").concat("/../..");
       async.series([
         function (cb) {
-          self.data = new DataManager(self);
+          self.data = new DataManager();
           self.data.init(cb);
         },
         function (cb) {
           self.animations = new AnimationManager(self);
           self.animations.init(cb);
         },
-        function (cb) {
-          self.ui = new UIManager(self);
-          self.ui.init(cb);
-        },
-        self.loadDefaults.bind(self, root + "/defaultConfig.json"),
-        function (cb) { self.loadDefaults(root + "/config.json", function () { cb(); }); },
-        self.load.bind(self, UrlValues.getParameter("workspace"))
-      ]);
+      ],
+      function () { cb(self); });
+    },
+
+    loadConfiguration: function (cb) {
+      /* Willfully ignore load errors here since there might not be
+       * any config */
+      var self = this;
+      var root = require.toUrl("app").concat("/../..");
+      self.loadDefaults(root + "/defaultConfig.json", function () {
+        self.loadDefaults(root + "/config.json", function () {
+          cb();
+        });
+      });
     },
 
     loadDefaults: function (url, cb) {
@@ -133,16 +140,21 @@ define([
 
     toJSON: function () {
       var self = this;
+      var ui = {};
+      if (self.ui) ui = self.ui.toJSON();
       return {
         state: self.state.values,
         map: self.animations.toJSON(),
-        ui: self.ui.toJSON()
+        ui: ui
       };
     },
 
     load: function (url, cb) {
       var self = this;
 
+      if (!url) {
+        url = UrlValues.getParameter("workspace");
+      }
       if (!url) {
         /* Load defaults only */
         return self.loadData({}, cb);
@@ -184,7 +196,7 @@ define([
           self.animations.load(data.map, cb);
         },
         function (cb) {
-          if (!data.ui) return cb();
+          if (!data.ui || !self.ui) return cb();
           self.ui.load(data.ui, cb);
         }
       ], cb);
