@@ -76,7 +76,11 @@ define([
         self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
         self.initPopups.bind(self)
-      ], function () { cb(); });
+      ], function () {
+        self.container.resize();
+        self.visualization.animations.windowSizeChanged();
+        cb();
+      });
     },
 
     initButtons: function (cb) {
