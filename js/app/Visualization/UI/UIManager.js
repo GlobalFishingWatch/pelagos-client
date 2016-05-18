@@ -53,7 +53,7 @@ define([
       "libs/dojo-theme-flat/CSS/dojo/flat.css",
       "libs/dojox/layout/resources/FloatingPane.css",
       "libs/dojox/layout/resources/ResizeHandle.css",
-      {url: "app/style.less", rel:"stylesheet/less"},
+      {url: "app/Visualization/UI/style.less", rel:"stylesheet/less"},
     ],
 
     initialize: function (visualization) {
