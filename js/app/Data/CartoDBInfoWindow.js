@@ -77,9 +77,12 @@ define([
          obj
         );
 
-        var html = $(popupHtml).find('.cartodb-popup-content');
+        var result = {
+          html: $(popupHtml).find('.cartodb-popup-content'),
+          data: data
+        };
 
-        cb(html, data);
+        cb(result);
       });
     }
   });

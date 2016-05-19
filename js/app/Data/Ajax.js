@@ -43,14 +43,14 @@ define([
     };
   };
 
-  Ajax.get = function (url, headers, cb) {
+  Ajax.makeRequest = function (verb, url, headers, cb) {
     /* Handle file:// urls as well as CORS correctly, as well as the
      * combinations of CORS and credentials and CORS, credentials and CDNs
      * that set the CORS domain to *. */
 
     var doLoad = function (withCredentials) {
       var request = new XMLHttpRequest();
-      request.open('GET', url, true);
+      request.open(verb, url, true);
       request.withCredentials = withCredentials;
       Ajax.setHeaders(request, headers);
       LoadingInfo.main.add(url, {request: request});
@@ -71,6 +71,15 @@ define([
       request.send(null);
     };
     doLoad(true);
+  };
+
+  /* TODO: Implement proper body parsing and sending */
+  Ajax.post = function (url, headers, cb) {
+    Ajax.makeRequest('POST', url, headers, cb);
+  };
+
+  Ajax.get = function (url, headers, cb) {
+    Ajax.makeRequest('GET', url, headers, cb);
   };
 
   return Ajax;

@@ -306,10 +306,6 @@ arguments.
           "split": "-",
           "label": "EEZ"
         },
-
-        /* Here we are publishing another field from the polygon, in this case one that
-           is directly available in the templates */
-        "country": {}
       },
 
       /* Template used to create the url which generates the report. The template
