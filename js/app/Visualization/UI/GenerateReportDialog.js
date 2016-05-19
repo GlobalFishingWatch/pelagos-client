@@ -5,6 +5,7 @@ define([
   "dijit/_Container",
   "dijit/Dialog",
   "dijit/form/Select",
+  "app/Visualization/UI/SimpleMessageDialog",
   "app/ObjectTemplate",
   "app/Data/Ajax",
   "lodash",
@@ -16,6 +17,7 @@ define([
   _Container,
   Dialog,
   Select,
+  SimpleMessageDialog,
   ObjectTemplate,
   Ajax,
   _,
@@ -187,7 +189,7 @@ define([
     handleAccept: function() {
       var url = this.reportDialog.getReportUrl();
       Ajax.post(url, {}, function(err, result) {
-        console.log("Got response", err, result);
+        SimpleMessageDialog.show("Report generation", result.message);
       });
       this.hide();
     },

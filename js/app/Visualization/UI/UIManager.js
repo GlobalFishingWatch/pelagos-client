@@ -13,6 +13,7 @@ define([
   "app/Visualization/UI/Performance",
   "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/Help",
+  "app/Visualization/UI/SimpleMessageDialog",
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
@@ -33,6 +34,7 @@ define([
   Performance,
   SimpleAnimationEditor,
   Help,
+  SimpleMessageDialog,
   ObjectTemplate,
   BorderContainer,
   ContentPane,
@@ -158,19 +160,7 @@ define([
       });
       self.visualization.data.events.on({
         error: function (data) {
-          var dialog = new Dialog({
-              style: "width: 50%;",
-            title: "Error",
-            content: data.toString(),
-            actionBarTemplate: '' +
-              '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-              '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-              '</div>'
-          });
-          $(dialog.closeButton).on('click', function () {
-            dialog.hide();
-          });
-          dialog.show();
+          SimpleMessageDialog.show("Error", data.toString());
         }
       });
       cb();
