@@ -9,6 +9,9 @@ define([
   Pack,
   _
 ) {
+  /**
+   * Abstract base class for all data source format handlers.
+   */
   var Format = Class({
     name: "Format",
     initialize: function(args) {
@@ -132,6 +135,9 @@ define([
       return compareTilesByCol(0);
     },
 
+    /**
+     * Prints a summary of the loaded data.
+     */
     printTree: function (args) {
       return '';
     }

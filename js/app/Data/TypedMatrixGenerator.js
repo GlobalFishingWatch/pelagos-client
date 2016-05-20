@@ -1,6 +1,6 @@
 define(["app/Class", "app/Data/Pack"], function (Class, Pack) {
   return Class({
-    name: 'TypedMatrixParser',
+    name: 'TypedMatrixGenerator',
     MAGIC_COOKIE: 'tmtx',
 
     initialize: function (header, columns) {

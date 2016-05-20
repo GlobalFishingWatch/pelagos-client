@@ -1,98 +1,3 @@
-/* Loads a matrix of rows/cols of typed data from a binary file.
-
-
-   Data format:
-
-   All values in the data format are in little endian. The following
-   describes the main data layout:
-
-   ['tmtx' magic cookie]
-   [4 byte header length in bytes]
-   [header data]
-   [padding]
-   [content data]
-
-   Padding is a padding to start the content data on a 4-byte-boundary.
-
-   The header is json encoded and should contain at the very least
-
-   {length: NUMBER_OF_ROWS, orientation: ORIENTATION, cols: [COL,...]}
-
-   COL should contain {name: NAME, type: TYPE}
-
-   where NAME is any string and TYPE is one of the type names found
-   in Pack.typemap.
-
-   COL can optionally contain 'multiplier' and/or 'offset'. If defined
-   for a column, the values in that column will be scaled and offset
-   by those values:
-
-   value = offset + (multiplier * value)
-
-   The content data is either encoded as a series of rows or as a
-   series of columns, depending on the header value orientation
-   ('rowwise' or 'columnwise').
-
-   For rowwise data, each row consists of data encoded as per the column
-   specifications (in that same order). The byte length of each
-   column is defined by its type.
-
-   For columnwise data, the content data consists of a sequence of
-   columns, in the order specified by the header. Each column is
-   encoded as a sequence of items, each item being encoded as per the
-   column specification. The byte length of each item is defined by
-   the column type. The byte length of a column is the byte length of
-   each item, times the length header value.
-
-   API:
-
-   f = new TypedMatrixFormat(source_url);
-   f.events.on({
-     load: function () {}, // Called before loading begins
-     header: function (headerData) {},
-     row: function (rowData) {},
-     batch: function () {},
-     all: function () {},
-     update: function () {}, // Called after both batch and all
-     error: function (error) { console.log(error.exception); },
-   });
-   f.load();
-
-   f.cancel(); // To cancel the loading at any time.
-
-   The header data is available in f.header during and after the
-   header event fires, in addition to being sent as a parameter to
-   that event. The header data is the same as the header data found in
-   the binary, with one extra member added, colsByName, which contains
-   a json object with column names as keys and the column specs from
-   cols as values.
-
-   In addition, the COL column specifications are updated as
-   following:
-
-   Any min and max entries are updated using offset and
-   multiplier, if they exist.
-
-   A typespec member is added, which contains the type from TypMap
-   corresponding to the type specified for the column.
-
-   Type specifications in Pack.typemap have the following format:
-
-   {
-     size: BYTES_PER_ELEMENT,
-     array: ArrayClass,
-     method: 'dataViewAccessorMethodName'
-   }
-
-
-   Implementation details/explanation for this ugly code:
-
-   moz-chunked-arraybuffer is only supported in firefox... So I
-   reverted to the old-school overrideMimeType and loading the file
-   is binary "text", and converting it to ArrayBuffer by hand for
-   decoding.
-*/
-
 define([
   "app/Class",
   "app/Events",
@@ -108,6 +13,103 @@ define([
   Logging,
   _
 ) {
+  /**
+   * Loads a matrix of rows/cols of typed data from a binary file.
+   *
+   *
+   * Data format:
+   *
+   * All values in the data format are in little endian. The following
+   * describes the main data layout:
+   *
+   *     ['tmtx' magic cookie]
+   *     [4 byte header length in bytes]
+   *     [header data]
+   *     [padding]
+   *     [content data]
+   *
+   * Padding is a padding to start the content data on a 4-byte-boundary.
+   *
+   * The header is json encoded and should contain at the very least
+   *
+   *     {length: NUMBER_OF_ROWS, orientation: ORIENTATION, cols: [COL,...]}
+   *
+   * COL should contain {name: NAME, type: TYPE}
+   *
+   * where NAME is any string and TYPE is one of the type names found
+   * in Pack.typemap.
+   *
+   * COL can optionally contain 'multiplier' and/or 'offset'. If defined
+   * for a column, the values in that column will be scaled and offset
+   * by those values:
+   *
+   *     value = offset + (multiplier * value)
+   *
+   * The content data is either encoded as a series of rows or as a
+   * series of columns, depending on the header value orientation
+   * ('rowwise' or 'columnwise').
+   *
+   * For rowwise data, each row consists of data encoded as per the column
+   * specifications (in that same order). The byte length of each
+   * column is defined by its type.
+   *
+   * For columnwise data, the content data consists of a sequence of
+   * columns, in the order specified by the header. Each column is
+   * encoded as a sequence of items, each item being encoded as per the
+   * column specification. The byte length of each item is defined by
+   * the column type. The byte length of a column is the byte length of
+   * each item, times the length header value.
+   *
+   * The header data is available in f.header during and after the
+   * header event fires, in addition to being sent as a parameter to
+   * that event. The header data is the same as the header data found in
+   * the binary, with one extra member added, colsByName, which contains
+   * a json object with column names as keys and the column specs from
+   * cols as values.
+   *
+   * In addition, the COL column specifications are updated as
+   * following:
+   *
+   * Any min and max entries are updated using offset and
+   * multiplier, if they exist.
+   *
+   * A typespec member is added, which contains the type from TypMap
+   * corresponding to the type specified for the column.
+   *
+   * Type specifications in Pack.typemap have the following format:
+   *
+   *     {
+   *       size: BYTES_PER_ELEMENT,
+   *       array: ArrayClass,
+   *       method: 'dataViewAccessorMethodName'
+   *     }
+   *
+   *
+   * Implementation details/explanation for this ugly code:
+   *
+   * moz-chunked-arraybuffer is only supported in firefox... So I
+   * reverted to the old-school overrideMimeType and loading the file
+   * is binary "text", and converting it to ArrayBuffer by hand for
+   * decoding.
+   *
+   * @example
+   *
+   * f = new TypedMatrixFormat(source_url);
+   * f.events.on({
+   *   load: function () {}, // Called before loading begins
+   *   header: function (headerData) {},
+   *   row: function (rowData) {},
+   *   batch: function () {},
+   *   all: function () {},
+   *   update: function () {}, // Called after both batch and all
+   *   error: function (error) { console.log(error.exception); },
+   * });
+   * f.load();
+   *
+   * f.cancel(); // To cancel the loading at any time.
+   *
+   * @class Data/TypedMatrixParser
+   */
   return Class({
     name: "TypedMatrixParser",
     MAGIC_COOKIE: 'tmtx',

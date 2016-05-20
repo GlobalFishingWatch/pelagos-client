@@ -1,7 +1,10 @@
 {
-    "tags": {
-        "allowUnknownTags": true,
-        "dictionaries": ["jsdoc","closure"]
-    },
-    "plugins": ["jsdoc/jsdoc_undocumented"]
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc","closure"]
+  },
+  "plugins": [
+    "jsdoc/jsdoc_undocumented",
+    "plugins/markdown"
+  ]
 }

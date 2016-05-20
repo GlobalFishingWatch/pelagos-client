@@ -21,6 +21,25 @@ define([
   _,
   Json
 ) {
+  /**
+   * The main maps / webgl visualization. Will display a map, load a
+   * workspace and display its animations over the map inside a given
+   * dom node.
+   *
+   * @example
+   *
+   * $(document).ready(function () {
+   *   visualization = new Visualization('#visualization');
+   *   visualization.init(function () {
+   *     async.series([
+   *       visualization.loadConfiguration.bind(visualization),
+   *       visualization.load.bind(visualization, undefined)
+   *     ]);
+   *   });
+   * });
+   *
+   * @class Visualization/Visualization
+   */
   return Class({
     name: "Visualization",
     paramspec: {
@@ -149,6 +168,14 @@ define([
       };
     },
 
+    /**
+     * Loads a workspace from a given url, or if no url is given from
+     * the the url given by the workspace parameter in the page url
+     * (e.g. /index.html?workspace=/workspace%3Fid%3Dtest
+     *
+     * @param url {String}
+     * @param cb {Function}
+     */
     load: function (url, cb) {
       var self = this;
 
@@ -202,6 +229,14 @@ define([
       ], cb);
     },
 
+    /**
+     * Saves the current workspace to a JSON file using a POST call to
+     * the url given by self.workspaceSaveUrl. This is generally the
+     * url of the last loaded workspace, minus any query
+     * parameters.
+     *
+     * @param cb {Function}
+     */
     save: function (cb) {
       var self = this;
 

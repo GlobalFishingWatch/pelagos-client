@@ -150,7 +150,8 @@ define(["app/Class"], function(Class) {
       return self.intersectsBounds(obj, options);
     },
 
-    /* Move right and left edges whole revolutions around the globe so
+    /**
+     * Move right and left edges whole revolutions around the globe so
      * that they are within world bounds. */
     rewrapDateLine: function(world) {
       var self = this;
@@ -179,7 +180,8 @@ define(["app/Class"], function(Class) {
       return res;
     },
 
-    /* Move the right edge whole revolutions around the globe until
+    /**
+     * Move the right edge whole revolutions around the globe until
      * right > left (numerically). */
     unwrapDateLine: function(world) {
       var self = this;
@@ -195,14 +197,14 @@ define(["app/Class"], function(Class) {
 
     getBounds: function () { return this; },
 
+    /**
+     * Update the Bounds object in place.
+     *
+     * update("left,bottom,right,top")
+     * update([left,bottom,right,top]);
+     * update(obj, obj, ...);
+     */
     update: function () {
-      /* Usages:
-
-         update("left,bottom,right,top")
-         update([left,bottom,right,top]);
-         update(obj, obj, ...);
-       */
-
       var self = this;
 
       var updateOne = function (obj) {

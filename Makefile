@@ -33,8 +33,10 @@ $(DEPENDENCIES): node_modules/.bin/bower
 	node_modules/.bin/bower install
 	touch $@
 
-js-docs:
+node_modules/.bin/jsdoc:
 	npm install jsdoc
+
+js-docs: node_modules/.bin/jsdoc
 	node_modules/.bin/jsdoc -a all -p -r -d docs/jsdoc -c jsdoc/jsdoc.json js/app
 
 js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/build-succeded
