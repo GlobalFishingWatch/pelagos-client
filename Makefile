@@ -22,7 +22,7 @@ DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
 
 .PHONY: all prerequisites dependencies js-build clean clean-js-build clean-dependencies clean-integration-tests unit-tests integration-tests dev-server test-server
 
-all: js-build
+all: js-build js-docs
 
 dependencies: $(DEPENDENCIES)
 
@@ -32,6 +32,10 @@ node_modules/.bin/bower:
 $(DEPENDENCIES): node_modules/.bin/bower
 	node_modules/.bin/bower install
 	touch $@
+
+js-docs:
+	npm install jsdoc
+	node_modules/.bin/jsdoc -a all -p -r -d docs/jsdoc -c jsdoc/jsdoc.json js/app
 
 js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/build-succeded
 

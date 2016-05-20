@@ -26,6 +26,19 @@ define([
   DataView,
   Logging
 ) {
+  /**
+   * The DataManager manages a set of data sources. Each data set is
+   * handled by a Format subclass, and identified by a Url.
+   *
+   * The data manager handles loading subsets of the data from each
+   * source based on the current time range and bbox.
+   *
+   * @fires Data/DataManager#add
+   * @fires Data/DataManager#remove
+   * @fires Data/DataManager#update
+   * @fires Data/DataManager#all
+   * @class Data/DataManager
+   */
   return Class({
     name: "DataManager",
     initialize: function () {
@@ -44,6 +57,15 @@ define([
       cb();
     },
 
+    /**
+     * Sets up a new source
+     *
+     * @param {string} source.type - Data source type, the name of a
+     * subclass of Format, e.g. TiledBinFormat or BinFormat.
+     *
+     * @param {string} source.args.url - Url of the data source file
+     * or directory root
+     */
     addSource: function (source) {
       var self = this;
 
@@ -126,6 +148,11 @@ define([
       }
     },
 
+    /**
+     * Loads data for all sources for some bbox and time range.
+     *
+     * @param {SpaceTime} bounds
+     */
     zoomTo: function (bounds) {
       var self = this;
       if (bounds.length > 0) bounds = new Bounds(bounds);
@@ -278,6 +305,9 @@ define([
       });
     },
 
+    /**
+     * Prints a summary of the currently loaded data for all sources.
+     */
     printTree: function (args) {
       var self = this;
       args = args || {};

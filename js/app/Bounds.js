@@ -1,11 +1,17 @@
-/* Bounds code adapted from OpenLayers; Published under the 2-clause
- * BSD license. See license.txt in the OpenLayers distribution.
- *
- * This is a minimalistic subset of the Openlayers.Bounds API with a
- * few small extensions. */
 define(["app/Class"], function(Class) {
+  /**
+   * Bounds code adapted from OpenLayers; Published under the 2-clause
+   * BSD license. See license.txt in the OpenLayers distribution.
+   *
+   * This is a minimalistic subset of the Openlayers.Bounds API with a
+   * few small extensions.
+   *
+   * @class Bounds
+   */
   var Bounds = Class({
     name: "Bounds",
+
+    /** Initialize the bounds. Takes the same arguments as update(). */
     initialize: function () {
       var self = this;
 
@@ -17,6 +23,7 @@ define(["app/Class"], function(Class) {
       self.update.apply(self, arguments);
     },
 
+/**  */
     clone: function() {
       var self = this;
       return new self.constructor(self);
