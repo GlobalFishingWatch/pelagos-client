@@ -1,3 +1,6 @@
+---
+---
+
 # Tileset schema
 
 The workspace is the highest configuration item for the system. It represents
