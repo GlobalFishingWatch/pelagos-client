@@ -1,0 +1,293 @@
+{
+  "map": {
+    "options": {
+      "mapTypeId": "roadmap", 
+      "styles": [
+        {
+          "featureType": "poi", 
+          "stylers": [
+            {
+              "visibility": "off"
+            }
+          ]
+        }, 
+        {
+          "featureType": "administrative", 
+          "stylers": [
+            {
+              "visibility": "simplified"
+            }
+          ]
+        }, 
+        {
+          "featureType": "administrative.country", 
+          "stylers": [
+            {
+              "visibility": "on"
+            }
+          ]
+        }, 
+        {
+          "featureType": "road", 
+          "stylers": [
+            {
+              "visibility": "off"
+            }
+          ]
+        }, 
+        {
+          "featureType": "landscape.natural", 
+          "stylers": [
+            {
+              "visibility": "off"
+            }
+          ]
+        }
+      ]
+    }, 
+    "animations": [
+      {
+        "args": {
+          "color": "blue", 
+          "source": {
+            "args": {
+              "url": "05499511170989622376-16524589196162594663"
+            }, 
+            "type": "BinFormat"
+          }, 
+          "visible": false, 
+          "hideremovebtn": true, 
+          "title": "Bathymetry"
+        }, 
+        "type": "MapsEngineAnimation"
+      }, 
+      {
+        "args": {
+          "uniforms": {
+            "blue": {
+              "max": 1, 
+              "name": "blue", 
+              "value": 0.4, 
+              "min": 0
+            }, 
+            "hover_red": {
+              "max": 1, 
+              "name": "hover_red", 
+              "value": 0.4, 
+              "min": 0
+            }, 
+            "hover_blue": {
+              "max": 1, 
+              "name": "hover_blue", 
+              "value": 1, 
+              "min": 0
+            }, 
+            "hover_green": {
+              "max": 1, 
+              "name": "hover_green", 
+              "value": 0.6, 
+              "min": 0
+            }, 
+            "green": {
+              "max": 1, 
+              "name": "green", 
+              "value": 0.6, 
+              "min": 0
+            }, 
+            "selected_red": {
+              "max": 1, 
+              "name": "selected_red", 
+              "value": 1, 
+              "min": 0
+            }, 
+            "selected_green": {
+              "max": 1, 
+              "name": "selected_green", 
+              "value": 1, 
+              "min": 0
+            }, 
+            "selected_blue": {
+              "max": 1, 
+              "name": "selected_blue", 
+              "value": 1, 
+              "min": 0
+            }, 
+            "red": {
+              "max": 1, 
+              "name": "red", 
+              "value": 1, 
+              "min": 0
+            }
+          }, 
+          "selections": {
+            "info": {
+              "header": {
+                "length": 0
+              }, 
+              "data": {
+                "series": []
+              }, 
+              "sortcols": [
+                "series"
+              ]
+            }, 
+            "hover": {
+              "header": {
+                "length": 0
+              }, 
+              "data": {
+                "seriesgroup": []
+              }, 
+              "sortcols": [
+                "seriesgroup"
+              ]
+            }, 
+            "selected": {
+              "header": {
+                "length": 0
+              }, 
+              "data": {
+                "seriesgroup": []
+              }, 
+              "sortcols": [
+                "seriesgroup"
+              ]
+            }, 
+            "timerange": {
+              "header": {
+                "length": 1
+              }, 
+              "data": {
+                "datetime": [
+                  1414799949824, 
+                  1425168007168
+                ]
+              }, 
+              "sortcols": [
+                "datetime"
+              ]
+            }, 
+            "active_category": {
+              "header": {
+                "length": 2
+              }, 
+              "data": {
+                "category": [
+                  {
+                    "__jsonclass__": [
+                      "Number", 
+                      "-Infinity"
+                    ]
+                  }, 
+                  {
+                    "__jsonclass__": [
+                      "Number", 
+                      "Infinity"
+                    ]
+                  }
+                ]
+              }, 
+              "sortcols": [
+                "category"
+              ]
+            }
+          }, 
+          "title": "Fishing Effort", 
+          "visible": true, 
+          "source": {
+            "args": {
+              "url": "http://myproject.appspot.com/tile/my_tileset"
+            }, 
+            "type": "TiledBinFormat"
+          }, 
+          "columns": {
+            "hover": {
+              "source": {
+                "hover": 1
+              }, 
+              "hidden": true, 
+              "type": "Float32", 
+              "name": "hover"
+            }, 
+            "weight": {
+              "source": {
+                "weight": 1
+              }, 
+              "max": 1, 
+              "type": "Float32", 
+              "name": "weight", 
+              "min": 0
+            }, 
+            "selected": {
+              "source": {
+                "selected": 1
+              }, 
+              "hidden": true, 
+              "type": "Float32", 
+              "name": "selected"
+            }, 
+            "longitude": {
+              "source": {
+                "longitude": 1
+              }, 
+              "hidden": true, 
+              "type": "Float32", 
+              "name": "longitude"
+            }, 
+            "filter": {
+              "source": {
+                "timerange": -1, 
+                "active_category": -1, 
+                "_": null
+              }, 
+              "type": "Float32", 
+              "name": "filter"
+            }, 
+            "time": {
+              "source": {
+                "datetime": 1
+              }, 
+              "hidden": true, 
+              "type": "Float32", 
+              "name": "time"
+            }, 
+            "latitude": {
+              "source": {
+                "latitude": 1
+              }, 
+              "hidden": true, 
+              "type": "Float32", 
+              "name": "latitude"
+            }, 
+            "sigma": {
+              "source": {
+                "sigma": 1
+              }, 
+              "max": 1, 
+              "type": "Float32", 
+              "name": "sigma", 
+              "min": 0
+            }
+          }
+        }, 
+        "type": "ClusterAnimation"
+      }
+    ]
+  }, 
+  "state": {
+    "title": "http://myproject.appspot.com/tile/my_tileset", 
+    "time": {
+      "__jsonclass__": [
+        "Date", 
+        "2015-03-01T00:00:07.168Z"
+      ]
+    }, 
+    "lon": -169.69070434570312, 
+    "zoom": 4, 
+    "timeExtent": 10368057344, 
+    "paused": true, 
+    "offset": 20, 
+    "lat": -7.453709339338128, 
+    "maxoffset": 100
+  }
+}

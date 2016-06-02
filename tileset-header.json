@@ -1,0 +1,89 @@
+{
+  "tileset": {
+    "name": "my_tileset", 
+    "tile_server_options": {
+      "client-cache": true, 
+      "cache_control_header": "public, max-age=2592000", 
+      "server-cache": true, 
+      "request_version": null
+    }, 
+    "url": "http://myproject.appspot.com/tile/my_tileset", 
+    "workspace_template": "benthos.0.0.2.json", 
+    "generator": "multiclustertile4.TileGenerator", 
+    "version": "0.7", 
+    "params": {
+      "table": "tilesets.my_tileset", 
+      "max_date": "2015-03-01", 
+      "min_date": "2014-11-01"
+    }
+  }, 
+  "tilesetName": "my_tileset", 
+  "seriesTilesets": true, 
+  "temporalExtents": 2592000000,
+  "colsByName": {
+    "weight": {
+      "max": 4711.0, 
+      "type": "Float32", 
+      "name": "weight", 
+      "idx": 6, 
+      "min": 0.0
+    }, 
+    "seriesgroup": {
+      "max": 4711.0, 
+      "type": "Float32", 
+      "name": "seriesgroup", 
+      "idx": 4, 
+      "min": 0.0
+    }, 
+    "series": {
+      "max": 4711.0, 
+      "type": "Float32", 
+      "name": "series", 
+      "idx": 3, 
+      "min": 0.0
+    }, 
+    "longitude": {
+      "name": "longitude", 
+      "idx": 2, 
+      "min": -180.0, 
+      "max": 180.0, 
+      "hidden": true, 
+      "type": "Float32"
+    }, 
+    "datetime": {
+      "name": "datetime", 
+      "idx": 0, 
+      "min": 1414799949824.0, 
+      "max": 1425168007168.0, 
+      "hidden": true, 
+      "type": "Float32"
+    }, 
+    "latitude": {
+      "name": "latitude", 
+      "idx": 1, 
+      "min": -90.0, 
+      "max": 90.0, 
+      "hidden": true, 
+      "type": "Float32"
+    }, 
+    "sigma": {
+      "max": 4711.0, 
+      "type": "Float32", 
+      "name": "sigma", 
+      "idx": 5, 
+      "min": 0.0
+    }
+  }, 
+  "urls": [
+    [
+      "http://storage.googleapis.com/myproject/tiles/my_tileset-3.2.4:0.7"
+    ], 
+    [
+      "http://t0.myproject.appspot.com/tile/my_tileset/3.2.4:0.7", 
+      "http://t1.myproject.appspot.com/tile/my_tileset/3.2.4:0.7", 
+      "http://t2.myproject.appspot.com/tile/my_tileset/3.2.4:0.7", 
+      "http://t3.myproject.appspot.com/tile/my_tileset/3.2.4:0.7"
+    ]
+  ], 
+  "tilesetVersion": "3.2.4:0.7"
+}
