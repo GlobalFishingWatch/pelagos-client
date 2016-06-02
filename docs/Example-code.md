@@ -1,3 +1,6 @@
+---
+---
+
 # Example code
 
 * http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace
