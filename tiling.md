@@ -1,3 +1,6 @@
+---
+---
+
 # The spatial tiling algorithm
 
 Tiles make up a quad tree where every new zoom level divides the tile
