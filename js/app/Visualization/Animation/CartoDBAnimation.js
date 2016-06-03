@@ -5,7 +5,7 @@ define([
   "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation",
-  "cartodb"
+  "shims/cartodb/main"
 ], function(
   require,
   Class,

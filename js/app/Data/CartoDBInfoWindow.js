@@ -1,6 +1,6 @@
 define([
   "app/Class",
-  "cartodb"
+  "shims/cartodb/main"
 ], function(
   Class,
   cartodb
@@ -87,4 +87,3 @@ define([
     }
   });
 });
-
