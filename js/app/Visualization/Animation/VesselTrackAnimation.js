@@ -8,6 +8,8 @@ define([
   var VesselTrackAnimation = Class(DataAnimation, {
     name: "VesselTrackAnimation",
 
+    separateSeries: true,
+
     columns: {
       longitude: {type: "Float32", hidden: true, source: {longitude: 1.0}},
       latitude: {type: "Float32", hidden: true, source: {latitude: 1.0}},
