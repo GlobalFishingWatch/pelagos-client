@@ -1,4 +1,17 @@
-define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, Events, Pack, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/Data/Pack",
+  "shims/lodash/main"
+], function(
+  Class,
+  Events,
+  Pack,
+  _
+) {
+  /**
+   * Abstract base class for all data source format handlers.
+   */
   var Format = Class({
     name: "Format",
     initialize: function(args) {
@@ -122,6 +135,9 @@ define(["app/Class", "app/Events", "app/Data/Pack", "lodash"], function(Class, E
       return compareTilesByCol(0);
     },
 
+    /**
+     * Prints a summary of the loaded data.
+     */
     printTree: function (args) {
       return '';
     }

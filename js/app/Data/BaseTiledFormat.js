@@ -22,9 +22,9 @@ define([
   "app/Logging",
   "app/Data/Ajax",
   "app/Data/EmptyFormat",
-  "lodash",
-  "async",
-  "jQuery",
+  "shims/lodash/main",
+  "shims/async/main",
+  "shims/jQuery/main",
   "app/PopupAuth",
   "app/LangExtensions"
 ], function(

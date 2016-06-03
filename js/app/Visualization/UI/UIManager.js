@@ -17,8 +17,11 @@ define([
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
-  "async",
-  "jQuery"
+  "shims/async/main",
+  "shims/jQuery/main",
+  "shims/less/main",
+  "shims/Styles",
+  "app/Visualization/UI/Paths"
 ], function (
   Class,
   Dialog,
@@ -39,31 +42,43 @@ define([
   BorderContainer,
   ContentPane,
   async,
-  $) {
+  $,
+  less,
+  Styles,
+  Paths
+) {
   return Class({
     name: "UI",
+
+    stylesheets: [
+      "libs/font-awesome/css/font-awesome.min.css",
+      "libs/dojo-theme-flat/CSS/dojo/flat.css",
+      "libs/dojox/layout/resources/FloatingPane.css",
+      "libs/dojox/layout/resources/ResizeHandle.css",
+      {url: "app/Visualization/UI/style.less", rel:"stylesheet/less"},
+    ],
+
     initialize: function (visualization) {
       var self = this;
       self.visualization = visualization;
     },
 
-    init1: function (cb) {
+    init: function (cb) {
       var self = this;
+
+      self.stylesheets.map(Styles.add);
+      less.registerStylesheets($("link[rel='stylesheet/less']"));
+      less.refresh();
 
       self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
       self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
       self.container.addChild(self.animationsContainer);
 
+      $(self.animationsContainer.domNode).append(self.visualization.node.children());
       self.visualization.node.append(self.container.domNode);
       self.visualization.node = $(self.animationsContainer.domNode);
 
       self.container.startup();
-
-      cb();
-    },
-
-    init2: function (cb) {
-      var self = this;
 
       async.series([
         self.initButtons.bind(self),
@@ -74,7 +89,11 @@ define([
         self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
         self.initPopups.bind(self)
-      ], function () { cb(); });
+      ], function () {
+        self.container.resize();
+        self.visualization.animations.windowSizeChanged();
+        cb();
+      });
     },
 
     initButtons: function (cb) {
@@ -101,7 +120,7 @@ define([
         + '      <button class="btn btn-default btn-xs" data-name="end"><i class="fa fa-step-forward"></i></button>'
         + '    </div>'
         + '  </a>'
-        + '</div>').eval(app.dirs));
+        + '</div>').eval(Paths));
       self.visualization.node.append(self.controlButtonsNode);
 
       self.controlButtonsNode.find(".btn").each(function () {
@@ -144,7 +163,7 @@ define([
     initLoadSpinner: function(cb) {
       var self = this;
 
-      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.loader + '"></div>');
+      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + Paths.LoaderIcon + '"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
@@ -552,7 +571,7 @@ define([
       var self = this;
 
       self.config = config;
-      data = new ObjectTemplate(self.config).eval(app.dirs);
+      data = new ObjectTemplate(self.config).eval(Paths);
 
       if (typeof(data.logo) == "string") {
         self.logoNode.append(data.logo);

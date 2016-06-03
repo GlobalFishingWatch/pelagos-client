@@ -1,7 +1,7 @@
 define([
   "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
-  "jQuery",
+  "shims/jQuery/main",
   "app/Visualization/KeyBindings"
 ], function(
   declare,

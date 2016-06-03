@@ -1,4 +1,14 @@
-define(["app/Class", "app/Events", "app/Data/Selection", "lodash"], function(Class, Events, Selection, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "app/Data/Selection",
+  "shims/lodash/main"
+], function(
+  Class,
+  Events,
+  Selection,
+  _
+) {
   return Class({
     name: "SelectionManager",
 

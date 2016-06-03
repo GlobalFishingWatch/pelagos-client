@@ -1,3 +1,3 @@
-define([], function (q) {
+define(["libs/qunit/qunit/qunit"], function () {
   return QUnit;
 });

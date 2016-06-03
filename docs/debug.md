@@ -1,3 +1,6 @@
+---
+---
+
 # Logging
 
 Add this to workspace to activate logging

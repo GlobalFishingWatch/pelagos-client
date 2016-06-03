@@ -1,11 +1,12 @@
 define([
   "app/Class",
   "dijit/layout/AccordionContainer",
-  "jQuery",
+  "shims/jQuery/main",
   "app/ObjectTemplate",
   "app/Visualization/UI/SidePanels/InfoUI",
   "app/Visualization/UI/SidePanels/SimpleLayerList",
-  "app/Visualization/UI/SidePanels/Filters"
+  "app/Visualization/UI/SidePanels/Filters",
+  "app/Visualization/UI/Paths"
 ], function(
   Class ,
   AccordionContainer,
@@ -13,7 +14,8 @@ define([
   ObjectTemplate,
   InfoUI,
   SimpleLayerList,
-  Filters
+  Filters,
+  Paths
 ) {
   return Class({
     name: "BasicSidebar",
@@ -43,7 +45,7 @@ define([
         '      <div class="sponsor_logos">&nbsp;</div>' +
         '    </div>' +
         '  </div>' +
-        '</div>').eval(app.dirs));
+        '</div>').eval(Paths));
       $('body').append(self.node);
 
       self.sidebarContainer = new AccordionContainer({splitter:true});
@@ -99,7 +101,7 @@ define([
     load: function (config, cb) {
       var self = this;
       self.config = config;
-      var data = new ObjectTemplate(self.config).eval(app.dirs);
+      var data = new ObjectTemplate(self.config).eval(Paths);
 
       self.node.find(".sponsor_logos").html("");
       data.sponsorLogos.map(function (spec) {

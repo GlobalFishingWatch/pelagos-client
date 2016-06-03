@@ -1,5 +1,5 @@
 {
-    "name": "bootstrap",
+    "name": "GoogleMaps",
     "version":"0.1",
     "main": "main",
     "description": "",
@@ -10,5 +10,5 @@
         }
     ],
     "homepage": "https://github.com/SkyTruth/pelagos-client",
-    "dojoBuild": "bootstrap.profile.js"
+    "dojoBuild": "GoogleMaps.profile.js"
 }

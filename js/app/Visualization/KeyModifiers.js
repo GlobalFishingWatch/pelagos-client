@@ -1,4 +1,12 @@
-define(["app/Class", "app/Events", "jQuery"], function(Class, Events, $) {
+define([
+  "app/Class",
+  "app/Events",
+  "shims/jQuery/main"
+], function(
+  Class,
+  Events,
+  $
+) {
   var KeyModifiers = Class({name: "KeyModifiers"});
 
   // From http://www.javascriptkeycode.com/

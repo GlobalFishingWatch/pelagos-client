@@ -5,10 +5,9 @@ define([
   "app/UrlValues",
   "app/Data/DataManager",
   "app/Visualization/Animation/AnimationManager",
-  "app/Visualization/UI/UIManager",
-  "async",
-  "jQuery",
-  "lodash",
+  "shims/async/main",
+  "shims/jQuery/main",
+  "shims/lodash/main",
   "app/Json"
 ], function(
   Class,
@@ -17,12 +16,30 @@ define([
   UrlValues,
   DataManager,
   AnimationManager,
-  UIManager,
   async,
   $,
   _,
   Json
 ) {
+  /**
+   * The main maps / webgl visualization. Will display a map, load a
+   * workspace and display its animations over the map inside a given
+   * dom node.
+   *
+   * @example
+   *
+   * $(document).ready(function () {
+   *   visualization = new Visualization('#visualization');
+   *   visualization.init(function () {
+   *     async.series([
+   *       visualization.loadConfiguration.bind(visualization),
+   *       visualization.load.bind(visualization, undefined)
+   *     ]);
+   *   });
+   * });
+   *
+   * @class Visualization/Visualization
+   */
   return Class({
     name: "Visualization",
     paramspec: {
@@ -54,7 +71,10 @@ define([
       var self = this;
 
       self.node = $(node);
+    },
 
+    init: function (cb) {
+      var self = this;
       self.state = new SubscribableDict(self.paramspec);
 
       self.state.events.on({
@@ -72,26 +92,30 @@ define([
 
       self.defaultConfig = {};
 
+      var root = require.toUrl("app").concat("/../..");
       async.series([
         function (cb) {
-          self.ui = new UIManager(self);
-          self.ui.init1(cb);
-        },
-        function (cb) {
-          self.data = new DataManager(self);
+          self.data = new DataManager();
           self.data.init(cb);
         },
         function (cb) {
           self.animations = new AnimationManager(self);
           self.animations.init(cb);
         },
-        function (cb) {
-          self.ui.init2(cb);
-        },
-        self.loadDefaults.bind(self, app.dirs.root + "/defaultConfig.json"),
-        function (cb) { self.loadDefaults(app.dirs.root + "/config.json", function () { cb(); }); },
-        self.load.bind(self, UrlValues.getParameter("workspace"))
-      ]);
+      ],
+      function () { cb(self); });
+    },
+
+    loadConfiguration: function (cb) {
+      /* Willfully ignore load errors here since there might not be
+       * any config */
+      var self = this;
+      var root = require.toUrl("app").concat("/../..");
+      self.loadDefaults(root + "/defaultConfig.json", function () {
+        self.loadDefaults(root + "/config.json", function () {
+          cb();
+        });
+      });
     },
 
     loadDefaults: function (url, cb) {
@@ -135,16 +159,29 @@ define([
 
     toJSON: function () {
       var self = this;
+      var ui = {};
+      if (self.ui) ui = self.ui.toJSON();
       return {
         state: self.state.values,
         map: self.animations.toJSON(),
-        ui: self.ui.toJSON()
+        ui: ui
       };
     },
 
+    /**
+     * Loads a workspace from a given url, or if no url is given from
+     * the the url given by the workspace parameter in the page url
+     * (e.g. /index.html?workspace=/workspace%3Fid%3Dtest
+     *
+     * @param url {String}
+     * @param cb {Function}
+     */
     load: function (url, cb) {
       var self = this;
 
+      if (!url) {
+        url = UrlValues.getParameter("workspace");
+      }
       if (!url) {
         /* Load defaults only */
         return self.loadData({}, cb);
@@ -186,12 +223,20 @@ define([
           self.animations.load(data.map, cb);
         },
         function (cb) {
-          if (!data.ui) return cb();
+          if (!data.ui || !self.ui) return cb();
           self.ui.load(data.ui, cb);
         }
       ], cb);
     },
 
+    /**
+     * Saves the current workspace to a JSON file using a POST call to
+     * the url given by self.workspaceSaveUrl. This is generally the
+     * url of the last loaded workspace, minus any query
+     * parameters.
+     *
+     * @param cb {Function}
+     */
     save: function (cb) {
       var self = this;
 

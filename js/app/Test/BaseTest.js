@@ -1,4 +1,11 @@
-define(["app/Class", "QUnit", "app/LangExtensions"], function(Class, QUnit) {
+define([
+  "app/Class",
+  "shims/QUnit/main",
+  "app/LangExtensions"
+], function(
+  Class,
+  QUnit
+) {
   return Class({
     name: "BaseTest",
     initialize: function () {

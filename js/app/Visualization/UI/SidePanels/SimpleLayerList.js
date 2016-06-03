@@ -7,7 +7,7 @@ define([
   "dijit/_Container",
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "dijit/form/HorizontalSlider",
-  "jQuery"
+  "shims/jQuery/main"
 ], function(
   declare,
   domStyle,

@@ -4,19 +4,21 @@ define([
   "app/Visualization/UI/GenerateReportDialog",
   "app/Visualization/UI/SidePanels/SidePanelBase",
   "app/CountryCodes",
-  "jQuery"
+  "shims/jQuery/main",
+  "app/Visualization/UI/Paths"
 ], function(
   declare,
   domStyle,
   GenerateReportDialog,
   SidePanelBase,
   CountryCodes,
-  $
+  $,
+  Paths
 ){
   return declare("InfoUI", [SidePanelBase], {
     baseClass: 'InfoUI',
     title: 'Info',
-    app: app,
+    paths: Paths,
     colors: {
       info: 'inherit',
       warning: '#ff5500',
@@ -33,7 +35,7 @@ define([
       '  <div class="wrapper">' +
       '    <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
       '    <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
-             '<img style="width: 20px;" src="${app.dirs.loader}">'+
+             '<img style="width: 20px;" src="${paths.LoaderIcon}">'+
           '</div>' +
       '    <div id="vessel_identifiers" class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' + 
       '  </div>' +
@@ -175,7 +177,7 @@ define([
       if (flag) {
         if (CountryCodes.codeToName[flag] != undefined) {
           tableNode.find(".flag").html(CountryCodes.codeToName[flag]);
-          tableNode.find(".flag").prepend('<img src="' + app.dirs.img + '/flags/png/' + flag.toLowerCase() + '.png"><br>');
+          tableNode.find(".flag").prepend('<img src="' + Paths.img + '/flags/png/' + flag.toLowerCase() + '.png"><br>');
         } else {
           tableNode.find(".flag").html(flag);
         }
@@ -225,7 +227,7 @@ define([
         var cls = getClass(data.vesselclass);
         if (cls) {
           tableNode.find(".vesselclass").html(cls.name);
-          tableNode.find(".vesselclass").prepend('<img src="' + app.dirs.img + cls.icon + '"><br>');
+          tableNode.find(".vesselclass").prepend('<img src="' + Paths.img + cls.icon + '"><br>');
         } else {
           tableNode.find(".vesselclass").html(data.vesselclass);
         }

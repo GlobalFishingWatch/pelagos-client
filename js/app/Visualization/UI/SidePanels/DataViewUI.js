@@ -2,7 +2,7 @@ define([
   "dojo/_base/declare",
   "app/Visualization/UI/TemplatedContainer",
   "app/Logging",
-  "jQuery",
+  "shims/jQuery/main",
   "dijit/Fieldset",
   "dijit/form/HorizontalSlider",
   "dijit/form/MultiSelect",

@@ -1,4 +1,22 @@
-define(["app/Class", "stacktrace", "async", "lodash", "app/Logging/Destination", "app/Logging/ScreenDestination", "app/Logging/StoreDestination", "app/Logging/LogglyDestination", "app/Logging/ServerDestination", "app/Logging/GoogleAnalyticsDestination"], function(Class, stacktrace, async, _, Destination) {
+define([
+  "app/Class",
+  "shims/stacktrace/main",
+  "shims/async/main",
+  "shims/lodash/main",
+  "app/Logging/Destination",
+  "app/Logging/ScreenDestination",
+  "app/Logging/StoreDestination",
+  "app/Logging/LogglyDestination",
+  "app/Logging/ServerDestination",
+  "app/Logging/GoogleAnalyticsDestination",
+  "app/LangExtensions"
+], function(
+  Class,
+  stacktrace,
+  async,
+  _,
+  Destination
+) {
   Logging = Class({
     name: "Logging",
     store_time: true,

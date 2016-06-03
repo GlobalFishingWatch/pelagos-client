@@ -2,7 +2,7 @@ define([
   "require",
   "app/Class",
   "app/Visualization/Animation/DataAnimation",
-  "jQuery"
+  "shims/jQuery/main"
 ], function(
   require,
   Class,

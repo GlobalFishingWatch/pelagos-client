@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Visualization/UI/Widgets/Timeline/Timeline.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Visualization/UI/Widgets/Timeline/Timeline.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define([
+  "require",
+  "dojo/_base/declare",
+  "dijit/_WidgetBase",
+  "dijit/_TemplatedMixin",
+  "dijit/_WidgetsInTemplateMixin",
+  "dijit/_Container",
+  "./Interval",
+  "./TimeLabel",
+  "../DateTimeDropdown",
+  "shims/jQuery/main",
+  "shims/less/main",
+  "app/Visualization/UI/Paths"
+], function (
+  require,
+  declare,
+  _WidgetBase,
+  _TemplatedMixin,
+  _WidgetsInTemplateMixin,
+  _Container,
+  Interval,
+  TimeLabel,
+  DateTimeDropdown,
+  $,
+  less,
+  Paths
+) {
+  var lessnode = $('&lt;link rel="stylesheet/less" type="text/css" href="' + require.toUrl('./Timeline.less') + '" />');
+  $('head').append(lessnode);
+  less.sheets.push(lessnode[0]);
+  less.refresh(true);
+
+  var temp = $("&lt;div style='position: absolute; left: 0; top: -1pt; width: 10000pt; height: 1pt' >")
+  $("body").append(temp);
+  var pixelsPerPt = temp.innerWidth() / 10000;
+  temp.remove();
+
+  return declare("Timeline", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+    baseClass: 'Timeline',
+
+    zoomSize: 1.2,
+    hiddenContext: 2, // total space, as a multiple of visible size
+    context: 25, // visible space on each side of the window (in percentage of visible range)
+    windowStart: new Date('1970-01-01'),
+    windowEnd: new Date('1970-01-02'),
+    stepZoom: 0.5,
+    snapZoomToTickmarks: false,
+    minWindowSize: 1000*60*60,
+    maxWindowSize: 1000*60*60*24*365*2,
+    splitTickmarksOnLargerUnitBoundaries: false,
+    showRightLabelAtWidth: undefined,
+    showCenterLabelAtWidth: undefined,
+
+    /* Valid positions: 'inside', 'top-left', 'top-right' */
+    startLabelPosition: 'inside',
+    lengthLabelPosition: 'inside',
+    endLabelPosition: 'inside',
+
+    startLabelTitle: false,
+    lengthLabelTitle: false,
+    endLabelTitle: false,
+
+    dragHandles: true,
+
+    zoomPosition: 'left',
+
+    backgroundCss: {background: '#ff8888'},
+    rangemarks: [
+      /* Example ranges. The first one is a white background range
+       * below all the other ranges, that hides the styling from
+       * backgroundCss.
+       *
+       * {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#ffffff", 'z-index': 0}},
+       * {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
+       * {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
+       */
+
+       {start:new Date('1969-12-30'), end:new Date('1970-01-10'), css:{background:"#ffffff", 'z-index': 0}}
+/*
+       {start:new Date('1970-01-01'), end:new Date('1970-01-04'), css:{background:"#88ff88", opacity: 0.5, 'z-index': 1}},
+       {start:new Date('1970-01-03'), end:new Date('1970-01-07'), css:{background:"#0000ff", opacity: 0.5, 'z-index': 1}}
+*/
+
+    ],
+
+    stepLengths: [
+      new Interval({name: 'millisecond', milliseconds: 1}),
+      new Interval({name: 'second', seconds: 1}),
+/*
+      new Interval({name: 'secfiver', seconds: 5}),
+      new Interval({name: 'secquarter', seconds: 15}),
+*/
+      new Interval({name: 'minute', minutes: 1}),
+/*
+      new Interval({name: 'fiver', minutes: 5}),
+      new Interval({name: 'quarter', minutes: 15}),
+*/
+      new Interval({name: 'hour', hours: 1}),
+//      new Interval({name: 'morning', hours: 3}),
+      new Interval({name: 'day', days: 1}),
+      new Interval({name: 'week', days: 7}),
+      new Interval({name: 'month', months: 1}),
+      new Interval({name: 'year', years: 1}),
+      new Interval({name: 'decade', years: 10})
+    ],
+
+    windowTimeLabels: new TimeLabel({
+      includeDatePrefix: true,
+      fullDates: true,
+      neverJustHours: true
+    }),
+
+    tickmarkLabels: new TimeLabel({
+      includeDatePrefix: false
+    }),
+
+    windowLengLabels: new TimeLabel({}),
+    windowLengHoverLabels: new TimeLabel({
+      intervalUnits: ['year', 'week', 'day', 'hour', 'minute', 'second'],
+      intervalPrecision: undefined,
+      intervalPrecisionLimit: undefined
+    }),
+
+    paths: Paths,
+
+
+    /* Note about the one quanta in each tickmarks bar: This is just
+     * to be able to measure its height to calculate the font size
+     * for quanta labels, before we have any real qantas. */
+    templateString: '' +
+      '&lt;div class="${baseClass} timeline" data-dojo-attach-event="touchstart:timelineMousedown,mousedown:timelineMousedown,mousewheel:zoomWheel,selectstart:eatEvent" unselectable="on">' +
+      '  &lt;div class="bubble top-left">&lt;span class="left">&lt;/span>&lt;span class="center">&lt;/span>&lt;span class="right">&lt;/span>&lt;/div>' +
+      '  &lt;div class="bubble top-right">&lt;span class="left">&lt;/span>&lt;span class="center">&lt;/span>&lt;span class="right">&lt;/span>&lt;/div>' +
+      '  &lt;div class="overlay">' +
+      '    &lt;div class="leftFrame">&lt;/div>' +
+      '    &lt;div class="window" data-dojo-attach-event="touchstart:windowDragStart,mousedown:windowDragStart">' +
+      '      &lt;img src="${paths.img}/drag-handle.png" class="dragHandle leftDragHandle">' +
+      '      &lt;div class="frame">' +
+      '        &lt;span class="left">&lt;div class="startLabel" data-dojo-attach-event="mousedown:stopPropagation,click:editRangeStart">&lt;span>&lt;/span>&lt;/div>&lt;/span>' +
+      '        &lt;span class="center">&lt;div class="lengthLabel">&lt;span>&lt;/span>&lt;/div>&lt;/span>' +
+      '        &lt;span class="right">&lt;div class="endLabel" data-dojo-attach-event="mousedown:stopPropagation,click:editRangeEnd">&lt;span>&lt;/span>&lt;/div>&lt;/span>' +
+      '      &lt;/div>' +
+      '      &lt;img src="${paths.img}/drag-handle.png" class="dragHandle rightDragHandle">' +
+      '    &lt;/div>' +
+      '    &lt;div class="rightFrame">&lt;/div>' +
+      '  &lt;/div>' +
+      '  &lt;div class="line-visibility">' +
+      '    &lt;div class="line">' +
+      '      &lt;div class="rangemarks">&lt;/div>' +
+      '      &lt;div class="tickmarks-container">' +
+      '        &lt;div class="tickmarks top">&lt;div class="quanta">&lt;div class="frame">&lt;div class="quanta-label">&amp;nbsp;&lt;/div>&lt;/div>&lt;/div>&lt;/div>' +
+      '        &lt;div class="tickmarks bottom">&lt;div class="quanta">&lt;div class="frame">&lt;div class="quanta-label">&amp;nbsp;&lt;/div>&lt;/div>&lt;/div>&lt;/div>' +
+      '      &lt;/div>' +
+      '    &lt;/div>' +
+      '  &lt;/div>' +
+      '  &lt;div class="underlay">' +
+      '    &lt;div class="leftFrame">&lt;/div>' +
+      '    &lt;div class="window">' +
+      '      &lt;div class="frame">&lt;/div>' +
+      '    &lt;/div>' +
+      '    &lt;div class="rightFrame">&lt;/div>' +
+      '  &lt;/div>' +
+      '  &lt;div class="zoom">' +
+      '    &lt;a class="zoomIn" data-dojo-attach-event="touchstart:zoomIn,click:zoomIn,mousedown:eatEvent">' +
+            '&lt;img src="${paths.img}/smaller_increments.png"> smaller increments' +
+          '&lt;/a>' +
+      '    &lt;a class="zoomOut" data-dojo-attach-event="touchstart:zoomOut,click:zoomOut,mousedown:eatEvent">' +
+            '&lt;img src="${paths.img}/larger_increments.png"> larger increments' +
+          '&lt;/a>' +
+      '  &lt;/div>' +
+      '&lt;/div>',
+
+    _setLabelPositionAttr: function (label, position, value) {
+      var self = this;
+      self._set(label + "Position", value);
+
+      var labelNode =  $(self.domNode).find('.' + label);
+
+      labelNode.detach();
+
+      var dst;
+      if (value == 'inside') {
+        dst = $(self.domNode).find('.overlay .frame');
+      } else {
+        dst = $(self.domNode).find('.bubble.' + value);
+      }
+      dst.find('.' + position).append(labelNode);
+    },
+
+    _setStartLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("startLabel", "left", value);
+    },
+
+    _setLengthLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("lengthLabel", "center", value);
+    },
+
+    _setEndLabelPositionAttr: function (value) {
+      var self = this;
+      self._setLabelPositionAttr("endLabel", "right", value);
+    },
+
+    _setDragHandlesAttr: function (value) {
+      var self = this;
+      $(self.domNode).find('.dragHandle').toggle(value);
+    },
+
+    _setZoomPositionAttr: function (value) {
+      var self = this;
+      $(self.domNode).find('.zoom').attr({'class': 'zoom ' + value});
+    },
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      self.node = $(self.domNode);
+      self.lineVisibilityNode = self.node.find('.line-visibility');
+      self.leftFrameNode = self.node.find('.leftFrame');
+      self.windowNode = self.node.find('.window');
+      self.windowFrameNode = self.node.find('.window .frame');
+      self.rightFrameNode = self.node.find('.rightFrame');
+      self.startLabel = self.node.find('.startLabel span');
+      self.lengthLabel = self.node.find('.lengthLabel span');
+      self.endLabel = self.node.find('.endLabel span');
+      self.lineNode = self.node.find('.line');
+      self.rangemarksNode = self.node.find('.rangemarks');
+      self.tickmarksNode = self.node.find('.tickmarks');
+
+      $(document).mousemove(self.move.bind(self));
+      $(document).mouseup(self.dragEnd.bind(self));
+      $(document).on('touchmove', self.move.bind(self));
+      $(document).on('touchend', self.dragEnd.bind(self));
+
+      self.lineNode.css({'width': self.hiddenContext * 100.0 + '%'});
+      self.tickmarksNode.css({"height": (100 / self.tickmarksNode.length) + "%"});
+
+      self.stepLengthsByName = {};
+      prev = undefined;
+      self.stepLengths.map(function (stepLength) {
+        stepLength.prev = prev;
+        if (prev) prev.next = stepLength;
+        prev = stepLength;
+        self.stepLengthsByName[stepLength.name] = stepLength;
+      });
+
+      self.leftContext = self.context;
+      self.rightContext = self.context;
+      self.setRange(self.windowStart, self.windowEnd);
+      self.lastHoverTime = undefined;
+
+      ['start', 'end'].map(function (side) {
+        var input = side + 'Input';
+        var label = '.' + side + 'Label';
+        self[input] = new DateTimeDropdown({
+          style: "display: none",
+          _onBlur: function () {
+            self.editRange(side, false);
+          }
+        });
+        self[input].placeAt(self.node.find(label)[0]);
+        $(self[input].domNode).keypress(function () {
+          if (event.which == 13) {
+            self.editRange(side, false);
+            event.preventDefault();
+          }
+        });
+      });
+    },
+
+    /**** External API ****/
+
+    editRange: function (side, beginEdit) {
+      var self = this;
+      var studlySide = side.slice(0, 1).toUpperCase() + side.slice(1);
+      var label = self[side + 'Label'];
+      var input = self[side + 'Input'];
+
+      if (beginEdit) {
+        input.set("value", self['window' + studlySide]);
+        label.hide();
+        $(input.domNode).show();
+        input.focus();
+      } else {
+        label.show();
+        $(input.domNode).hide();
+        var res = {
+          windowStart: self.windowStart,
+          windowEnd: self.windowEnd
+        };
+        res['window' + studlySide] = input.get("value");
+        self.setRange(res.windowStart, res.windowEnd);
+      }
+    },
+
+    setRangeFromOffset: function (offset, type) {
+      // Type is the type of the event to generate
+      var self = this;
+      self.offset = offset;
+
+      self.visibleStart = new Date(self.start.getTime() + self.offset);
+      self.visibleEnd = new Date(self.visibleStart.getTime() + self.visibleContextSize);
+
+      self.windowStart = new Date(self.visibleStart.getTime() + self.visibleContextSize * self.leftContext / 100.0);
+      self.windowEnd = new Date(self.windowStart.getTime() + self.windowSize);
+
+      self.updateRange();
+
+      self.emit(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
+    },
+
+    setRange: function (windowStart, windowEnd, type) {
+      var self = this;
+      self.windowStart = windowStart;
+      self.windowEnd = windowEnd;
+      var windowSize = self.windowEnd - self.windowStart
+      if (windowSize != self.windowSize) {
+        self.start = undefined;
+        self.end = undefined;
+      }
+      self.windowSize = windowSize;
+
+      self.setVisibleContextFromRange();
+
+      self.stepLength = self.getPrevStepLength(new Interval({milliseconds: self.visibleContextSize * self.stepZoom}));
+
+      if (self.start == undefined) {
+        self.setContextFromVisibleContext();
+      }
+
+      self.updateRange();
+
+      self.emit(type || 'set-range', {start: self.windowStart, end: self.windowEnd});
+    },
+
+    zoom: function (factor, middle) {
+      var self = this;
+
+      if (middle == undefined) middle = new Date(self.windowStart.getTime() + self.windowSize / 2);
+      var left = 100.0 * (middle - self.windowStart) / self.windowSize;
+      var right = 100.0 * (self.windowEnd - middle) / self.windowSize;
+
+      var windowSize = Math.max(1, Math.floor(self.windowSize * factor));
+
+      if (self.maxWindowSize != undefined &amp;&amp; self.maxWindowSize &lt; windowSize) {
+        windowSize = self.maxWindowSize;
+      }
+      if (self.minWindowSize != undefined &amp;&amp; self.minWindowSize > windowSize) {
+        windowSize = self.minWindowSize;
+      }
+
+      if (self.snapZoomToTickmarks) {
+        if (factor > 1) {
+          windowSize = self.getNextStepLength(new Interval({milliseconds: windowSize})).asMilliseconds;
+        } else {
+          windowSize = self.getPrevStepLength(new Interval({milliseconds: windowSize})).asMilliseconds;
+        }
+      }
+
+      self.start = undefined;
+      self.end = undefined;
+      self.setRange(new Date(middle.getTime() - windowSize * left / 100.0), new Date(middle.getTime() + windowSize * right / 100.0));
+    },
+
+
+    /**** Step size calculations ****/
+
+    roundTimeToStepLength: function (d) {
+      var self = this;
+
+      return self.stepLength.round(d);
+    },
+
+    getNextStepLength: function(stepLength) {
+      var self = this;
+      if (stepLength.next) return stepLength.next;
+      if (stepLength.asMilliseconds >= self.stepLengths.slice(-1)[0].asMilliseconds) {
+        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength / self.stepLengthsByName.year.asMilliseconds, 10))) * self.stepLengthsByName.year.asMilliseconds);
+      }
+      return self.stepLengths.filter(function (x) {
+        return x.cmp(stepLength) > 0;
+      })[0];
+    },
+
+    getPrevStepLength: function(stepLength) {
+      var self = this;
+      if (stepLength.prev) return stepLength.prev;
+      if (stepLength.asMilliseconds &lt; self.stepLengths[0].asMilliseconds / 10) {
+        return new Interval(Math.pow(10, Math.ceil(Math.log(stepLength.asMilliseconds, 10))));
+      }
+      return self.stepLengths.filter(function (x) {
+        return x.cmp(stepLength) &lt;= 0;
+      }).slice(-1)[0];
+    },
+
+    calculateStepSize: function (stepStart, stepLength) {
+      var self = this;
+
+      var info = {
+        stepStart: stepStart,
+        stepLength: stepLength
+      };
+
+      info.stepEnd = stepLength.round(stepLength.add(info.stepStart));
+
+      if (self.splitTickmarksOnLargerUnitBoundaries) {
+        info.largeStepLength = self.getNextStepLength(info.stepLength);
+        info.largeStepEnd = info.largeStepLength.round(info.stepEnd);
+        if (info.largeStepEnd.getTime() > info.stepStart.getTime()) info.stepEnd = info.largeStepEnd;
+      }
+
+      info.stepLengthMs = info.stepEnd - info.stepStart;
+      info.count = info.stepLength.divide(info.stepStart);
+
+      return info;
+    },
+
+
+    /**** Time/pixel coordinate transforms ****/
+
+    pixelPositionToTime: function (pos) {
+      var self = this;
+
+      offset = pos - self.lineVisibilityNode.offset().left;
+      return new Date(self.visibleStart.getTime() + self.pixelOffsetToTimeOffset(offset));
+    },
+
+    pixelOffsetToTimeOffset: function (offset, visibleContextSize) {
+      var self = this;
+      var pixelWidth = self.lineVisibilityNode.innerWidth();
+      var percentOffset = 100.0 * offset / pixelWidth;
+      if (visibleContextSize == undefined) visibleContextSize = self.visibleContextSize;
+      return percentOffset * visibleContextSize / 100.0;
+    },
+
+    setContextFromVisibleContext: function() {
+      var self = this;
+      self.contextSize = self.visibleContextSize * self.hiddenContext;
+
+      self.start = self.roundTimeToStepLength(new Date(self.visibleStart.getTime() - (self.contextSize - self.visibleContextSize) / 2));
+      self.end = new Date(self.start.getTime() + self.contextSize);
+
+      self.offset = self.visibleStart - self.start;
+
+      if (self.dragStartX != undefined) {
+        self.dragStartX = self.dragX;
+        self.dragStartOffset = self.offset;
+      }
+
+      self.recreateRangemarks();
+      self.recreateTickmarks();
+    },
+
+    setVisibleContextFromRange: function() {
+      var self = this;
+
+      self.visibleContextSize = 100.0 * self.windowSize / (100.0 - self.leftContext - self.rightContext);
+      self.windowSize = self.windowEnd - self.windowStart;
+
+      self.visibleStart = new Date(self.windowStart.getTime() - self.visibleContextSize * self.leftContext / 100.0);
+      self.visibleEnd = new Date(self.windowEnd.getTime() + self.visibleContextSize * self.rightContext / 100.0);
+
+      if (self.start != undefined) {
+        self.offset = self.visibleStart - self.start;
+      }
+    },
+
+
+    /**** Screen update ****/
+
+    updateRange: function () {
+      var self = this;
+
+      if (   self.visibleStart &lt;= self.start 
+          || self.visibleEnd >= self.end) {
+        self.setContextFromVisibleContext();
+      }
+
+      self.setWindowSize();
+
+      self.percentOffset = 100.0 * self.hiddenContext * self.offset / self.contextSize;
+      self.lineNode.css({'left': -(self.percentOffset) + '%'});
+      self.startLabel.html(self.windowTimeLabels.formatDate({
+        date: self.windowStart,
+        stepLength: self.stepLength
+      }));
+      if (self.startLabelTitle) {
+        self.startLabel.prepend(self.startLabelTitle);
+      }
+      self.startLabel.attr({title: self.windowStart.rfcstring().replace("T", " ")});
+      self.lengthLabel.html(self.windowLengLabels.formatInterval({
+        interval: (  self.windowTimeLabels.floorDate({date: self.windowEnd, stepLength:self.stepLength})
+                   - self.windowTimeLabels.floorDate({date: self.windowStart, stepLength:self.stepLength}))
+      }));
+      if (self.lengthLabelTitle) {
+        self.lengthLabel.prepend(self.lengthLabelTitle);
+      }
+      self.lengthLabel.attr({title: self.windowLengHoverLabels.formatInterval({
+        interval: self.windowEnd - self.windowStart
+      })});
+      self.endLabel.html(self.windowTimeLabels.formatDate({
+        date: self.windowEnd,
+        stepLength: self.stepLength
+      }));
+      if (self.endLabelTitle) {
+        self.endLabel.prepend(self.endLabelTitle);
+      }
+      self.endLabel.attr({title: self.windowEnd.rfcstring().replace("T", " ")});
+    },
+
+    setWindowSize: function () {
+      var self = this;
+
+      var leftContext = 100.0 * (self.windowStart - self.visibleStart) / self.visibleContextSize;
+      var rightContext = 100.0 * (self.visibleEnd - self.windowEnd) / self.visibleContextSize;
+
+      var window = 100.0 - leftContext - rightContext;
+
+      self.leftFrameNode.css({
+        'width': leftContext + '%'
+      });
+      self.windowNode.css({
+        'width': window + '%'
+      });
+      self.rightFrameNode.css({
+        'width': rightContext + '%'
+      });
+    },
+
+    recreateRangemarks: function () {
+      var self = this;
+
+      var overlaps = function (a, b) {
+        return (a.start &lt; b.end &amp;&amp; a.end > b.start);
+      }
+
+      self.rangemarksNode.css(self.backgroundCss);
+
+      self.rangemarksNode.find('.rangemark').remove();
+      self.rangemarks.map(function (rangemark) {
+        if (overlaps(rangemark, self)) {
+          var start = new Date(Math.max(rangemark.start, self.start));
+          var end = new Date(Math.min(rangemark.end, self.end));
+
+          var left = 100.0 * (start - self.start) / (self.end - self.start);
+          var width = 100.0 * (end - start) / (self.end - self.start);
+          var rangemarkNode = $("&lt;div class='rangemark'>");
+          rangemarkNode.css({width: width + '%', left: left + '%'});
+          rangemarkNode.css(rangemark.css);
+          self.rangemarksNode.append(rangemarkNode);
+        }
+      });
+    },
+
+    recreateTickmarksLevel: function (tickmarksNode, stepLength, fullLabels) {
+      var self = this;
+
+      var space = tickmarksNode.find(".quanta-label").innerHeight() / pixelsPerPt;
+      tickmarksNode.find('.quanta').remove();
+
+      var stepStart = self.start;
+
+      var h = [];
+      while (stepStart &lt;= self.end) {
+        var stepSizeInfo = self.calculateStepSize(stepStart, stepLength);
+        if (stepSizeInfo.stepEnd == undefined) throw "ERROR";
+
+        var label = self.tickmarkLabels.formatDate({
+          date: stepStart,
+          stepLength: stepLength,
+          includeDatePrefix: fullLabels
+        });
+        var stepWidth = 100.0 * stepSizeInfo.stepLengthMs / self.contextSize;
+        var labelSize = Math.min(space, 10 + (40 - 10) * stepLength.asMilliseconds / self.visibleContextSize);
+
+        var showRightLabel = self.showRightLabelAtWidth != undefined &amp;&amp; stepWidth > self.showRightLabelAtWidth / self.hiddenContext;
+        var showCenterLabel = self.showCenterLabelAtWidth != undefined &amp;&amp; stepWidth > self.showCenterLabelAtWidth / self.hiddenContext;
+
+        h.push("&lt;div class='quanta ");
+        h.push(stepSizeInfo.count % 2 == 0 ? 'even' : 'odd');
+        h.push(  "' style='width:"); h.push(stepWidth); h.push("%'>");
+        h.push(  "&lt;div class='frame'>");
+        h.push(    "&lt;div class='quanta-label'>");
+        h.push(      "&lt;span class='left' style='font-size:");
+        h.push(        labelSize);
+        h.push(        "pt; line-height:");
+        h.push(        labelSize);
+        h.push(        "pt;'>");
+        h.push(        label);
+        h.push(      "&lt;/span>");
+        if (showRightLabel) {
+          h.push(    "&lt;span class='right' style='font-size:");
+          h.push(      labelSize);
+          h.push(      "pt; line-height:");
+          h.push(      labelSize);
+          h.push(      "pt;'>");
+          h.push(      label);
+          h.push(    "&lt;/span>");
+        }
+        if (showCenterLabel) {
+          h.push(    "&lt;span class='center' style='font-size:");
+          h.push(      labelSize);
+          h.push(      "pt; line-height:");
+          h.push(      labelSize);
+          h.push(      "pt;'>");
+          h.push(      label);
+          h.push(    "&lt;/span>");
+        }
+        h.push(      "&amp;nbsp;");
+        h.push(    "&lt;/div>");
+        h.push(    "&lt;div class='debug'>"); h.push(JSON.stringify(stepSizeInfo)); h.push("&lt;/div>");
+        h.push(  "&lt;/div>");
+        h.push("&lt;/div>");
+
+        stepStart = stepSizeInfo.stepEnd;
+      }
+      tickmarksNode.append(h.join(""));
+
+      if (self.dragData != undefined) {
+        self.dragData.startPositions = self.dragData.currentPositions;
+
+        self.dragData.timeOffset = self.offset;
+        self.dragData.range = {};
+        self.dragData.range.windowStart = self.windowStart;
+        self.dragData.range.windowEnd = self.windowEnd;
+      }
+    },
+
+    recreateTickmarks: function () {
+      var self = this;
+
+      var stepLength = self.stepLength;
+      for (var i = 0; i &lt; self.tickmarksNode.length; i++) {
+        self.recreateTickmarksLevel($(self.tickmarksNode[i]), stepLength, i == self.tickmarksNode.length - 1);
+        stepLength = self.getNextStepLength(stepLength);
+      };
+    },
+
+    setRangemarks: function (rangemarks) {
+      var self = this;
+      self.rangemarks = rangemarks;
+      self.recreateRangemarks();
+    },
+
+
+    /**** Utility functions for event handling ****/
+
+    getEventPositions: function (e) {
+      var event = e.originalEvent || e;
+      var res = {};
+      if (event.touches &amp;&amp; event.touches.length > 0) {
+        for (var i = 0; i &lt; event.touches.length; i++) {
+          res[event.touches[i].identifier.toString()] = event.touches[i];
+        };
+      } else {
+        event.identifier = "pointer";
+        res[event.identifier] = event;
+      }
+
+      if (e.ctrlKey &amp;&amp; e.altKey &amp;&amp; e.shiftKey) {
+        console.log("Multi-touch test mode enabled.");
+        var offsets = $(".window").offset();
+        var left = {identifier: "left", pageX: offsets.left - 1, pageY: offsets.top + 1};
+        res[left.identifier] = left;
+      }
+
+      return res;
+    },
+
+    getFirstPosition: function (positions) {
+      for (var key in positions) {
+        return positions[key];
+      }
+    },
+
+    getXorder: function (positions) {
+      return Object.keys(positions).map(function (key) {
+        return positions[key];
+      }).sort(function (a, b) {
+        return a.pageX - b.pageX;
+      }).map(function (pos) {
+        return pos.identifier.toString();
+      });
+    },
+
+    stopPropagation: function (e) {
+      if (e == undefined) return;
+      if (e.stopPropagation) e.stopPropagation();
+    },
+
+    eatEvent: function (e) {
+      if (e == undefined) return;
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+    },
+
+
+    /**** Input event handling ****/
+
+    editRangeStart: function () { this.editRange('start', true); },
+    editRangeEnd: function () { this.editRange('end', true); },
+
+    zoomWheel: function(event) {
+      var self = this;
+      if (event.deltaY > 0) {
+        self.zoom(self.zoomSize, self.pixelPositionToTime(event.pageX));
+      } else if (event.deltaY &lt; 0) {
+        self.zoom(1 / self.zoomSize, self.pixelPositionToTime(event.pageX));
+      } else {
+        self.eatEvent(event);
+      }
+    },
+
+    zoomOut: function (e) {
+      var self = this;
+      self.zoom(self.zoomSize);
+      self.eatEvent(e);
+    },
+
+    zoomIn: function (e) {
+      var self = this;
+      self.zoom(1 / self.zoomSize);
+      self.eatEvent(e);
+    },
+
+    move: function (e) {
+      var self = this;
+      if (self.dragData != undefined) {
+        self.drag(e);
+      } else {
+        var pos = self.getFirstPosition(self.getEventPositions(e));
+        var coords = self.node.offset();
+        coords.right = coords.left + self.node.outerWidth();
+        coords.bottom = coords.top + self.node.outerHeight();
+        if (   coords.left &lt;= pos.pageX &amp;&amp; pos.pageX &lt;= coords.right
+            &amp;&amp; coords.top &lt;= pos.pageY &amp;&amp; pos.pageY &lt;= coords.bottom) {
+          self.lastHoverTime = self.pixelPositionToTime(pos.pageX);
+          self.emit('hover', {time: self.lastHoverTime});
+        }
+      }
+    },
+
+    timelineMousedown: function (e) {
+      var self = this;
+      self.dragStart('moveTimeline', e);
+    },
+
+    dragStart: function (type, e) {
+      var self = this;
+
+      self.dragData = {};
+      self.dragData.type = type;
+      self.dragData.startPositions = self.getEventPositions(e);
+      for (var id in self.dragData.startPositions) {
+        self.dragData.startPositions[id].time = self.pixelPositionToTime(self.dragData.startPositions[id].pageX);
+      }
+
+      self.dragData.startVisibleContextSize = self.visibleContextSize;
+      self['dragStart_' + self.dragData.type](e);
+      self.eatEvent(e);
+    },
+
+    drag: function (e) {
+      var self = this;
+
+      self.dragData.currentPositions = self.getEventPositions(e);
+      self.dragData.offsets = {};
+      for (var id in self.dragData.currentPositions) {
+        if (self.dragData.startPositions[id] == undefined) continue;
+        var offsets = {
+          x: self.dragData.startPositions[id].pageX - self.dragData.currentPositions[id].pageX,
+          y: self.dragData.startPositions[id].pageY - self.dragData.currentPositions[id].pageY
+        };
+        offsets.time = self.pixelOffsetToTimeOffset(offsets.x, self.dragData.startVisibleContextSize);
+        self.dragData.offsets[id] = offsets;
+      }
+
+      self['drag_' + self.dragData.type](e);
+
+      self.eatEvent(e);
+    },
+
+    dragEnd: function (e) {
+      var self = this;
+
+      if (self.dragData == undefined) return;
+      self['dragEnd_' + self.dragData.type](e);
+      self.dragData = undefined;
+      self.eatEvent(e);
+    },
+
+    windowDragStart: function (e) {
+      var self = this;
+
+      var winPos = self.windowNode.offset();
+      winPos.right = winPos.left + self.windowNode.outerWidth();
+
+      winPos.innerLeft = self.windowFrameNode.offset().left;
+      winPos.innerRight = winPos.innerLeft + self.windowFrameNode.outerWidth();
+
+      var pos = self.getFirstPosition(self.getEventPositions(e));
+
+      if (pos.pageX &lt;= winPos.innerLeft) {
+        self.dragStart('windowResizeLeft', e);
+      } else if (pos.pageX >= winPos.innerRight) {
+        self.dragStart('windowResizeRight', e);
+      }
+    },
+
+    dragStart_windowResizeLeft: function (e) {
+      var self = this;
+      self.emit('user-update-start', {type:'window-resize-left'});
+      self.dragStartWindowStart = self.windowStart;
+    },
+    drag_windowResizeLeft: function (e) {
+      var self = this;
+      self.windowStart = new Date(
+        Math.min(
+          Math.max(
+            self.dragStartWindowStart.getTime() - self.getFirstPosition(self.dragData.offsets).time,
+            self.visibleStart.getTime()),
+          self.windowEnd.getTime() - self.minWindowSize));
+      self.updateRange();
+    },
+    dragEnd_windowResizeLeft: function (e) {
+      var self = this;
+      self.setRange(self.windowStart, self.windowEnd, 'set-range');
+    },
+
+    dragStart_windowResizeRight: function (e) {
+      var self = this;
+      self.emit('user-update-start', {type:'window-resize-right'});
+      self.dragStartWindowEnd = self.windowEnd;
+    },
+    drag_windowResizeRight: function (e) {
+      var self = this;
+        
+      self.windowEnd = new Date(
+        Math.max(
+          Math.min(
+            self.dragStartWindowEnd.getTime() - self.getFirstPosition(self.dragData.offsets).time,
+            self.visibleEnd.getTime()),
+          self.windowStart.getTime() + self.minWindowSize));
+      self.updateRange();
+    },
+    dragEnd_windowResizeRight: function (e) {
+      var self = this;
+      self.setRange(self.windowStart, self.windowEnd, 'set-range');
+    },
+
+    dragStart_moveTimeline: function (e) {
+      var self = this;
+      var touchesNr = Object.keys(self.dragData.startPositions).length;
+
+      if (touchesNr == 1) {
+        self.dragData.type = "moveTimeline_pointer";
+      } else if (touchesNr > 1) {
+        self.dragData.type = "moveTimeline_multiTouch";
+      }
+      self['dragStart_' + self.dragData.type](e);
+    },
+
+    dragStart_moveTimeline_pointer: function (e) {
+      var self = this;
+      self.dragData.timeOffset = self.offset;
+      self.dragData.range = {};
+      self.dragData.range.windowStart = self.windowStart;
+      self.dragData.range.windowEnd = self.windowEnd;
+      self.dragData.range.windowSize = self.windowSize;
+
+      self.dragData.startXorder = self.getXorder(self.dragData.startPositions);
+
+      self.emit('user-update-start', {type:'move-timeline'});
+    },
+    drag_moveTimeline_pointer: function (e) {
+      var self = this;
+
+      self.setRangeFromOffset(self.dragData.timeOffset + self.dragData.offsets[self.dragData.startXorder[0]].time, 'temporary-range');
+    },
+    dragEnd_moveTimeline_pointer: function (e) {
+      var self = this;
+      self.emit('set-range', {start: self.windowStart, end: self.windowEnd});
+    },
+
+    dragStart_moveTimeline_multiTouch: function (e) {
+      var self = this;
+
+      self.dragData.startXorder = self.getXorder(self.dragData.startPositions);
+
+      var left = self.dragData.startXorder[0];
+      var right = self.dragData.startXorder[1];
+
+      self.dragData.timeLeft = self.dragData.startPositions[left].time.getTime();
+      self.dragData.timeRight = self.dragData.startPositions[right].time.getTime();
+      self.dragData.timeWidth = self.dragData.timeRight - self.dragData.timeLeft;
+
+      self.emit('user-update-start', {type:'move-timeline'});
+    },
+    drag_moveTimeline_multiTouch: function (e) {
+      var self = this;
+
+      var now = performance.now();
+
+      if (now - self.lastUpdate &lt; 300) return;
+      self.lastUpdate = now;
+
+      var left = self.dragData.startXorder[0];
+      var right = self.dragData.startXorder[1];
+
+      var pixelLeft = self.dragData.currentPositions[left].pageX;
+      var pixelRight = self.dragData.currentPositions[right].pageX;
+      var pixelWidth = pixelRight - pixelLeft;
+
+      var timePerPixel = self.dragData.timeWidth / pixelWidth;
+
+      var windowPixelLeft = self.windowNode.offset().left;
+      var windowPixelRight = windowPixelLeft + self.windowNode.outerWidth();
+
+      var windowTimeLeft = self.dragData.timeLeft - (pixelLeft - windowPixelLeft) * timePerPixel;
+      var windowTimeRight = self.dragData.timeRight + (windowPixelRight - pixelRight) * timePerPixel;
+
+      if (windowTimeRight - windowTimeLeft &lt; self.minWindowSize) {
+        windowTimeRight = windowTimeLeft + self.minWindowSize;
+      }
+
+      self.setRange(
+        new Date(windowTimeLeft),
+        new Date(windowTimeRight),
+        'temporary-range'
+      );
+    },
+    dragEnd_moveTimeline_multiTouch: function (e) {
+      var self = this;
+      self.emit('set-range', {start: self.windowStart, end: self.windowEnd});
+    }
+  });
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bounds.html">Bounds</a></li><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="Condition.html">Condition</a></li><li><a href="CountryCodes.html">CountryCodes</a></li><li><a href="Data_Ajax.html">Data/Ajax</a></li><li><a href="Data_BaseTiledFormat.html">Data/BaseTiledFormat</a></li><li><a href="Data_BaseTiledFormat_DataContainer.html">Data/BaseTiledFormat:DataContainer</a></li><li><a href="Data_BinFormat.html">Data/BinFormat</a></li><li><a href="Data_CartoDBInfoWindow.html">Data/CartoDBInfoWindow</a></li><li><a href="Data_ClusterTestFormat.html">Data/ClusterTestFormat</a></li><li><a href="Data_DataManager.html">Data/DataManager</a></li><li><a href="Data_DataView.html">Data/DataView</a></li><li><a href="Data_EmptyFormat.html">Data/EmptyFormat</a></li><li><a href="Data_Format.html">Data/Format</a></li><li><a href="Data_GeoProjection.html">Data/GeoProjection</a></li><li><a href="Data_Pack.html">Data/Pack</a></li><li><a href="Data_Selection.html">Data/Selection</a></li><li><a href="Data_SelectionManager.html">Data/SelectionManager</a></li><li><a href="Data_Tile.html">Data/Tile</a></li><li><a href="Data_TileBounds.html">Data/TileBounds</a></li><li><a href="Data_TiledBinFormat.html">Data/TiledBinFormat</a></li><li><a href="Data_TiledEmptyFormat.html">Data/TiledEmptyFormat</a></li><li><a href="Data_TypedMatrixGenerator.html">Data/TypedMatrixGenerator</a></li><li><a href="Data_TypedMatrixParser.html">Data/TypedMatrixParser</a></li><li><a href="Events.html">Events</a></li><li><a href="Json.html">Json</a></li><li><a href="LoadingInfo.html">LoadingInfo</a></li><li><a href="Logging.html">Logging</a></li><li><a href="Logging_Destination.html">Logging/Destination</a></li><li><a href="Logging_GoogleAnalyticsDestination.html">Logging/GoogleAnalyticsDestination</a></li><li><a href="Logging_LogglyDestination.html">Logging/LogglyDestination</a></li><li><a href="Logging_ScreenDestination.html">Logging/ScreenDestination</a></li><li><a href="Logging_ServerDestination.html">Logging/ServerDestination</a></li><li><a href="Logging_StoreDestination.html">Logging/StoreDestination</a></li><li><a href="Logging_Logging__Entry.html">Logging:Logging__Entry</a></li><li><a href="ObjectTemplate.html">ObjectTemplate</a></li><li><a href="PopupAuth.html">PopupAuth</a></li><li><a href="SpaceTime.html">SpaceTime</a></li><li><a href="SubscribableDict.html">SubscribableDict</a></li><li><a href="Test.html">Test</a></li><li><a href="Test_BaseTest.html">Test/BaseTest</a></li><li><a href="Test_Data_BinFormat.html">Test/Data/BinFormat</a></li><li><a href="Test_Data_DataView.html">Test/Data/DataView</a></li><li><a href="Test_Data_TiledEmptyFormat.html">Test/Data/TiledEmptyFormat</a></li><li><a href="Test_Data_TypedMatrixParser.html">Test/Data/TypedMatrixParser</a></li><li><a href="Test_Events.html">Test/Events</a></li><li><a href="Test_Logging.html">Test/Logging</a></li><li><a href="Test_SubscribableDict.html">Test/SubscribableDict</a></li><li><a href="Test_SubscribableDict_OtherType.html">Test/SubscribableDict:OtherType</a></li><li><a href="Test_SubscribableDict_TestType.html">Test/SubscribableDict:TestType</a></li><li><a href="Timerange.html">Timerange</a></li><li><a href="UrlValues.html">UrlValues</a></li><li><a href="Visualization_Animation_Animation.html">Visualization/Animation/Animation</a></li><li><a href="Visualization_Animation_AnimationManager.html">Visualization/Animation/AnimationManager</a></li><li><a href="Visualization_Animation_ArrowAnimation.html">Visualization/Animation/ArrowAnimation</a></li><li><a href="Visualization_Animation_CartoDBAnimation.html">Visualization/Animation/CartoDBAnimation</a></li><li><a href="Visualization_Animation_ClusterAnimation.html">Visualization/Animation/ClusterAnimation</a></li><li><a href="Visualization_Animation_DataAnimation.html">Visualization/Animation/DataAnimation</a></li><li><a href="Visualization_Animation_DebugAnimation.html">Visualization/Animation/DebugAnimation</a></li><li><a href="Visualization_Animation_LineAnimation.html">Visualization/Animation/LineAnimation</a></li><li><a href="Visualization_Animation_LineStripAnimation.html">Visualization/Animation/LineStripAnimation</a></li><li><a href="Visualization_Animation_MapsEngineAnimation.html">Visualization/Animation/MapsEngineAnimation</a></li><li><a href="Visualization_Animation_Matrix.html">Visualization/Animation/Matrix</a></li><li><a href="Visualization_Animation_PointAnimation.html">Visualization/Animation/PointAnimation</a></li><li><a href="Visualization_Animation_Rowidx.html">Visualization/Animation/Rowidx</a></li><li><a href="Visualization_Animation_SatelliteAnimation.html">Visualization/Animation/SatelliteAnimation</a></li><li><a href="Visualization_Animation_Shader.html">Visualization/Animation/Shader</a></li><li><a href="Visualization_Animation_TileAnimation.html">Visualization/Animation/TileAnimation</a></li><li><a href="Visualization_Animation_VesselTrackAnimation.html">Visualization/Animation/VesselTrackAnimation</a></li><li><a href="Visualization_KeyBindings.html">Visualization/KeyBindings</a></li><li><a href="Visualization_KeyModifiers.html">Visualization/KeyModifiers</a></li><li><a href="Visualization_UI_BasicSidebar.html">Visualization/UI/BasicSidebar</a></li><li><a href="Visualization_UI_SidePanels_SidePanelManager_InfoUI.html">Visualization/UI/SidePanels/SidePanelManager:InfoUI</a></li><li><a href="Visualization_UI_UIManager_UI.html">Visualization/UI/UIManager:UI</a></li><li><a href="Visualization_Visualization.html">Visualization/Visualization</a></li></ul><h3>Global</h3><ul><li><a href="global.html#%2522border-color%2522">"border-color"</a></li><li><a href="global.html#%2522info-error%2522">"info-error"</a></li><li><a href="global.html#%2522info-loading%2522">"info-loading"</a></li><li><a href="global.html#%2522tile-error%2522">"tile-error"</a></li><li><a href="global.html#__all__">__all__</a></li><li><a href="global.html#__jsonclass__">__jsonclass__</a></li><li><a href="global.html#_buttonNode">_buttonNode</a></li><li><a href="global.html#_getBaseTemplateContext">_getBaseTemplateContext</a></li><li><a href="global.html#_getMultivaluedTemplateContext">_getMultivaluedTemplateContext</a></li><li><a href="global.html#_getPolygonFieldKeys">_getPolygonFieldKeys</a></li><li><a href="global.html#_onBlur">_onBlur</a></li><li><a href="global.html#_selector">_selector</a></li><li><a href="global.html#_setAnimationAttr">_setAnimationAttr</a></li><li><a href="global.html#_setChoicesAttr">_setChoicesAttr</a></li><li><a href="global.html#_setDestinationRulesAttr">_setDestinationRulesAttr</a></li><li><a href="global.html#_setDragHandlesAttr">_setDragHandlesAttr</a></li><li><a href="global.html#_setEndLabelPositionAttr">_setEndLabelPositionAttr</a></li><li><a href="global.html#_setLabelPositionAttr">_setLabelPositionAttr</a></li><li><a href="global.html#_setLengthLabelPositionAttr">_setLengthLabelPositionAttr</a></li><li><a href="global.html#_setRuleAttr">_setRuleAttr</a></li><li><a href="global.html#_setSourcenameAttr">_setSourcenameAttr</a></li><li><a href="global.html#_setStartLabelPositionAttr">_setStartLabelPositionAttr</a></li><li><a href="global.html#_setupDownloadLink">_setupDownloadLink</a></li><li><a href="global.html#_setupReportLink">_setupReportLink</a></li><li><a href="global.html#_setValueAttr">_setValueAttr</a></li><li><a href="global.html#_setZoomPositionAttr">_setZoomPositionAttr</a></li><li><a href="global.html#_updateContainerNode">_updateContainerNode</a></li><li><a href="global.html#_updateContainerWithCustomInfo">_updateContainerWithCustomInfo</a></li><li><a href="global.html#_updateContainerWithVesselInfo">_updateContainerWithVesselInfo</a></li><li><a href="global.html#_updateTitle">_updateTitle</a></li><li><a href="global.html#actionBarTemplate">actionBarTemplate</a></li><li><a href="global.html#activateSearch">activateSearch</a></li><li><a href="global.html#active">active</a></li><li><a href="global.html#active_category">active_category</a></li><li><a href="global.html#activeKeys">activeKeys</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#addCartoDBAnimation">addCartoDBAnimation</a></li><li><a href="global.html#addFromLibrary">addFromLibrary</a></li><li><a href="global.html#addHandler">addHandler</a></li><li><a href="global.html#all">all</a></li><li><a href="global.html#allLoaded">allLoaded</a></li><li><a href="global.html#animation">animation</a></li><li><a href="global.html#animationFilter">animationFilter</a></li><li><a href="global.html#animations">animations</a></li><li><a href="global.html#anumber">anumber</a></li><li><a href="global.html#app">app</a></li><li><a href="global.html#args">args</a></li><li><a href="global.html#around">around</a></li><li><a href="global.html#astring">astring</a></li><li><a href="global.html#atesttype">atesttype</a></li><li><a href="global.html#attr0">attr0</a></li><li><a href="global.html#attrmapper">attrmapper</a></li><li><a href="global.html#background">background</a></li><li><a href="global.html#backgroundCss">backgroundCss</a></li><li><a href="global.html#baseClass">baseClass</a></li><li><a href="global.html#batch">batch</a></li><li><a href="global.html#bbox">bbox</a></li><li><a href="global.html#beginEdit">beginEdit</a></li><li><a href="global.html#bottom">bottom</a></li><li><a href="global.html#bounds">bounds</a></li><li><a href="global.html#buf%255Bundefined%255D">buf[undefined]</a></li><li><a href="global.html#buildRendering">buildRendering</a></li><li><a href="global.html#cachedTileLoading">cachedTileLoading</a></li><li><a href="global.html#cachedTileLoading_pre">cachedTileLoading_pre</a></li><li><a href="global.html#calculateStepSize">calculateStepSize</a></li><li><a href="global.html#category">category</a></li><li><a href="global.html#center">center</a></li><li><a href="global.html#change">change</a></li><li><a href="global.html#choices">choices</a></li><li><a href="global.html#class">class</a></li><li><a href="global.html#clear">clear</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#close">close</a></li><li><a href="global.html#cmp">cmp</a></li><li><a href="global.html#col">col</a></li><li><a href="global.html#colLoaded">colLoaded</a></li><li><a href="global.html#color">color</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#cols">cols</a></li><li><a href="global.html#column">column</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#complete_ancestor">complete_ancestor</a></li><li><a href="global.html#constraints">constraints</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#content">content</a></li><li><a href="global.html#contentTemplate">contentTemplate</a></li><li><a href="global.html#contentTime">contentTime</a></li><li><a href="global.html#context">context</a></li><li><a href="global.html#controlButtons">controlButtons</a></li><li><a href="global.html#cookie">cookie</a></li><li><a href="global.html#count">count</a></li><li><a href="global.html#css">css</a></li><li><a href="global.html#cssStateNodes">cssStateNodes</a></li><li><a href="global.html#data">data</a></li><li><a href="global.html#data%255Bundefined%255D%255Bundefined%255D">data[undefined][undefined]</a></li><li><a href="global.html#dataview">dataview</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#datetime">datetime</a></li><li><a href="global.html#days">days</a></li><li><a href="global.html#decreaseSpeed">decreaseSpeed</a></li><li><a href="global.html#design">design</a></li><li><a href="global.html#destination">destination</a></li><li><a href="global.html#destinationRules">destinationRules</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#dir">dir</a></li><li><a href="global.html#disabled">disabled</a></li><li><a href="global.html#discreteValues">discreteValues</a></li><li><a href="global.html#Display">Display</a></li><li><a href="global.html#display">display</a></li><li><a href="global.html#displayAnimationLibraryDialog">displayAnimationLibraryDialog</a></li><li><a href="global.html#displayAnimationsForSource">displayAnimationsForSource</a></li><li><a href="global.html#displayHelpDialog">displayHelpDialog</a></li><li><a href="global.html#displayPerformanceDialog">displayPerformanceDialog</a></li><li><a href="global.html#displaySearchDialog">displaySearchDialog</a></li><li><a href="global.html#displaySearchResults">displaySearchResults</a></li><li><a href="global.html#divide">divide</a></li><li><a href="global.html#drag">drag</a></li><li><a href="global.html#drag_moveTimeline_multiTouch">drag_moveTimeline_multiTouch</a></li><li><a href="global.html#drag_moveTimeline_pointer">drag_moveTimeline_pointer</a></li><li><a href="global.html#drag_windowResizeLeft">drag_windowResizeLeft</a></li><li><a href="global.html#drag_windowResizeRight">drag_windowResizeRight</a></li><li><a href="global.html#dragEnd">dragEnd</a></li><li><a href="global.html#dragEnd_moveTimeline_multiTouch">dragEnd_moveTimeline_multiTouch</a></li><li><a href="global.html#dragEnd_moveTimeline_pointer">dragEnd_moveTimeline_pointer</a></li><li><a href="global.html#dragEnd_windowResizeLeft">dragEnd_windowResizeLeft</a></li><li><a href="global.html#dragEnd_windowResizeRight">dragEnd_windowResizeRight</a></li><li><a href="global.html#dragHandles">dragHandles</a></li><li><a href="global.html#dragStart">dragStart</a></li><li><a href="global.html#dragStart_moveTimeline">dragStart_moveTimeline</a></li><li><a href="global.html#dragStart_moveTimeline_multiTouch">dragStart_moveTimeline_multiTouch</a></li><li><a href="global.html#dragStart_moveTimeline_pointer">dragStart_moveTimeline_pointer</a></li><li><a href="global.html#dragStart_windowResizeLeft">dragStart_windowResizeLeft</a></li><li><a href="global.html#dragStart_windowResizeRight">dragStart_windowResizeRight</a></li><li><a href="global.html#dropDown">dropDown</a></li><li><a href="global.html#dropDownDefaultValue">dropDownDefaultValue</a></li><li><a href="global.html#east">east</a></li><li><a href="global.html#eatEvent">eatEvent</a></li><li><a href="global.html#edit">edit</a></li><li><a href="global.html#editAnimation">editAnimation</a></li><li><a href="global.html#editRangeEnd">editRangeEnd</a></li><li><a href="global.html#EmptyWidget">EmptyWidget</a></li><li><a href="global.html#end">end</a></li><li><a href="global.html#endData">endData</a></li><li><a href="global.html#endEdit">endEdit</a></li><li><a href="global.html#endidx">endidx</a></li><li><a href="global.html#endLabelPosition">endLabelPosition</a></li><li><a href="global.html#endLabelTitle">endLabelTitle</a></li><li><a href="global.html#error">error</a></li><li><a href="global.html#eventAction">eventAction</a></li><li><a href="global.html#eventCategory">eventCategory</a></li><li><a href="global.html#eventLabel">eventLabel</a></li><li><a href="global.html#featureType">featureType</a></li><li><a href="global.html#filterBySelection">filterBySelection</a></li><li><a href="global.html#firstEvent">firstEvent</a></li><li><a href="global.html#floorDate">floorDate</a></li><li><a href="global.html#foo">foo</a></li><li><a href="global.html#format">format</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatInterval">formatInterval</a></li><li><a href="global.html#fullDates">fullDates</a></li><li><a href="global.html#getDirectory">getDirectory</a></li><li><a href="global.html#getEditorClass">getEditorClass</a></li><li><a href="global.html#getFilter">getFilter</a></li><li><a href="global.html#getFirstPosition">getFirstPosition</a></li><li><a href="global.html#getItemList">getItemList</a></li><li><a href="global.html#getNextStepLength">getNextStepLength</a></li><li><a href="global.html#getPrevStepLength">getPrevStepLength</a></li><li><a href="global.html#getReportUrl">getReportUrl</a></li><li><a href="global.html#getXorder">getXorder</a></li><li><a href="global.html#handleAccept">handleAccept</a></li><li><a href="global.html#handleCancel">handleCancel</a></li><li><a href="global.html#handler">handler</a></li><li><a href="global.html#handleSelectionChange">handleSelectionChange</a></li><li><a href="global.html#hasDownArrow">hasDownArrow</a></li><li><a href="global.html#header">header</a></li><li><a href="global.html#headerLoaded">headerLoaded</a></li><li><a href="global.html#headerTime">headerTime</a></li><li><a href="global.html#height">height</a></li><li><a href="global.html#hiddenContext">hiddenContext</a></li><li><a href="global.html#hitType">hitType</a></li><li><a href="global.html#hours">hours</a></li><li><a href="global.html#href">href</a></li><li><a href="global.html#i%255Bundefined%255D">i[undefined]</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#idCounter">idCounter</a></li><li><a href="global.html#img">img</a></li><li><a href="global.html#includeDatePrefix">includeDatePrefix</a></li><li><a href="global.html#inclusive">inclusive</a></li><li><a href="global.html#increaseSpeed">increaseSpeed</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#infowindow">infowindow</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#intensityChange">intensityChange</a></li><li><a href="global.html#intermediateChanges">intermediateChanges</a></li><li><a href="global.html#interval">interval</a></li><li><a href="global.html#intervalPrecision">intervalPrecision</a></li><li><a href="global.html#intervalPrecisionLimit">intervalPrecisionLimit</a></li><li><a href="global.html#intervals">intervals</a></li><li><a href="global.html#intervalToIndex">intervalToIndex</a></li><li><a href="global.html#intervalUnits">intervalUnits</a></li><li><a href="global.html#invertedRule">invertedRule</a></li><li><a href="global.html#jsonp">jsonp</a></li><li><a href="global.html#key">key</a></li><li><a href="global.html#keyDown">keyDown</a></li><li><a href="global.html#keydown">keydown</a></li><li><a href="global.html#keys">keys</a></li><li><a href="global.html#keyup">keyup</a></li><li><a href="global.html#label">label</a></li><li><a href="global.html#lang">lang</a></li><li><a href="global.html#lat">lat</a></li><li><a href="global.html#layer">layer</a></li><li><a href="global.html#layerId">layerId</a></li><li><a href="global.html#left">left</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#lengthLabelPosition">lengthLabelPosition</a></li><li><a href="global.html#lengthLabelTitle">lengthLabelTitle</a></li><li><a href="global.html#limit">limit</a></li><li><a href="global.html#liveSplitters">liveSplitters</a></li><li><a href="global.html#lng">lng</a></li><li><a href="global.html#load">load</a></li><li><a href="global.html#loaded">loaded</a></li><li><a href="global.html#LoaderIcon">LoaderIcon</a></li><li><a href="global.html#loadTilesForZomm">loadTilesForZomm</a></li><li><a href="global.html#logging">logging</a></li><li><a href="global.html#logglyKey">logglyKey</a></li><li><a href="global.html#logo">logo</a></li><li><a href="global.html#lon">lon</a></li><li><a href="global.html#loop">loop</a></li><li><a href="global.html#map">map</a></li><li><a href="global.html#margin">margin</a></li><li><a href="global.html#matrix%255B0%255D">matrix[0]</a></li><li><a href="global.html#matrix%255B1%255D">matrix[1]</a></li><li><a href="global.html#matrix%255B2%255D">matrix[2]</a></li><li><a href="global.html#matrix%255B3%255D">matrix[3]</a></li><li><a href="global.html#matrix%255B4%255D">matrix[4]</a></li><li><a href="global.html#matrix%255B5%255D">matrix[5]</a></li><li><a href="global.html#matrix%255B6%255D">matrix[6]</a></li><li><a href="global.html#matrix%255B7%255D">matrix[7]</a></li><li><a href="global.html#matrix%255B12%255D">matrix[12]</a></li><li><a href="global.html#matrix%255B13%255D">matrix[13]</a></li><li><a href="global.html#matrix%255B14%255D">matrix[14]</a></li><li><a href="global.html#matrix%255B15%255D">matrix[15]</a></li><li><a href="global.html#max">max</a></li><li><a href="global.html#maximum">maximum</a></li><li><a href="global.html#maxWindowSize">maxWindowSize</a></li><li><a href="global.html#maybeEndEdit">maybeEndEdit</a></li><li><a href="global.html#menuFor">menuFor</a></li><li><a href="global.html#milliseconds">milliseconds</a></li><li><a href="global.html#min">min</a></li><li><a href="global.html#minimum">minimum</a></li><li><a href="global.html#minutes">minutes</a></li><li><a href="global.html#minWindowSize">minWindowSize</a></li><li><a href="global.html#monthNames">monthNames</a></li><li><a href="global.html#months">months</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#msg">msg</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#neverJustHours">neverJustHours</a></li><li><a href="global.html#newBounds">newBounds</a></li><li><a href="global.html#newWantedTiles">newWantedTiles</a></li><li><a href="global.html#noFilterTitle">noFilterTitle</a></li><li><a href="global.html#north">north</a></li><li><a href="global.html#offset">offset</a></li><li><a href="global.html#oldBounds">oldBounds</a></li><li><a href="global.html#oldWantedTiles">oldWantedTiles</a></li><li><a href="global.html#onCancel">onCancel</a></li><li><a href="global.html#onChange">onChange</a></li><li><a href="global.html#onClick">onClick</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#onExecute">onExecute</a></li><li><a href="global.html#onMouseLeave">onMouseLeave</a></li><li><a href="global.html#openDropDown">openDropDown</a></li><li><a href="global.html#options">options</a></li><li><a href="global.html#orientation">orientation</a></li><li><a href="global.html#out%255B0%255D">out[0]</a></li><li><a href="global.html#out%255B1%255D">out[1]</a></li><li><a href="global.html#out%255B2%255D">out[2]</a></li><li><a href="global.html#out%255B3%255D">out[3]</a></li><li><a href="global.html#out%255B4%255D">out[4]</a></li><li><a href="global.html#out%255B5%255D">out[5]</a></li><li><a href="global.html#out%255B6%255D">out[6]</a></li><li><a href="global.html#out%255B7%255D">out[7]</a></li><li><a href="global.html#out%255B8%255D">out[8]</a></li><li><a href="global.html#out%255B9%255D">out[9]</a></li><li><a href="global.html#out%255B10%255D">out[10]</a></li><li><a href="global.html#out%255B11%255D">out[11]</a></li><li><a href="global.html#out%255B12%255D">out[12]</a></li><li><a href="global.html#out%255B13%255D">out[13]</a></li><li><a href="global.html#out%255B14%255D">out[14]</a></li><li><a href="global.html#out%255B15%255D">out[15]</a></li><li><a href="global.html#overflow">overflow</a></li><li><a href="global.html#pad">pad</a></li><li><a href="global.html#padWidths">padWidths</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#paths">paths</a></li><li><a href="global.html#pattern">pattern</a></li><li><a href="global.html#pause">pause</a></li><li><a href="global.html#paused">paused</a></li><li><a href="global.html#pending">pending</a></li><li><a href="global.html#performSearch">performSearch</a></li><li><a href="global.html#pixelOffsetToTimeOffset">pixelOffsetToTimeOffset</a></li><li><a href="global.html#placeHolder">placeHolder</a></li><li><a href="global.html#play">play</a></li><li><a href="global.html#playControl">playControl</a></li><li><a href="global.html#popup">popup</a></li><li><a href="global.html#popupClass">popupClass</a></li><li><a href="global.html#position">position</a></li><li><a href="global.html#postCreate">postCreate</a></li><li><a href="global.html#preserveDrawingBuffer">preserveDrawingBuffer</a></li><li><a href="global.html#preserveViewport">preserveViewport</a></li><li><a href="global.html#printTree">printTree</a></li><li><a href="global.html#profile">profile</a></li><li><a href="global.html#query">query</a></li><li><a href="global.html#query_url">query_url</a></li><li><a href="global.html#queryQueyUp">queryQueyUp</a></li><li><a href="global.html#rangemarks">rangemarks</a></li><li><a href="global.html#rangeUpdated">rangeUpdated</a></li><li><a href="global.html#receiving">receiving</a></li><li><a href="global.html#recreateRangemarks">recreateRangemarks</a></li><li><a href="global.html#recreateTickmarks">recreateTickmarks</a></li><li><a href="global.html#recreateTickmarksLevel">recreateTickmarksLevel</a></li><li><a href="global.html#region">region</a></li><li><a href="global.html#rel">rel</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#removeHandler">removeHandler</a></li><li><a href="global.html#rendering">rendering</a></li><li><a href="global.html#report">report</a></li><li><a href="global.html#reportDialog">reportDialog</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#restrictednumber">restrictednumber</a></li><li><a href="global.html#result%255Bundefined%255D">result[undefined]</a></li><li><a href="global.html#reverseDates">reverseDates</a></li><li><a href="global.html#right">right</a></li><li><a href="global.html#root">root</a></li><li><a href="global.html#round">round</a></li><li><a href="global.html#rowidx">rowidx</a></li><li><a href="global.html#rowLoaded">rowLoaded</a></li><li><a href="global.html#rule">rule</a></li><li><a href="global.html#rules">rules</a></li><li><a href="global.html#scope">scope</a></li><li><a href="global.html#script">script</a></li><li><a href="global.html#search">search</a></li><li><a href="global.html#secondEvent">secondEvent</a></li><li><a href="global.html#seconds">seconds</a></li><li><a href="global.html#selectAnimation">selectAnimation</a></li><li><a href="global.html#selected">selected</a></li><li><a href="global.html#selection">selection</a></li><li><a href="global.html#selections">selections</a></li><li><a href="global.html#separators">separators</a></li><li><a href="global.html#series">series</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#setContextFromVisibleContext">setContextFromVisibleContext</a></li><li><a href="global.html#setDate">setDate</a></li><li><a href="global.html#setDateTime">setDateTime</a></li><li><a href="global.html#setDefaultTitle">setDefaultTitle</a></li><li><a href="global.html#setEditor">setEditor</a></li><li><a href="global.html#setExpanded">setExpanded</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setLength">setLength</a></li><li><a href="global.html#setPaused">setPaused</a></li><li><a href="global.html#setRange">setRange</a></li><li><a href="global.html#setRangeFromOffset">setRangeFromOffset</a></li><li><a href="global.html#setRangemarks">setRangemarks</a></li><li><a href="global.html#setSlectValueFromFilter">setSlectValueFromFilter</a></li><li><a href="global.html#setTime">setTime</a></li><li><a href="global.html#setTimeFocus">setTimeFocus</a></li><li><a href="global.html#setVisible">setVisible</a></li><li><a href="global.html#setVisibleContextFromRange">setVisibleContextFromRange</a></li><li><a href="global.html#setWindowSize">setWindowSize</a></li><li><a href="global.html#share">share</a></li><li><a href="global.html#showCenterLabelAtWidth">showCenterLabelAtWidth</a></li><li><a href="global.html#showRightLabelAtWidth">showRightLabelAtWidth</a></li><li><a href="global.html#sideBar">sideBar</a></li><li><a href="global.html#slider2val">slider2val</a></li><li><a href="global.html#snapZoomToTickmarks">snapZoomToTickmarks</a></li><li><a href="global.html#someEvent">someEvent</a></li><li><a href="global.html#sortcols">sortcols</a></li><li><a href="global.html#sortRules">sortRules</a></li><li><a href="global.html#source">source</a></li><li><a href="global.html#sourcename">sourcename</a></li><li><a href="global.html#sources">sources</a></li><li><a href="global.html#south">south</a></li><li><a href="global.html#spec">spec</a></li><li><a href="global.html#splitter">splitter</a></li><li><a href="global.html#splitTickmarksOnLargerUnitBoundaries">splitTickmarksOnLargerUnitBoundaries</a></li><li><a href="global.html#sql_api_template">sql_api_template</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#startData">startData</a></li><li><a href="global.html#startidx">startidx</a></li><li><a href="global.html#startLabelPosition">startLabelPosition</a></li><li><a href="global.html#startLabelTitle">startLabelTitle</a></li><li><a href="global.html#startup">startup</a></li><li><a href="global.html#state">state</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stepLength">stepLength</a></li><li><a href="global.html#stepLengthIndex">stepLengthIndex</a></li><li><a href="global.html#stepLengths">stepLengths</a></li><li><a href="global.html#stepZoom">stepZoom</a></li><li><a href="global.html#stopPropagation">stopPropagation</a></li><li><a href="global.html#store_stack">store_stack</a></li><li><a href="global.html#store_time">store_time</a></li><li><a href="global.html#style">style</a></li><li><a href="global.html#stylers">stylers</a></li><li><a href="global.html#subtractFrom">subtractFrom</a></li><li><a href="global.html#suppressInfoWindows">suppressInfoWindows</a></li><li><a href="global.html#template">template</a></li><li><a href="global.html#templates">templates</a></li><li><a href="global.html#templateString">templateString</a></li><li><a href="global.html#temporalExtents">temporalExtents</a></li><li><a href="global.html#temporalExtentsBase">temporalExtentsBase</a></li><li><a href="global.html#textDir">textDir</a></li><li><a href="global.html#tickmarkLabels">tickmarkLabels</a></li><li><a href="global.html#tile">tile</a></li><li><a href="global.html#tileLoading">tileLoading</a></li><li><a href="global.html#tilesPerScreen">tilesPerScreen</a></li><li><a href="global.html#time">time</a></li><li><a href="global.html#timeExtent">timeExtent</a></li><li><a href="global.html#timeFocus">timeFocus</a></li><li><a href="global.html#timeLabel">timeLabel</a></li><li><a href="global.html#timeline">timeline</a></li><li><a href="global.html#timelineMousedown">timelineMousedown</a></li><li><a href="global.html#timerange">timerange</a></li><li><a href="global.html#timeTask">timeTask</a></li><li><a href="global.html#title">title</a></li><li><a href="global.html#titleChanged">titleChanged</a></li><li><a href="global.html#toggle">toggle</a></li><li><a href="global.html#toJSON">toJSON</a></li><li><a href="global.html#top">top</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#type">type</a></li><li><a href="global.html#ui">ui</a></li><li><a href="global.html#uniforms">uniforms</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#updated">updated</a></li><li><a href="global.html#updatedHandler">updatedHandler</a></li><li><a href="global.html#updateList">updateList</a></li><li><a href="global.html#updateLoading">updateLoading</a></li><li><a href="global.html#url">url</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#value">value</a></li><li><a href="global.html#values">values</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#versioned_url">versioned_url</a></li><li><a href="global.html#visibility">visibility</a></li><li><a href="global.html#visualization">visualization</a></li><li><a href="global.html#west">west</a></li><li><a href="global.html#width">width</a></li><li><a href="global.html#windowDragStart">windowDragStart</a></li><li><a href="global.html#windowEnd">windowEnd</a></li><li><a href="global.html#windowLengHoverLabels">windowLengHoverLabels</a></li><li><a href="global.html#windowLengLabels">windowLengLabels</a></li><li><a href="global.html#windowStart">windowStart</a></li><li><a href="global.html#windowTimeLabels">windowTimeLabels</a></li><li><a href="global.html#withCredentials">withCredentials</a></li><li><a href="global.html#x">x</a></li><li><a href="global.html#y">y</a></li><li><a href="global.html#years">years</a></li><li><a href="global.html#zoom">zoom</a></li><li><a href="global.html#zoomIn">zoomIn</a></li><li><a href="global.html#zoomOut">zoomOut</a></li><li><a href="global.html#zoomPosition">zoomPosition</a></li><li><a href="global.html#zoomSize">zoomSize</a></li><li><a href="global.html#zoomTo">zoomTo</a></li><li><a href="global.html#zoomWheel">zoomWheel</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Jun 02 2016 11:46:28 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

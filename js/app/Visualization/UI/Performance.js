@@ -1,8 +1,8 @@
 define([
   "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
-  "async",
-  "jQuery",
+  "shims/async/main",
+  "shims/jQuery/main",
   "app/Visualization/KeyBindings",
   "app/LoadingInfo"
 ], function(

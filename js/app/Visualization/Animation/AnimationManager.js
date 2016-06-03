@@ -5,16 +5,16 @@ define([
   "app/Timerange",
   "app/SpaceTime",
   "app/ObjectTemplate",
-  "async",
-  "lodash",
+  "shims/async/main",
+  "shims/lodash/main",
   "app/Logging",
   "app/Visualization/KeyModifiers",
   "app/Visualization/KeyBindings",
-  "jQuery",
+  "shims/jQuery/main",
   "dijit/Dialog",
   "app/Visualization/Animation/Matrix",
-  "CanvasLayer",
-  "Stats",
+  "shims/CanvasLayer/main",
+  "shims/Stats/main",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
@@ -75,7 +75,7 @@ function(Class,
       self.events = new Events("AnimationManager");
 
       self.visualization = visualization;
-      self.node = $("<div class='animations'>");
+      self.node = $("<div class='animations' style='width: 100%; height: 100%;'>");
       self.visualization.node.append(self.node);
 
       self.indrag = false;
@@ -149,6 +149,7 @@ function(Class,
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
+
       cb();
     },
 

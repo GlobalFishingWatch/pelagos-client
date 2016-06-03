@@ -40,14 +40,14 @@ define(["app/Class"], function(Class, Events, Logging) {
         return str;
       };
 
-      var eval = function (node) {
+      var evalNode = function (node) {
         if (typeof(node) == "string") {
           return evalString(node);
         } else if (typeof(node) == "object") {
           if (node === null) {
             return node;
           } else if (node.constructor.name == "Array") {
-            return node.map(eval);
+            return node.map(evalNode);
           } else if (node["%"] != undefined) {
             var res = data;
 
@@ -59,7 +59,7 @@ define(["app/Class"], function(Class, Events, Logging) {
           } else {
             var res = {};
             for (var key in node) {
-              res[key] = eval(node[key]);
+              res[key] = evalNode(node[key]);
             }
             return res;
           }
@@ -68,7 +68,7 @@ define(["app/Class"], function(Class, Events, Logging) {
         }
       };
 
-      return eval(self.spec);
+      return evalNode(self.spec);
     }
   });
 });
