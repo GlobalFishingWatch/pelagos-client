@@ -1,14 +1,26 @@
-window.canvasLayerShimLoader = function (require, callback) {
-  delete window.canvasLayerShimLoader;
-
-  require(["shims/GoogleMaps/main"], function () {
-    require(["app/CanvasLayer"], function () {
-      callback();
-    });
-  });
+if (false) {
+  define(["shims/GoogleMaps/main", "app/CanvasLayer"], function () {});
 }
 
+(function () {
+  var def = define;
 
-define(["shims/DefineCallback!canvasLayerShimLoader"], function () {
-  return CanvasLayer;
-});
+  if (window.CanvasLayer != undefined) {
+    def([], function () { return window.CanvasLayer; });
+  } else {
+    window.canvasLayerShimLoader = function (req, callback) {
+      delete window.canvasLayerShimLoader;
+
+      req(["shims/GoogleMaps/main"], function () {
+        req(["app/CanvasLayer"], function () {
+          callback();
+        });
+      });
+    }
+
+
+    def(["shims/DefineCallback!canvasLayerShimLoader"], function () {
+      return CanvasLayer;
+    });
+  }
+})();

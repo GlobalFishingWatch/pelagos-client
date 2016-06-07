@@ -3,7 +3,7 @@
    Once the condition is set it will always remain set, and any
    callbacks set to wait for it will be executed immediately.
 */
-defined([
+define([
   "app/Class",
   "shims/async/main"
 ], function (

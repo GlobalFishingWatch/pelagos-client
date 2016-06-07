@@ -1,15 +1,29 @@
-window.jQueryShimLoader = function (require, callback) {
-  delete window.jQueryShimLoader;
+if (false) {
+  define([], function () {});
+}
 
-  require(["libs/jquery/dist/jquery.min"], function () {
-    require.cache.jquery = function () { define("jquery", [], function () { return jQuery }); };
+(function () {
+  var def = define;
 
-    require(["libs/jquery-mousewheel/jquery.mousewheel.min"], function () {
-      callback();
+  if (window.jQuery != undefined) {
+    def([], function () { return window.jQuery; });
+  } else {
+
+    window.jQueryShimLoader = function (req, callback) {
+      delete window.jQueryShimLoader;
+
+      req(["libs/jquery/dist/jquery.min"], function () {
+        req.cache.jquery = function () { define("jquery", [], function () { return window.jQuery }); };
+
+        req(["libs/jquery-mousewheel/jquery.mousewheel.min"], function () {
+          callback();
+        });
+      });
+    };
+
+    def(["shims/DefineCallback!jQueryShimLoader"], function () {
+      return window.jQuery;
     });
-  });
-};
+  }
+})();
 
-define(["shims/DefineCallback!jQueryShimLoader"], function () {
-  return jQuery;
-});
