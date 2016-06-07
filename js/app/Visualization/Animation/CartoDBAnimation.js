@@ -41,6 +41,17 @@ define([
           });
         }
 
+        if (self.layer.getTimeBounds) {
+          // This is a torque layer
+
+          self.manager.visualization.state.events.on({
+            time: self.timeChanged.bind(self),
+            timeExtent: self.timeChanged.bind(self)
+          });
+
+          self.layer.stop();
+        }
+          
         self.layer.on('featureOver', self.handleMouseOver.bind(self));
         self.layer.on('mouseout', self.handleMouseOut.bind(self));
 
@@ -56,6 +67,24 @@ define([
           }
         });
       });
+    },
+
+    setTime: function (timestamp) {
+      var self = this;
+
+      var bounds = self.layer.getTimeBounds();
+      self.layer.setStep(
+          Math.floor(
+              bounds.steps * (timestamp.getTime() - bounds.start) / (bounds.end - bounds.start)));
+    },
+
+    timeChanged: function () {
+      var self = this;
+
+      var end = self.manager.visualization.state.getValue("time");
+      if (end == undefined) return;
+
+      self.setTime(new Date(end.getTime() - self.manager.visualization.state.getValue("timeExtent") / 2.0));
     },
 
     handleMouseOver: function (event, latlng, pos, data, layerIndex) {
