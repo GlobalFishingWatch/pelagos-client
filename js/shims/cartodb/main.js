@@ -1,9 +1,10 @@
 window.cartodbShimLoader = function (require, callback) {
   delete window.cartodbShimLoader;
 
-  require(["shims/jQuery/main", "shims/Styles"], function ($, Styles) {
+  require(["shims/jQuery/main", "shims/GoogleMaps/main", "shims/Styles"], function ($, google, Styles) {
     Styles.add("libs/cartodb.js/themes/css/cartodb.css");
-    require(["libs/cartodb.js/cartodb"], function () {
+    require(["libs/cartodb.js/cartodb.uncompressed"], function () {
+      cartodb.DEBUG = true;
       callback();
     });
   });
