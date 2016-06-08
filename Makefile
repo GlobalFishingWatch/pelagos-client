@@ -39,7 +39,7 @@ node_modules/.bin/jsdoc:
 js-docs: node_modules/.bin/jsdoc
 	node_modules/.bin/jsdoc -a all -p -r -d docs/jsdoc -c jsdoc/jsdoc.json js/app
 
-js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/build-succeded
+js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/libs js-build/build-succeded
 
 js-build-mkdir:
 	mkdir -p js-build
@@ -53,6 +53,9 @@ js-build/deps.js: $(JSDEPS) js/app/CanvasLayer.js
 
 js-build/deps.css: $(CSSDEPS)
 	cat $^ | sed -e "s+../fonts/fontawesome+../js/libs/font-awesome/fonts/fontawesome+g" > $@
+
+js-build/libs: dependencies
+	cp -a js/libs js-build/libs
 
 clean-js-build:
 	rm -rf js-build
