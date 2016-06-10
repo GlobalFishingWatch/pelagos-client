@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <title>VectorVisual</title>
+    <script type="text/javascript">
+      dojoConfig = {
+        isDebug: true,
+        async: true,
+        baseUrl: "js-build/libs/dojo",
+        packages: [{name: 'app', location:'/js-build/app', main: 'main'},
+                   {name: 'libs', location:'/js-build/libs', main: 'main'},
+                   {name: 'shims', location:'/js-build/shims', main: 'main'}]
+      };
+    </script>
+
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false"></script> 
+    <script type="text/javascript" src="js-build/deps.js"></script> 
+    <script type="text/javascript" src="js-build/app/app.js.uncompressed.js"></script>
+    <script>
+      require(["app/main"], function (main) {});
+    </script>
+    <link rel='stylesheet' type='text/css' href='js-build/deps.css'>
+    <style>
+      #visualization {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+    </style>
+  </head>
+  <body class="claro">
+    <div id="visualization"></div>
+  </body>
+</html>

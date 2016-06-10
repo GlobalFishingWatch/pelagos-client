@@ -101,7 +101,7 @@ define([
         function (cb) {
           self.animations = new AnimationManager(self);
           self.animations.init(cb);
-        },
+        }
       ],
       function () { cb(self); });
     },
