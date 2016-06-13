@@ -23,15 +23,16 @@ define(
   return Class({
     name: "Test",
     initialize: function () {
+      var self = this;
       QUnit.config.testTimeout = 10000;
 
-      new Events();
-      new SubscribableDict();
-      new Logging();
-      new TypedMatrixParser();
-      new BinFormat();
-      new TiledEmptyFormat();
-      new DataView();
+      self.events = new Events();
+      self.subscribableDict = new SubscribableDict();
+      self.logging = new Logging();
+      self.typedMatrixParser = new TypedMatrixParser();
+      self.binFormat = new BinFormat();
+      self.tiledEmptyFormat = new TiledEmptyFormat();
+      self.dataView = new DataView();
     }
   });
 });
