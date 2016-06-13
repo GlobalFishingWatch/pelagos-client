@@ -52,7 +52,7 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
               && this.bounds.containsObj(spaceTime.bounds, partial, inclusive));
     },
 
-    intersectsObjh:function(spaceTime, options) {
+    intersectsObj:function(spaceTime, options) {
       self = this;
       if (typeof options === "boolean") {
         options =  {inclusive: options};
