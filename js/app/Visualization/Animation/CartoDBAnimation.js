@@ -27,13 +27,16 @@ define([
     initGl: function(cb) {
       var self = this;
 
-      cartodb.createLayer(
+      var cartoLayer = cartodb.createLayer(
         self.manager.map, self.source.args.url, {infowindow: false}
-      ).addTo(
-        self.manager.map, self.manager.map.overlayMapTypes.length
       ).on('done', function(layer) {
+        /* This is a workaround for an issue with having multiple
+         * CartoDB layers, see
+         * http://gis.stackexchange.com/questions/80816/adding-multiple-layers-in-cartodb-using-createlayer-not-working
+         */
+        self.manager.map.overlayMapTypes.setAt(self.manager.map.overlayMapTypes.length, layer);
         self.layer = layer;
-
+      
         if (self.layer.getSubLayers) {
           self.layer.getSubLayers().map(function (subLayer) {
             subLayer.setInteraction(true); // Interaction for that layer must be enabled
