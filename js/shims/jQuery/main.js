@@ -13,7 +13,7 @@ if (false) {
       delete window.jQueryShimLoader;
 
       req(["libs/jquery/dist/jquery.min"], function () {
-        req.cache.jquery = function () { define("jquery", [], function () { return window.jQuery }); };
+        req.cache.jquery = function () { def("jquery", [], function () { return window.jQuery }); };
 
         req(["libs/jquery-mousewheel/jquery.mousewheel.min"], function () {
           callback();
