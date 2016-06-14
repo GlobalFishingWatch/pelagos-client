@@ -12,7 +12,7 @@ define([
   "app/LangExtensions"
 ], function(
   Class,
-  stacktrace,
+  StackTrace,
   async,
   _,
   Destination

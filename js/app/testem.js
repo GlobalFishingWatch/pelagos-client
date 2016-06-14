@@ -1,15 +1,14 @@
 define([
   "shims/QUnit/main",
-  "app/Test"
+  "app/Test",
 ], function (
   QUnit,
   Test
 ) {
-  return function () {
-    require(['/testem.js'], function (testem) {
-      $(document).ready(function () {
-        apptest = new Test();
-      });
+  require(["/testem.js"], function () {
+    $(document).ready(function () {
+      apptest = new Test();
+      QUnit.start();
     });
-  };
+  });
 });

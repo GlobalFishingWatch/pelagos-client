@@ -5,9 +5,8 @@ define([
   QUnit,
   Test
 ) {
-  return function () {
-    $(document).ready(function () {
-      apptest = new Test();
-    });
-  };
+  $(document).ready(function () {
+    apptest = new Test();
+    QUnit.start();
+  });
 });
