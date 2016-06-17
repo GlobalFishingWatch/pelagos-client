@@ -66,21 +66,9 @@ define([
     init: function (cb) {
       var self = this;
 
-      self.stylesheets.map(Styles.add);
-      less.registerStylesheets($("link[rel='stylesheet/less']"));
-      less.refresh();
-
-      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
-      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
-      self.container.addChild(self.animationsContainer);
-
-      $(self.animationsContainer.domNode).append(self.visualization.node.children());
-      self.visualization.node.append(self.container.domNode);
-      self.visualization.node = $(self.animationsContainer.domNode);
-
-      self.container.startup();
-
       async.series([
+        self.initStyles.bind(self),
+        self.initContainer.bind(self),
         self.initButtons.bind(self),
         self.initLoadSpinner.bind(self),
         self.initPlayButton.bind(self),
@@ -94,6 +82,29 @@ define([
         self.visualization.animations.windowSizeChanged();
         cb();
       });
+    },
+
+    initStyles: function (cb) {
+      var self = this;
+
+      self.stylesheets.map(Styles.add);
+      less.registerStylesheets($("link[rel='stylesheet/less']"));
+      less.refresh().done(function () { cb(); });
+    },
+
+    initContainer: function (cb) {
+      var self = this;
+
+      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
+      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
+      self.container.addChild(self.animationsContainer);
+
+      $(self.animationsContainer.domNode).append(self.visualization.node.children());
+      self.visualization.node.append(self.container.domNode);
+      self.visualization.node = $(self.animationsContainer.domNode);
+
+      self.container.startup();
+      cb();
     },
 
     initButtons: function (cb) {
