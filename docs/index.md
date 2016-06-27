@@ -12,3 +12,4 @@
   * [The tiling system](tiling.html)
 * [Debugging](debug.html)
 * [Logging](logging.html)
+* [Map overlays](overlays.html)
