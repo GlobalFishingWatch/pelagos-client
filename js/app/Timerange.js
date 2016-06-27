@@ -66,7 +66,7 @@ define(["app/Class"], function(Class) {
     },
 
     intersectsObj:function(range, options) {
-      self = this;
+      var self = this;
       if (typeof options === "boolean") {
         options =  {inclusive: options};
       }
