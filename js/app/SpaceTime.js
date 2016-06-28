@@ -53,7 +53,7 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
     },
 
     intersectsObj:function(spaceTime, options) {
-      self = this;
+      var self = this;
       if (typeof options === "boolean") {
         options =  {inclusive: options};
       }

@@ -29,12 +29,11 @@ define([
 
       var cartoLayer = cartodb.createLayer(
         self.manager.map, self.source.args.url, {infowindow: false}
+      ).addTo(
+        /* Note: This is does not support adding another layer before cb() is called
+         * Make sure to serialize this properly. */
+        self.manager.map, self.manager.map.overlayMapTypes.length
       ).on('done', function(layer) {
-        /* This is a workaround for an issue with having multiple
-         * CartoDB layers, see
-         * http://gis.stackexchange.com/questions/80816/adding-multiple-layers-in-cartodb-using-createlayer-not-working
-         */
-        self.manager.map.overlayMapTypes.setAt(self.manager.map.overlayMapTypes.length, layer);
         self.layer = layer;
       
         if (self.layer.getSubLayers) {
@@ -158,6 +157,8 @@ define([
       }
     }
   });
+  CartoDBAnimation.layerIndex = 0;
+
   Animation.animationClasses.CartoDBAnimation = CartoDBAnimation;
 
   return CartoDBAnimation;
