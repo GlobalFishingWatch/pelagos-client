@@ -14,6 +14,20 @@ define([], function() {
     }
     return res;
   }
+  Object.fromItems = function (items) {
+    var res = {};
+    items.map(function (item) {
+      res[item.key] = item.value;
+    });
+    return res;
+  }
+  Object.invert = function (obj) {
+    return Object.fromItems(
+      Object.items(obj).map(function (item) {
+        return {key: item.value, value: item.key};
+      })
+    );
+  }
 
   var old_log = Math.log;
   Math.log = function(x,base) {

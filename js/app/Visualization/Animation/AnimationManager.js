@@ -681,6 +681,16 @@ function(Class,
 
       if (selection.rawInfo) {
         var data = _.clone(selection.data);
+
+        Object.items(dataView.source.header.colsByName).map(function (item) {
+          if (item.value.choices) {
+            var choices = Object.invert(item.value.choices);
+            data[item.key] = data[item.key].map(function (dataValue) {
+              return choices[dataValue];
+            });
+          }
+        });
+
         data.layer = animation.title;
         data.toString = function () {
           return ObjectToTable(this);
