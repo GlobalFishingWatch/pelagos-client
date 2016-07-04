@@ -294,6 +294,9 @@ function(Class,
     getRowidxAtPos: function (x, y) {
       var self = this;
 
+      var width = self.canvasLayer.canvas.width;
+      var height = self.canvasLayer.canvas.height;
+
       /* Canvas coordinates are upside down for some reason... */
       y = self.canvasLayer.canvas.height - y;
 
@@ -301,6 +304,17 @@ function(Class,
         Rowidx.appendByteArrays.apply(
           undefined,
           self.rowidxGl.map(function (gl) {
+            gl.canvas.width = width;
+            gl.canvas.height = height;
+            gl.viewport(0, 0, width, height);
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor(x, y, 1, 1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            self.animations.map(function (animation) {
+              animation.draw(gl);
+            });
+
             var data = new Uint8Array(4);
             gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
             return data.subarray(0, 3); /* Disregard Alpha for now... Unsure how it interacts with BLEND functions... */
@@ -925,16 +939,6 @@ function(Class,
       }
       self.updateNeeded = false;
 
-      var width = self.canvasLayer.canvas.width;
-      var height = self.canvasLayer.canvas.height;
-
-      self.rowidxGl.map(function (gl) {
-        gl.canvas.width = width;
-        gl.canvas.height = height;
-        gl.viewport(0, 0, width, height);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-      });
-
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();
 
@@ -949,7 +953,9 @@ function(Class,
         time: time
       });
 
-      self.animations.map(function (animation) { animation.draw(); });
+      self.animations.map(function (animation) {
+        animation.draw(self.gl);
+      });
 
       self.stats.end();
     },

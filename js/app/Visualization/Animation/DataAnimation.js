@@ -200,12 +200,17 @@ define([
       self.loadDataViewArrayBuffers(program);
     },
 
-    draw: function () {
+    draw: function (gl) {
+      /* If gl is given, only draw on gl, else on all canvases */
+
       var self = this;
       if (!self.visible) return;
 
       Object.values(self.programs).map(function (programs) {
-        programs.map(self.drawProgram.bind(self));
+        programs.map(function (program, idx) {
+          if (gl !== undefined && gl !== program.gl) return;
+          self.drawProgram(program, idx);
+        });
       });
     },
 
