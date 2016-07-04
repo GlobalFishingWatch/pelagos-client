@@ -299,7 +299,7 @@ function(Class,
       height: 100
     },
 
-    readMouseoverPixels(x, y) {
+    readMouseoverPixels: function(x, y) {
       var self = this;
 
       if (self.mouseoverUpdateNeeded || !self.mouseoverPixelCache) {
