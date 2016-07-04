@@ -985,7 +985,7 @@ function(Class,
         self.setMapOptions(animations.options);
       }
 
-      async.map(animations.animations, self.addAnimation.bind(self), cb || function () {});
+      async.mapSeries(animations.animations, self.addAnimation.bind(self), cb || function () {});
     },
 
     toJSON: function () {

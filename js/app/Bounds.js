@@ -79,12 +79,13 @@ define(["app/Class"], function(Class) {
     },
 
     intersectsBounds:function(bounds, options) {
+      var self;
       if (typeof options === "boolean") {
         options =  {inclusive: options};
       }
       options = options || {};
       if (options.worldBounds) {
-        var self = this.wrapDateLine(options.worldBounds);
+        self = this.wrapDateLine(options.worldBounds);
         bounds = bounds.wrapDateLine(options.worldBounds);
       } else {
         self = this;
