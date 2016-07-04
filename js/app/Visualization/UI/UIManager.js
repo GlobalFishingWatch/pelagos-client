@@ -198,7 +198,8 @@ define([
 
     initTimeline: function (cb) {
       var self = this;
-      var updating = false;
+      var updatingTimelineFromState = false;
+      var updatingStateFromTimeline = false;
 
       self.timeline = new Timeline({'class': 'main-timeline'});
       self.timeline.placeAt(self.visualization.node[0]);
@@ -265,6 +266,7 @@ define([
       var setRange = function (e) {
         var timeExtent = e.end - e.start;
 
+        updatingStateFromTimeline = true;
         if (timeExtent < self.visualization.state.getValue("timeExtent")) {
           self.visualization.state.setValue("timeExtent", timeExtent);
           self.visualization.state.setValue("time", e.end);
@@ -272,10 +274,11 @@ define([
           self.visualization.state.setValue("time", e.end);
           self.visualization.state.setValue("timeExtent", timeExtent);
         }
+        updatingStateFromTimeline = false;
       }
 
       var daySliderUpdateMinMax = function() {
-        if (updating) return;
+        if (updatingTimelineFromState) return;
 
         if (!self.visualization.data.header.colsByName.datetime) return;
 
@@ -307,7 +310,7 @@ define([
       };
 
       var daySliderUpdateValue = function () {
-        if (updating) return;
+        if (updatingTimelineFromState) return;
 
         var start;
         var end = self.visualization.state.getValue("time");
@@ -351,9 +354,11 @@ define([
           }
         }
 
-        updating = true;
-        self.timeline.setRange(start, end);
-        updating = false;
+        if (adjusted || !updatingStateFromTimeline) {
+          updatingTimelineFromState = true;
+          self.timeline.setRange(start, end);
+          updatingTimelineFromState = false;
+        }
       };
 
       self.timeline.on('set-range', setRange);
