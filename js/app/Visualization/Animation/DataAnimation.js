@@ -166,7 +166,7 @@ define([
         "update": self.triggerDataUpdate.bind(self)
       });
       self.data_view.selections.events.on({
-        "update": self.manager.triggerUpdate.bind(self.manager)
+        "update": self.manager.triggerUpdate.bind(self.manager, {mouseoverChange: false})
       });
       self.data_view.events.on({
         "update": self.manager.triggerUpdate.bind(self.manager)
