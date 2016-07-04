@@ -54,14 +54,22 @@ define([
           return self.choices.indexOf(key) != -1;
         });
       }
-      choices.sort();
+      /* Sort by country name, not country code, as the name is what
+       * is displayed to the user, and sorting by CC is therefore
+       * confusing. */
+      choices.sort(function (a, b) {
+        a = CountryCodes.codeToName[a];
+        b = CountryCodes.codeToName[b];
+
+        return a < b ? -1 : (a > b ? 1 : 0);
+      });
       $(self.choicesNode).html("");
       choices.map(function (key) {
-        var choice = $('<img src="' + Paths.img + '/flags/png/' + key.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[key] + '" class="' + self.baseClass + '-choice">');
+        var choice = $('<img src="' + Paths.img + '/flags/png/' + key.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[key] + ' [' + key + ']" class="' + self.baseClass + '-choice">');
         // choice.text(key);
         choice.data("value", key);
         choice.hover(function () {
-          $(self.labelNode).html(CountryCodes.codeToName[key]);
+          $(self.labelNode).html(CountryCodes.codeToName[key] + ' [' + key + ']');
         }, function () {});
         choice.click(function () {
           if (self.value.indexOf(key) == -1) {
