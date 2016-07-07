@@ -251,12 +251,11 @@ define([
         if (self.separateSeries) {
           // -1 since series contains POINT_COUNT in the last item
           for (var i = 0; i < tile.content.series.length - 1; i++) {
-            if (tile.content.series[i+1]-tile.content.series[i] > 0) {
-              program.gl.drawArrays(
-                mode,
-                tile.content.series[i],
-                tile.content.series[i+1]-tile.content.series[i]
-              );
+            var start = tile.content.series[i];
+            var length = tile.content.series[i+1]-tile.content.series[i];
+
+            if (length > 0 && (mode != program.gl.LINE_STRIP || length > 1)) {
+              program.gl.drawArrays(mode, start, length);
             }
           }
         } else {
