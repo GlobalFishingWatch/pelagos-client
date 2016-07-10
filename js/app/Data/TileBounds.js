@@ -39,7 +39,8 @@ define([
       }
     };
 
-    res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(tilesPerScreen)), 2));
+    res.level = Math.min(Math.floor(Math.log(res.worldheight / (res.height/Math.sqrt(tilesPerScreen)), 2)),
+                         Math.floor(Math.log(res.worldwidth / (res.width/Math.sqrt(tilesPerScreen)), 2)));
 
     res.tilewidth = res.worldwidth / Math.pow(2, res.level);
     res.tileheight = res.worldheight / Math.pow(2, res.level);
