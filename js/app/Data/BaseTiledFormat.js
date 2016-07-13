@@ -60,7 +60,7 @@ define([
       Format.prototype.initialize.apply(self, arguments);
     },
 
-    tilesPerScreen: 16,
+    tilesPerScreen: 32,
 
     retries: 10,
     retryTimeout: 2000,

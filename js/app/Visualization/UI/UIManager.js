@@ -173,20 +173,38 @@ define([
 
     initLoadSpinner: function(cb) {
       var self = this;
+      var isActive = false;
+      var wantedActive = false;
+      var activateTimeout = undefined;
+
+      /* Use a timeout since we might get many hundreds, if not
+       * thousands of activations/inactivations in a second.
+       */
+      var setActiveHandler = function () {
+        self.loadingNode.stop();
+
+        if (wantedActive) {
+          self.loadingNode.fadeIn();
+        } else {
+          self.loadingNode.fadeOut();
+        }
+
+        isActive = wantedActive;
+        activateTimeout = undefined;
+      };
+      var setActive = function (active) {
+        if (active == wantedActive || activateTimeout != undefined) return;
+        wantedActive = active;
+        setTimeout(setActiveHandler, 100);
+      };
 
       self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + Paths.LoaderIcon + '"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
       LoadingInfo.main.events.on({
-        start: function () {
-          self.loadingNode.stop();
-          self.loadingNode.fadeIn();
-        },
-        end: function () {
-          self.loadingNode.stop();
-          self.loadingNode.fadeOut();
-        }
+        start: setActive.bind(this, true),
+        end: setActive.bind(this, false)
       });
       self.visualization.data.events.on({
         error: function (data) {
@@ -198,7 +216,8 @@ define([
 
     initTimeline: function (cb) {
       var self = this;
-      var updating = false;
+      var updatingTimelineFromState = false;
+      var updatingStateFromTimeline = false;
 
       self.timeline = new Timeline({'class': 'main-timeline'});
       self.timeline.placeAt(self.visualization.node[0]);
@@ -265,6 +284,7 @@ define([
       var setRange = function (e) {
         var timeExtent = e.end - e.start;
 
+        updatingStateFromTimeline = true;
         if (timeExtent < self.visualization.state.getValue("timeExtent")) {
           self.visualization.state.setValue("timeExtent", timeExtent);
           self.visualization.state.setValue("time", e.end);
@@ -272,10 +292,11 @@ define([
           self.visualization.state.setValue("time", e.end);
           self.visualization.state.setValue("timeExtent", timeExtent);
         }
+        updatingStateFromTimeline = false;
       }
 
       var daySliderUpdateMinMax = function() {
-        if (updating) return;
+        if (updatingTimelineFromState) return;
 
         if (!self.visualization.data.header.colsByName.datetime) return;
 
@@ -307,7 +328,7 @@ define([
       };
 
       var daySliderUpdateValue = function () {
-        if (updating) return;
+        if (updatingTimelineFromState) return;
 
         var start;
         var end = self.visualization.state.getValue("time");
@@ -351,9 +372,11 @@ define([
           }
         }
 
-        updating = true;
-        self.timeline.setRange(start, end);
-        updating = false;
+        if (adjusted || !updatingStateFromTimeline) {
+          updatingTimelineFromState = true;
+          self.timeline.setRange(start, end);
+          updatingTimelineFromState = false;
+        }
       };
 
       self.timeline.on('set-range', setRange);
