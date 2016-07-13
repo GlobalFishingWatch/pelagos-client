@@ -9,7 +9,8 @@ JSDEPS= \
   $(LIBS)/less/dist/less.js \
   $(LIBS)/stats.js/build/stats.min.js \
   $(LIBS)/loggly-jslogger/src/loggly.tracker.js \
-  $(LIBS)/cartodb.js/cartodb.js
+  $(LIBS)/cartodb.js/cartodb.js \
+  $(LIBS)/cartodb.js/cartodb.mod.torque.js
 
 CSSDEPS= \
   $(LIBS)/font-awesome/css/font-awesome.min.css \
@@ -22,7 +23,7 @@ DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
 
 .PHONY: all prerequisites dependencies js-build clean clean-js-build clean-dependencies clean-integration-tests unit-tests integration-tests dev-server test-server
 
-all: js-build
+all: js-build js-docs
 
 dependencies: $(DEPENDENCIES)
 
@@ -33,7 +34,13 @@ $(DEPENDENCIES): node_modules/.bin/bower
 	node_modules/.bin/bower install
 	touch $@
 
-js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/build-succeded
+node_modules/.bin/jsdoc:
+	npm install jsdoc
+
+js-docs: node_modules/.bin/jsdoc
+	node_modules/.bin/jsdoc -a all -p -r -d docs/jsdoc -c jsdoc/jsdoc.json js/app
+
+js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/libs js-build/build-succeded
 
 js-build-mkdir:
 	mkdir -p js-build
@@ -42,11 +49,14 @@ js-build/build-succeded: dependencies
 	cd $(LIBS)/util/buildscripts; ./build.sh --dojoConfig ../../../main.profile.js --release --bin node > build-log || { cat build-log; exit 1; }
 	touch $@
 
-js-build/deps.js: $(JSDEPS) js/CanvasLayer.js js/dojoconfig.js
+js-build/deps.js: $(JSDEPS) js/app/CanvasLayer.js
 	for name in $^; do cat $$name; echo; done > $@
 
 js-build/deps.css: $(CSSDEPS)
 	cat $^ | sed -e "s+../fonts/fontawesome+../js/libs/font-awesome/fonts/fontawesome+g" > $@
+
+js-build/libs: dependencies
+	cp -a js/libs js-build/libs
 
 clean-js-build:
 	rm -rf js-build

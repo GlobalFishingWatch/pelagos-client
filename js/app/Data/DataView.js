@@ -1,4 +1,18 @@
-define(["app/Class", "app/Data/Format", "app/Data/SelectionManager", "app/Data/Pack", "app/Data/GeoProjection", "lodash"], function(Class, Format, SelectionManager, Pack, GeoProjection, _) {
+define([
+  "app/Class",
+  "app/Data/Format",
+  "app/Data/SelectionManager",
+  "app/Data/Pack",
+  "app/Data/GeoProjection",
+  "shims/lodash/main"
+], function(
+  Class,
+  Format,
+  SelectionManager,
+  Pack,
+  GeoProjection,
+  _
+) {
   return Class(Format, {
     name: "DataView",
 

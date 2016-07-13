@@ -1,7 +1,12 @@
-define(["QUnit", 'app/Test'], function (QUnit, Test) {
-  return function () {
-    $(document).ready(function () {
-      apptest = new Test();
-    });
-  };
+define([
+  "shims/QUnit/main",
+  "app/Test"
+], function (
+  QUnit,
+  Test
+) {
+  $(document).ready(function () {
+    apptest = new Test();
+    QUnit.start();
+  });
 });

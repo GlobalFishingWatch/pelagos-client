@@ -2,12 +2,14 @@ define([
   "dojo/_base/declare",
   "app/CountryCodes",
   "app/Visualization/UI/FilterEditorBase",
-  "app/Visualization/UI/Widgets/FlagSelector"
+  "app/Visualization/UI/Widgets/FlagSelector",
+  "app/Visualization/UI/Paths"
 ], function(
   declare,
   CountryCodes,
   FilterEditorBase,
-  FlagSelector
+  FlagSelector,
+  Paths
 ){
   return declare("FilterEditorFlags", [FilterEditorBase], {
     startup: function () {
@@ -57,7 +59,7 @@ define([
         var title = self.noFilterTitle;;
         if (list.length > 0) {
           title = list.map(function (item) {
-            return '<img src="' + app.dirs.img + '/flags/png/' + item.name.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[item.name.toUpperCase()] + '" style="margin: 1px; vertical-align: middle;">';
+            return '<img src="' + Paths.img + '/flags/png/' + item.name.toLowerCase() + '.png" alt="' + CountryCodes.codeToName[item.name.toUpperCase()] + '" style="margin: 1px; vertical-align: middle;">';
           }).join("");
         }
         self.containerNode.innerHTML = title;

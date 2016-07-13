@@ -1,14 +1,16 @@
 define([
   "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
-  "jQuery",
+  "shims/jQuery/main",
   "app/Visualization/KeyBindings",
+  "app/Visualization/UI/LoaderIcon",
   "dijit/form/Button"
 ], function(
   declare,
   Dialog,
   $,
-  KeyBindings
+  KeyBindings,
+  LoaderIcon
 ){
   return declare("Search", [Dialog], {
     style: "width: 50%;",
@@ -17,7 +19,7 @@ define([
     content: '' +
       '<input type="text" class="query" style="width: 100%;" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
       '<div class="search-loading">' +
-      '  <img style="width: 20px;" src="' + app.dirs.loader + '">' +
+      '  <img style="width: 20px;" src="' + LoaderIcon + '">' +
       '</div>' +
       '<div class="results" style="max-height: 300px; overflow: auto;"></div>' +
       '<div class="paging" style="display: hidden;">' +

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Visualization/UI/Widgets/Timeline/TimeLabel.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Visualization/UI/Widgets/Timeline/TimeLabel.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define([
+  "dojo/_base/declare",
+  './Interval'
+], function (
+  declare,
+  Interval
+) {
+  return declare("TimeLabel", [], {
+    constructor: function (args) {
+      var self = this;
+
+      for (var key in args) {
+        self[key] = args[key];
+      }
+    },
+
+    intervals: {
+      second: new Interval({name: 'second', seconds: 1}),
+      minute: new Interval({name: 'minute', minutes: 1}),
+      hour: new Interval({name: 'hour', hours: 1}),
+      day: new Interval({name: 'day', days: 1}),
+      week: new Interval({name: 'week', days: 7}),
+      month: new Interval({name: 'month', months: 1}),
+      year: new Interval({name: 'year', years: 1}),
+      decade: new Interval({name: 'decade', years: 10})
+    },
+
+    monthNames: {
+      '01': 'JAN',
+      '02': 'FEB',
+      '03': 'MAR',
+      '04': 'APR',
+      '05': 'MAY',
+      '06': 'JUN',
+      '07': 'JUL',
+      '08': 'AUG',
+      '09': 'SEP',
+      '10': 'OCT',
+      '11': 'NOV',
+      '12': 'DEC'
+    },
+
+    // separators: ['-', '-', ' ', ':', ':', '.'],
+    separators: [' ', ' ', ' ', ':', ':', '.'],
+
+    reverseDates: true,
+
+    padWidths: [4, 2, 2, 2, 2, 2, 3],
+
+    fullDates: false,
+    includeDatePrefix: false,
+    neverJustHours: false,
+
+    intervalUnits: ['year', /* 'week', */ 'day', 'hour' /*, 'minute' */],
+    intervalPrecision: 2,
+    intervalPrecisionLimit: 3,
+
+    pad: function (n, width, z) {
+      z = z || '0';
+      n = n + '';
+      return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    },
+
+    intervalToIndex: function (interval) {
+      var self = this;
+
+      if (interval.cmp(self.intervals.second) &lt; 0) {
+        return {start: 6, end: 7};
+      } else if (interval.cmp(self.intervals.minute) &lt; 0) {
+        return {start: 5, end: 6};
+      } else if (interval.cmp(self.intervals.hour) &lt; 0) {
+        return {start: 4, end: 5};
+      } else if (interval.cmp(self.intervals.day) &lt; 0) {
+        return {start: 3, end: 4};
+      } else if (interval.cmp(self.intervals.week) &lt; 0) {
+        return {start: 2, end: 3};
+      } else if (interval.cmp(self.intervals.month) &lt; 0) {
+        return {start: 1, end: 3};
+      } else if (interval.cmp(self.intervals.year) &lt; 0) {
+        return {start: 1, end: 2};
+      } else {
+        return {start: 0, end: 1};
+      }
+    },
+
+    stepLengthIndex: function (args) {
+      var self = this;
+      var index = self.intervalToIndex(args.stepLength);
+
+      if (self.fullDates) index.end = Math.max(index.end, 3);
+      if (self.neverJustHours &amp;&amp; index.end == 4) index.end = 5;
+
+      var includeDatePrefix = self.includeDatePrefix;
+      if (args.includeDatePrefix != undefined) includeDatePrefix = args.includeDatePrefix;
+
+      if (includeDatePrefix) {
+        index.start = 0;
+      }
+
+      return index;
+    },
+
+    floorDate: function (args) {
+      var self = this;
+
+      var index = self.stepLengthIndex(args);
+
+      return Interval.listToDate(
+        [].concat(
+          Interval.dateToList(args.date).slice(0, index.end),
+          [0, 0, 0, 0, 0, 0, 0].slice(index.end)));
+    },
+
+    formatDate: function (args) {
+      var self = this;
+
+      var dateList = Interval.dateToList(args.date);
+      var index = self.stepLengthIndex(args);
+
+      dateList[1] += 1;
+      dateList[2] += 1;
+
+      for (var i = 0; i &lt; dateList.length; i++) {
+        dateList[i] = self.pad(dateList[i], self.padWidths[i]);
+      }
+
+      dateList[1] = self.monthNames[dateList[1]];
+
+      var resDateList = dateList.slice(index.start, index.end);
+      var separators = self.separators.slice(index.start, index.end - 1);
+
+      if (self.reverseDates) {
+        var dateLength = 3 - index.start;
+        if (dateLength > 0) {
+          resDateList = [].concat(
+            resDateList.slice(0, dateLength).reverse(),
+            resDateList.slice(dateLength)
+          );
+        }
+      }
+
+      separators = [""].concat(separators);
+
+      var res = [];
+      for (var i = 0; i &lt; resDateList.length; i++) {
+        res.push(separators[i]);
+        res.push(resDateList[i]);
+      }
+      return res.join('');
+    },
+
+    formatInterval: function (args) {
+      var self = this;
+
+      res = [];
+      var interval = args.interval;
+
+      self.intervalUnits.map(function (unitName) {
+        var value;
+        if (unitName == 'second') {
+          value = interval / 1000.0;
+          interval = 0;
+        } else {
+          var unit = self.intervals[unitName].asMilliseconds;
+          value = Math.floor(interval / unit);
+          interval = interval % unit;
+        }
+        res.push({
+          value: value,
+          name: unitName
+        });
+      });
+
+      var prefix = 0;
+      for (; prefix &lt; res.length; prefix++) {
+        if (res[prefix].value != 0) break;
+      }
+      res = res.slice(prefix);
+
+      if (self.intervalPrecision != undefined) {
+        res = res.slice(0, self.intervalPrecision);
+      }
+
+      res = res.filter(function (item) { return item.value > 0; });
+
+      if (self.intervalPrecisionLimit != undefined) {
+        if (res.length > 1 &amp;&amp; (res.length > 2 || res[res.length-2].value >= self.intervalPrecisionLimit)) res = res.slice(0, res.length-1);
+      }
+
+      res = res.map(function (item) { return item.value.toString() + " " + item.name + (item.value > 1 ? 's' : ''); });
+      return res.join(", ");
+    }
+  });
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bounds.html">Bounds</a></li><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="Condition.html">Condition</a></li><li><a href="CountryCodes.html">CountryCodes</a></li><li><a href="Data_Ajax.html">Data/Ajax</a></li><li><a href="Data_BaseTiledFormat.html">Data/BaseTiledFormat</a></li><li><a href="Data_BaseTiledFormat_DataContainer.html">Data/BaseTiledFormat:DataContainer</a></li><li><a href="Data_BinFormat.html">Data/BinFormat</a></li><li><a href="Data_CartoDBInfoWindow.html">Data/CartoDBInfoWindow</a></li><li><a href="Data_ClusterTestFormat.html">Data/ClusterTestFormat</a></li><li><a href="Data_DataManager.html">Data/DataManager</a></li><li><a href="Data_DataView.html">Data/DataView</a></li><li><a href="Data_EmptyFormat.html">Data/EmptyFormat</a></li><li><a href="Data_Format.html">Data/Format</a></li><li><a href="Data_GeoProjection.html">Data/GeoProjection</a></li><li><a href="Data_Pack.html">Data/Pack</a></li><li><a href="Data_Selection.html">Data/Selection</a></li><li><a href="Data_SelectionManager.html">Data/SelectionManager</a></li><li><a href="Data_Tile.html">Data/Tile</a></li><li><a href="Data_TileBounds.html">Data/TileBounds</a></li><li><a href="Data_TiledBinFormat.html">Data/TiledBinFormat</a></li><li><a href="Data_TiledEmptyFormat.html">Data/TiledEmptyFormat</a></li><li><a href="Data_TypedMatrixGenerator.html">Data/TypedMatrixGenerator</a></li><li><a href="Data_TypedMatrixParser.html">Data/TypedMatrixParser</a></li><li><a href="Events.html">Events</a></li><li><a href="Json.html">Json</a></li><li><a href="LoadingInfo.html">LoadingInfo</a></li><li><a href="Logging.html">Logging</a></li><li><a href="Logging_Destination.html">Logging/Destination</a></li><li><a href="Logging_GoogleAnalyticsDestination.html">Logging/GoogleAnalyticsDestination</a></li><li><a href="Logging_LogglyDestination.html">Logging/LogglyDestination</a></li><li><a href="Logging_ScreenDestination.html">Logging/ScreenDestination</a></li><li><a href="Logging_ServerDestination.html">Logging/ServerDestination</a></li><li><a href="Logging_StoreDestination.html">Logging/StoreDestination</a></li><li><a href="Logging_Logging__Entry.html">Logging:Logging__Entry</a></li><li><a href="ObjectTemplate.html">ObjectTemplate</a></li><li><a href="PopupAuth.html">PopupAuth</a></li><li><a href="SpaceTime.html">SpaceTime</a></li><li><a href="SubscribableDict.html">SubscribableDict</a></li><li><a href="Test.html">Test</a></li><li><a href="Test_BaseTest.html">Test/BaseTest</a></li><li><a href="Test_Data_BinFormat.html">Test/Data/BinFormat</a></li><li><a href="Test_Data_DataView.html">Test/Data/DataView</a></li><li><a href="Test_Data_TiledEmptyFormat.html">Test/Data/TiledEmptyFormat</a></li><li><a href="Test_Data_TypedMatrixParser.html">Test/Data/TypedMatrixParser</a></li><li><a href="Test_Events.html">Test/Events</a></li><li><a href="Test_Logging.html">Test/Logging</a></li><li><a href="Test_SubscribableDict.html">Test/SubscribableDict</a></li><li><a href="Test_SubscribableDict_OtherType.html">Test/SubscribableDict:OtherType</a></li><li><a href="Test_SubscribableDict_TestType.html">Test/SubscribableDict:TestType</a></li><li><a href="Timerange.html">Timerange</a></li><li><a href="UrlValues.html">UrlValues</a></li><li><a href="Visualization_Animation_Animation.html">Visualization/Animation/Animation</a></li><li><a href="Visualization_Animation_AnimationManager.html">Visualization/Animation/AnimationManager</a></li><li><a href="Visualization_Animation_ArrowAnimation.html">Visualization/Animation/ArrowAnimation</a></li><li><a href="Visualization_Animation_CartoDBAnimation.html">Visualization/Animation/CartoDBAnimation</a></li><li><a href="Visualization_Animation_ClusterAnimation.html">Visualization/Animation/ClusterAnimation</a></li><li><a href="Visualization_Animation_DataAnimation.html">Visualization/Animation/DataAnimation</a></li><li><a href="Visualization_Animation_DebugAnimation.html">Visualization/Animation/DebugAnimation</a></li><li><a href="Visualization_Animation_LineAnimation.html">Visualization/Animation/LineAnimation</a></li><li><a href="Visualization_Animation_LineStripAnimation.html">Visualization/Animation/LineStripAnimation</a></li><li><a href="Visualization_Animation_MapsEngineAnimation.html">Visualization/Animation/MapsEngineAnimation</a></li><li><a href="Visualization_Animation_Matrix.html">Visualization/Animation/Matrix</a></li><li><a href="Visualization_Animation_PointAnimation.html">Visualization/Animation/PointAnimation</a></li><li><a href="Visualization_Animation_Rowidx.html">Visualization/Animation/Rowidx</a></li><li><a href="Visualization_Animation_SatelliteAnimation.html">Visualization/Animation/SatelliteAnimation</a></li><li><a href="Visualization_Animation_Shader.html">Visualization/Animation/Shader</a></li><li><a href="Visualization_Animation_TileAnimation.html">Visualization/Animation/TileAnimation</a></li><li><a href="Visualization_Animation_VesselTrackAnimation.html">Visualization/Animation/VesselTrackAnimation</a></li><li><a href="Visualization_KeyBindings.html">Visualization/KeyBindings</a></li><li><a href="Visualization_KeyModifiers.html">Visualization/KeyModifiers</a></li><li><a href="Visualization_UI_BasicSidebar.html">Visualization/UI/BasicSidebar</a></li><li><a href="Visualization_UI_SidePanels_SidePanelManager_InfoUI.html">Visualization/UI/SidePanels/SidePanelManager:InfoUI</a></li><li><a href="Visualization_UI_UIManager_UI.html">Visualization/UI/UIManager:UI</a></li><li><a href="Visualization_Visualization.html">Visualization/Visualization</a></li></ul><h3>Global</h3><ul><li><a href="global.html#%2522border-color%2522">"border-color"</a></li><li><a href="global.html#%2522info-error%2522">"info-error"</a></li><li><a href="global.html#%2522info-loading%2522">"info-loading"</a></li><li><a href="global.html#%2522tile-error%2522">"tile-error"</a></li><li><a href="global.html#__all__">__all__</a></li><li><a href="global.html#__jsonclass__">__jsonclass__</a></li><li><a href="global.html#_buttonNode">_buttonNode</a></li><li><a href="global.html#_getBaseTemplateContext">_getBaseTemplateContext</a></li><li><a href="global.html#_getMultivaluedTemplateContext">_getMultivaluedTemplateContext</a></li><li><a href="global.html#_getPolygonFieldKeys">_getPolygonFieldKeys</a></li><li><a href="global.html#_onBlur">_onBlur</a></li><li><a href="global.html#_selector">_selector</a></li><li><a href="global.html#_setAnimationAttr">_setAnimationAttr</a></li><li><a href="global.html#_setChoicesAttr">_setChoicesAttr</a></li><li><a href="global.html#_setDestinationRulesAttr">_setDestinationRulesAttr</a></li><li><a href="global.html#_setDragHandlesAttr">_setDragHandlesAttr</a></li><li><a href="global.html#_setEndLabelPositionAttr">_setEndLabelPositionAttr</a></li><li><a href="global.html#_setLabelPositionAttr">_setLabelPositionAttr</a></li><li><a href="global.html#_setLengthLabelPositionAttr">_setLengthLabelPositionAttr</a></li><li><a href="global.html#_setRuleAttr">_setRuleAttr</a></li><li><a href="global.html#_setSourcenameAttr">_setSourcenameAttr</a></li><li><a href="global.html#_setStartLabelPositionAttr">_setStartLabelPositionAttr</a></li><li><a href="global.html#_setupDownloadLink">_setupDownloadLink</a></li><li><a href="global.html#_setupReportLink">_setupReportLink</a></li><li><a href="global.html#_setValueAttr">_setValueAttr</a></li><li><a href="global.html#_setZoomPositionAttr">_setZoomPositionAttr</a></li><li><a href="global.html#_updateContainerNode">_updateContainerNode</a></li><li><a href="global.html#_updateContainerWithCustomInfo">_updateContainerWithCustomInfo</a></li><li><a href="global.html#_updateContainerWithVesselInfo">_updateContainerWithVesselInfo</a></li><li><a href="global.html#_updateTitle">_updateTitle</a></li><li><a href="global.html#actionBarTemplate">actionBarTemplate</a></li><li><a href="global.html#activateSearch">activateSearch</a></li><li><a href="global.html#active">active</a></li><li><a href="global.html#active_category">active_category</a></li><li><a href="global.html#activeKeys">activeKeys</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#addCartoDBAnimation">addCartoDBAnimation</a></li><li><a href="global.html#addFromLibrary">addFromLibrary</a></li><li><a href="global.html#addHandler">addHandler</a></li><li><a href="global.html#all">all</a></li><li><a href="global.html#allLoaded">allLoaded</a></li><li><a href="global.html#animation">animation</a></li><li><a href="global.html#animationFilter">animationFilter</a></li><li><a href="global.html#animations">animations</a></li><li><a href="global.html#anumber">anumber</a></li><li><a href="global.html#app">app</a></li><li><a href="global.html#args">args</a></li><li><a href="global.html#around">around</a></li><li><a href="global.html#astring">astring</a></li><li><a href="global.html#atesttype">atesttype</a></li><li><a href="global.html#attr0">attr0</a></li><li><a href="global.html#attrmapper">attrmapper</a></li><li><a href="global.html#background">background</a></li><li><a href="global.html#backgroundCss">backgroundCss</a></li><li><a href="global.html#baseClass">baseClass</a></li><li><a href="global.html#batch">batch</a></li><li><a href="global.html#bbox">bbox</a></li><li><a href="global.html#beginEdit">beginEdit</a></li><li><a href="global.html#bottom">bottom</a></li><li><a href="global.html#bounds">bounds</a></li><li><a href="global.html#buf%255Bundefined%255D">buf[undefined]</a></li><li><a href="global.html#buildRendering">buildRendering</a></li><li><a href="global.html#cachedTileLoading">cachedTileLoading</a></li><li><a href="global.html#cachedTileLoading_pre">cachedTileLoading_pre</a></li><li><a href="global.html#calculateStepSize">calculateStepSize</a></li><li><a href="global.html#category">category</a></li><li><a href="global.html#center">center</a></li><li><a href="global.html#change">change</a></li><li><a href="global.html#choices">choices</a></li><li><a href="global.html#class">class</a></li><li><a href="global.html#clear">clear</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#close">close</a></li><li><a href="global.html#cmp">cmp</a></li><li><a href="global.html#col">col</a></li><li><a href="global.html#colLoaded">colLoaded</a></li><li><a href="global.html#color">color</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#cols">cols</a></li><li><a href="global.html#column">column</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#complete_ancestor">complete_ancestor</a></li><li><a href="global.html#constraints">constraints</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#content">content</a></li><li><a href="global.html#contentTemplate">contentTemplate</a></li><li><a href="global.html#contentTime">contentTime</a></li><li><a href="global.html#context">context</a></li><li><a href="global.html#controlButtons">controlButtons</a></li><li><a href="global.html#cookie">cookie</a></li><li><a href="global.html#count">count</a></li><li><a href="global.html#css">css</a></li><li><a href="global.html#cssStateNodes">cssStateNodes</a></li><li><a href="global.html#data">data</a></li><li><a href="global.html#data%255Bundefined%255D%255Bundefined%255D">data[undefined][undefined]</a></li><li><a href="global.html#dataview">dataview</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#datetime">datetime</a></li><li><a href="global.html#days">days</a></li><li><a href="global.html#decreaseSpeed">decreaseSpeed</a></li><li><a href="global.html#design">design</a></li><li><a href="global.html#destination">destination</a></li><li><a href="global.html#destinationRules">destinationRules</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#dir">dir</a></li><li><a href="global.html#disabled">disabled</a></li><li><a href="global.html#discreteValues">discreteValues</a></li><li><a href="global.html#Display">Display</a></li><li><a href="global.html#display">display</a></li><li><a href="global.html#displayAnimationLibraryDialog">displayAnimationLibraryDialog</a></li><li><a href="global.html#displayAnimationsForSource">displayAnimationsForSource</a></li><li><a href="global.html#displayHelpDialog">displayHelpDialog</a></li><li><a href="global.html#displayPerformanceDialog">displayPerformanceDialog</a></li><li><a href="global.html#displaySearchDialog">displaySearchDialog</a></li><li><a href="global.html#displaySearchResults">displaySearchResults</a></li><li><a href="global.html#divide">divide</a></li><li><a href="global.html#drag">drag</a></li><li><a href="global.html#drag_moveTimeline_multiTouch">drag_moveTimeline_multiTouch</a></li><li><a href="global.html#drag_moveTimeline_pointer">drag_moveTimeline_pointer</a></li><li><a href="global.html#drag_windowResizeLeft">drag_windowResizeLeft</a></li><li><a href="global.html#drag_windowResizeRight">drag_windowResizeRight</a></li><li><a href="global.html#dragEnd">dragEnd</a></li><li><a href="global.html#dragEnd_moveTimeline_multiTouch">dragEnd_moveTimeline_multiTouch</a></li><li><a href="global.html#dragEnd_moveTimeline_pointer">dragEnd_moveTimeline_pointer</a></li><li><a href="global.html#dragEnd_windowResizeLeft">dragEnd_windowResizeLeft</a></li><li><a href="global.html#dragEnd_windowResizeRight">dragEnd_windowResizeRight</a></li><li><a href="global.html#dragHandles">dragHandles</a></li><li><a href="global.html#dragStart">dragStart</a></li><li><a href="global.html#dragStart_moveTimeline">dragStart_moveTimeline</a></li><li><a href="global.html#dragStart_moveTimeline_multiTouch">dragStart_moveTimeline_multiTouch</a></li><li><a href="global.html#dragStart_moveTimeline_pointer">dragStart_moveTimeline_pointer</a></li><li><a href="global.html#dragStart_windowResizeLeft">dragStart_windowResizeLeft</a></li><li><a href="global.html#dragStart_windowResizeRight">dragStart_windowResizeRight</a></li><li><a href="global.html#dropDown">dropDown</a></li><li><a href="global.html#dropDownDefaultValue">dropDownDefaultValue</a></li><li><a href="global.html#east">east</a></li><li><a href="global.html#eatEvent">eatEvent</a></li><li><a href="global.html#edit">edit</a></li><li><a href="global.html#editAnimation">editAnimation</a></li><li><a href="global.html#editRangeEnd">editRangeEnd</a></li><li><a href="global.html#EmptyWidget">EmptyWidget</a></li><li><a href="global.html#end">end</a></li><li><a href="global.html#endData">endData</a></li><li><a href="global.html#endEdit">endEdit</a></li><li><a href="global.html#endidx">endidx</a></li><li><a href="global.html#endLabelPosition">endLabelPosition</a></li><li><a href="global.html#endLabelTitle">endLabelTitle</a></li><li><a href="global.html#error">error</a></li><li><a href="global.html#eventAction">eventAction</a></li><li><a href="global.html#eventCategory">eventCategory</a></li><li><a href="global.html#eventLabel">eventLabel</a></li><li><a href="global.html#featureType">featureType</a></li><li><a href="global.html#filterBySelection">filterBySelection</a></li><li><a href="global.html#firstEvent">firstEvent</a></li><li><a href="global.html#floorDate">floorDate</a></li><li><a href="global.html#foo">foo</a></li><li><a href="global.html#format">format</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatInterval">formatInterval</a></li><li><a href="global.html#fullDates">fullDates</a></li><li><a href="global.html#getDirectory">getDirectory</a></li><li><a href="global.html#getEditorClass">getEditorClass</a></li><li><a href="global.html#getFilter">getFilter</a></li><li><a href="global.html#getFirstPosition">getFirstPosition</a></li><li><a href="global.html#getItemList">getItemList</a></li><li><a href="global.html#getNextStepLength">getNextStepLength</a></li><li><a href="global.html#getPrevStepLength">getPrevStepLength</a></li><li><a href="global.html#getReportUrl">getReportUrl</a></li><li><a href="global.html#getXorder">getXorder</a></li><li><a href="global.html#handleAccept">handleAccept</a></li><li><a href="global.html#handleCancel">handleCancel</a></li><li><a href="global.html#handler">handler</a></li><li><a href="global.html#handleSelectionChange">handleSelectionChange</a></li><li><a href="global.html#hasDownArrow">hasDownArrow</a></li><li><a href="global.html#header">header</a></li><li><a href="global.html#headerLoaded">headerLoaded</a></li><li><a href="global.html#headerTime">headerTime</a></li><li><a href="global.html#height">height</a></li><li><a href="global.html#hiddenContext">hiddenContext</a></li><li><a href="global.html#hitType">hitType</a></li><li><a href="global.html#hours">hours</a></li><li><a href="global.html#href">href</a></li><li><a href="global.html#i%255Bundefined%255D">i[undefined]</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#idCounter">idCounter</a></li><li><a href="global.html#img">img</a></li><li><a href="global.html#includeDatePrefix">includeDatePrefix</a></li><li><a href="global.html#inclusive">inclusive</a></li><li><a href="global.html#increaseSpeed">increaseSpeed</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#infowindow">infowindow</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#intensityChange">intensityChange</a></li><li><a href="global.html#intermediateChanges">intermediateChanges</a></li><li><a href="global.html#interval">interval</a></li><li><a href="global.html#intervalPrecision">intervalPrecision</a></li><li><a href="global.html#intervalPrecisionLimit">intervalPrecisionLimit</a></li><li><a href="global.html#intervals">intervals</a></li><li><a href="global.html#intervalToIndex">intervalToIndex</a></li><li><a href="global.html#intervalUnits">intervalUnits</a></li><li><a href="global.html#invertedRule">invertedRule</a></li><li><a href="global.html#key">key</a></li><li><a href="global.html#keyDown">keyDown</a></li><li><a href="global.html#keydown">keydown</a></li><li><a href="global.html#keys">keys</a></li><li><a href="global.html#keyup">keyup</a></li><li><a href="global.html#label">label</a></li><li><a href="global.html#lang">lang</a></li><li><a href="global.html#lat">lat</a></li><li><a href="global.html#layer">layer</a></li><li><a href="global.html#layerId">layerId</a></li><li><a href="global.html#left">left</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#lengthLabelPosition">lengthLabelPosition</a></li><li><a href="global.html#lengthLabelTitle">lengthLabelTitle</a></li><li><a href="global.html#limit">limit</a></li><li><a href="global.html#liveSplitters">liveSplitters</a></li><li><a href="global.html#lng">lng</a></li><li><a href="global.html#load">load</a></li><li><a href="global.html#loaded">loaded</a></li><li><a href="global.html#LoaderIcon">LoaderIcon</a></li><li><a href="global.html#loadTilesForZomm">loadTilesForZomm</a></li><li><a href="global.html#logging">logging</a></li><li><a href="global.html#logglyKey">logglyKey</a></li><li><a href="global.html#logo">logo</a></li><li><a href="global.html#lon">lon</a></li><li><a href="global.html#loop">loop</a></li><li><a href="global.html#map">map</a></li><li><a href="global.html#margin">margin</a></li><li><a href="global.html#matrix%255B0%255D">matrix[0]</a></li><li><a href="global.html#matrix%255B1%255D">matrix[1]</a></li><li><a href="global.html#matrix%255B2%255D">matrix[2]</a></li><li><a href="global.html#matrix%255B3%255D">matrix[3]</a></li><li><a href="global.html#matrix%255B4%255D">matrix[4]</a></li><li><a href="global.html#matrix%255B5%255D">matrix[5]</a></li><li><a href="global.html#matrix%255B6%255D">matrix[6]</a></li><li><a href="global.html#matrix%255B7%255D">matrix[7]</a></li><li><a href="global.html#matrix%255B12%255D">matrix[12]</a></li><li><a href="global.html#matrix%255B13%255D">matrix[13]</a></li><li><a href="global.html#matrix%255B14%255D">matrix[14]</a></li><li><a href="global.html#matrix%255B15%255D">matrix[15]</a></li><li><a href="global.html#max">max</a></li><li><a href="global.html#maximum">maximum</a></li><li><a href="global.html#maxWindowSize">maxWindowSize</a></li><li><a href="global.html#maybeEndEdit">maybeEndEdit</a></li><li><a href="global.html#menuFor">menuFor</a></li><li><a href="global.html#milliseconds">milliseconds</a></li><li><a href="global.html#min">min</a></li><li><a href="global.html#minimum">minimum</a></li><li><a href="global.html#minutes">minutes</a></li><li><a href="global.html#minWindowSize">minWindowSize</a></li><li><a href="global.html#monthNames">monthNames</a></li><li><a href="global.html#months">months</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#msg">msg</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#neverJustHours">neverJustHours</a></li><li><a href="global.html#newBounds">newBounds</a></li><li><a href="global.html#newWantedTiles">newWantedTiles</a></li><li><a href="global.html#noFilterTitle">noFilterTitle</a></li><li><a href="global.html#north">north</a></li><li><a href="global.html#offset">offset</a></li><li><a href="global.html#oldBounds">oldBounds</a></li><li><a href="global.html#oldWantedTiles">oldWantedTiles</a></li><li><a href="global.html#onCancel">onCancel</a></li><li><a href="global.html#onChange">onChange</a></li><li><a href="global.html#onClick">onClick</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#onExecute">onExecute</a></li><li><a href="global.html#onMouseLeave">onMouseLeave</a></li><li><a href="global.html#openDropDown">openDropDown</a></li><li><a href="global.html#options">options</a></li><li><a href="global.html#orientation">orientation</a></li><li><a href="global.html#out%255B0%255D">out[0]</a></li><li><a href="global.html#out%255B1%255D">out[1]</a></li><li><a href="global.html#out%255B2%255D">out[2]</a></li><li><a href="global.html#out%255B3%255D">out[3]</a></li><li><a href="global.html#out%255B4%255D">out[4]</a></li><li><a href="global.html#out%255B5%255D">out[5]</a></li><li><a href="global.html#out%255B6%255D">out[6]</a></li><li><a href="global.html#out%255B7%255D">out[7]</a></li><li><a href="global.html#out%255B8%255D">out[8]</a></li><li><a href="global.html#out%255B9%255D">out[9]</a></li><li><a href="global.html#out%255B10%255D">out[10]</a></li><li><a href="global.html#out%255B11%255D">out[11]</a></li><li><a href="global.html#out%255B12%255D">out[12]</a></li><li><a href="global.html#out%255B13%255D">out[13]</a></li><li><a href="global.html#out%255B14%255D">out[14]</a></li><li><a href="global.html#out%255B15%255D">out[15]</a></li><li><a href="global.html#overflow">overflow</a></li><li><a href="global.html#pad">pad</a></li><li><a href="global.html#padWidths">padWidths</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#paths">paths</a></li><li><a href="global.html#pattern">pattern</a></li><li><a href="global.html#pause">pause</a></li><li><a href="global.html#paused">paused</a></li><li><a href="global.html#pending">pending</a></li><li><a href="global.html#performSearch">performSearch</a></li><li><a href="global.html#pixelOffsetToTimeOffset">pixelOffsetToTimeOffset</a></li><li><a href="global.html#placeHolder">placeHolder</a></li><li><a href="global.html#play">play</a></li><li><a href="global.html#playControl">playControl</a></li><li><a href="global.html#popup">popup</a></li><li><a href="global.html#popupClass">popupClass</a></li><li><a href="global.html#position">position</a></li><li><a href="global.html#postCreate">postCreate</a></li><li><a href="global.html#preserveDrawingBuffer">preserveDrawingBuffer</a></li><li><a href="global.html#preserveViewport">preserveViewport</a></li><li><a href="global.html#printTree">printTree</a></li><li><a href="global.html#profile">profile</a></li><li><a href="global.html#query">query</a></li><li><a href="global.html#query_url">query_url</a></li><li><a href="global.html#queryQueyUp">queryQueyUp</a></li><li><a href="global.html#rangemarks">rangemarks</a></li><li><a href="global.html#rangeUpdated">rangeUpdated</a></li><li><a href="global.html#receiving">receiving</a></li><li><a href="global.html#recreateRangemarks">recreateRangemarks</a></li><li><a href="global.html#recreateTickmarks">recreateTickmarks</a></li><li><a href="global.html#recreateTickmarksLevel">recreateTickmarksLevel</a></li><li><a href="global.html#region">region</a></li><li><a href="global.html#rel">rel</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#removeHandler">removeHandler</a></li><li><a href="global.html#rendering">rendering</a></li><li><a href="global.html#report">report</a></li><li><a href="global.html#reportDialog">reportDialog</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#restrictednumber">restrictednumber</a></li><li><a href="global.html#result%255Bundefined%255D">result[undefined]</a></li><li><a href="global.html#reverseDates">reverseDates</a></li><li><a href="global.html#right">right</a></li><li><a href="global.html#root">root</a></li><li><a href="global.html#round">round</a></li><li><a href="global.html#rowidx">rowidx</a></li><li><a href="global.html#rowLoaded">rowLoaded</a></li><li><a href="global.html#rule">rule</a></li><li><a href="global.html#rules">rules</a></li><li><a href="global.html#scope">scope</a></li><li><a href="global.html#script">script</a></li><li><a href="global.html#search">search</a></li><li><a href="global.html#secondEvent">secondEvent</a></li><li><a href="global.html#seconds">seconds</a></li><li><a href="global.html#selectAnimation">selectAnimation</a></li><li><a href="global.html#selected">selected</a></li><li><a href="global.html#selection">selection</a></li><li><a href="global.html#selections">selections</a></li><li><a href="global.html#separators">separators</a></li><li><a href="global.html#series">series</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#setContextFromVisibleContext">setContextFromVisibleContext</a></li><li><a href="global.html#setDate">setDate</a></li><li><a href="global.html#setDateTime">setDateTime</a></li><li><a href="global.html#setDefaultTitle">setDefaultTitle</a></li><li><a href="global.html#setEditor">setEditor</a></li><li><a href="global.html#setExpanded">setExpanded</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setLength">setLength</a></li><li><a href="global.html#setPaused">setPaused</a></li><li><a href="global.html#setRange">setRange</a></li><li><a href="global.html#setRangeFromOffset">setRangeFromOffset</a></li><li><a href="global.html#setRangemarks">setRangemarks</a></li><li><a href="global.html#setSlectValueFromFilter">setSlectValueFromFilter</a></li><li><a href="global.html#setTime">setTime</a></li><li><a href="global.html#setTimeFocus">setTimeFocus</a></li><li><a href="global.html#setVisible">setVisible</a></li><li><a href="global.html#setVisibleContextFromRange">setVisibleContextFromRange</a></li><li><a href="global.html#setWindowSize">setWindowSize</a></li><li><a href="global.html#share">share</a></li><li><a href="global.html#show">show</a></li><li><a href="global.html#showCenterLabelAtWidth">showCenterLabelAtWidth</a></li><li><a href="global.html#showRightLabelAtWidth">showRightLabelAtWidth</a></li><li><a href="global.html#sideBar">sideBar</a></li><li><a href="global.html#slider2val">slider2val</a></li><li><a href="global.html#snapZoomToTickmarks">snapZoomToTickmarks</a></li><li><a href="global.html#someEvent">someEvent</a></li><li><a href="global.html#sortcols">sortcols</a></li><li><a href="global.html#sortRules">sortRules</a></li><li><a href="global.html#source">source</a></li><li><a href="global.html#sourcename">sourcename</a></li><li><a href="global.html#sources">sources</a></li><li><a href="global.html#south">south</a></li><li><a href="global.html#spec">spec</a></li><li><a href="global.html#splitter">splitter</a></li><li><a href="global.html#splitTickmarksOnLargerUnitBoundaries">splitTickmarksOnLargerUnitBoundaries</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#startData">startData</a></li><li><a href="global.html#startidx">startidx</a></li><li><a href="global.html#startLabelPosition">startLabelPosition</a></li><li><a href="global.html#startLabelTitle">startLabelTitle</a></li><li><a href="global.html#startup">startup</a></li><li><a href="global.html#state">state</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stepLength">stepLength</a></li><li><a href="global.html#stepLengthIndex">stepLengthIndex</a></li><li><a href="global.html#stepLengths">stepLengths</a></li><li><a href="global.html#stepZoom">stepZoom</a></li><li><a href="global.html#stopPropagation">stopPropagation</a></li><li><a href="global.html#store_stack">store_stack</a></li><li><a href="global.html#store_time">store_time</a></li><li><a href="global.html#style">style</a></li><li><a href="global.html#stylers">stylers</a></li><li><a href="global.html#subtractFrom">subtractFrom</a></li><li><a href="global.html#suppressInfoWindows">suppressInfoWindows</a></li><li><a href="global.html#template">template</a></li><li><a href="global.html#templates">templates</a></li><li><a href="global.html#templateString">templateString</a></li><li><a href="global.html#temporalExtents">temporalExtents</a></li><li><a href="global.html#temporalExtentsBase">temporalExtentsBase</a></li><li><a href="global.html#textDir">textDir</a></li><li><a href="global.html#tickmarkLabels">tickmarkLabels</a></li><li><a href="global.html#tile">tile</a></li><li><a href="global.html#tileLoading">tileLoading</a></li><li><a href="global.html#tilesPerScreen">tilesPerScreen</a></li><li><a href="global.html#time">time</a></li><li><a href="global.html#timeExtent">timeExtent</a></li><li><a href="global.html#timeFocus">timeFocus</a></li><li><a href="global.html#timeLabel">timeLabel</a></li><li><a href="global.html#timeline">timeline</a></li><li><a href="global.html#timelineMousedown">timelineMousedown</a></li><li><a href="global.html#timerange">timerange</a></li><li><a href="global.html#timeTask">timeTask</a></li><li><a href="global.html#title">title</a></li><li><a href="global.html#titleChanged">titleChanged</a></li><li><a href="global.html#toggle">toggle</a></li><li><a href="global.html#toJSON">toJSON</a></li><li><a href="global.html#top">top</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#type">type</a></li><li><a href="global.html#ui">ui</a></li><li><a href="global.html#uniforms">uniforms</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#updated">updated</a></li><li><a href="global.html#updatedHandler">updatedHandler</a></li><li><a href="global.html#updateList">updateList</a></li><li><a href="global.html#updateLoading">updateLoading</a></li><li><a href="global.html#url">url</a></li><li><a href="global.html#value">value</a></li><li><a href="global.html#values">values</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#versioned_url">versioned_url</a></li><li><a href="global.html#visibility">visibility</a></li><li><a href="global.html#visualization">visualization</a></li><li><a href="global.html#west">west</a></li><li><a href="global.html#width">width</a></li><li><a href="global.html#windowDragStart">windowDragStart</a></li><li><a href="global.html#windowEnd">windowEnd</a></li><li><a href="global.html#windowLengHoverLabels">windowLengHoverLabels</a></li><li><a href="global.html#windowLengLabels">windowLengLabels</a></li><li><a href="global.html#windowStart">windowStart</a></li><li><a href="global.html#windowTimeLabels">windowTimeLabels</a></li><li><a href="global.html#withCredentials">withCredentials</a></li><li><a href="global.html#x">x</a></li><li><a href="global.html#y">y</a></li><li><a href="global.html#years">years</a></li><li><a href="global.html#zoom">zoom</a></li><li><a href="global.html#zoomIn">zoomIn</a></li><li><a href="global.html#zoomOut">zoomOut</a></li><li><a href="global.html#zoomPosition">zoomPosition</a></li><li><a href="global.html#zoomSize">zoomSize</a></li><li><a href="global.html#zoomTo">zoomTo</a></li><li><a href="global.html#zoomWheel">zoomWheel</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

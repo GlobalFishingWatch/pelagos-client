@@ -17,8 +17,11 @@ define([
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
-  "async",
-  "jQuery"
+  "shims/async/main",
+  "shims/jQuery/main",
+  "shims/less/main",
+  "shims/Styles",
+  "app/Visualization/UI/Paths"
 ], function (
   Class,
   Dialog,
@@ -39,33 +42,33 @@ define([
   BorderContainer,
   ContentPane,
   async,
-  $) {
+  $,
+  less,
+  Styles,
+  Paths
+) {
   return Class({
     name: "UI",
+
+    stylesheets: [
+      "libs/font-awesome/css/font-awesome.min.css",
+      "libs/dojo-theme-flat/CSS/dojo/flat.css",
+      "libs/dojox/layout/resources/FloatingPane.css",
+      "libs/dojox/layout/resources/ResizeHandle.css",
+      {url: "app/Visualization/UI/style.less", rel:"stylesheet/less"}
+    ],
+
     initialize: function (visualization) {
       var self = this;
       self.visualization = visualization;
     },
 
-    init1: function (cb) {
-      var self = this;
-
-      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
-      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
-      self.container.addChild(self.animationsContainer);
-
-      self.visualization.node.append(self.container.domNode);
-      self.visualization.node = $(self.animationsContainer.domNode);
-
-      self.container.startup();
-
-      cb();
-    },
-
-    init2: function (cb) {
+    init: function (cb) {
       var self = this;
 
       async.series([
+        self.initStyles.bind(self),
+        self.initContainer.bind(self),
         self.initButtons.bind(self),
         self.initLoadSpinner.bind(self),
         self.initPlayButton.bind(self),
@@ -74,7 +77,34 @@ define([
         self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
         self.initPopups.bind(self)
-      ], function () { cb(); });
+      ], function () {
+        self.container.resize();
+        self.visualization.animations.windowSizeChanged();
+        cb();
+      });
+    },
+
+    initStyles: function (cb) {
+      var self = this;
+
+      self.stylesheets.map(Styles.add);
+      less.registerStylesheets($("link[rel='stylesheet/less']"));
+      less.refresh().done(function () { cb(); });
+    },
+
+    initContainer: function (cb) {
+      var self = this;
+
+      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
+      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
+      self.container.addChild(self.animationsContainer);
+
+      $(self.animationsContainer.domNode).append(self.visualization.node.children());
+      self.visualization.node.append(self.container.domNode);
+      self.visualization.node = $(self.animationsContainer.domNode);
+
+      self.container.startup();
+      cb();
     },
 
     initButtons: function (cb) {
@@ -101,7 +131,7 @@ define([
         + '      <button class="btn btn-default btn-xs" data-name="end"><i class="fa fa-step-forward"></i></button>'
         + '    </div>'
         + '  </a>'
-        + '</div>').eval(app.dirs));
+        + '</div>').eval(Paths));
       self.visualization.node.append(self.controlButtonsNode);
 
       self.controlButtonsNode.find(".btn").each(function () {
@@ -143,20 +173,38 @@ define([
 
     initLoadSpinner: function(cb) {
       var self = this;
+      var isActive = false;
+      var wantedActive = false;
+      var activateTimeout = undefined;
 
-      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + app.dirs.loader + '"></div>');
+      /* Use a timeout since we might get many hundreds, if not
+       * thousands of activations/inactivations in a second.
+       */
+      var setActiveHandler = function () {
+        self.loadingNode.stop();
+
+        if (wantedActive) {
+          self.loadingNode.fadeIn();
+        } else {
+          self.loadingNode.fadeOut();
+        }
+
+        isActive = wantedActive;
+        activateTimeout = undefined;
+      };
+      var setActive = function (active) {
+        if (active == wantedActive || activateTimeout != undefined) return;
+        wantedActive = active;
+        setTimeout(setActiveHandler, 100);
+      };
+
+      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + Paths.LoaderIcon + '"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
       LoadingInfo.main.events.on({
-        start: function () {
-          self.loadingNode.stop();
-          self.loadingNode.fadeIn();
-        },
-        end: function () {
-          self.loadingNode.stop();
-          self.loadingNode.fadeOut();
-        }
+        start: setActive.bind(this, true),
+        end: setActive.bind(this, false)
       });
       self.visualization.data.events.on({
         error: function (data) {
@@ -168,7 +216,8 @@ define([
 
     initTimeline: function (cb) {
       var self = this;
-      var updating = false;
+      var updatingTimelineFromState = false;
+      var updatingStateFromTimeline = false;
 
       self.timeline = new Timeline({'class': 'main-timeline'});
       self.timeline.placeAt(self.visualization.node[0]);
@@ -235,6 +284,7 @@ define([
       var setRange = function (e) {
         var timeExtent = e.end - e.start;
 
+        updatingStateFromTimeline = true;
         if (timeExtent < self.visualization.state.getValue("timeExtent")) {
           self.visualization.state.setValue("timeExtent", timeExtent);
           self.visualization.state.setValue("time", e.end);
@@ -242,10 +292,11 @@ define([
           self.visualization.state.setValue("time", e.end);
           self.visualization.state.setValue("timeExtent", timeExtent);
         }
+        updatingStateFromTimeline = false;
       }
 
       var daySliderUpdateMinMax = function() {
-        if (updating) return;
+        if (updatingTimelineFromState) return;
 
         if (!self.visualization.data.header.colsByName.datetime) return;
 
@@ -277,7 +328,7 @@ define([
       };
 
       var daySliderUpdateValue = function () {
-        if (updating) return;
+        if (updatingTimelineFromState) return;
 
         var start;
         var end = self.visualization.state.getValue("time");
@@ -321,9 +372,11 @@ define([
           }
         }
 
-        updating = true;
-        self.timeline.setRange(start, end);
-        updating = false;
+        if (adjusted || !updatingStateFromTimeline) {
+          updatingTimelineFromState = true;
+          self.timeline.setRange(start, end);
+          updatingTimelineFromState = false;
+        }
       };
 
       self.timeline.on('set-range', setRange);
@@ -552,7 +605,7 @@ define([
       var self = this;
 
       self.config = config;
-      data = new ObjectTemplate(self.config).eval(app.dirs);
+      data = new ObjectTemplate(self.config).eval(Paths);
 
       if (typeof(data.logo) == "string") {
         self.logoNode.append(data.logo);

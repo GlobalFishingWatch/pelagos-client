@@ -39,7 +39,8 @@ define([
       }
     };
 
-    res.level = Math.ceil(Math.log(res.worldwidth / (res.width/Math.sqrt(tilesPerScreen)), 2));
+    res.level = Math.min(Math.floor(Math.log(res.worldheight / (res.height/Math.sqrt(tilesPerScreen)), 2)),
+                         Math.floor(Math.log(res.worldwidth / (res.width/Math.sqrt(tilesPerScreen)), 2)));
 
     res.tilewidth = res.worldwidth / Math.pow(2, res.level);
     res.tileheight = res.worldheight / Math.pow(2, res.level);
@@ -145,6 +146,21 @@ define([
     }
   };
 
+  /**
+   * Calculates the set bounds of tiles that should be loaded.
+   *
+   * This function can work with either Bounds objects and no temporal
+   * tiling (in which case the temporalExtents parameters should not
+   * be given), or with SpaceTime objects and temporal tiling.
+   *
+   * @function Data/TileBounds#tileBounds
+   * @static
+   * @param {Bounds|SpaceTime} args.bounds - Screen bbox or screen bbox and time range
+   * @param {Integer} args.tilesPerScreen - Approximate number of tiles to load
+   * @param {Float|Object[]} [args.temporalExtents] - Length of each temporal extent or explicit list of temporal extents, see docs on tileset header for details
+   * @param {Float} [args.temporalExtentsBase] - Optional, start of first temporal extent. If not given, 1970-01-01 00:00:00 UTC
+   * @returns {Bounds[]|SpaceTime} - List of tile bounds to load or list of tile bounds and time ranges to load
+   */
   TileBounds.tileBounds = function(args) {
     var sets = [];
     var bounds = args.bounds;
@@ -176,10 +192,19 @@ define([
     return sets.reduce(flatten, [bounds]);
   };
 
+  /**
+   * Returns the first larger tile bounds enclosing the tile bounds
+   * sent in. This function can work with either Bounds or SpaceTime
+   * objects.
+   *
+   * @function Data/TileBounds#extendTileBounds 
+   * @static
+   * @param {Bounds|SpaceTime} bounds - Bounds or bounds and time
+   * range for a tile, as returned by a previous call to tileBounds or
+   * extendTileBounds.
+   * @return {Bounds|SpaceTime}
+   */
   TileBounds.extendTileBounds = function (obj) {
-   /* Returns the first larger tile bounds enclosing the tile bounds
-    * sent in. Note: Parameter bounds must be for a tile, as returned
-    * by a previous call to tileBounds or extendTileBounds. */
 
     bounds = new Bounds(obj);
 
@@ -206,6 +231,17 @@ define([
     }
   };
 
+  /**
+   * Calculates a "zoom level", basically the depth in the quad tree,
+   * for a set of tile bounds.
+   *
+   * @function Data/TileBounds#zoomLevelForTileBounds
+   * @static
+   * @param {Bounds|SpaceTime} bounds - Bounds or bounds and time
+   * range for a tile, as returned by a previous call to tileBounds or
+   * extendTileBounds.
+   * @return {Integer}
+   */
   TileBounds.zoomLevelForTileBounds = function (bounds) {
     bounds = bounds.getBounds();
     return Math.max(

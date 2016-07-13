@@ -5,16 +5,16 @@ define([
   "app/Timerange",
   "app/SpaceTime",
   "app/ObjectTemplate",
-  "async",
-  "lodash",
+  "shims/async/main",
+  "shims/lodash/main",
   "app/Logging",
   "app/Visualization/KeyModifiers",
   "app/Visualization/KeyBindings",
-  "jQuery",
+  "shims/jQuery/main",
   "dijit/Dialog",
   "app/Visualization/Animation/Matrix",
-  "CanvasLayer",
-  "Stats",
+  "shims/CanvasLayer/main",
+  "shims/Stats/main",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
@@ -75,7 +75,7 @@ function(Class,
       self.events = new Events("AnimationManager");
 
       self.visualization = visualization;
-      self.node = $("<div class='animations'>");
+      self.node = $("<div class='animations' style='width: 100%; height: 100%;'>");
       self.visualization.node.append(self.node);
 
       self.indrag = false;
@@ -88,6 +88,7 @@ function(Class,
 
       self.animations = [];
       self.updateNeeded = false;
+      self.mouseoverUpdateNeeded = false;
       self.lastUpdate = undefined;
       self.map = undefined;
       self.canvasLayer = undefined;
@@ -149,6 +150,7 @@ function(Class,
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
+
       cb();
     },
 
@@ -288,10 +290,67 @@ function(Class,
       });
     },
 
+    /* readPixels takes rougly 150ms regardless of the size of
+     * window to read if the window size is 100x100 or less. For the
+     * whole buffer it takes ca 650ms with our data. */
+
+    mouseoverCacheCellSize: {
+      width: 100,
+      height: 100
+    },
+
+    readMouseoverPixels: function(x, y) {
+      var self = this;
+
+      if (self.mouseoverUpdateNeeded || !self.mouseoverPixelCache) {
+        self.mouseoverPixelCache = {};
+        self.mouseoverUpdateNeeded = false;
+      }
+
+      var gridX = Math.floor(x / self.mouseoverCacheCellSize.width);
+      var gridY = Math.floor(y / self.mouseoverCacheCellSize.height);
+      var cellX = x % self.mouseoverCacheCellSize.width;
+      var cellY = y % self.mouseoverCacheCellSize.height;
+
+      var cell = gridX.toString() + ',' + gridY.toString();
+
+      if (!self.mouseoverPixelCache[cell]) {
+        var gridX_global = gridX * self.mouseoverCacheCellSize.width;
+        var gridY_global = gridY * self.mouseoverCacheCellSize.height;
+
+
+        self.mouseoverPixelCache[cell] = self.rowidxGl.map(function (gl) {
+          gl.canvas.width = self.canvasLayer.canvas.width;
+          gl.canvas.height = self.canvasLayer.canvas.height;
+          gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+          gl.enable(gl.SCISSOR_TEST);
+          gl.scissor(gridX_global, gridY_global, self.mouseoverCacheCellSize.width, self.mouseoverCacheCellSize.height);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+
+          self.animations.map(function (animation) {
+            animation.draw(gl);
+          });
+
+          var data = new Uint8Array(4 * self.mouseoverCacheCellSize.width * self.mouseoverCacheCellSize.height);
+          gl.readPixels(gridX_global, gridY_global, self.mouseoverCacheCellSize.width, self.mouseoverCacheCellSize.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+
+          return data;
+        })
+      }
+
+      return self.mouseoverPixelCache[cell].map(function (layer) {
+        var start = 4 * (cellY * self.mouseoverCacheCellSize.width + cellX);
+        /* Disregard Alpha for now... Unsure how it interacts with BLEND functions... */
+        return layer.subarray(start, start + 3);
+      });
+    },
+
     /* Uses the selectionGl canvases to get a source animation, tile
      * id and rowid from a pixel x/y position. */
     getRowidxAtPos: function (x, y) {
       var self = this;
+
+      var height = self.canvasLayer.canvas.height;
 
       /* Canvas coordinates are upside down for some reason... */
       y = self.canvasLayer.canvas.height - y;
@@ -299,11 +358,7 @@ function(Class,
       return Rowidx.pixelToId(
         Rowidx.appendByteArrays.apply(
           undefined,
-          self.rowidxGl.map(function (gl) {
-            var data = new Uint8Array(4);
-            gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, data);
-            return data.subarray(0, 3); /* Disregard Alpha for now... Unsure how it interacts with BLEND functions... */
-          })
+          self.readMouseoverPixels(x, y)
         )
       );
     },
@@ -680,6 +735,16 @@ function(Class,
 
       if (selection.rawInfo) {
         var data = _.clone(selection.data);
+
+        Object.items(dataView.source.header.colsByName).map(function (item) {
+          if (item.value.choices) {
+            var choices = Object.invert(item.value.choices);
+            data[item.key] = data[item.key].map(function (dataValue) {
+              return choices[dataValue];
+            });
+          }
+        });
+
         data.layer = animation.title;
         data.toString = function () {
           return ObjectToTable(this);
@@ -839,6 +904,7 @@ function(Class,
       ]);
 
       self.updateNeeded = true;
+      self.mouseoverUpdateNeeded = true;
     },
 
     updateTime: function (header, paused) {
@@ -914,16 +980,6 @@ function(Class,
       }
       self.updateNeeded = false;
 
-      var width = self.canvasLayer.canvas.width;
-      var height = self.canvasLayer.canvas.height;
-
-      self.rowidxGl.map(function (gl) {
-        gl.canvas.width = width;
-        gl.canvas.height = height;
-        gl.viewport(0, 0, width, height);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-      });
-
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();
 
@@ -938,7 +994,9 @@ function(Class,
         time: time
       });
 
-      self.animations.map(function (animation) { animation.draw(); });
+      self.animations.map(function (animation) {
+        animation.draw(self.gl);
+      });
 
       self.stats.end();
     },
@@ -949,6 +1007,9 @@ function(Class,
       Logging.main.log("Visualization.Animation.AnimationManager.triggerUpdate", {msg: "Trigger update"});
 
       self.updateNeeded = true;
+      if (e && e.mouseoverChange !== false) {
+        self.mouseoverUpdateNeeded = true;
+      }
     },
 
     setMapOptions: function (options) {
@@ -974,7 +1035,7 @@ function(Class,
         self.setMapOptions(animations.options);
       }
 
-      async.map(animations.animations, self.addAnimation.bind(self), cb || function () {});
+      async.mapSeries(animations.animations, self.addAnimation.bind(self), cb || function () {});
     },
 
     toJSON: function () {

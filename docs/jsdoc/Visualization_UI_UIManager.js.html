@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Visualization/UI/UIManager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Visualization/UI/UIManager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define([
+  "app/Class",
+  "./Widgets/TemplatedDialog",
+  "app/LoadingInfo",
+  "app/UrlValues",
+  "app/Visualization/KeyBindings",
+  "app/Visualization/UI/Widgets/Timeline/Timeline",
+  "app/Visualization/UI/PlayControl",
+  "app/Visualization/UI/SidePanels/SidePanelManager",
+  "app/Visualization/UI/BasicSidebar",
+  "app/Visualization/UI/Search",
+  "app/Visualization/UI/AnimationLibrary",
+  "app/Visualization/UI/Performance",
+  "app/Visualization/UI/SimpleAnimationEditor",
+  "app/Visualization/UI/Help",
+  "app/Visualization/UI/SimpleMessageDialog",
+  "app/ObjectTemplate",
+  "dijit/layout/BorderContainer",
+  "dijit/layout/ContentPane",
+  "shims/async/main",
+  "shims/jQuery/main",
+  "shims/less/main",
+  "shims/Styles",
+  "app/Visualization/UI/Paths"
+], function (
+  Class,
+  Dialog,
+  LoadingInfo,
+  UrlValues,
+  KeyBindings,
+  Timeline,
+  PlayControl,
+  SidePanelManager,
+  BasicSidebar,
+  Search,
+  AnimationLibrary,
+  Performance,
+  SimpleAnimationEditor,
+  Help,
+  SimpleMessageDialog,
+  ObjectTemplate,
+  BorderContainer,
+  ContentPane,
+  async,
+  $,
+  less,
+  Styles,
+  Paths
+) {
+  return Class({
+    name: "UI",
+
+    stylesheets: [
+      "libs/font-awesome/css/font-awesome.min.css",
+      "libs/dojo-theme-flat/CSS/dojo/flat.css",
+      "libs/dojox/layout/resources/FloatingPane.css",
+      "libs/dojox/layout/resources/ResizeHandle.css",
+      {url: "app/Visualization/UI/style.less", rel:"stylesheet/less"}
+    ],
+
+    initialize: function (visualization) {
+      var self = this;
+      self.visualization = visualization;
+    },
+
+    init: function (cb) {
+      var self = this;
+
+      self.stylesheets.map(Styles.add);
+      less.registerStylesheets($("link[rel='stylesheet/less']"));
+      less.refresh();
+
+      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
+      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
+      self.container.addChild(self.animationsContainer);
+
+      $(self.animationsContainer.domNode).append(self.visualization.node.children());
+      self.visualization.node.append(self.container.domNode);
+      self.visualization.node = $(self.animationsContainer.domNode);
+
+      self.container.startup();
+
+      async.series([
+        self.initButtons.bind(self),
+        self.initLoadSpinner.bind(self),
+        self.initPlayButton.bind(self),
+        self.initTimeline.bind(self),
+        self.initLoopButton.bind(self),
+        self.initSaveButton.bind(self),
+        self.initSidePanels.bind(self),
+        self.initPopups.bind(self)
+      ], function () {
+        self.container.resize();
+        self.visualization.animations.windowSizeChanged();
+        cb();
+      });
+    },
+
+    initButtons: function (cb) {
+      var self = this;
+      self.buttonNodes = {};
+
+      self.logoNode = $('&lt;div class="logo">')
+      self.visualization.node.append(self.logoNode);
+
+      self.controlButtonsNode = $(new ObjectTemplate(''
+        + '&lt;div class="control_box">'
+        + '  &lt;button class="btn btn-default btn-lg" data-name="share">&lt;img src="%(img)s/buttons/share.png">&lt;/button>'
+        + '  &lt;div class="divide">&lt;/div>'        
+        + '  &lt;button class="btn btn-default btn-lg" data-name="play">&lt;img class="paused" src="%(img)s/buttons/play.png">&lt;img class="playing" src="%(img)s/buttons/pause.png">&lt;/button>'
+        + ''
+        + '  &lt;a class="balloon">'
+        + '  &lt;!--&lt;button class="btn btn-default btn-lg" data-name="expand">&lt;i class="fa fa-ellipsis-h fa-fw">&lt;/i>&lt;/button>-->'
+        + '    &lt;div>'
+        + '      &lt;img class="arrow" src="%(img)s/buttons/arrow.png">'
+        + '      &lt;button class="btn btn-default btn-xs" data-name="start">&lt;i class="fa fa-step-backward">&lt;/i>&lt;/button>'
+        + '      &lt;button class="btn btn-default btn-xs" data-name="backward">&lt;i class="fa fa-backward">&lt;/i>&lt;/button>'
+        + '      &lt;button class="btn btn-default btn-xs" data-name="loop">&lt;i class="fa fa-repeat">&lt;/i>&lt;/button>'
+        + '      &lt;button class="btn btn-default btn-xs" data-name="forward">&lt;i class="fa fa-forward">&lt;/i>&lt;/button>'
+        + '      &lt;button class="btn btn-default btn-xs" data-name="end">&lt;i class="fa fa-step-forward">&lt;/i>&lt;/button>'
+        + '    &lt;/div>'
+        + '  &lt;/a>'
+        + '&lt;/div>').eval(Paths));
+      self.visualization.node.append(self.controlButtonsNode);
+
+      self.controlButtonsNode.find(".btn").each(function () {
+        var btn = $(this);
+        self.buttonNodes[btn.attr("data-name")] = btn;
+      });
+
+      self.buttonNodes.start.click(function () {
+        self.visualization.state.setValue("time", new Date(self.visualization.data.header.colsByName.datetime.min + self.visualization.state.getValue("timeExtent")));
+      });
+
+      self.buttonNodes.backward.click(function () {
+        var timeExtent = self.visualization.state.getValue("timeExtent");
+        var time = self.visualization.state.getValue("time").getTime();
+        var timePerTimeExtent = self.visualization.state.getValue("length");
+        var timePerAnimationTime = timePerTimeExtent / timeExtent;
+
+        time -= 1000 / timePerAnimationTime;
+        self.visualization.state.setValue("time", new Date(time));
+      });
+
+      self.buttonNodes.forward.click(function () {
+        var timeExtent = self.visualization.state.getValue("timeExtent");
+        var time = self.visualization.state.getValue("time").getTime();
+        var timePerTimeExtent = self.visualization.state.getValue("length");
+        var timePerAnimationTime = timePerTimeExtent / timeExtent;
+
+        time += 1000 / timePerAnimationTime;
+        self.visualization.state.setValue("time", new Date(time));
+      });
+
+      self.buttonNodes.end.click(function () {
+        self.visualization.state.setValue("time", new Date(self.visualization.data.header.colsByName.datetime.max));
+      });
+
+
+      cb();
+    },
+
+    initLoadSpinner: function(cb) {
+      var self = this;
+
+      self.loadingNode = $('&lt;div class="loading">&lt;img style="width: 20px;" src="' + Paths.LoaderIcon + '">&lt;/div>');
+      self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
+
+      self.loadingNode.hide();
+      LoadingInfo.main.events.on({
+        start: function () {
+          self.loadingNode.stop();
+          self.loadingNode.fadeIn();
+        },
+        end: function () {
+          self.loadingNode.stop();
+          self.loadingNode.fadeOut();
+        }
+      });
+      self.visualization.data.events.on({
+        error: function (data) {
+          SimpleMessageDialog.show("Error", data.toString());
+        }
+      });
+      cb();
+    },
+
+    initTimeline: function (cb) {
+      var self = this;
+      var updating = false;
+
+      self.timeline = new Timeline({'class': 'main-timeline'});
+      self.timeline.placeAt(self.visualization.node[0]);
+      self.timeline.startup();
+
+
+      /* FIXME: The following code to be removed once testing of the
+       * new design is done */
+
+      var setDesign = function (design) {
+        Object.items(design.timeline).map(function (item) {
+          self.timeline.set(item.key, item.value);
+        });
+        self.controlButtonsNode.toggle(design.controlButtons);
+        $(self.playControl.domNode).toggle(design.playControl);
+      };
+      var designs = [
+        {
+          controlButtons: true,
+          playControl: false,
+          timeline: {
+            startLabelPosition: 'inside',
+            lengthLabelPosition: 'inside',
+            endLabelPosition: 'inside',
+
+            startLabelTitle: false,
+            lengthLabelTitle: false,
+            endLabelTitle: false,
+
+            dragHandles: false,
+
+            zoomPosition: 'left'
+          }
+        },
+        {
+          controlButtons: false,
+          playControl: true,
+          timeline: {
+            startLabelPosition: 'top-right',
+            lengthLabelPosition: 'inside',
+            endLabelPosition: 'top-right',
+
+            startLabelTitle: 'FROM ',
+            lengthLabelTitle: false,
+            endLabelTitle: 'TO ',
+
+            dragHandles: true,
+
+            zoomPosition: 'right'
+          }
+        }
+      ];
+      var designIdx = 1;
+      setDesign(designs[0]);
+      KeyBindings.register(
+        ['Alt', 'T'], null, 'General',
+        'Switch between timeline designs',
+        function () {
+          setDesign(designs[designIdx % designs.length]);
+          designIdx++;
+        }
+      );
+
+      var setRange = function (e) {
+        var timeExtent = e.end - e.start;
+
+        if (timeExtent &lt; self.visualization.state.getValue("timeExtent")) {
+          self.visualization.state.setValue("timeExtent", timeExtent);
+          self.visualization.state.setValue("time", e.end);
+        } else {
+          self.visualization.state.setValue("time", e.end);
+          self.visualization.state.setValue("timeExtent", timeExtent);
+        }
+      }
+
+      var daySliderUpdateMinMax = function() {
+        if (updating) return;
+
+        if (!self.visualization.data.header.colsByName.datetime) return;
+
+        var min_datetime = new Date(self.visualization.data.header.colsByName.datetime.min);
+        var max_datetime = new Date(self.visualization.data.header.colsByName.datetime.max);
+
+        // Do not update if nothing has changed.
+        // NB: Comparing Date objects does not work with == so check that the difference is 0 instead
+        if ((0 == min_datetime - self.timeline.min) &amp;&amp; (0 == max_datetime - self.timeline.max)) return;
+
+        self.timeline.min = min_datetime;
+        self.timeline.max = max_datetime;
+
+        var rangemarks = self.timeline.rangemarks;
+        if (self.timeline.dataRangemark == undefined) {
+          self.timeline.dataRangemark = {
+            start: self.timeline.min,
+            end: self.timeline.max,
+            css: {background:"#ffffff", 'z-index': 0}
+          };
+          rangemarks.push(self.timeline.dataRangemark);
+        } else {
+          self.timeline.dataRangemark.start = self.timeline.min;
+          self.timeline.dataRangemark.end = self.timeline.max;
+        }
+        self.timeline.setRangemarks(rangemarks);
+
+        daySliderUpdateValue();
+      };
+
+      var daySliderUpdateValue = function () {
+        if (updating) return;
+
+        var start;
+        var end = self.visualization.state.getValue("time");
+        var timeExtent = self.visualization.state.getValue("timeExtent");
+
+        var adjusted = false;
+        if (end == undefined || timeExtent == undefined) {
+          if (self.timeline.max == undefined || self.timeline.min == undefined) return;
+
+          start = self.timeline.min;
+          if (timeExtent == undefined) {
+            end = self.timeline.max;
+          } else {
+            end = new Date(start.getTime() + timeExtent);
+          }
+          adjusted = true;
+        } else {
+          start = new Date(end.getTime() - timeExtent);
+
+          if (self.timeline.max != undefined &amp;&amp; self.timeline.min != undefined) {
+            if (end > self.timeline.max) {
+              end = self.timeline.max;
+              start = new Date(end.getTime() - timeExtent);
+              if (!self.visualization.state.getValue("paused") &amp;&amp; self.visualization.state.getValue("loop")) {
+                start = self.timeline.min;
+                end = new Date(start.getTime() + timeExtent);
+              } else {
+                self.visualization.state.setValue("paused", true);
+              }
+              adjusted = true;
+            }
+            if (start &lt; self.timeline.min) {
+              start = self.timeline.min;
+              end = new Date(start.getTime() + timeExtent);
+              adjusted = true;
+            }
+            if (end > self.timeline.max) {
+              end = self.timeline.max;
+              adjusted = true;
+            }
+          }
+        }
+
+        updating = true;
+        self.timeline.setRange(start, end);
+        updating = false;
+      };
+
+      self.timeline.on('set-range', setRange);
+      self.timeline.on('temporary-range', setRange);
+      self.timeline.on('user-update-start', function (e) {
+        self.visualization.state.setValue("paused", true);
+      });
+      self.timeline.on('hover', function (e) {
+        self.visualization.state.setValue("timeFocus", e.time);
+      });
+      self.visualization.state.events.on({
+        time: daySliderUpdateValue,
+        timeExtent: daySliderUpdateValue
+      });
+      self.visualization.data.events.on({update: daySliderUpdateMinMax});
+      daySliderUpdateValue();
+
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'Z'], null, 'Timeline',
+        'Zoom in in time',
+        function () { self.timeline.zoomOut(); }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Z'], null, 'Timeline',
+        'Zoom out in time',
+        function () { self.timeline.zoomIn(); }
+      );
+
+      KeyBindings.register(
+        ['Ctrl', 'Left'], null, 'Timeline',
+        'Move the time window left (earlier dates)',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.visualization.state.getValue("time").getTime() - self.visualization.state.getValue("timeExtent") / 10));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Right'], null, 'Timeline',
+        'Move the time window right (later dates)',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.visualization.state.getValue("time").getTime() + self.visualization.state.getValue("timeExtent") / 10));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Left'], null, 'Timeline',
+        'Move the time window to the beginning',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", new Date(self.timeline.min.getTime() + self.visualization.state.getValue("timeExtent")));
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Right'], null, 'Timeline',
+        'Move the time window to the end',
+        function (registration) {
+          self.visualization.state.setValue("paused", true);
+          self.visualization.state.setValue("time", self.timeline.max);
+        }
+      );
+
+      cb();
+    },
+
+    initPlayButton: function(cb) {
+      var self = this;
+
+      /* FIXME: The display: none to be removed once testing of the
+       * new design is done */
+      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization, style: "display: none;"});
+      self.playControl.placeAt($("body")[0]);
+      self.playControl.startup();
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
+        'Toggle play/pause',
+        self.visualization.state.toggleValue.bind(self.visualization.state, "paused")
+      );
+
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Up'], null, 'Timeline',
+        'Play faster',
+        function () {
+          self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 0.5);
+        }
+      );
+      KeyBindings.register(
+        ['Ctrl', 'Shift', 'Down'], null, 'Timeline',
+        'Play slower',
+        function () {
+          self.visualization.state.setValue("length", self.visualization.state.getValue("length") * 2.0);
+        }
+      );
+
+      self.buttonNodes.play.click(function () {
+        val = self.buttonNodes.play.val() == "true";
+        self.buttonNodes.play.val(val ? "false" : "true");
+        self.buttonNodes.play.trigger("change");
+      });
+      self.buttonNodes.play.change(function () {
+        self.visualization.state.setValue("paused", self.buttonNodes.play.val() == "true");
+      });
+      function setValue(value) {
+        self.buttonNodes.play.val(value ? "true" : "false");
+        if (value) {
+          self.buttonNodes.play.find(".playing").hide();
+          self.buttonNodes.play.find(".paused").show();
+        } else {
+          self.buttonNodes.play.find(".playing").show();
+          self.buttonNodes.play.find(".paused").hide();
+        }
+      }
+      self.visualization.state.events.on({paused: function (e) { setValue(e.new_value); }});
+      setValue(self.visualization.state.getValue("paused"));
+
+      cb();
+    },
+
+    initLoopButton: function (cb) {
+      var self = this;
+
+      self.buttonNodes.loop.click(function () {
+        val = self.buttonNodes.loop.val() == "true";
+        self.buttonNodes.loop.val(val ? "false" : "true");
+        self.buttonNodes.loop.trigger("change");
+      });
+      self.buttonNodes.loop.change(function () {
+        self.visualization.state.setValue("loop", self.buttonNodes.loop.val() == "true");
+      });
+      function setValue(value) {
+        self.buttonNodes.loop.val(value ? "true" : "false");
+        if (value) {
+          self.buttonNodes.loop.find("i").removeClass("fa-repeat").addClass("fa-long-arrow-right");
+        } else {
+          self.buttonNodes.loop.find("i").removeClass("fa-long-arrow-right").addClass("fa-repeat");
+        }
+      }
+      self.visualization.state.events.on({loop: function (e) { setValue(e.new_value); }});
+      setValue(self.visualization.state.getValue("loop"));
+      cb();
+    },
+
+    saveWorkspace: function () {
+      var self = this;
+      self.visualization.save(function (url) {
+        url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
+
+        var dialog = new Dialog({
+          style: "width: 50%;",
+          title: "Workspace saved",
+          content: '' +
+            'Share this link: &lt;input type="text" class="link" style="width: 300pt">',
+          actionBarTemplate: '' +
+            '&lt;div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
+            '  &lt;button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close&lt;/button>' +
+            '&lt;/div>'
+        });
+        $(dialog.containerNode).find("input").val(url);
+        $(dialog.closeButton).on('click', function () {
+          dialog.hide();
+        });
+        dialog.show();
+      });
+    },
+
+    initSaveButton: function(cb) {
+      var self = this;
+
+      /* Ctrl-Alt-S would have been more logical, but doesn't work in
+       * some browsers (As soon as Ctrl and S are pressed, it's
+       * eaten)
+       */
+      KeyBindings.register(
+        ['Alt', 'S'], null, 'General',
+        'Save workspace',
+        self.saveWorkspace.bind(self)
+      );
+
+      self.buttonNodes.share.click(self.saveWorkspace.bind(self));
+
+      cb();
+    },
+
+    initSidePanels: function (cb) {
+      var self = this;
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'E'], null, 'General',
+        'Toggle between view and edit sidebar (advanced mode)',
+        function () {
+          self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
+        }
+      );
+
+      self.sidePanels = new SidePanelManager(self);
+      self.sideBar = new BasicSidebar(self);
+      cb();
+    },
+
+    initPopups: function (cb) {
+      var self = this;
+
+      self.search = new Search({visualization: self.visualization});
+      self.search.startup();
+      self.library = new AnimationLibrary({visualization: self.visualization});
+      self.library.startup();
+      self.performance = new Performance({visualization: self.visualization});
+      self.performance.startup();
+      self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
+      self.simpleAnimationEditor.startup();
+      self.help = new Help({visualization: self.visualization});
+      self.help.startup();
+      cb();
+    },
+
+    toJSON: function () {
+      var self = this;
+      return {
+        logo: self.config.logo,
+        sideBar: self.sideBar.toJSON()
+      };
+    },
+
+    load: function (config, cb) {
+      var self = this;
+
+      self.config = config;
+      data = new ObjectTemplate(self.config).eval(Paths);
+
+      if (typeof(data.logo) == "string") {
+        self.logoNode.append(data.logo);
+      } else {
+        var logo = $("&lt;img>");
+        logo.attr(data.logo.attr);
+        logo.css(data.logo.css);
+        self.logoNode.append(logo);
+      }
+
+      self.sideBar.load(config.sideBar, cb);
+    }
+  });
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Bounds.html">Bounds</a></li><li><a href="CanvasLayer.html">CanvasLayer</a></li><li><a href="Condition.html">Condition</a></li><li><a href="CountryCodes.html">CountryCodes</a></li><li><a href="Data_Ajax.html">Data/Ajax</a></li><li><a href="Data_BaseTiledFormat.html">Data/BaseTiledFormat</a></li><li><a href="Data_BaseTiledFormat_DataContainer.html">Data/BaseTiledFormat:DataContainer</a></li><li><a href="Data_BinFormat.html">Data/BinFormat</a></li><li><a href="Data_CartoDBInfoWindow.html">Data/CartoDBInfoWindow</a></li><li><a href="Data_ClusterTestFormat.html">Data/ClusterTestFormat</a></li><li><a href="Data_DataManager.html">Data/DataManager</a></li><li><a href="Data_DataView.html">Data/DataView</a></li><li><a href="Data_EmptyFormat.html">Data/EmptyFormat</a></li><li><a href="Data_Format.html">Data/Format</a></li><li><a href="Data_GeoProjection.html">Data/GeoProjection</a></li><li><a href="Data_Pack.html">Data/Pack</a></li><li><a href="Data_Selection.html">Data/Selection</a></li><li><a href="Data_SelectionManager.html">Data/SelectionManager</a></li><li><a href="Data_Tile.html">Data/Tile</a></li><li><a href="Data_TileBounds.html">Data/TileBounds</a></li><li><a href="Data_TiledBinFormat.html">Data/TiledBinFormat</a></li><li><a href="Data_TiledEmptyFormat.html">Data/TiledEmptyFormat</a></li><li><a href="Data_TypedMatrixGenerator.html">Data/TypedMatrixGenerator</a></li><li><a href="Data_TypedMatrixParser.html">Data/TypedMatrixParser</a></li><li><a href="Events.html">Events</a></li><li><a href="Json.html">Json</a></li><li><a href="LoadingInfo.html">LoadingInfo</a></li><li><a href="Logging.html">Logging</a></li><li><a href="Logging_Destination.html">Logging/Destination</a></li><li><a href="Logging_GoogleAnalyticsDestination.html">Logging/GoogleAnalyticsDestination</a></li><li><a href="Logging_LogglyDestination.html">Logging/LogglyDestination</a></li><li><a href="Logging_ScreenDestination.html">Logging/ScreenDestination</a></li><li><a href="Logging_ServerDestination.html">Logging/ServerDestination</a></li><li><a href="Logging_StoreDestination.html">Logging/StoreDestination</a></li><li><a href="Logging_Logging__Entry.html">Logging:Logging__Entry</a></li><li><a href="ObjectTemplate.html">ObjectTemplate</a></li><li><a href="PopupAuth.html">PopupAuth</a></li><li><a href="SpaceTime.html">SpaceTime</a></li><li><a href="SubscribableDict.html">SubscribableDict</a></li><li><a href="Test.html">Test</a></li><li><a href="Test_BaseTest.html">Test/BaseTest</a></li><li><a href="Test_Data_BinFormat.html">Test/Data/BinFormat</a></li><li><a href="Test_Data_DataView.html">Test/Data/DataView</a></li><li><a href="Test_Data_TiledEmptyFormat.html">Test/Data/TiledEmptyFormat</a></li><li><a href="Test_Data_TypedMatrixParser.html">Test/Data/TypedMatrixParser</a></li><li><a href="Test_Events.html">Test/Events</a></li><li><a href="Test_Logging.html">Test/Logging</a></li><li><a href="Test_SubscribableDict.html">Test/SubscribableDict</a></li><li><a href="Test_SubscribableDict_OtherType.html">Test/SubscribableDict:OtherType</a></li><li><a href="Test_SubscribableDict_TestType.html">Test/SubscribableDict:TestType</a></li><li><a href="Timerange.html">Timerange</a></li><li><a href="UrlValues.html">UrlValues</a></li><li><a href="Visualization_Animation_Animation.html">Visualization/Animation/Animation</a></li><li><a href="Visualization_Animation_AnimationManager.html">Visualization/Animation/AnimationManager</a></li><li><a href="Visualization_Animation_ArrowAnimation.html">Visualization/Animation/ArrowAnimation</a></li><li><a href="Visualization_Animation_CartoDBAnimation.html">Visualization/Animation/CartoDBAnimation</a></li><li><a href="Visualization_Animation_ClusterAnimation.html">Visualization/Animation/ClusterAnimation</a></li><li><a href="Visualization_Animation_DataAnimation.html">Visualization/Animation/DataAnimation</a></li><li><a href="Visualization_Animation_DebugAnimation.html">Visualization/Animation/DebugAnimation</a></li><li><a href="Visualization_Animation_LineAnimation.html">Visualization/Animation/LineAnimation</a></li><li><a href="Visualization_Animation_LineStripAnimation.html">Visualization/Animation/LineStripAnimation</a></li><li><a href="Visualization_Animation_MapsEngineAnimation.html">Visualization/Animation/MapsEngineAnimation</a></li><li><a href="Visualization_Animation_Matrix.html">Visualization/Animation/Matrix</a></li><li><a href="Visualization_Animation_PointAnimation.html">Visualization/Animation/PointAnimation</a></li><li><a href="Visualization_Animation_Rowidx.html">Visualization/Animation/Rowidx</a></li><li><a href="Visualization_Animation_SatelliteAnimation.html">Visualization/Animation/SatelliteAnimation</a></li><li><a href="Visualization_Animation_Shader.html">Visualization/Animation/Shader</a></li><li><a href="Visualization_Animation_TileAnimation.html">Visualization/Animation/TileAnimation</a></li><li><a href="Visualization_Animation_VesselTrackAnimation.html">Visualization/Animation/VesselTrackAnimation</a></li><li><a href="Visualization_KeyBindings.html">Visualization/KeyBindings</a></li><li><a href="Visualization_KeyModifiers.html">Visualization/KeyModifiers</a></li><li><a href="Visualization_UI_BasicSidebar.html">Visualization/UI/BasicSidebar</a></li><li><a href="Visualization_UI_SidePanels_SidePanelManager_InfoUI.html">Visualization/UI/SidePanels/SidePanelManager:InfoUI</a></li><li><a href="Visualization_UI_UIManager_UI.html">Visualization/UI/UIManager:UI</a></li><li><a href="Visualization_Visualization.html">Visualization/Visualization</a></li></ul><h3>Global</h3><ul><li><a href="global.html#%2522border-color%2522">"border-color"</a></li><li><a href="global.html#%2522info-error%2522">"info-error"</a></li><li><a href="global.html#%2522info-loading%2522">"info-loading"</a></li><li><a href="global.html#%2522tile-error%2522">"tile-error"</a></li><li><a href="global.html#__all__">__all__</a></li><li><a href="global.html#__jsonclass__">__jsonclass__</a></li><li><a href="global.html#_buttonNode">_buttonNode</a></li><li><a href="global.html#_getBaseTemplateContext">_getBaseTemplateContext</a></li><li><a href="global.html#_getMultivaluedTemplateContext">_getMultivaluedTemplateContext</a></li><li><a href="global.html#_getPolygonFieldKeys">_getPolygonFieldKeys</a></li><li><a href="global.html#_onBlur">_onBlur</a></li><li><a href="global.html#_selector">_selector</a></li><li><a href="global.html#_setAnimationAttr">_setAnimationAttr</a></li><li><a href="global.html#_setChoicesAttr">_setChoicesAttr</a></li><li><a href="global.html#_setDestinationRulesAttr">_setDestinationRulesAttr</a></li><li><a href="global.html#_setDragHandlesAttr">_setDragHandlesAttr</a></li><li><a href="global.html#_setEndLabelPositionAttr">_setEndLabelPositionAttr</a></li><li><a href="global.html#_setLabelPositionAttr">_setLabelPositionAttr</a></li><li><a href="global.html#_setLengthLabelPositionAttr">_setLengthLabelPositionAttr</a></li><li><a href="global.html#_setRuleAttr">_setRuleAttr</a></li><li><a href="global.html#_setSourcenameAttr">_setSourcenameAttr</a></li><li><a href="global.html#_setStartLabelPositionAttr">_setStartLabelPositionAttr</a></li><li><a href="global.html#_setupDownloadLink">_setupDownloadLink</a></li><li><a href="global.html#_setupReportLink">_setupReportLink</a></li><li><a href="global.html#_setValueAttr">_setValueAttr</a></li><li><a href="global.html#_setZoomPositionAttr">_setZoomPositionAttr</a></li><li><a href="global.html#_updateContainerNode">_updateContainerNode</a></li><li><a href="global.html#_updateContainerWithCustomInfo">_updateContainerWithCustomInfo</a></li><li><a href="global.html#_updateContainerWithVesselInfo">_updateContainerWithVesselInfo</a></li><li><a href="global.html#_updateTitle">_updateTitle</a></li><li><a href="global.html#actionBarTemplate">actionBarTemplate</a></li><li><a href="global.html#activateSearch">activateSearch</a></li><li><a href="global.html#active">active</a></li><li><a href="global.html#active_category">active_category</a></li><li><a href="global.html#activeKeys">activeKeys</a></li><li><a href="global.html#add">add</a></li><li><a href="global.html#addCartoDBAnimation">addCartoDBAnimation</a></li><li><a href="global.html#addFromLibrary">addFromLibrary</a></li><li><a href="global.html#addHandler">addHandler</a></li><li><a href="global.html#all">all</a></li><li><a href="global.html#allLoaded">allLoaded</a></li><li><a href="global.html#animation">animation</a></li><li><a href="global.html#animationFilter">animationFilter</a></li><li><a href="global.html#animations">animations</a></li><li><a href="global.html#anumber">anumber</a></li><li><a href="global.html#app">app</a></li><li><a href="global.html#args">args</a></li><li><a href="global.html#around">around</a></li><li><a href="global.html#astring">astring</a></li><li><a href="global.html#atesttype">atesttype</a></li><li><a href="global.html#attr0">attr0</a></li><li><a href="global.html#attrmapper">attrmapper</a></li><li><a href="global.html#background">background</a></li><li><a href="global.html#backgroundCss">backgroundCss</a></li><li><a href="global.html#baseClass">baseClass</a></li><li><a href="global.html#batch">batch</a></li><li><a href="global.html#bbox">bbox</a></li><li><a href="global.html#beginEdit">beginEdit</a></li><li><a href="global.html#bottom">bottom</a></li><li><a href="global.html#bounds">bounds</a></li><li><a href="global.html#buf%255Bundefined%255D">buf[undefined]</a></li><li><a href="global.html#buildRendering">buildRendering</a></li><li><a href="global.html#cachedTileLoading">cachedTileLoading</a></li><li><a href="global.html#cachedTileLoading_pre">cachedTileLoading_pre</a></li><li><a href="global.html#calculateStepSize">calculateStepSize</a></li><li><a href="global.html#category">category</a></li><li><a href="global.html#center">center</a></li><li><a href="global.html#change">change</a></li><li><a href="global.html#choices">choices</a></li><li><a href="global.html#class">class</a></li><li><a href="global.html#clear">clear</a></li><li><a href="global.html#clearFilter">clearFilter</a></li><li><a href="global.html#close">close</a></li><li><a href="global.html#cmp">cmp</a></li><li><a href="global.html#col">col</a></li><li><a href="global.html#colLoaded">colLoaded</a></li><li><a href="global.html#color">color</a></li><li><a href="global.html#colors">colors</a></li><li><a href="global.html#cols">cols</a></li><li><a href="global.html#column">column</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#complete_ancestor">complete_ancestor</a></li><li><a href="global.html#constraints">constraints</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#content">content</a></li><li><a href="global.html#contentTemplate">contentTemplate</a></li><li><a href="global.html#contentTime">contentTime</a></li><li><a href="global.html#context">context</a></li><li><a href="global.html#controlButtons">controlButtons</a></li><li><a href="global.html#cookie">cookie</a></li><li><a href="global.html#count">count</a></li><li><a href="global.html#css">css</a></li><li><a href="global.html#cssStateNodes">cssStateNodes</a></li><li><a href="global.html#data">data</a></li><li><a href="global.html#data%255Bundefined%255D%255Bundefined%255D">data[undefined][undefined]</a></li><li><a href="global.html#dataview">dataview</a></li><li><a href="global.html#date">date</a></li><li><a href="global.html#datetime">datetime</a></li><li><a href="global.html#days">days</a></li><li><a href="global.html#decreaseSpeed">decreaseSpeed</a></li><li><a href="global.html#design">design</a></li><li><a href="global.html#destination">destination</a></li><li><a href="global.html#destinationRules">destinationRules</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#dir">dir</a></li><li><a href="global.html#disabled">disabled</a></li><li><a href="global.html#discreteValues">discreteValues</a></li><li><a href="global.html#Display">Display</a></li><li><a href="global.html#display">display</a></li><li><a href="global.html#displayAnimationLibraryDialog">displayAnimationLibraryDialog</a></li><li><a href="global.html#displayAnimationsForSource">displayAnimationsForSource</a></li><li><a href="global.html#displayHelpDialog">displayHelpDialog</a></li><li><a href="global.html#displayPerformanceDialog">displayPerformanceDialog</a></li><li><a href="global.html#displaySearchDialog">displaySearchDialog</a></li><li><a href="global.html#displaySearchResults">displaySearchResults</a></li><li><a href="global.html#divide">divide</a></li><li><a href="global.html#drag">drag</a></li><li><a href="global.html#drag_moveTimeline_multiTouch">drag_moveTimeline_multiTouch</a></li><li><a href="global.html#drag_moveTimeline_pointer">drag_moveTimeline_pointer</a></li><li><a href="global.html#drag_windowResizeLeft">drag_windowResizeLeft</a></li><li><a href="global.html#drag_windowResizeRight">drag_windowResizeRight</a></li><li><a href="global.html#dragEnd">dragEnd</a></li><li><a href="global.html#dragEnd_moveTimeline_multiTouch">dragEnd_moveTimeline_multiTouch</a></li><li><a href="global.html#dragEnd_moveTimeline_pointer">dragEnd_moveTimeline_pointer</a></li><li><a href="global.html#dragEnd_windowResizeLeft">dragEnd_windowResizeLeft</a></li><li><a href="global.html#dragEnd_windowResizeRight">dragEnd_windowResizeRight</a></li><li><a href="global.html#dragHandles">dragHandles</a></li><li><a href="global.html#dragStart">dragStart</a></li><li><a href="global.html#dragStart_moveTimeline">dragStart_moveTimeline</a></li><li><a href="global.html#dragStart_moveTimeline_multiTouch">dragStart_moveTimeline_multiTouch</a></li><li><a href="global.html#dragStart_moveTimeline_pointer">dragStart_moveTimeline_pointer</a></li><li><a href="global.html#dragStart_windowResizeLeft">dragStart_windowResizeLeft</a></li><li><a href="global.html#dragStart_windowResizeRight">dragStart_windowResizeRight</a></li><li><a href="global.html#dropDown">dropDown</a></li><li><a href="global.html#dropDownDefaultValue">dropDownDefaultValue</a></li><li><a href="global.html#east">east</a></li><li><a href="global.html#eatEvent">eatEvent</a></li><li><a href="global.html#edit">edit</a></li><li><a href="global.html#editAnimation">editAnimation</a></li><li><a href="global.html#editRangeEnd">editRangeEnd</a></li><li><a href="global.html#EmptyWidget">EmptyWidget</a></li><li><a href="global.html#end">end</a></li><li><a href="global.html#endData">endData</a></li><li><a href="global.html#endEdit">endEdit</a></li><li><a href="global.html#endidx">endidx</a></li><li><a href="global.html#endLabelPosition">endLabelPosition</a></li><li><a href="global.html#endLabelTitle">endLabelTitle</a></li><li><a href="global.html#error">error</a></li><li><a href="global.html#eventAction">eventAction</a></li><li><a href="global.html#eventCategory">eventCategory</a></li><li><a href="global.html#eventLabel">eventLabel</a></li><li><a href="global.html#featureType">featureType</a></li><li><a href="global.html#filterBySelection">filterBySelection</a></li><li><a href="global.html#firstEvent">firstEvent</a></li><li><a href="global.html#floorDate">floorDate</a></li><li><a href="global.html#foo">foo</a></li><li><a href="global.html#format">format</a></li><li><a href="global.html#formatDate">formatDate</a></li><li><a href="global.html#formatInterval">formatInterval</a></li><li><a href="global.html#fullDates">fullDates</a></li><li><a href="global.html#getDirectory">getDirectory</a></li><li><a href="global.html#getEditorClass">getEditorClass</a></li><li><a href="global.html#getFilter">getFilter</a></li><li><a href="global.html#getFirstPosition">getFirstPosition</a></li><li><a href="global.html#getItemList">getItemList</a></li><li><a href="global.html#getNextStepLength">getNextStepLength</a></li><li><a href="global.html#getPrevStepLength">getPrevStepLength</a></li><li><a href="global.html#getReportUrl">getReportUrl</a></li><li><a href="global.html#getXorder">getXorder</a></li><li><a href="global.html#handleAccept">handleAccept</a></li><li><a href="global.html#handleCancel">handleCancel</a></li><li><a href="global.html#handler">handler</a></li><li><a href="global.html#handleSelectionChange">handleSelectionChange</a></li><li><a href="global.html#hasDownArrow">hasDownArrow</a></li><li><a href="global.html#header">header</a></li><li><a href="global.html#headerLoaded">headerLoaded</a></li><li><a href="global.html#headerTime">headerTime</a></li><li><a href="global.html#height">height</a></li><li><a href="global.html#hiddenContext">hiddenContext</a></li><li><a href="global.html#hitType">hitType</a></li><li><a href="global.html#hours">hours</a></li><li><a href="global.html#href">href</a></li><li><a href="global.html#i%255Bundefined%255D">i[undefined]</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#idCounter">idCounter</a></li><li><a href="global.html#img">img</a></li><li><a href="global.html#includeDatePrefix">includeDatePrefix</a></li><li><a href="global.html#inclusive">inclusive</a></li><li><a href="global.html#increaseSpeed">increaseSpeed</a></li><li><a href="global.html#info">info</a></li><li><a href="global.html#infowindow">infowindow</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#intensityChange">intensityChange</a></li><li><a href="global.html#intermediateChanges">intermediateChanges</a></li><li><a href="global.html#interval">interval</a></li><li><a href="global.html#intervalPrecision">intervalPrecision</a></li><li><a href="global.html#intervalPrecisionLimit">intervalPrecisionLimit</a></li><li><a href="global.html#intervals">intervals</a></li><li><a href="global.html#intervalToIndex">intervalToIndex</a></li><li><a href="global.html#intervalUnits">intervalUnits</a></li><li><a href="global.html#invertedRule">invertedRule</a></li><li><a href="global.html#key">key</a></li><li><a href="global.html#keyDown">keyDown</a></li><li><a href="global.html#keydown">keydown</a></li><li><a href="global.html#keys">keys</a></li><li><a href="global.html#keyup">keyup</a></li><li><a href="global.html#label">label</a></li><li><a href="global.html#lang">lang</a></li><li><a href="global.html#lat">lat</a></li><li><a href="global.html#layer">layer</a></li><li><a href="global.html#layerId">layerId</a></li><li><a href="global.html#left">left</a></li><li><a href="global.html#length">length</a></li><li><a href="global.html#lengthLabelPosition">lengthLabelPosition</a></li><li><a href="global.html#lengthLabelTitle">lengthLabelTitle</a></li><li><a href="global.html#limit">limit</a></li><li><a href="global.html#liveSplitters">liveSplitters</a></li><li><a href="global.html#lng">lng</a></li><li><a href="global.html#load">load</a></li><li><a href="global.html#loaded">loaded</a></li><li><a href="global.html#LoaderIcon">LoaderIcon</a></li><li><a href="global.html#loadTilesForZomm">loadTilesForZomm</a></li><li><a href="global.html#logging">logging</a></li><li><a href="global.html#logglyKey">logglyKey</a></li><li><a href="global.html#logo">logo</a></li><li><a href="global.html#lon">lon</a></li><li><a href="global.html#loop">loop</a></li><li><a href="global.html#map">map</a></li><li><a href="global.html#margin">margin</a></li><li><a href="global.html#matrix%255B0%255D">matrix[0]</a></li><li><a href="global.html#matrix%255B1%255D">matrix[1]</a></li><li><a href="global.html#matrix%255B2%255D">matrix[2]</a></li><li><a href="global.html#matrix%255B3%255D">matrix[3]</a></li><li><a href="global.html#matrix%255B4%255D">matrix[4]</a></li><li><a href="global.html#matrix%255B5%255D">matrix[5]</a></li><li><a href="global.html#matrix%255B6%255D">matrix[6]</a></li><li><a href="global.html#matrix%255B7%255D">matrix[7]</a></li><li><a href="global.html#matrix%255B12%255D">matrix[12]</a></li><li><a href="global.html#matrix%255B13%255D">matrix[13]</a></li><li><a href="global.html#matrix%255B14%255D">matrix[14]</a></li><li><a href="global.html#matrix%255B15%255D">matrix[15]</a></li><li><a href="global.html#max">max</a></li><li><a href="global.html#maximum">maximum</a></li><li><a href="global.html#maxWindowSize">maxWindowSize</a></li><li><a href="global.html#maybeEndEdit">maybeEndEdit</a></li><li><a href="global.html#menuFor">menuFor</a></li><li><a href="global.html#milliseconds">milliseconds</a></li><li><a href="global.html#min">min</a></li><li><a href="global.html#minimum">minimum</a></li><li><a href="global.html#minutes">minutes</a></li><li><a href="global.html#minWindowSize">minWindowSize</a></li><li><a href="global.html#monthNames">monthNames</a></li><li><a href="global.html#months">months</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#msg">msg</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#neverJustHours">neverJustHours</a></li><li><a href="global.html#newBounds">newBounds</a></li><li><a href="global.html#newWantedTiles">newWantedTiles</a></li><li><a href="global.html#noFilterTitle">noFilterTitle</a></li><li><a href="global.html#north">north</a></li><li><a href="global.html#offset">offset</a></li><li><a href="global.html#oldBounds">oldBounds</a></li><li><a href="global.html#oldWantedTiles">oldWantedTiles</a></li><li><a href="global.html#onCancel">onCancel</a></li><li><a href="global.html#onChange">onChange</a></li><li><a href="global.html#onClick">onClick</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#onExecute">onExecute</a></li><li><a href="global.html#onMouseLeave">onMouseLeave</a></li><li><a href="global.html#openDropDown">openDropDown</a></li><li><a href="global.html#options">options</a></li><li><a href="global.html#orientation">orientation</a></li><li><a href="global.html#out%255B0%255D">out[0]</a></li><li><a href="global.html#out%255B1%255D">out[1]</a></li><li><a href="global.html#out%255B2%255D">out[2]</a></li><li><a href="global.html#out%255B3%255D">out[3]</a></li><li><a href="global.html#out%255B4%255D">out[4]</a></li><li><a href="global.html#out%255B5%255D">out[5]</a></li><li><a href="global.html#out%255B6%255D">out[6]</a></li><li><a href="global.html#out%255B7%255D">out[7]</a></li><li><a href="global.html#out%255B8%255D">out[8]</a></li><li><a href="global.html#out%255B9%255D">out[9]</a></li><li><a href="global.html#out%255B10%255D">out[10]</a></li><li><a href="global.html#out%255B11%255D">out[11]</a></li><li><a href="global.html#out%255B12%255D">out[12]</a></li><li><a href="global.html#out%255B13%255D">out[13]</a></li><li><a href="global.html#out%255B14%255D">out[14]</a></li><li><a href="global.html#out%255B15%255D">out[15]</a></li><li><a href="global.html#overflow">overflow</a></li><li><a href="global.html#pad">pad</a></li><li><a href="global.html#padWidths">padWidths</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#parse">parse</a></li><li><a href="global.html#paths">paths</a></li><li><a href="global.html#pattern">pattern</a></li><li><a href="global.html#pause">pause</a></li><li><a href="global.html#paused">paused</a></li><li><a href="global.html#pending">pending</a></li><li><a href="global.html#performSearch">performSearch</a></li><li><a href="global.html#pixelOffsetToTimeOffset">pixelOffsetToTimeOffset</a></li><li><a href="global.html#placeHolder">placeHolder</a></li><li><a href="global.html#play">play</a></li><li><a href="global.html#playControl">playControl</a></li><li><a href="global.html#popup">popup</a></li><li><a href="global.html#popupClass">popupClass</a></li><li><a href="global.html#position">position</a></li><li><a href="global.html#postCreate">postCreate</a></li><li><a href="global.html#preserveDrawingBuffer">preserveDrawingBuffer</a></li><li><a href="global.html#preserveViewport">preserveViewport</a></li><li><a href="global.html#printTree">printTree</a></li><li><a href="global.html#profile">profile</a></li><li><a href="global.html#query">query</a></li><li><a href="global.html#query_url">query_url</a></li><li><a href="global.html#queryQueyUp">queryQueyUp</a></li><li><a href="global.html#rangemarks">rangemarks</a></li><li><a href="global.html#rangeUpdated">rangeUpdated</a></li><li><a href="global.html#receiving">receiving</a></li><li><a href="global.html#recreateRangemarks">recreateRangemarks</a></li><li><a href="global.html#recreateTickmarks">recreateTickmarks</a></li><li><a href="global.html#recreateTickmarksLevel">recreateTickmarksLevel</a></li><li><a href="global.html#region">region</a></li><li><a href="global.html#rel">rel</a></li><li><a href="global.html#remove">remove</a></li><li><a href="global.html#removeHandler">removeHandler</a></li><li><a href="global.html#rendering">rendering</a></li><li><a href="global.html#report">report</a></li><li><a href="global.html#reportDialog">reportDialog</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#restrictednumber">restrictednumber</a></li><li><a href="global.html#result%255Bundefined%255D">result[undefined]</a></li><li><a href="global.html#reverseDates">reverseDates</a></li><li><a href="global.html#right">right</a></li><li><a href="global.html#root">root</a></li><li><a href="global.html#round">round</a></li><li><a href="global.html#rowidx">rowidx</a></li><li><a href="global.html#rowLoaded">rowLoaded</a></li><li><a href="global.html#rule">rule</a></li><li><a href="global.html#rules">rules</a></li><li><a href="global.html#scope">scope</a></li><li><a href="global.html#script">script</a></li><li><a href="global.html#search">search</a></li><li><a href="global.html#secondEvent">secondEvent</a></li><li><a href="global.html#seconds">seconds</a></li><li><a href="global.html#selectAnimation">selectAnimation</a></li><li><a href="global.html#selected">selected</a></li><li><a href="global.html#selection">selection</a></li><li><a href="global.html#selections">selections</a></li><li><a href="global.html#separators">separators</a></li><li><a href="global.html#series">series</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#setContextFromVisibleContext">setContextFromVisibleContext</a></li><li><a href="global.html#setDate">setDate</a></li><li><a href="global.html#setDateTime">setDateTime</a></li><li><a href="global.html#setDefaultTitle">setDefaultTitle</a></li><li><a href="global.html#setEditor">setEditor</a></li><li><a href="global.html#setExpanded">setExpanded</a></li><li><a href="global.html#setFilter">setFilter</a></li><li><a href="global.html#setLength">setLength</a></li><li><a href="global.html#setPaused">setPaused</a></li><li><a href="global.html#setRange">setRange</a></li><li><a href="global.html#setRangeFromOffset">setRangeFromOffset</a></li><li><a href="global.html#setRangemarks">setRangemarks</a></li><li><a href="global.html#setSlectValueFromFilter">setSlectValueFromFilter</a></li><li><a href="global.html#setTime">setTime</a></li><li><a href="global.html#setTimeFocus">setTimeFocus</a></li><li><a href="global.html#setVisible">setVisible</a></li><li><a href="global.html#setVisibleContextFromRange">setVisibleContextFromRange</a></li><li><a href="global.html#setWindowSize">setWindowSize</a></li><li><a href="global.html#share">share</a></li><li><a href="global.html#show">show</a></li><li><a href="global.html#showCenterLabelAtWidth">showCenterLabelAtWidth</a></li><li><a href="global.html#showRightLabelAtWidth">showRightLabelAtWidth</a></li><li><a href="global.html#sideBar">sideBar</a></li><li><a href="global.html#slider2val">slider2val</a></li><li><a href="global.html#snapZoomToTickmarks">snapZoomToTickmarks</a></li><li><a href="global.html#someEvent">someEvent</a></li><li><a href="global.html#sortcols">sortcols</a></li><li><a href="global.html#sortRules">sortRules</a></li><li><a href="global.html#source">source</a></li><li><a href="global.html#sourcename">sourcename</a></li><li><a href="global.html#sources">sources</a></li><li><a href="global.html#south">south</a></li><li><a href="global.html#spec">spec</a></li><li><a href="global.html#splitter">splitter</a></li><li><a href="global.html#splitTickmarksOnLargerUnitBoundaries">splitTickmarksOnLargerUnitBoundaries</a></li><li><a href="global.html#start">start</a></li><li><a href="global.html#startData">startData</a></li><li><a href="global.html#startidx">startidx</a></li><li><a href="global.html#startLabelPosition">startLabelPosition</a></li><li><a href="global.html#startLabelTitle">startLabelTitle</a></li><li><a href="global.html#startup">startup</a></li><li><a href="global.html#state">state</a></li><li><a href="global.html#status">status</a></li><li><a href="global.html#stepLength">stepLength</a></li><li><a href="global.html#stepLengthIndex">stepLengthIndex</a></li><li><a href="global.html#stepLengths">stepLengths</a></li><li><a href="global.html#stepZoom">stepZoom</a></li><li><a href="global.html#stopPropagation">stopPropagation</a></li><li><a href="global.html#store_stack">store_stack</a></li><li><a href="global.html#store_time">store_time</a></li><li><a href="global.html#style">style</a></li><li><a href="global.html#stylers">stylers</a></li><li><a href="global.html#subtractFrom">subtractFrom</a></li><li><a href="global.html#suppressInfoWindows">suppressInfoWindows</a></li><li><a href="global.html#template">template</a></li><li><a href="global.html#templates">templates</a></li><li><a href="global.html#templateString">templateString</a></li><li><a href="global.html#temporalExtents">temporalExtents</a></li><li><a href="global.html#temporalExtentsBase">temporalExtentsBase</a></li><li><a href="global.html#textDir">textDir</a></li><li><a href="global.html#tickmarkLabels">tickmarkLabels</a></li><li><a href="global.html#tile">tile</a></li><li><a href="global.html#tileLoading">tileLoading</a></li><li><a href="global.html#tilesPerScreen">tilesPerScreen</a></li><li><a href="global.html#time">time</a></li><li><a href="global.html#timeExtent">timeExtent</a></li><li><a href="global.html#timeFocus">timeFocus</a></li><li><a href="global.html#timeLabel">timeLabel</a></li><li><a href="global.html#timeline">timeline</a></li><li><a href="global.html#timelineMousedown">timelineMousedown</a></li><li><a href="global.html#timerange">timerange</a></li><li><a href="global.html#timeTask">timeTask</a></li><li><a href="global.html#title">title</a></li><li><a href="global.html#titleChanged">titleChanged</a></li><li><a href="global.html#toggle">toggle</a></li><li><a href="global.html#toJSON">toJSON</a></li><li><a href="global.html#top">top</a></li><li><a href="global.html#toString">toString</a></li><li><a href="global.html#type">type</a></li><li><a href="global.html#ui">ui</a></li><li><a href="global.html#uniforms">uniforms</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#updated">updated</a></li><li><a href="global.html#updatedHandler">updatedHandler</a></li><li><a href="global.html#updateList">updateList</a></li><li><a href="global.html#updateLoading">updateLoading</a></li><li><a href="global.html#url">url</a></li><li><a href="global.html#value">value</a></li><li><a href="global.html#values">values</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#versioned_url">versioned_url</a></li><li><a href="global.html#visibility">visibility</a></li><li><a href="global.html#visualization">visualization</a></li><li><a href="global.html#west">west</a></li><li><a href="global.html#width">width</a></li><li><a href="global.html#windowDragStart">windowDragStart</a></li><li><a href="global.html#windowEnd">windowEnd</a></li><li><a href="global.html#windowLengHoverLabels">windowLengHoverLabels</a></li><li><a href="global.html#windowLengLabels">windowLengLabels</a></li><li><a href="global.html#windowStart">windowStart</a></li><li><a href="global.html#windowTimeLabels">windowTimeLabels</a></li><li><a href="global.html#withCredentials">withCredentials</a></li><li><a href="global.html#x">x</a></li><li><a href="global.html#y">y</a></li><li><a href="global.html#years">years</a></li><li><a href="global.html#zoom">zoom</a></li><li><a href="global.html#zoomIn">zoomIn</a></li><li><a href="global.html#zoomOut">zoomOut</a></li><li><a href="global.html#zoomPosition">zoomPosition</a></li><li><a href="global.html#zoomSize">zoomSize</a></li><li><a href="global.html#zoomTo">zoomTo</a></li><li><a href="global.html#zoomWheel">zoomWheel</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

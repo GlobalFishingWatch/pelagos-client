@@ -5,7 +5,7 @@ define([
   "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation",
-  "cartodb"
+  "shims/cartodb/main"
 ], function(
   require,
   Class,
@@ -27,26 +27,33 @@ define([
     initGl: function(cb) {
       var self = this;
 
-      cartodb.createLayer(self.manager.map, self.source.args.url, {infowindow: false}
+      var cartoLayer = cartodb.createLayer(
+        self.manager.map, self.source.args.url, {infowindow: false}
+      ).addTo(
+        /* Note: This is does not support adding another layer before cb() is called
+         * Make sure to serialize this properly. */
+        self.manager.map, self.manager.map.overlayMapTypes.length
       ).on('done', function(layer) {
-        /* This is a workaround for an issue with having multiple
-         * CartoDB layers, see
-         * http://gis.stackexchange.com/questions/80816/adding-multiple-layers-in-cartodb-using-createlayer-not-working
-         */
-        self.manager.map.overlayMapTypes.setAt(self.manager.map.overlayMapTypes.length, layer);
         self.layer = layer;
-        /* FIXME: Does not seem to work w/o jsonp:true... why? */
-        self.sql = new cartodb.SQL({
-          user: layer.options.user_name,
-          jsonp: true,
-          sql_api_template: self.layer.options.sql_api_template
-        });
+      
+        if (self.layer.getSubLayers) {
+          self.layer.getSubLayers().map(function (subLayer) {
+            subLayer.setInteraction(true); // Interaction for that layer must be enabled
+            cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
+          });
+        }
 
-        self.layer.getSubLayers().map(function (subLayer) {
-          subLayer.setInteraction(true); // Interaction for that layer must be enabled
-          cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
-        });
+        if (self.layer.getTimeBounds) {
+          // This is a torque layer
 
+          self.manager.visualization.state.events.on({
+            time: self.timeChanged.bind(self),
+            timeExtent: self.timeChanged.bind(self)
+          });
+
+          self.layer.stop();
+        }
+          
         self.layer.on('featureOver', self.handleMouseOver.bind(self));
         self.layer.on('mouseout', self.handleMouseOut.bind(self));
 
@@ -62,6 +69,24 @@ define([
           }
         });
       });
+    },
+
+    setTime: function (timestamp) {
+      var self = this;
+
+      var bounds = self.layer.getTimeBounds();
+      self.layer.setStep(
+          Math.floor(
+              bounds.steps * (timestamp.getTime() - bounds.start) / (bounds.end - bounds.start)));
+    },
+
+    timeChanged: function () {
+      var self = this;
+
+      var end = self.manager.visualization.state.getValue("time");
+      if (end == undefined) return;
+
+      self.setTime(new Date(end.getTime() - self.manager.visualization.state.getValue("timeExtent") / 2.0));
     },
 
     handleMouseOver: function (event, latlng, pos, data, layerIndex) {
@@ -132,6 +157,8 @@ define([
       }
     }
   });
+  CartoDBAnimation.layerIndex = 0;
+
   Animation.animationClasses.CartoDBAnimation = CartoDBAnimation;
 
   return CartoDBAnimation;

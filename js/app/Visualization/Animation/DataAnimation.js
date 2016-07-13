@@ -1,13 +1,13 @@
 define([
   "app/Class",
   "app/Events",
-  "async",
+  "shims/async/main",
   "app/UrlValues",
   "app/Visualization/Animation/Animation",
   "app/Visualization/Animation/Shader",
   "app/Data/GeoProjection",
   "app/Data/DataView",
-  "jQuery"
+  "shims/jQuery/main"
 ], function(
   Class,
   Events,
@@ -166,7 +166,7 @@ define([
         "update": self.triggerDataUpdate.bind(self)
       });
       self.data_view.selections.events.on({
-        "update": self.manager.triggerUpdate.bind(self.manager)
+        "update": self.manager.triggerUpdate.bind(self.manager, {mouseoverChange: false})
       });
       self.data_view.events.on({
         "update": self.manager.triggerUpdate.bind(self.manager)
@@ -200,12 +200,17 @@ define([
       self.loadDataViewArrayBuffers(program);
     },
 
-    draw: function () {
+    draw: function (gl) {
+      /* If gl is given, only draw on gl, else on all canvases */
+
       var self = this;
       if (!self.visible) return;
 
       Object.values(self.programs).map(function (programs) {
-        programs.map(self.drawProgram.bind(self));
+        programs.map(function (program, idx) {
+          if (gl !== undefined && gl !== program.gl) return;
+          self.drawProgram(program, idx);
+        });
       });
     },
 

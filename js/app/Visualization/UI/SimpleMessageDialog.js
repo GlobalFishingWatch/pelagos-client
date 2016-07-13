@@ -1,6 +1,6 @@
 define([
   "dijit/Dialog",
-  "jQuery"
+  "shims/jQuery/main"
 ], function (
   Dialog,
   $

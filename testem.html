@@ -1,19 +1,30 @@
 <!doctype html>
 <html>
   <head>
-    <title>VectorVisual - Test</title>
+    <title>VectorVisual</title>
     <script type="text/javascript">
-      app = {
-        useBuild: false,
-        dependencies: {
-          stylesheets: ["$(lib)s/qunit/qunit/qunit.css"],
-          scripts: ["$(lib)s/qunit/qunit/qunit.js"]
-        },
-        packages: [{name: 'QUnit', location: '$(shim)s/QUnit'}],
-        mainModule: 'app/testem'
+      dojoConfig = {
+        isDebug: true,
+        async: true,
+        baseUrl: "js/libs/dojo",
+        packages: [{name: 'app', location:'/js/app', main: 'main'},
+                   {name: 'libs', location:'/js/libs', main: 'main'},
+                   {name: 'shims', location:'/js/shims', main: 'main'}]
       };
     </script>
-    <script type="text/javascript" src="js/deps.js"></script>
+    <script type="text/javascript" src="js/libs/dojo/dojo.js"></script>
+    <script>
+      require(["app/testem"], function (main) {});
+    </script>
+    <style>
+      #test {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+    </style>
   </head>
   <body class="claro">
     <div id="test">

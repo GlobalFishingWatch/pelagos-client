@@ -13,17 +13,7 @@ dojoConfig = {
       {name: "dijit", location:"libs/dijit"},
       {name: "dojox", location:"libs/dojox"},
 
-      {name: 'CanvasLayer', location: 'shims/CanvasLayer'},
-      {name: 'Stats', location: 'shims/Stats'},
-      {name: 'QUnit', location: 'shims/QUnit'},
-      {name: 'jQuery', location: 'shims/jQuery'},
-      {name: 'less', location: 'shims/less'},
-      {name: 'async', location: 'shims/async'},
-      {name: 'stacktrace', location: 'shims/stacktrace'},
-      {name: 'LogglyTracker', location: 'shims/LogglyTracker'},
-      {name: 'lodash', location: 'shims/lodash'},
-      {name: "cartodb", location: "shims/cartodb"},
-
+      {name: 'shims', location:'shims', main: 'main'},
       {name: 'app', location:'app', main: 'main'}
   ],
   deps:['app/main', "dojo/main"],

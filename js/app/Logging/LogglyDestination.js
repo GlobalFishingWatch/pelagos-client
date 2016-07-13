@@ -1,4 +1,12 @@
-define(["app/Class", "app/Logging/Destination", "LogglyTracker"], function(Class, Destination, LogglyTracker) {
+define([
+  "app/Class",
+  "app/Logging/Destination",
+  "shims/LogglyTracker/main"
+], function(
+  Class,
+  Destination,
+  LogglyTracker
+) {
   var LogglyDestination = Class(Destination, {
     name: "LogglyDestination",
 

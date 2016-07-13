@@ -14,6 +14,20 @@ define([], function() {
     }
     return res;
   }
+  Object.fromItems = function (items) {
+    var res = {};
+    items.map(function (item) {
+      res[item.key] = item.value;
+    });
+    return res;
+  }
+  Object.invert = function (obj) {
+    return Object.fromItems(
+      Object.items(obj).map(function (item) {
+        return {key: item.value, value: item.key};
+      })
+    );
+  }
 
   var old_log = Math.log;
   Math.log = function(x,base) {
@@ -79,9 +93,9 @@ define([], function() {
     return hash;
   }
 
-  JSON.oldStringify = JSON.stringify;
+  var JSONoldStringify = JSON.oldStringify = JSON.stringify;
   JSON.stringify = function (obj, replacer) {
-    return JSON.oldStringify(obj, function (key, value) {
+    return JSONoldStringify(obj, function (key, value) {
       if (replacer) value = replacer(key, value);
       if (typeof(value) == "number") {
         if (value == 1/0) return {__jsonclass__: ["Number", "Infinity"]};
@@ -92,9 +106,9 @@ define([], function() {
     });
   }
 
-  JSON.oldParse = JSON.parse;
+  var JSONoldParse = JSON.oldParse = JSON.parse;
   JSON.parse = function (text, reviver) {
-    return JSON.oldParse(text, function (key, value) {
+    return JSONoldParse(text, function (key, value) {
       if (value != null && value.__jsonclass__ && value.__jsonclass__.length > 1 && value.__jsonclass__[0] == "Number") {
         value = Number(value.__jsonclass__[1]);
       }

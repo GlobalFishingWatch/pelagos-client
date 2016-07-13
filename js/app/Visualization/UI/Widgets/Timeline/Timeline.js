@@ -5,11 +5,12 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
-  './Interval',
-  './TimeLabel',
-  '../DateTimeDropdown',
-  'jQuery',
-  'less'
+  "./Interval",
+  "./TimeLabel",
+  "../DateTimeDropdown",
+  "shims/jQuery/main",
+  "shims/less/main",
+  "app/Visualization/UI/Paths"
 ], function (
   require,
   declare,
@@ -21,7 +22,8 @@ define([
   TimeLabel,
   DateTimeDropdown,
   $,
-  less
+  less,
+  Paths
 ) {
   var lessnode = $('<link rel="stylesheet/less" type="text/css" href="' + require.toUrl('./Timeline.less') + '" />');
   $('head').append(lessnode);
@@ -119,7 +121,7 @@ define([
       intervalPrecisionLimit: undefined
     }),
 
-    app: app,
+    paths: Paths,
 
 
     /* Note about the one quanta in each tickmarks bar: This is just
@@ -132,13 +134,13 @@ define([
       '  <div class="overlay">' +
       '    <div class="leftFrame"></div>' +
       '    <div class="window" data-dojo-attach-event="touchstart:windowDragStart,mousedown:windowDragStart">' +
-      '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle leftDragHandle">' +
+      '      <img src="${paths.img}/drag-handle.png" class="dragHandle leftDragHandle">' +
       '      <div class="frame">' +
       '        <span class="left"><div class="startLabel" data-dojo-attach-event="mousedown:stopPropagation,click:editRangeStart"><span></span></div></span>' +
       '        <span class="center"><div class="lengthLabel"><span></span></div></span>' +
       '        <span class="right"><div class="endLabel" data-dojo-attach-event="mousedown:stopPropagation,click:editRangeEnd"><span></span></div></span>' +
       '      </div>' +
-      '      <img src="${app.dirs.img}/drag-handle.png" class="dragHandle rightDragHandle">' +
+      '      <img src="${paths.img}/drag-handle.png" class="dragHandle rightDragHandle">' +
       '    </div>' +
       '    <div class="rightFrame"></div>' +
       '  </div>' +
@@ -160,10 +162,10 @@ define([
       '  </div>' +
       '  <div class="zoom">' +
       '    <a class="zoomIn" data-dojo-attach-event="touchstart:zoomIn,click:zoomIn,mousedown:eatEvent">' +
-            '<img src="${app.dirs.img}/smaller_increments.png"> smaller increments' +
+            '<img src="${paths.img}/smaller_increments.png"> smaller increments' +
           '</a>' +
       '    <a class="zoomOut" data-dojo-attach-event="touchstart:zoomOut,click:zoomOut,mousedown:eatEvent">' +
-            '<img src="${app.dirs.img}/larger_increments.png"> larger increments' +
+            '<img src="${paths.img}/larger_increments.png"> larger increments' +
           '</a>' +
       '  </div>' +
       '</div>',

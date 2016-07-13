@@ -3,7 +3,13 @@
    Once the condition is set it will always remain set, and any
    callbacks set to wait for it will be executed immediately.
 */
-defined(["app/Class", "async"], function (Class, async) {
+define([
+  "app/Class",
+  "shims/async/main"
+], function (
+  Class,
+  async
+) {
   return Class({
     name: "Condition",
     initialize: function() {

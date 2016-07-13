@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <title>VectorVisual</title>
+    <script type="text/javascript">
+      dojoConfig = {
+        isDebug: true,
+        async: true,
+        baseUrl: "js/libs/dojo",
+        packages: [{name: 'app', location:'/js/app', main: 'main'},
+                   {name: 'libs', location:'/js/libs', main: 'main'},
+                   {name: 'shims', location:'/js/shims', main: 'main'}]
+      };
+    </script>
+    <script type="text/javascript" src="js/libs/dojo/dojo.js"></script>
+    <script>
+      require(["app/main-single-data-only"], function (main) {});
+    </script>
+  </head>
+  <body></body>
+</html>

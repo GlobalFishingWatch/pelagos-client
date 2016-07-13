@@ -1,4 +1,14 @@
-define(["app/Class", "app/Events", './TileBounds', "lodash"], function(Class, Events, TileBounds, _) {
+define([
+  "app/Class",
+  "app/Events",
+  "./TileBounds",
+  "shims/lodash/main"
+], function(
+  Class,
+  Events,
+  TileBounds,
+  _
+) {
   return Class({
     name: "Selection",
 

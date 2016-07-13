@@ -1,3 +1,6 @@
+---
+---
+
 # Data model
 
 A logging entry consists of a category and an argument object. The

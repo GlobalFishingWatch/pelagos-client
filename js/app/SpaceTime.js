@@ -1,9 +1,22 @@
-/* SpaceTime code adapted from Bounds from OpenLayers; Published under
- * the 2-clause BSD license. See license.txt in the OpenLayers
- * distribution.
- *
- */
 define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Timerange) {
+  /**
+   * SpaceTime code adapted from Bounds from OpenLayers; Published under
+   * the 2-clause BSD license. See license.txt in the OpenLayers
+   * distribution.
+   *
+   * @example
+   *
+   * st1 = new SpaceTime("1969-12-31T00:00:00.000Z,1970-01-15T00:00:00.000Z;-180,-89,140,89");
+   * st2 = new SpaceTime([new Timerange("1969-12-31T00:00:00.000Z,1970-01-15T00:00:00.000Z"),
+   *                      new Bounds("130,-89,180,89")]);
+   * st1.intersectsObj(st2);
+   * ==> true
+   *
+   * st1.toString()
+   * ==> "1969-12-31T00:00:00.000Z,1970-01-15T00:00:00.000Z;-180,-89,140,89"
+   *
+   * @class SpaceTime
+   */
   var SpaceTime = Class({
     name: "SpaceTime",
     initialize: function () {
@@ -40,7 +53,7 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
     },
 
     intersectsObj:function(spaceTime, options) {
-      self = this;
+      var self = this;
       if (typeof options === "boolean") {
         options =  {inclusive: options};
       }
@@ -64,16 +77,17 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
       return this;
     },
 
+    /**
+     * Changes the content of the SpaceTime object in place.
+     *
+     * update("TIMERANGE;BOUNDS")
+     * update([TIMERANGE, BOUNDS]);
+     * update(obj, obj, ...)
+     *
+     * Where obj is a SpaceTime, Timerange or Bounds object or
+     * {timerange:TIMERANGE, bounds:BOUNDS}.
+     */
     update: function () {
-      /* Usages:
-
-         update("TIMERANGE;BOUNDS")
-         update([TIMERANGE, BOUNDS]);
-         update(obj, obj, ...)
-
-         Where obj is a SpaceTime, Timerange or Bounds object or
-         {timerange:TIMERANGE, bounds:BOUNDS}.
-       */
       var self = this;
 
       var updateOne = function (obj) {

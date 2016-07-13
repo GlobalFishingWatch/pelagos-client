@@ -1,4 +1,12 @@
 define(["app/Class", "app/Events", "app/Data/TypedMatrixParser", "app/Data/Format"], function(Class, Events, TypedMatrixParser, Format) {
+  /**
+   * Basic Format class for data sources that only consists of one
+   * file in TypedMatrix format.
+   *
+   * @class Data/BinFormat
+   * @augments Data/Format
+   * @augments Data/TypedMatrixParser
+   */
   var BinFormat = Class(TypedMatrixParser, Format, {
     name: "BinFormat",
     initialize: function() {

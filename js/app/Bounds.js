@@ -1,11 +1,17 @@
-/* Bounds code adapted from OpenLayers; Published under the 2-clause
- * BSD license. See license.txt in the OpenLayers distribution.
- *
- * This is a minimalistic subset of the Openlayers.Bounds API with a
- * few small extensions. */
 define(["app/Class"], function(Class) {
+  /**
+   * Bounds code adapted from OpenLayers; Published under the 2-clause
+   * BSD license. See license.txt in the OpenLayers distribution.
+   *
+   * This is a minimalistic subset of the Openlayers.Bounds API with a
+   * few small extensions.
+   *
+   * @class Bounds
+   */
   var Bounds = Class({
     name: "Bounds",
+
+    /** Initialize the bounds. Takes the same arguments as update(). */
     initialize: function () {
       var self = this;
 
@@ -17,6 +23,7 @@ define(["app/Class"], function(Class) {
       self.update.apply(self, arguments);
     },
 
+/**  */
     clone: function() {
       var self = this;
       return new self.constructor(self);
@@ -72,12 +79,13 @@ define(["app/Class"], function(Class) {
     },
 
     intersectsBounds:function(bounds, options) {
+      var self;
       if (typeof options === "boolean") {
         options =  {inclusive: options};
       }
       options = options || {};
       if (options.worldBounds) {
-        var self = this.wrapDateLine(options.worldBounds);
+        self = this.wrapDateLine(options.worldBounds);
         bounds = bounds.wrapDateLine(options.worldBounds);
       } else {
         self = this;
@@ -143,7 +151,8 @@ define(["app/Class"], function(Class) {
       return self.intersectsBounds(obj, options);
     },
 
-    /* Move right and left edges whole revolutions around the globe so
+    /**
+     * Move right and left edges whole revolutions around the globe so
      * that they are within world bounds. */
     rewrapDateLine: function(world) {
       var self = this;
@@ -172,7 +181,8 @@ define(["app/Class"], function(Class) {
       return res;
     },
 
-    /* Move the right edge whole revolutions around the globe until
+    /**
+     * Move the right edge whole revolutions around the globe until
      * right > left (numerically). */
     unwrapDateLine: function(world) {
       var self = this;
@@ -188,14 +198,14 @@ define(["app/Class"], function(Class) {
 
     getBounds: function () { return this; },
 
+    /**
+     * Update the Bounds object in place.
+     *
+     * update("left,bottom,right,top")
+     * update([left,bottom,right,top]);
+     * update(obj, obj, ...);
+     */
     update: function () {
-      /* Usages:
-
-         update("left,bottom,right,top")
-         update([left,bottom,right,top]);
-         update(obj, obj, ...);
-       */
-
       var self = this;
 
       var updateOne = function (obj) {

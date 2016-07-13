@@ -1,4 +1,10 @@
-define(["app/Class", "lodash"], function(Class, _) {
+define([
+  "app/Class",
+  "shims/lodash/main"
+], function(
+  Class,
+  _
+) {
   var Json = Class({name: "Json"});
 
   Json.encode = function (data, indent) {

@@ -22,9 +22,9 @@ define([
   "app/Logging",
   "app/Data/Ajax",
   "app/Data/EmptyFormat",
-  "lodash",
-  "async",
-  "jQuery",
+  "shims/lodash/main",
+  "shims/async/main",
+  "shims/jQuery/main",
   "app/PopupAuth",
   "app/LangExtensions"
 ], function(
@@ -60,7 +60,7 @@ define([
       Format.prototype.initialize.apply(self, arguments);
     },
 
-    tilesPerScreen: 16,
+    tilesPerScreen: 32,
 
     retries: 10,
     retryTimeout: 2000,

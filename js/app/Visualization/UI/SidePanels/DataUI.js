@@ -5,7 +5,7 @@ define([
   "app/Visualization/UI/SidePanels/SidePanelBase",
   "app/Visualization/UI/TemplatedContainer",
   "dijit/form/HorizontalSlider",
-  "jQuery"
+  "shims/jQuery/main"
 ], function(
   declare,
   domStyle,

@@ -8,8 +8,8 @@ define([
   "app/Visualization/UI/SimpleMessageDialog",
   "app/ObjectTemplate",
   "app/Data/Ajax",
-  "lodash",
-  "jQuery"
+  "shims/lodash/main",
+  "shims/jQuery/main"
 ], function (
   declare,
   _WidgetBase,

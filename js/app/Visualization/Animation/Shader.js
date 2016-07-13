@@ -1,4 +1,14 @@
-define(["app/Class", "async", "jQuery", "app/Data/Ajax"], function(Class, async, $, Ajax) {
+define([
+  "app/Class",
+  "shims/async/main",
+  "shims/jQuery/main",
+  "app/Data/Ajax"
+], function(
+  Class,
+  async,
+  $,
+  Ajax
+) {
   var Shader = Class({name: "Shader"});
 
   var range = function(lower, upper, fn) {

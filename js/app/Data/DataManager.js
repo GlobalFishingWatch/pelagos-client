@@ -1,8 +1,8 @@
 define([
 "app/Class",
   "app/Bounds",
-  "async",
-  "lodash",
+  "shims/async/main",
+  "shims/lodash/main",
   "app/UrlValues",
   "app/Data/Ajax",
   "app/Events",
@@ -26,6 +26,39 @@ define([
   DataView,
   Logging
 ) {
+  /**
+   * The DataManager manages a set of data sources. Each data set is
+   * handled by a Format subclass, and identified by a Url.
+   *
+   * The data manager handles loading subsets of the data from each
+   * source based on the current time range and bbox.
+   *
+   * @example
+   *
+   * data = new DataManager();
+   * data.init(function () {
+   *   data.events.on({__all__: function () {
+   *    // Catch all events and print them
+   *    console.log("EVENT", arguments);
+   *   }});
+   *   source = data.addSource({type: "TiledBinFormat", args:{url:"/ui_tests/data/testtiles"}});
+   *   console.log("SOURCE ADDED");
+   *   source.load();
+   *
+   *   data.zoomTo(new SpaceTime("1969-12-31T00:00:00.000Z,1970-01-15T00:00:00.000Z;-180,-89,180,89"));
+   *
+   *   data.events.on({all: function () {
+   *     console.log("All data loaded");
+   *     console.log(data.printTree());
+   *   }});
+   * });
+   *
+   * @fires Data/DataManager#add
+   * @fires Data/DataManager#remove
+   * @fires Data/DataManager#update
+   * @fires Data/DataManager#all
+   * @class Data/DataManager
+   */
   return Class({
     name: "DataManager",
     initialize: function () {
@@ -33,8 +66,12 @@ define([
 
       self.sources = {};
       self.directories = {};
+
+      /** @member {Events} */
       self.events = new Events("Data.DataManager");
+      /** @member {Object} */
       self.header = {colsByName: {}};
+      /** @member {SpaceTime} */
       self.bounds = undefined;
     },
 
@@ -44,6 +81,15 @@ define([
       cb();
     },
 
+    /**
+     * Sets up a new source
+     *
+     * @param {string} source.type - Data source type, the name of a
+     * subclass of Format, e.g. TiledBinFormat or BinFormat.
+     *
+     * @param {string} source.args.url - Url of the data source file
+     * or directory root
+     */
     addSource: function (source) {
       var self = this;
 
@@ -126,6 +172,11 @@ define([
       }
     },
 
+    /**
+     * Loads data for all sources for some bbox and time range.
+     *
+     * @param {SpaceTime} bounds
+     */
     zoomTo: function (bounds) {
       var self = this;
       if (bounds.length > 0) bounds = new Bounds(bounds);
@@ -278,6 +329,14 @@ define([
       });
     },
 
+    /**
+     * Prints a summary of the currently loaded data for all sources.
+     *
+     * Recursively calls the printTree method on each Format instance.
+     * For tiled data sources this will print the loaded tiles, the
+     * wanted tiles, any tile replacements due to missing tiles (the
+     * tile tree has uneven depth) and any tile loading errors.
+     */
     printTree: function (args) {
       var self = this;
       args = args || {};
