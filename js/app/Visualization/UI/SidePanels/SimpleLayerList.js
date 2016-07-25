@@ -42,7 +42,7 @@ define([
       '    <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
       '  </label>' +
       '  <div class="layer-label">' +
-      '    <span data-dojo-attach-point="labelNode"></span>' +
+      '    <span data-dojo-attach-point="titleNode"></span>' +
       '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
       '      <div class="intensity-label">Intensity:</div>' +
       '    </div>' +
@@ -91,7 +91,6 @@ define([
         $(self.intensityNode).hide();
       }
 
-      self.animation.events.on({updated: self.updatedHandler.bind(self)});
       self.updatedHandler();
     },
 
@@ -113,9 +112,7 @@ define([
 
     updatedHandler: function () {
       var self = this;
-      var title = self.animation.title;
-      if (!title) title = self.animation.toString();
-      $(self.labelNode).html(title);
+      self.inherited(arguments);
 
       var color = self.animation.color;
       if (!color) color = 'orange';

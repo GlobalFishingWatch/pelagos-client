@@ -131,8 +131,7 @@ define([
     updatedHandler: function () {
       var self = this;
 
-      var title = self.animation.title
-      if (!title) title = self.animation.toString();
+      var title = self.animation.title;
       $(self.titleInputNode).val(title);
       $(self.titleNode).html(title);
 
@@ -167,7 +166,8 @@ define([
     },
     endEdit: function () {
       var self = this;
-      self.visualization.state.setValue('title', $(self.titleInputNode).val());
+      self.animation.title = $(self.titleInputNode).val();
+      self.animation.events.triggerEvent("updated", {});
       $(self.titleInputNode).hide();
       $(self.titleNod).show();
     },
