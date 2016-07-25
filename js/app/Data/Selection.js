@@ -163,7 +163,8 @@ define([
       return {
         header: self.header,
         data: self.data,
-        sortcols: self.sortcols
+        sortcols: self.sortcols,
+        max_range_count: self.max_range_count
       };
     }
   });
