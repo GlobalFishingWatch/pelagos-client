@@ -30,6 +30,9 @@ define([
       if (args) $.extend(self, args);
       self.manager = manager;
       self.events = new Events('Visualization.Animation');
+      if (self.title === undefined) {
+        self.title = self.toString();
+      }
     },
 
     setVisible: function (visible) {

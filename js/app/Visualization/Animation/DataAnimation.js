@@ -360,11 +360,6 @@ define([
       }
     },
 
-    toString: function () {
-      var self = this;
-      return self.name + ": " + self.data_view;
-    },
-
     toJSON: function () {
       var self = this;
       var args = self.data_view.toJSON();
