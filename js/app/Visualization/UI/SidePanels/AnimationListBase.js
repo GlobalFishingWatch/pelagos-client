@@ -97,7 +97,7 @@ define([
       self.inherited(arguments)
 
       self.animation.events.on({
-        updated: self.updatedHandler.bind(self),
+        updated: self.updatedHandler.bind(self)
       });
     },
 
