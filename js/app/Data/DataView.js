@@ -50,7 +50,7 @@ define([
         self.addCol(value);
       });
 
-      self.header.uniforms = _.clone(self.uniforms);
+      self.header.uniforms = _.cloneDeep(self.uniforms);
       Object.items(self.header.uniforms).map(function (uniform) {
         uniform.value.name = uniform.key;
       });
@@ -152,7 +152,7 @@ define([
       }
       return _.extend({}, self.args, {
         columns: cols,
-        uniforms: self.uniforms,
+        uniforms: self.header.uniforms,
         selections: self.selections.toJSON()
       });
     },
