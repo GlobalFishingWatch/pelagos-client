@@ -88,7 +88,7 @@ define([
         return;
       }
 
-      Ajax.get(self.url + "/header", self.header, function (err, data) {
+      Ajax.get(self.url + "/header", self.headers, function (err, data) {
         if (err) {
           self.handleError(err);
         } else {

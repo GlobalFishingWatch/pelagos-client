@@ -96,7 +96,13 @@ define([
       async.series([
         function (cb) {
           self.data = new DataManager();
-          self.data.init(cb);
+          self.data.init(function () {
+            headers = UrlValues.getParameter("headers");
+            if (headers != undefined) {
+              self.data.setHeaders(JSON.parse(headers));
+            }
+            cb();
+          });
         },
         function (cb) {
           self.animations = new AnimationManager(self);
