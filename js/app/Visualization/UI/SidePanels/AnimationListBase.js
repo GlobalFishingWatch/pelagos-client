@@ -1,6 +1,7 @@
 define([
   "dojo/_base/declare",
   "dojo/dom-style",
+  "dojo/html",
   "app/Visualization/UI/SidePanels/SidePanelBase",
   "dijit/_WidgetBase",
   "dijit/_TemplatedMixin",
@@ -9,6 +10,7 @@ define([
 ], function(
   declare,
   domStyle,
+  html,
   SidePanelBase,
   _WidgetBase,
   _TemplatedMixin,
@@ -89,6 +91,20 @@ define([
       '</div>',
     visualization: null,
     animation: null,
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments)
+
+      self.animation.events.on({
+        updated: self.updatedHandler.bind(self)
+      });
+    },
+
+    updatedHandler: function () {
+      var self = this;
+      html.set(self.titleNode, self.animation.title);
+    },
 
     remove: function () {
       var self = this;
