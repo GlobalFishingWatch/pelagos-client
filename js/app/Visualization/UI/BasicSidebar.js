@@ -117,6 +117,12 @@ define([
       
       self.node.find("#feedback_url").attr("href", data.feedback_url);
 
+      if (data.filters_tab === false) {
+        self.sidebarContainer.removeChild(self.filters);
+      } else {
+        self.sidebarContainer.addChild(self.filters);
+      }
+
       cb && cb();
     }
   });
