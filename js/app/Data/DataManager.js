@@ -77,6 +77,7 @@ define([
 
     init: function (cb) {
       var self = this;
+      self.headers = {};
 
       cb();
     },
@@ -102,6 +103,7 @@ define([
         var formatClass = Format.formatClasses[source.spec.type];
 
         source.source = new formatClass(source.spec.args);
+        source.source.setHeaders(self.headers);
         source.source.events.on({
           error: self.handleError.bind(self, source),
           "tile-error": self.handleTileError.bind(self, source),
@@ -121,8 +123,9 @@ define([
       return self.sources[key].source;
     },
 
-    setHeaders: function (headers, cb) {
+    setHeaders: function (headers) {
       var self = this;
+      self.headers = headers;
       for (var key in self.sources) {
         self.sources[key].source.setHeaders(headers);
       }
