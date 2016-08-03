@@ -210,8 +210,8 @@ define([
 
       data = self.mergeDefaults(self.defaultConfig, data);
 
-      if (data.workspaceSaveUrl != undefined) {
-        self.workspaceSaveUrl = data.workspaceSaveUrl;
+      if (data.metadata && data.metadata.urls && data.metadata.urls.save) {
+        self.workspaceSaveUrl = data.metadata.urls.save;
       }
 
       async.series([
