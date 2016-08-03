@@ -210,6 +210,10 @@ define([
 
       data = self.mergeDefaults(self.defaultConfig, data);
 
+      if (data.workspaceSaveUrl != undefined) {
+        self.workspaceSaveUrl = data.workspaceSaveUrl;
+      }
+
       async.series([
         function (cb) {
           if (!data.state) return cb();
@@ -241,10 +245,25 @@ define([
       var self = this;
 
       var data = Json.encode(self.unmergeDefaults(self.defaultConfig, Json.decode(Json.encode(self, "  "))));
-      $.post(self.workspaceSaveUrl, data, function (data) {
-        data = Json.decode(data);
-        cb(self.workspaceSaveUrl + "/" + data.id);
-      }, 'text');
+      $.ajax({
+        url: self.workspaceSaveUrl,
+        method: "POST",
+        data:data,
+        complete:function (data) {
+          data = Json.decode(data.responseText);
+          if (!data.urls) data.urls = {};
+
+          if (!data.urls.load) {
+            data.urls.load = self.workspaceSaveUrl + "/" + data.id
+          }
+          if (!data.urls.visualization) {
+            data.urls.visualization = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + data.urls.load;
+          }
+          cb(data.urls.visualization);
+        },
+        dataType: 'text',
+        contentType: 'application/json'
+      });
     }
   });
 });

@@ -523,8 +523,6 @@ define([
     saveWorkspace: function () {
       var self = this;
       self.visualization.save(function (url) {
-        url = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + url;
-
         var dialog = new Dialog({
           style: "width: 50%;",
           title: "Workspace saved",
