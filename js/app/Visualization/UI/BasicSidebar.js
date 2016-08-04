@@ -118,12 +118,13 @@ define([
       
       self.node.find("#feedback_url").attr("href", data.feedback_url);
 
+      data.filters_tab = !!data.filters_tab;
       if (data.filters_tab != self.filters_tab) {
         self.filters_tab = data.filters_tab;
-        if (data.filters_tab === false) {
-          self.sidebarContainer.removeChild(self.filters);
-        } else {
+        if (self.filters_tab) {
           self.sidebarContainer.addChild(self.filters);
+        } else {
+          self.sidebarContainer.removeChild(self.filters);
         }
       }
 
