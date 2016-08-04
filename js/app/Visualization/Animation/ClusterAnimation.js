@@ -28,7 +28,7 @@ define([
     },
 
     uniforms: {
-      heatmap_zoom: {value: 6.0, min:0.0, max: 11.0},
+      heatmap_zoom: {value: 22.0, min:0.0, max: 22.0},
 
       red: {value: 1.0, min:0.0, max: 1.0},
       green: {value: 0.6, min:0.0, max: 1.0},
