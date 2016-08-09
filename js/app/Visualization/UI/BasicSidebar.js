@@ -64,6 +64,7 @@ define([
       self.sidebarContainer.addChild(self.info);
       self.layers = new SimpleLayerList({visualization: self.visualization});
       self.sidebarContainer.addChild(self.layers);
+      self.filters_tab = true;
       self.filters = new Filters({visualization: self.visualization});
       self.sidebarContainer.addChild(self.filters);
       self.sidebarContainer.selectChild(self.layers, false);
@@ -117,10 +118,14 @@ define([
       
       self.node.find("#feedback_url").attr("href", data.feedback_url);
 
-      if (data.filters_tab === false) {
-        self.sidebarContainer.removeChild(self.filters);
-      } else {
-        self.sidebarContainer.addChild(self.filters);
+      data.filters_tab = !!data.filters_tab;
+      if (data.filters_tab != self.filters_tab) {
+        self.filters_tab = data.filters_tab;
+        if (self.filters_tab) {
+          self.sidebarContainer.addChild(self.filters);
+        } else {
+          self.sidebarContainer.removeChild(self.filters);
+        }
       }
 
       cb && cb();
