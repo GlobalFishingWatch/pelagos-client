@@ -158,6 +158,69 @@ define([
      return !!self.manager.wantedTiles[self.bounds.toString()];
     },
 
+    tileInfo: function (args) {
+      var self = this;
+
+      var info = {
+        Idx: self.idx.toString(),
+        Usage: self.usage.toString(),
+        Level: TileBounds.zoomLevelForTileBounds(self.bounds)
+      };
+      if (self.content && self.content.header) info.Rows = self.content.header.length;
+      var flags = []
+      if (self.isWanted()) flags.push("wanted");
+      flags.push(self.getStatus());
+      if (self.content && self.content.header && self.content.header.tags) flags = flags.concat(self.content.header.tags);
+      if (flags.length > 0) info.Flags = flags;
+
+      if (args && args.statistics) {
+        if (self.content && self.content.data) {
+          info.Statistics = {};
+          for (var col in self.content.data) {
+            var coldata = self.content.data[col];
+            var sum = coldata.reduce(function (a, b) { return a + b}, 0);
+            var sqrsum = coldata.reduce(function (a, b) { return a + b * b; }, 0);
+            info.Statistics[col] = {
+              Sum: sum,
+              Average: sum/coldata.length,
+              StdDev: Math.sqrt(sqrsum/coldata.length - Math.pow(sum/coldata.length, 2)),
+              Min: Math.min.apply(Math, coldata),
+              Max: Math.max.apply(Math, coldata)
+            };
+          }
+        }
+      }
+
+      if (args.replacements) {
+        var indent = args.indent || '';
+        var depth = args.depth || 0;
+
+        if (self.replacement) {
+          if (self.replacement_is_known_complete) {
+            key = "Replaced by known complete ancestor";
+          } else {
+            key = "Replaced by nearest ancestor";
+          }
+          args.depth = depth + 1;
+          args.indent = indent + "    ";
+          info[key] = self.replacement.printTree(args);
+        }
+
+        if (self.overlaps.length) {
+          info.Overlaps = [];
+          self.overlaps.map(function (overlap) {
+            args.depth = depth + 1;
+            args.indent = indent + "    ";
+            info.Overlaps.push(overlap.printTree(args));
+          });
+        }
+      }
+
+      return info;
+    },
+    
+    infoOrder: ["Idx", "Usage", "Level", "Rows"],
+
     printTree: function (args) {
       var self = this;
 
@@ -169,45 +232,45 @@ define([
       if (args.printed === undefined) args.printed = {};
       var again = args.printed[key] || false;
       args.printed[key] = true;
-
-      var flags = [
-        "Idx: " + self.idx.toString(),
-        "Usage: " + self.usage.toString(),
-        "Level: " + TileBounds.zoomLevelForTileBounds(self.bounds)
-      ];
-      if (self.content && self.content.header) flags.push("Rows: " + self.content.header.length);
-      if (self.isWanted()) flags.push("wanted");
-      flags.push(self.getStatus());
-      if (self.content && self.content.header && self.content.header.tags) flags = flags.concat(self.content.header.tags);
-
-      var res = indent + key + " (" + flags.join(", ") + ")";
-
+ 
+      var subtiles;
+      var replacements = false;
       if (args.maxdepth != undefined && depth > args.maxdepth) {
-        res += " ...\n";
+        subtiles = " ...\n";
       } else if (again && !args.expand) {
-        res += " (see above)\n";
+        subtiles = " (see above)\n";
       } else {
-        res += "\n";
+        subtiles = "\n";
+        replacements = true;
+      }
 
-        if (self.replacement) {
-          if (self.replacement_is_known_complete) {
-            res += indent + "  Replaced by known complete ancestor:\n";
-          } else {
-            res += indent + "  Replaced by nearest ancestor:\n";
-          }
-          args.depth = depth + 1;
-          args.indent = indent + "    ";
-          res += self.replacement.printTree(args);
-        }
+      args.replacements = replacements;
+      var tileInfo = self.tileInfo(args);
 
-        if (self.overlaps.length) {
-          res += indent + "  Overlaps:\n";
-          self.overlaps.map(function (overlap) {
-            args.depth = depth + 1;
-            args.indent = indent + "    ";
-            res += overlap.printTree(args);
-          });
-        }
+      var flags = self.infoOrder.filter(function (name) {
+        return tileInfo[name] != undefined;
+      }).map(function (name) {
+         return name + ": " + tileInfo[name];
+      });
+      if (tileInfo.Flags != undefined) {
+        flags = flags.concat(tileInfo.Flags);
+      }
+
+      var res = indent + key + " (" + flags.join(", ") + ")" + subtiles;
+
+      if (replacements) {
+        ["Replaced by known complete ancestor", "Replaced by nearest ancestor", "Overlaps"].map(function (key) {
+          if (tileInfo[key] != undefined) {
+            res += indent + "  " + key + ":\n";
+            if (typeof tileInfo[key] == "string") {
+              res += tileInfo[key]
+            } else {
+              tileInfo[key].map(function (item) {
+                res += item;
+              });
+            }
+          };
+        });
       }
 
       return res;
