@@ -50,7 +50,12 @@ define([
       var bindings = KeyBindings.byCategory[category];
       Object.keys(bindings).map(function (keyPath) {
         var registration = bindings[keyPath];
-        var regHtml = $("<div class='binding'><div class='key-codes'></div><div class='description'></div></div>");
+        var regHtml = $("<div class='binding'><a href='javascript: void(0);'><div class='key-codes'></div><div class='description'></div></a></div>");
+        regHtml.find("a").click(function () {
+          if (registration && registration.cb) {
+              registration.cb(registration, {});
+          }
+        });
         regHtml.find('.key-codes').text(registration.keyPath);
         regHtml.find('.description').html(registration.description);
         categoryHtml.find('.key-bindings').append(regHtml);
