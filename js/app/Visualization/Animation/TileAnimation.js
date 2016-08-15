@@ -124,9 +124,12 @@ define([
 
       if (tileidx != -1) {
         var data = {
-          tile: self.tiles[tileidx].printTree({}),
+          tile: self.tiles[tileidx].tileInfo({
+            statistics: true,
+            replacements: true
+          }),
           toString: function () {
-            return ObjectToTable(this);
+            return ObjectToTable(this.tile);
           }
         };
 
