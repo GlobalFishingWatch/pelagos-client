@@ -10,7 +10,6 @@ uniform mat4 googleMercator2webglMatrix;
 varying float vWeight;
 varying vec4 baseColor;
 
-
 void main() {
   mapper();
 
@@ -50,10 +49,15 @@ void main() {
     gl_PointSize = radius;
     if (gl_PointSize > 8.0) {gl_PointSize = 8.0;}
 
-    if (_weight > 1.0)
-        _weight = (log(_weight)/log(4.0)) + 1.0;
+    if (zoom >= heatmap_zoom) {
+      vWeight = -1.;
+      gl_PointSize = gl_PointSize / 2.0;
+    } else {
+      if (_weight > 1.0)
+          _weight = (log(_weight)/log(4.0)) + 1.0;
 
-    vWeight = areaScale * _weight;
+      vWeight = areaScale * _weight;
+    }
 
     if (_selected == 1.0)
         baseColor = vec4(selected_red, selected_green, selected_blue, 1.0);
