@@ -258,14 +258,16 @@ define([
     search: function(query, offset, limit, cb) {
       var self = this;
 
-      var data = {query: query, offset: offset, limit: limit};
-      /* FIXME: JSON encoding is not unambiguous, so using it as a key
-       * is not a good idea... */
-      data = JSON.stringify(data);
-      var url = self.getUrl("search", data, -1) + "/search";
+      var url = self.getUrl("search", data, -1) + "/search?query=" + encodeURIComponent(query);
+      if (offset != undefined) {
+        url += "&offset=" + offset.toString();
+      }
+      if (limit != undefined) {
+        url += "&limit=" + limit.toString();
+      }
 
       var request = new XMLHttpRequest();
-      request.open('POST', url, true);
+      request.open('GET', url, true);
       request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
       LoadingInfo.main.add(url, {request: request});
@@ -282,7 +284,7 @@ define([
           }
         }
       };
-      request.send(data);
+      request.send();
     },
 
     clear: function () {
