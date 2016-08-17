@@ -6,6 +6,9 @@ define([
   "app/Visualization/UI/SidePanels/InfoUI",
   "app/Visualization/UI/SidePanels/SimpleLayerList",
   "app/Visualization/UI/SidePanels/Filters",
+  "app/Visualization/UI/SidePanels/LoggingUI",
+  "app/Visualization/UI/SidePanels/AnimationManagerUI",
+  "app/Visualization/UI/SidePanels/DataUI",
   "app/Visualization/UI/Paths"
 ], function(
   Class ,
@@ -15,6 +18,9 @@ define([
   InfoUI,
   SimpleLayerList,
   Filters,
+  LoggingUI,
+  AnimationManagerUI,
+  DataUI,
   Paths
 ) {
   return Class({
@@ -59,16 +65,6 @@ define([
       self.sidebarContainer.visualization = self.ui.visualization;
       self.sidebarContainer.animationManager = self.visualization.animations;
 
-
-      self.info = new InfoUI({visualization: self.visualization});
-      self.sidebarContainer.addChild(self.info);
-      self.layers = new SimpleLayerList({visualization: self.visualization});
-      self.sidebarContainer.addChild(self.layers);
-      self.filters_tab = true;
-      self.filters = new Filters({visualization: self.visualization});
-      self.sidebarContainer.addChild(self.filters);
-      self.sidebarContainer.selectChild(self.layers, false);
-
       self.node.find("#activate_help").click(function () {
         self.visualization.ui.help.displayHelpDialog();
       });
@@ -88,11 +84,6 @@ define([
         self.node.animate({right: "15px"});
       });
 
-      self.node.toggle(!self.visualization.state.getValue('edit'));
-      self.visualization.state.events.on({'edit': function (data) {        
-        self.node.toggle(!data.new_value);
-      }});
-
       var resize = self.node.find(".sidebar-content");
 
       resize.mousedown(self.resizeStart.bind(self));
@@ -101,6 +92,49 @@ define([
       resize.on('touchstart', self.resizeStart.bind(self));
       $(document).on('touchmove', self.resizeMove.bind(self));
       $(document).on('touchend', self.resizeEnd.bind(self));
+
+      self.initTabs();
+      self.ui.visualization.state.events.on({'edit': self.setTabs.bind(self)});
+      self.setTabs();
+
+    },
+
+    tabClasses: [
+      InfoUI,
+      SimpleLayerList,
+      AnimationManagerUI,
+      Filters,
+      LoggingUI,
+      DataUI
+    ],
+      
+    initTabs: function () {
+      var self = this;
+      self.filters_tab = true;
+      self.tabs = self.tabClasses.map(function (tabClass) {
+        var tab = new tabClass({visualization: self.visualization});
+        tab.startup();
+        self[tabClass.prototype.baseClass] = tab;
+        return tab;
+      });
+    },
+
+    setTabs: function () {
+      var self = this;
+      var advanced = !!self.visualization.state.getValue('edit');
+
+      self.sidebarContainer.getChildren().map(function (tab) {
+        self.sidebarContainer.removeChild(tab);
+      });
+      self.tabs.map(function (tab) {
+        if (!self.filters_tab && tab.name == "Filters") return;
+        if ((tab.advanced === undefined) || (tab.advanced == advanced)) {
+          self.sidebarContainer.addChild(tab);
+          if (tab.select_default) {
+            self.sidebarContainer.selectChild(tab, false);
+          }
+        }
+      });
     },
 
     // Copied from Timeline...
@@ -183,14 +217,7 @@ define([
       self.node.find("#feedback_url").attr("href", data.feedback_url);
 
       data.filters_tab = !!data.filters_tab;
-      if (data.filters_tab != self.filters_tab) {
-        self.filters_tab = data.filters_tab;
-        if (self.filters_tab) {
-          self.sidebarContainer.addChild(self.filters);
-        } else {
-          self.sidebarContainer.removeChild(self.filters);
-        }
-      }
+      self.setTabs();
 
       cb && cb();
     }

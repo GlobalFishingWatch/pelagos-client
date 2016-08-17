@@ -18,6 +18,8 @@ define([
   var DataUI = declare("DataUI", [SidePanelBase], {
     baseClass: 'DataUI',
     title: 'Data',
+    advanced: true,
+
     startup: function () {
       var self = this;
       self.inherited(arguments);

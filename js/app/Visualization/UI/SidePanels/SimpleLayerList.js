@@ -22,6 +22,9 @@ define([
   var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
     baseClass: 'SimpleLayerList',
     title: 'Layers',
+    advanced: false,
+    select_default: true,
+
     templateString: '' +
         '<div class="${baseClass}" style="overflow: auto;">' +
         '  <div id="layers">' +
