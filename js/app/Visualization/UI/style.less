@@ -665,10 +665,15 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     box-sizing: initial !important;
 
     .sidebar-content {
+      cursor: ew-resize;
+      border-left: 2px solid #fcfcfc;
       height: 100%;
       width: 100%;
       overflow: hidden;
 
+      * {
+        cursor: default;
+      }
       .header {
         #activate_help{
           font-size: 15pt;

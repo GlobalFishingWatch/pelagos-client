@@ -92,6 +92,70 @@ define([
       self.visualization.state.events.on({'edit': function (data) {        
         self.node.toggle(!data.new_value);
       }});
+
+      var resize = self.node.find(".sidebar-content");
+
+      resize.mousedown(self.resizeStart.bind(self));
+      $(document).mousemove(self.resizeMove.bind(self));
+      $(document).mouseup(self.resizeEnd.bind(self));
+      resize.on('touchstart', self.resizeStart.bind(self));
+      $(document).on('touchmove', self.resizeMove.bind(self));
+      $(document).on('touchend', self.resizeEnd.bind(self));
+    },
+
+    // Copied from Timeline...
+    getEventPositions: function (e) {
+      var event = e.originalEvent || e;
+      var res = {};
+      if (event.touches && event.touches.length > 0) {
+        for (var i = 0; i < event.touches.length; i++) {
+          res[event.touches[i].identifier.toString()] = event.touches[i];
+        };
+      } else {
+        event.identifier = "pointer";
+        res[event.identifier] = event;
+      }
+
+      if (e.ctrlKey && e.altKey && e.shiftKey) {
+        console.log("Multi-touch test mode enabled.");
+        var offsets = $(".window").offset();
+        var left = {identifier: "left", pageX: offsets.left - 1, pageY: offsets.top + 1};
+        res[left.identifier] = left;
+      }
+
+      return res;
+    },
+
+    getFirstPosition: function (positions) {
+      for (var key in positions) {
+        return positions[key];
+      }
+    },
+
+    resizeStart: function (e) {
+      var self = this;
+      var pos = self.getFirstPosition(self.getEventPositions(e));
+      self.resizing = {
+        original_pos: pos,
+        original_width: self.node.outerWidth()
+      };
+      self.node.css({"max-width": "none"});
+      // Don't grow the collapse button (it has a width in % to handle different screen sizes)
+      var collapse_button = self.node.find("#collapse-button img")
+      collapse_button.css({width: collapse_button.outerWidth() + "px"});
+    },
+    resizeMove: function (e) {
+      var self = this;
+      if (self.resizing == undefined) return;
+
+      var pos = self.getFirstPosition(self.getEventPositions(e));
+      var offset = pos.pageX - self.resizing.original_pos.pageX;
+      self.node.css({"width": (self.resizing.original_width - offset).toString() + "px"});
+    },
+    resizeEnd: function (e) {
+      var self = this;
+      self.resizing = undefined;
+      self.sidebarContainer.resize();
     },
 
     toJSON: function () {
