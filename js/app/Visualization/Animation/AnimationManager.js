@@ -1007,7 +1007,7 @@ function(Class,
       Logging.main.log("Visualization.Animation.AnimationManager.triggerUpdate", {msg: "Trigger update"});
 
       self.updateNeeded = true;
-      if (e && e.mouseoverChange !== false) {
+      if (!e || e.mouseoverChange !== false) {
         self.mouseoverUpdateNeeded = true;
       }
     },
