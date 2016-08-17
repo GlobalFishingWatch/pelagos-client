@@ -6,7 +6,7 @@ define([
   "app/Visualization/KeyBindings",
   "app/Visualization/UI/Widgets/Timeline/Timeline",
   "app/Visualization/UI/PlayControl",
-  "app/Visualization/UI/BasicSidebar",
+  "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/Search",
   "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/Performance",
@@ -29,7 +29,7 @@ define([
   KeyBindings,
   Timeline,
   PlayControl,
-  BasicSidebar,
+  SidePanelManager,
   Search,
   AnimationLibrary,
   Performance,
@@ -551,7 +551,7 @@ define([
         }
       );
 
-      self.sideBar = new BasicSidebar(self);
+      self.sideBar = new SidePanelManager(self);
       cb();
     },
 

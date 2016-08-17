@@ -24,7 +24,7 @@ define([
   Paths
 ) {
   return Class({
-    name: "BasicSidebar",
+    name: "SidePanelManager",
 
     initialize: function (ui) {
       var self = this;
