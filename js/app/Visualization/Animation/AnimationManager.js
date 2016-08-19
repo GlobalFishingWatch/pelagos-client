@@ -552,6 +552,10 @@ function(Class,
         'Show object information in the sidebar'
       );
       KeyBindings.register(
+        [], 'double click (on background)', 'Map',
+        'Deselect currently selected object'
+      );
+      KeyBindings.register(
         [], 'right click (on object)', 'Map',
         'Show object information in a popup'
       );
