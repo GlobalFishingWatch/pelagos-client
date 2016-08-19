@@ -116,9 +116,9 @@ define([
 
       self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
-        + '  <button class="btn btn-default btn-lg" data-name="share"><img src="%(img)s/buttons/share.png"></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share"></i></button>'
         + '  <div class="divide"></div>'        
-        + '  <button class="btn btn-default btn-lg" data-name="play"><img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png"></button>'
+        + '  <button class="btn btn-default btn-lg" data-name="play"><i class="fa fa-play paused"></i><i class="fa fa-pause playing"></i><!--<img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png">--></button>'
         + ''
         + '  <a class="balloon">'
         + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
