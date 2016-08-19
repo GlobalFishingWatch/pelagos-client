@@ -21,6 +21,7 @@ define([
   "shims/jQuery/main",
   "shims/less/main",
   "shims/Styles",
+  "shims/clipboard/main",
   "app/Visualization/UI/Paths"
 ], function (
   Class,
@@ -45,6 +46,7 @@ define([
   $,
   less,
   Styles,
+  clipboard,
   Paths
 ) {
   return Class({
@@ -524,16 +526,24 @@ define([
       var self = this;
       self.visualization.save(function (url) {
         var dialog = new Dialog({
+          'class': 'saveWorkspaceDialog',
           style: "width: 50%;",
           title: "Workspace saved",
           content: '' +
-            'Share this link: <input type="text" class="link" style="width: 300pt">',
+            '<div class="label">Share this link:</div>' +
+            '<div class="link"><input type="text" class="link" style="width: 300pt"><a href="javascript: void(0)" class="copy"><i class="fa fa-copy" aria-hidden="true"></i> COPY</a></div>',
           actionBarTemplate: '' +
             '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
             '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
             '</div>'
         });
-        $(dialog.containerNode).find("input").val(url);
+        $(dialog.containerNode).find("input.link").val(url);
+        $(dialog.containerNode).find("a.copy").click(function () {
+          clipboard.copy({
+            "text/plain": url,
+            "text/html": "<a href='" + url + "'>" + self.visualization.state.getValue('title') + "</a>"
+          });
+        });
         $(dialog.closeButton).on('click', function () {
           dialog.hide();
         });
