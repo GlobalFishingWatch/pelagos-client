@@ -2,7 +2,6 @@
 #pragma include 'app/Visualization/Animation/mercator.glsl';
 
 uniform float width;
-uniform float height;
 uniform float zoom;
 
 uniform mat4 googleMercator2webglMatrix;
@@ -32,13 +31,6 @@ void main() {
     else
         baseColor = vec4(0.0, 0.0, 0.0, 1.0);
   } else {
-/*    float ps = 0.01 ; // In WebGL units
-
-    float webglSigma = latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
-
-    float radius = ps + 2.5 * webglSigma;
-    float areaScale = ps*ps / (radius*radius);*/
-
     float ps = 7.0 ; // In pixels
 
     float pixelSigma = pixelsPerWebGlX * latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
