@@ -33,7 +33,7 @@ html, body {
 }
 
 a {
-  color: #6D6E70;
+  color: #ffffff;
   text-decoration: none;
 }
 
@@ -61,6 +61,7 @@ label {
 
 .dijitAccordionChildWrapper {
   overflow: visible;
+  background-color: #011137;
 }
 
 .dijitAccordionChildWrapper .titleButtons {
@@ -112,11 +113,21 @@ body {
 
 .main-timeline {
   position: absolute;
-  left: 108px;
+  left: 150px;
   right: 8px;
   bottom: 28pt;
-  height: 75pt;
+  height: 47pt;
 }
+
+/*.Timeline .overlay .window .frame .startLabel,
+.Timeline .overlay .window .frame .endLabel {
+    font-size: 10pt !important;
+    top: 0 !important;
+}
+
+.Timeline .overlay .window .frame .lengthLabel {
+    font-size: 8pt;
+}*/
 
 .AnimationUI {
   border: 0px;
@@ -127,81 +138,89 @@ body {
 #shortcuts {
   padding-right: 5px;
 }
+.claro {
 
-.claro .dijitDialog {
-  border: 1px solid #b8bda7;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+    .dijitDialog {
+        border: none;
+        box-shadow: none;
+        background-color: transparent !important;
+    }
+
+        .dijitDialogTitleBar {
+            -moz-border-bottom-colors: none;
+            -moz-border-left-colors: none;
+            -moz-border-right-colors: none;
+            -moz-border-top-colors: none;
+            background-color: #061531;
+            border-image: none;
+            border-style: none solid solid;
+            border-width: medium 0px 0px;
+            padding: 5px 7px 4px;
+        }
+
+        .dijitDialogTitle {
+            color: #ffffff;
+            font-size: 1.091em;
+            padding: 0 1px;
+        }
+
+        .dijitDialogPaneContent {
+            a {
+            color: #333333;
+            }
+        }
+
+        .dijitDialogPaneActionBar {
+            background-color: #efefef;
+            border-top: 1px solid #d3d3d3;
+            padding: 3px 5px 2px 7px;
+            text-align: right;
+        }
+
+        .dijitDialogCloseIcon {
+            color: #ffffff;
+        }
+
 }
 
-.dijitDialog .dijitDialogCloseIcon {
-  color: #ffffff;
+.dijitBorderContainer-dijitContentPane.AnimationContainer,
+.dijitAccordionContainer .dijitAccordionContainer-child.dijitContentPane {
+    padding: 0;
+    background-color: transparent;
 }
 
-.claro .dijitDialogTitleBar {
-  -moz-border-bottom-colors: none;
-  -moz-border-left-colors: none;
-  -moz-border-right-colors: none;
-  -moz-border-top-colors: none;
-  background-color: #ef4223;
-  background-repeat: repeat-x;
-  border-color: #b8bda7 #b8bda7 #ef4223;
-  border-image: none;
-  border-style: none solid solid;
-  border-width: medium 1px 1px;
-  padding: 5px 7px 4px;
+.dijitAccordionInnerContainer {
+    background-color: #011137;
+    color: #ffffff;
+    text-transform: uppercase;
+    border-top: solid 1px #294480;
+    border-bottom: solid 1px #294480;
 }
 
-.claro .dijitDialogTitle {
-  color: #ffffff;
-  font-size: 1.091em;
-  padding: 0 1px;
-}
-
-.claro .dijitDialogPaneContent {
-  background: #fcfcfc none repeat-x scroll left top;
-  border-top: 1px solid #fcfcfc;
-  padding: 10px 8px;
-  position: relative;
-}
-
-.dijitDialogPaneContent {
-  color: #6d6e70;
-}
-
-.claro .dijitDialogPaneActionBar {
-  background-color: #efefef;
-  border-top: 1px solid #d3d3d3;
-  padding: 3px 5px 2px 7px;
-  text-align: right;
-}
-
-.claro .dijitBorderContainer-dijitContentPane.AnimationContainer,
-.claro .dijitAccordionContainer .dijitAccordionContainer-child.dijitContentPane {
-  padding: 0;
-  background-color: transparent;
-}
-
-.claro 
-.dijitAccordionInnerContainerHover 
 .dijitAccordionTitle {
-  color: #333333;
+    background: none !important;
+    padding: 4px 6px;
+    text-shadow: none;
 }
 
-.claro .dijitAccordionTitleSelected {
+.dijitAccordionTitleSelected {
 	padding: 5px 7px 2px;
 }
 
-.claro .dijitAccordionInnerContainerSelected .dijitAccordionTitle { 
-	background-color: #ef4223;
-    color: #fff;
-    border-right: none;
-    border-left: none;
+.dijitAccordionTitleFocus {
+    outline: none;
 }
 
-.claro .dijitAccordionInnerContainer {
-    background-color: #dddcd6;
-    border-top: #b8bda7;
-    border-bottom: #b8bda7;
+.dijitAccordionInnerContainerSelected .dijitAccordionTitle {
+	background-color: #011137;
+    color: #ffffff;
+    text-transform: uppercase;
+    text-shadow: none;
+    font-weight: 700;
+}
+
+.dijitAccordionInnerContainer {
+    background-color: #011137;
     border-right: none;
     border-left: none;
     margin-bottom: 1px;
@@ -210,22 +229,19 @@ body {
     transition-timing-function: linear;
 }
 
-.claro .dijitAccordionInnerContainerHover {
-	background-color: #ef4223;
+.dijitAccordionInnerContainerHover {
+	background-color: #011137;
 }
 
-.claro .dijitAccordionInnerContainerHover dijitAccordionTitle {
-	color: #767777;
-}	
-
-.claro .dijitAccordionContainer .dijitAccordionChildWrapper {
-    background-color: #fcfcfc;
+.dijitAccordionContainer .dijitAccordionChildWrapper {
+    background-color: #011137;
+    color: #ffffff !important;
     border: none;
     margin: 0;
 }
 
-.dijitAccordionContainer-child {
-    border-color: #dddcd6;
+.dijitAccordionInnerContainer:last-child, .dijitAccordionInnerContainer:last-child .dijitAccordionTitle {
+    border-radius: 0 !important;
 }
 
 .animations {
@@ -362,7 +378,7 @@ body {
   .Filters-AnimationFilters {
     margin-bottom: 10px;
     h2 {
-      color: #767777;
+      color: #ffffff;
       font-size: 100%;
       padding: 0;
       margin: 0;
@@ -386,37 +402,56 @@ body {
 }
 
 .control_box {
-  width:48pt;
-  height: 80pt;
+  /*width:48pt;
+  height: 80pt;*/
   text-align: center;
-  padding-top: 9px;
-  background-color: #F9FAFB;
-  border-top: solid 1px #dbdcdd;
-  box-shadow: 1px 1px 1px #5F5D5c;
+  /*padding-top: 9px;*/
+  padding: 8px;
+  /*background-color: #F9FAFB;*/
+  background-color: #061531;
+  border-top: solid 1px #294480;
+  box-shadow: 1px 1px 1px #294480;
   border-top-right-radius: 2pt;
   border-bottom-right-radius: 2pt;
-  /*width: 75pt;
-  height: 75pt;
-  padding-top: 7.666pt;
-  padding-left: 7.666pt;*/
-
   position: absolute;
   bottom: 28pt;
-  /*left: 2.333pt;*/
   z-index: 5;
 
+  .btn-lg, .btn-xs {
+    /*width: 12pt;
+    height: 12pt;*/
+    border: solid 1pt #888888;
+    border-radius: 4pt;
+    margin-bottom: 7.666pt;
+    margin-right: 7.666pt;
+    padding: 0;
+    /*font-size: 12pt;*/
+  }
+
+  .fa {
+    color: #ffffff;
+    font-size: 11pt;
+  }
+
   .divide {
-    border: solid 1px #DBDCDD;
-    margin: 10px 15px;
+    border: solid 1px #294480;
+    /*margin: 10px 15px;*/
+    margin: 2px 0 3px 0;
   }
   button {
-    width: 30pt;
-    height: 30pt;
+    /*width: 30pt;
+    height: 30pt;*/
     border: hidden;
     background-color: transparent;
     border: none !important;
     margin: 0 !important;
     cursor: pointer;
+
+    img {
+        width: 15pt;
+        height: 15pt;
+
+    }
   }
 
   a.balloon {
@@ -471,22 +506,11 @@ body {
   }
 
 
-  /* icon styles */
 
-  .btn-lg, .btn-xs {
-    width: 24pt;
-    height: 24pt;
-    border: solid 1pt #888888;
-    border-radius: 4pt;
-    margin-bottom: 7.666pt;
-    margin-right: 7.666pt;
-    padding: 0;
-    font-size: 12pt;
-  }
 
-  .fa {
+  /*.fa {
     color: #5b5b5b;
-  }
+  }*/
 }
 
 .DataViewUI .value {
@@ -635,7 +659,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   }
 
   #expand-button, #collapse-button {
-    background-color: white;
+    background: transparent;
     border-bottom-left-radius: 4pt; 
     img {
       width: 4%;
@@ -656,10 +680,10 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     height: 100%;
     padding: 0;
     font-family: 'Roboto', sans-serif; 
-    background-color: #fcfcfc;
+    /*background-color: #fcfcfc;
     box-shadow: -3px 1px 2px #b8bda7;
-    border-right: solid 1px #dddcd6;
-
+    border-right: solid 1px #dddcd6;*/
+    background-color: #011137;
     font-size: 11pt;
     line-height: normal !important;
     box-sizing: initial !important;
@@ -745,14 +769,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     th {
       text-align: left;
       vertical-align: top;
-      color: #6d6e71;
       font-size: 90%;
       font-weight: 400;
       padding: 0;
       margin: 0;
 
       td {
-        color: #939598;
         font-size: 90%;
         font-weight: normal;
         padding: 0;
@@ -770,7 +792,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     }
 
     #layers h2, .InfoUI h2 {
-      color: #767777;
       font-size: 100%;
       padding-top: 0.5rem;
       font-weight: 500;
@@ -807,7 +828,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
           .layer-label {
             display: table-cell;
-            color: #6D6E70;
+            color: #ffffff;
             font-size: 90%;
             padding: 2%;
             width: 100%;
@@ -888,7 +909,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           -moz-transition: margin 0.4s, background 0.4s;
           -o-transition: margin 0.4s, background 0.4s;
           transition: margin 0.4s, background 0.4s;
-          background-color: #fff; 
+          background-color: #fff;
           border-style: solid;
           border-width: .25rem;
           border-color: inherit;
@@ -908,20 +929,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       &:checked + .switch-line {
         background-repeat: repeat-x;
         background-position: center center;
-      }
-    }
-
-    .vessel_id {
-      th {
-        color: #6D6E70;
-        vertical-align: top;
-        padding: 4px 0 0 0;
-      }
-      td {
-        color: #939597; 
-        vertical-align: top;
-        padding-left: 5px; 
-        word-break: break-all;
       }
     }
 
