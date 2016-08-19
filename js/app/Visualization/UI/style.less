@@ -538,13 +538,24 @@ content: "\f067";
     background-color: transparent;
   }
 
-
-
-
-  /*.fa {
-    color: #5b5b5b;
-  }*/
 }
+
+/* hide Google, CartoDB logos */
+
+.cartodb-logo, #cartodb-gmaps-attribution, .logo img {
+    visibility: hidden;
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+.gm-style div a div img {
+    visibility: hidden;
+    display: none;
+    width: 0;
+    height: 0;
+}
+
 
 .DataViewUI .value {
   width: 3em;
