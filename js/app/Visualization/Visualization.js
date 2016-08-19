@@ -201,9 +201,14 @@ define([
       }
       self.workspaceUrl = url;
 
-      $.get(url, function (data) {
-        self.loadData(Json.decode(data), cb);
-      }, 'text').fail(function(jqXHR, textStatus, errorThrown) {
+      $.ajax({
+        url: url,
+        headers: self.data.headers,
+        success: function (data) {
+          self.loadData(Json.decode(data), cb);
+        },
+        dataType: 'text'
+      }).fail(function(jqXHR, textStatus, errorThrown) {
         /* Load defaults only */
         return self.loadData({}, function () {
           cb(errorThrown);
@@ -251,10 +256,12 @@ define([
       var self = this;
 
       var data = Json.encode(self.unmergeDefaults(self.defaultConfig, Json.decode(Json.encode(self, "  "))));
+      // FIXME: Use self.data.headers!!
       $.ajax({
         url: self.workspaceSaveUrl,
         method: "POST",
         data:data,
+        headers: self.data.headers,
         complete:function (data) {
           data = Json.decode(data.responseText);
           if (!data.urls) data.urls = {};
