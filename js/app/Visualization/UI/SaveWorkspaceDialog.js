@@ -23,14 +23,14 @@ define([
     'class': 'saveWorkspaceDialog',
     style: "width: 50%;",
     title: "Workspace saved",
-    "class": 'simple-animation-editor-dialog',
+    "class": 'saveWorkspaceDialog',
     contentTemplate: '' +
       '<div data-dojo-type="dijit/layout/ContentPane">' +
       '  <div class="label">' +
       '    Share this link:' +
       '  </div>' +
       '  <div class="link">' +
-      '    <input type="text" class="link" style="width: 300pt" data-dojo-attach-point="linkNode">' +
+      '    <input data-dojo-type="dijit/form/TextBox" type="text" class="link" style="width: 300pt" data-dojo-attach-point="link">' +
       '    <div data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:copyLink"><i class="fa fa-copy" aria-hidden="true"></i> COPY</div>' +
       '  </div>' +
       '</div>',
@@ -60,14 +60,14 @@ define([
     saveWorkspace: function () {
       var self = this;
       self.visualization.save(function (url) {
-        $(self.linkNode).val(url);
+        self.link.set("value", url);
         self.show();
       });
     },
 
     copyLink: function () {
       var self = this;
-      var url = $(self.linkNode).val();
+      var url = self.link.get("value");
       clipboard.copy({
         "text/plain": url,
         "text/html": "<a href='" + url + "'>" + self.visualization.state.getValue('title') + "</a>"
