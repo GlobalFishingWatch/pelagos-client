@@ -113,7 +113,7 @@ body {
 
 .main-timeline {
   position: absolute;
-  left: 150px;
+  left: 80px;
   right: 8px;
   bottom: 28pt;
   height: 75pt;
@@ -216,7 +216,7 @@ body {
     color: #ffffff;
     text-transform: uppercase;
     text-shadow: none;
-    font-weight: 700;
+    font-weight: 400;
 }
 
 .dijitAccordionInnerContainer {
@@ -242,6 +242,38 @@ body {
 
 .dijitAccordionInnerContainer:last-child, .dijitAccordionInnerContainer:last-child .dijitAccordionTitle {
     border-radius: 0 !important;
+}
+
+/* intensity slider fixes */
+
+.intensity-label {
+    color: #ffffff;
+    padding: 3px 0;
+}
+
+.dijitSliderButtonInner {
+    color: #2b4f93;
+}
+
+.dijitSliderDecrementIconH .dijitSliderButtonInner:before,
+.dijitSliderDecrementIconV .dijitSliderButtonInner:before {
+    content: "\f068";
+    font-size: 10px;
+}
+
+.dijitSliderIncrementIconH .dijitSliderButtonInner:before,
+.dijitSliderIncrementIconV .dijitSliderButtonInner:before {
+content: "\f067";
+    font-size: 10px;
+}
+
+.dijitSliderDecrementIconH,
+.dijitSliderIncrementIconH,
+.dijitSliderDecrementIconV,
+.dijitSliderIncrementIconV {
+    height: 15px;
+    width: 15px;
+    line-height: 15px;
 }
 
 .animations {
@@ -377,6 +409,7 @@ body {
   }
   .Filters-AnimationFilters {
     margin-bottom: 10px;
+    padding-left: 5px;
     h2 {
       color: #ffffff;
       font-size: 100%;
@@ -402,11 +435,11 @@ body {
 }
 
 .control_box {
-  /*width:48pt;
-  height: 80pt;*/
+  width:48pt;
+  height: 76pt;
   text-align: center;
-  /*padding-top: 9px;*/
-  padding: 8px;
+  padding-top: 12px;
+  /*padding: 8px;*/
   /*background-color: #F9FAFB;*/
   background-color: #061531;
   border-top: solid 1px #294480;
@@ -418,25 +451,25 @@ body {
   z-index: 5;
 
   .btn-lg, .btn-xs {
-    /*width: 12pt;
-    height: 12pt;*/
+    width: 15pt;
+    height: 15pt;
     border: solid 1pt #888888;
     border-radius: 4pt;
     margin-bottom: 7.666pt;
     margin-right: 7.666pt;
-    padding: 0;
+    padding: 5px 0;
     /*font-size: 12pt;*/
   }
 
   .fa {
     color: #ffffff;
-    font-size: 11pt;
+    font-size: 12pt;
   }
 
   .divide {
     border: solid 1px #294480;
-    /*margin: 10px 15px;*/
-    margin: 2px 0 3px 0;
+    margin: 15px 15px 10px;
+    /*margin: 2px 0 3px 0;*/
   }
   button {
     /*width: 30pt;
@@ -710,15 +743,16 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
       .blades {
         height: 100%;
-        padding-bottom: 46pt;
+        padding-bottom: 25pt;
         .basic-sidebar {
           height: 100%;
           width: 100%;
         }
       }
       .sponsor_logos {
-        height: 23pt;
-        margin-top: -46pt;
+        display: none;
+        /*height: 23pt;*/
+        /*margin-top: -46pt;*/
       }
     }
 
@@ -769,13 +803,13 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     th {
       text-align: left;
       vertical-align: top;
-      font-size: 90%;
+      font-size: 80%;
       font-weight: 400;
       padding: 0;
       margin: 0;
 
       td {
-        font-size: 90%;
+        font-size: 80%;
         font-weight: normal;
         padding: 0;
         margin: 0;
@@ -829,7 +863,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           .layer-label {
             display: table-cell;
             color: #ffffff;
-            font-size: 90%;
+            font-size: 80%;
             padding: 2%;
             width: 100%;
             .intensity-slider-box .intensity-label {
@@ -997,14 +1031,14 @@ div.cartodb-legend-stack {
   }
 
   .vessel_id th {
-    font-size: 125%;
+    /*font-size: 125%;*/
   }
 
   .vessel_id td {
-    font-size: 125%;
+    /*font-size: 125%;*/
   }
 
   #layers .layer-label {
-    font-size: 125%;
+    /*font-size: 125%;*/
   }
 }
