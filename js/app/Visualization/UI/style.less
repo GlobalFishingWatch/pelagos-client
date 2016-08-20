@@ -857,12 +857,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         width: 100%;
         .layer-row {
           display: table-row;
-          height: 30px;
+          height: 34px;
 
           .layer-label,
           .switch {
             display: table-cell;
-            padding-top: 10px;
+            padding-top: 1px;
             vertical-align: top;
           }
 
@@ -898,7 +898,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 
       + .switch-line {
-        display: block;
+        /*display: block;
         position: relative;
         cursor: pointer;
         outline: none;
@@ -918,12 +918,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         -webkit-transition: background 0.4s;
         -moz-transition: background 0.4s;
         -o-transition: background 0.4s;
-        transition: background 0.4s;
+        transition: background 0.4s;*/
 
         &:before,
         &:after {
           display: block;
-          position: absolute;
+          position: relative;
           content: "";
         }
 
@@ -938,13 +938,21 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           transition: background 0.4s;
         }
 
+        .cmn-toggle + label {
+          display: block;
+          /*position: relative;*/
+          cursor: pointer;
+          outline: none;
+          user-select: none;
+        }
+
         /* switch color styles */
         &:after {
-          top: -1px;
+          top: 0;
           left: 0;
           bottom: 0;
-          width: 10px; 
-          height: 10px;
+          width: 10px;
+          height: 5px;
           -webkit-border-radius: 100%; /*52px;*/
           -moz-border-radius: 100%;
           -ms-border-radius: 100%;
@@ -954,26 +962,37 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           -moz-transition: margin 0.4s, background 0.4s;
           -o-transition: margin 0.4s, background 0.4s;
           transition: margin 0.4s, background 0.4s;
-          background-color: #fff;
           border-style: solid;
-          border-width: .25rem;
-          border-color: inherit;
+          border-width: .80rem;
+          border-color: #999999;
+
         }
       }
 
       &:checked {
         + .switch-line {
-          background-color: transparent;
-          &:after {
+
+                  &:after {
+            width: 8px;
+            height: 8px;
             margin-left: 15px;
+          border-style: solid;
+          border-width: .80rem;
+          border-color: inherit;
+
           }
         }
       }
 
       + .switch-line,
       &:checked + .switch-line {
-        background-repeat: repeat-x;
-        background-position: center center;
+        /*background-repeat: repeat-x;
+        background-position: center center;*/
+        background-color: #ffffff;
+        border-radius: 10px;
+        width: 33px;
+        height: 18px;
+        padding: 1px;
       }
     }
 
