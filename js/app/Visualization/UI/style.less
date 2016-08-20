@@ -549,12 +549,8 @@ content: "\f067";
     height: 0;
 }
 
-.gm-style div a div img {
-    visibility: hidden;
-    display: none;
-    width: 0;
-    height: 0;
-}
+a[href^="http://maps.google.com/maps"]{display:none !important}
+a[href^="https://maps.google.com/maps"]{display:none !important}
 
 
 .DataViewUI .value {
@@ -898,27 +894,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 
       + .switch-line {
-        /*display: block;
-        position: relative;
-        cursor: pointer;
-        outline: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-
-        max-width: auto;
-        margin-bottom: 0;
-        font-weight: normal;
-
-        padding: 0;
-        width: 25px;
-        height: 5px;
-        border-bottom: 2px solid;
-        -webkit-transition: background 0.4s;
-        -moz-transition: background 0.4s;
-        -o-transition: background 0.4s;
-        transition: background 0.4s;*/
 
         &:before,
         &:after {
@@ -940,7 +915,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
         .cmn-toggle + label {
           display: block;
-          /*position: relative;*/
           cursor: pointer;
           outline: none;
           user-select: none;
@@ -986,8 +960,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
       + .switch-line,
       &:checked + .switch-line {
-        /*background-repeat: repeat-x;
-        background-position: center center;*/
         background-color: #ffffff;
         border-radius: 10px;
         width: 33px;
