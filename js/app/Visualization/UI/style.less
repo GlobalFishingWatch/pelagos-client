@@ -690,7 +690,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   max-width: 551px;
   height: 100%;
   padding-bottom: 135pt;
-  z-index: 10000;
+  z-index: 1;
 
   &.expanded {
     #expand-button {
@@ -729,10 +729,15 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     box-sizing: initial !important;
 
     .sidebar-content {
+      cursor: ew-resize;
+      border-left: 2px solid #011137;
       height: 100%;
       width: 100%;
       overflow: hidden;
 
+      * {
+        cursor: default;
+      }
       .header {
         #activate_help{
           font-size: 15pt;

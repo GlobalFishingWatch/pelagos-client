@@ -24,6 +24,7 @@ define([
   var LoggingUI = declare("LoggingUI", [SidePanelBase], {
     baseClass: 'LoggingUI',
     title: 'Logging',
+    advanced: true,
 
     visualization: null,
 

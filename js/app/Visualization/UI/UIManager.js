@@ -7,7 +7,6 @@ define([
   "app/Visualization/UI/Widgets/Timeline/Timeline",
   "app/Visualization/UI/PlayControl",
   "app/Visualization/UI/SidePanels/SidePanelManager",
-  "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
   "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/Performance",
@@ -31,7 +30,6 @@ define([
   Timeline,
   PlayControl,
   SidePanelManager,
-  BasicSidebar,
   Search,
   AnimationLibrary,
   Performance,
@@ -68,7 +66,6 @@ define([
 
       async.series([
         self.initStyles.bind(self),
-        self.initContainer.bind(self),
         self.initButtons.bind(self),
         self.initLoadSpinner.bind(self),
         self.initPlayButton.bind(self),
@@ -78,7 +75,6 @@ define([
         self.initSidePanels.bind(self),
         self.initPopups.bind(self)
       ], function () {
-        self.container.resize();
         self.visualization.animations.windowSizeChanged();
         cb();
       });
@@ -90,21 +86,6 @@ define([
       self.stylesheets.map(Styles.add);
       less.registerStylesheets($("link[rel='stylesheet/less']"));
       less.refresh().done(function () { cb(); });
-    },
-
-    initContainer: function (cb) {
-      var self = this;
-
-      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
-      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
-      self.container.addChild(self.animationsContainer);
-
-      $(self.animationsContainer.domNode).append(self.visualization.node.children());
-      self.visualization.node.append(self.container.domNode);
-      self.visualization.node = $(self.animationsContainer.domNode);
-
-      self.container.startup();
-      cb();
     },
 
     initButtons: function (cb) {
@@ -570,8 +551,7 @@ define([
         }
       );
 
-      self.sidePanels = new SidePanelManager(self);
-      self.sideBar = new BasicSidebar(self);
+      self.sideBar = new SidePanelManager(self);
       cb();
     },
 
