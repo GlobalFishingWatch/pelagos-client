@@ -13,7 +13,7 @@ if (false) {
       $.get(root + "/apikeys.json", function (data) {
         window.apikeys = data;
         callback();
-      });
+      }, "json");
     });
   };
 

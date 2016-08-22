@@ -76,6 +76,8 @@ prerequisites:
 	npm install -g testem
 	pip install --upgrade pip
 	pip install -r requirements.txt
+	pip install chromedriver_installer>=0.0.4 --install-option="--chromedriver-version=2.10"
+
 
 unit-tests: dependencies
 	xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l $(TESTEM_PATH)testem$(TESTEM_SUFFIX) ci
