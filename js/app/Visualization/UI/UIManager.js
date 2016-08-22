@@ -184,7 +184,7 @@ define([
       };
 
       self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + Paths.LoaderIcon + '"></div>');
-      self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
+      self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_CENTER].push(self.loadingNode[0]);
 
       self.loadingNode.hide();
       LoadingInfo.main.events.on({

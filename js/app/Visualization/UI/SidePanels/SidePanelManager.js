@@ -45,7 +45,7 @@ define([
         '        <a id="feedback_url" target="_blank">' +
         '          Feedback' +
         '        </a>' +
-        '        <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
+        '        <div id="collapse-button"><i class="fa fa-chevron-circle-right"></i><img src="%(img)s/buttons/close.png"></div>' +
         '      </div>' +    
         '      <div class="blades"></div>' +
         '      <div class="sponsor_logos">&nbsp;</div>' +
