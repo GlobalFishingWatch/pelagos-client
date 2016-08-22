@@ -113,7 +113,7 @@ body {
 
 .main-timeline {
   position: absolute;
-  left: 150px;
+  left: 80px;
   right: 8px;
   bottom: 28pt;
   height: 75pt;
@@ -216,7 +216,7 @@ body {
     color: #ffffff;
     text-transform: uppercase;
     text-shadow: none;
-    font-weight: 700;
+    font-weight: 400;
 }
 
 .dijitAccordionInnerContainer {
@@ -242,6 +242,38 @@ body {
 
 .dijitAccordionInnerContainer:last-child, .dijitAccordionInnerContainer:last-child .dijitAccordionTitle {
     border-radius: 0 !important;
+}
+
+/* intensity slider fixes */
+
+.intensity-label {
+    color: #ffffff;
+    padding: 3px 0;
+}
+
+.dijitSliderButtonInner {
+    color: #2b4f93;
+}
+
+.dijitSliderDecrementIconH .dijitSliderButtonInner:before,
+.dijitSliderDecrementIconV .dijitSliderButtonInner:before {
+    content: "\f068";
+    font-size: 10px;
+}
+
+.dijitSliderIncrementIconH .dijitSliderButtonInner:before,
+.dijitSliderIncrementIconV .dijitSliderButtonInner:before {
+content: "\f067";
+    font-size: 10px;
+}
+
+.dijitSliderDecrementIconH,
+.dijitSliderIncrementIconH,
+.dijitSliderDecrementIconV,
+.dijitSliderIncrementIconV {
+    height: 15px;
+    width: 15px;
+    line-height: 15px;
 }
 
 .animations {
@@ -377,6 +409,7 @@ body {
   }
   .Filters-AnimationFilters {
     margin-bottom: 10px;
+    padding-left: 5px;
     h2 {
       color: #ffffff;
       font-size: 100%;
@@ -402,11 +435,11 @@ body {
 }
 
 .control_box {
-  /*width:48pt;
-  height: 80pt;*/
+  width:48pt;
+  height: 76pt;
   text-align: center;
-  /*padding-top: 9px;*/
-  padding: 8px;
+  padding-top: 12px;
+  /*padding: 8px;*/
   /*background-color: #F9FAFB;*/
   background-color: #061531;
   border-top: solid 1px #294480;
@@ -418,25 +451,25 @@ body {
   z-index: 5;
 
   .btn-lg, .btn-xs {
-    /*width: 12pt;
-    height: 12pt;*/
+    width: 15pt;
+    height: 15pt;
     border: solid 1pt #888888;
     border-radius: 4pt;
     margin-bottom: 7.666pt;
     margin-right: 7.666pt;
-    padding: 0;
+    padding: 5px 0;
     /*font-size: 12pt;*/
   }
 
   .fa {
     color: #ffffff;
-    font-size: 11pt;
+    font-size: 12pt;
   }
 
   .divide {
     border: solid 1px #294480;
-    /*margin: 10px 15px;*/
-    margin: 2px 0 3px 0;
+    margin: 15px 15px 10px;
+    /*margin: 2px 0 3px 0;*/
   }
   button {
     /*width: 30pt;
@@ -505,13 +538,20 @@ body {
     background-color: transparent;
   }
 
-
-
-
-  /*.fa {
-    color: #5b5b5b;
-  }*/
 }
+
+/* hide Google, CartoDB logos */
+
+.cartodb-logo, #cartodb-gmaps-attribution, .logo img {
+    visibility: hidden;
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+a[href^="http://maps.google.com/maps"]{display:none !important}
+a[href^="https://maps.google.com/maps"]{display:none !important}
+
 
 .DataViewUI .value {
   width: 3em;
@@ -710,15 +750,16 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
       .blades {
         height: 100%;
-        padding-bottom: 46pt;
+        padding-bottom: 25pt;
         .basic-sidebar {
           height: 100%;
           width: 100%;
         }
       }
       .sponsor_logos {
-        height: 23pt;
-        margin-top: -46pt;
+        display: none;
+        /*height: 23pt;*/
+        /*margin-top: -46pt;*/
       }
     }
 
@@ -769,13 +810,13 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     th {
       text-align: left;
       vertical-align: top;
-      font-size: 90%;
+      font-size: 80%;
       font-weight: 400;
       padding: 0;
       margin: 0;
 
       td {
-        font-size: 90%;
+        font-size: 80%;
         font-weight: normal;
         padding: 0;
         margin: 0;
@@ -812,12 +853,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         width: 100%;
         .layer-row {
           display: table-row;
-          height: 30px;
+          height: 34px;
 
           .layer-label,
           .switch {
             display: table-cell;
-            padding-top: 10px;
+            padding-top: 1px;
             vertical-align: top;
           }
 
@@ -829,7 +870,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           .layer-label {
             display: table-cell;
             color: #ffffff;
-            font-size: 90%;
+            font-size: 80%;
             padding: 2%;
             width: 100%;
             .intensity-slider-box .intensity-label {
@@ -853,32 +894,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 
       + .switch-line {
-        display: block;
-        position: relative;
-        cursor: pointer;
-        outline: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-
-        max-width: auto;
-        margin-bottom: 0;
-        font-weight: normal;
-
-        padding: 0;
-        width: 25px;
-        height: 5px;
-        border-bottom: 2px solid;
-        -webkit-transition: background 0.4s;
-        -moz-transition: background 0.4s;
-        -o-transition: background 0.4s;
-        transition: background 0.4s;
 
         &:before,
         &:after {
           display: block;
-          position: absolute;
+          position: relative;
           content: "";
         }
 
@@ -893,13 +913,20 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           transition: background 0.4s;
         }
 
+        .cmn-toggle + label {
+          display: block;
+          cursor: pointer;
+          outline: none;
+          user-select: none;
+        }
+
         /* switch color styles */
         &:after {
-          top: -1px;
+          top: 0;
           left: 0;
           bottom: 0;
-          width: 10px; 
-          height: 10px;
+          width: 10px;
+          height: 5px;
           -webkit-border-radius: 100%; /*52px;*/
           -moz-border-radius: 100%;
           -ms-border-radius: 100%;
@@ -909,26 +936,35 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           -moz-transition: margin 0.4s, background 0.4s;
           -o-transition: margin 0.4s, background 0.4s;
           transition: margin 0.4s, background 0.4s;
-          background-color: #fff;
           border-style: solid;
-          border-width: .25rem;
-          border-color: inherit;
+          border-width: .80rem;
+          border-color: #999999;
+
         }
       }
 
       &:checked {
         + .switch-line {
-          background-color: transparent;
-          &:after {
+
+                  &:after {
+            width: 8px;
+            height: 8px;
             margin-left: 15px;
+          border-style: solid;
+          border-width: .80rem;
+          border-color: inherit;
+
           }
         }
       }
 
       + .switch-line,
       &:checked + .switch-line {
-        background-repeat: repeat-x;
-        background-position: center center;
+        background-color: #ffffff;
+        border-radius: 10px;
+        width: 33px;
+        height: 18px;
+        padding: 1px;
       }
     }
 
@@ -997,14 +1033,14 @@ div.cartodb-legend-stack {
   }
 
   .vessel_id th {
-    font-size: 125%;
+    /*font-size: 125%;*/
   }
 
   .vessel_id td {
-    font-size: 125%;
+    /*font-size: 125%;*/
   }
 
   #layers .layer-label {
-    font-size: 125%;
+    /*font-size: 125%;*/
   }
 }
