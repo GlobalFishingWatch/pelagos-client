@@ -11,6 +11,7 @@ define([
   "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/Performance",
   "app/Visualization/UI/SimpleAnimationEditor",
+  "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
   "app/ObjectTemplate",
@@ -20,6 +21,7 @@ define([
   "shims/jQuery/main",
   "shims/less/main",
   "shims/Styles",
+  "shims/clipboard/main",
   "app/Visualization/UI/Paths"
 ], function (
   Class,
@@ -34,6 +36,7 @@ define([
   AnimationLibrary,
   Performance,
   SimpleAnimationEditor,
+  SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
   ObjectTemplate,
@@ -43,6 +46,7 @@ define([
   $,
   less,
   Styles,
+  clipboard,
   Paths
 ) {
   return Class({
@@ -71,9 +75,9 @@ define([
         self.initPlayButton.bind(self),
         self.initTimeline.bind(self),
         self.initLoopButton.bind(self),
-        self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
-        self.initPopups.bind(self)
+        self.initPopups.bind(self),
+        self.initSaveButton.bind(self),
       ], function () {
         self.visualization.animations.windowSizeChanged();
         cb();
@@ -501,41 +505,11 @@ define([
       cb();
     },
 
-    saveWorkspace: function () {
-      var self = this;
-      self.visualization.save(function (url) {
-        var dialog = new Dialog({
-          style: "width: 50%;",
-          title: "Workspace saved",
-          content: '' +
-            'Share this link: <input type="text" class="link" style="width: 300pt">',
-          actionBarTemplate: '' +
-            '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-            '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-            '</div>'
-        });
-        $(dialog.containerNode).find("input").val(url);
-        $(dialog.closeButton).on('click', function () {
-          dialog.hide();
-        });
-        dialog.show();
-      });
-    },
-
     initSaveButton: function(cb) {
       var self = this;
 
-      /* Ctrl-Alt-S would have been more logical, but doesn't work in
-       * some browsers (As soon as Ctrl and S are pressed, it's
-       * eaten)
-       */
-      KeyBindings.register(
-        ['Alt', 'S'], null, 'General',
-        'Save workspace',
-        self.saveWorkspace.bind(self)
-      );
-
-      self.buttonNodes.share.click(self.saveWorkspace.bind(self));
+      self.buttonNodes.share.click(
+        self.saveWorkspace.saveWorkspace.bind(self.saveWorkspace));
 
       cb();
     },
@@ -566,6 +540,8 @@ define([
       self.performance.startup();
       self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
       self.simpleAnimationEditor.startup();
+      self.saveWorkspace = new SaveWorkspaceDialog({visualization: self.visualization});
+      self.saveWorkspace.startup();
       self.help = new Help({visualization: self.visualization});
       self.help.startup();
       cb();
