@@ -888,12 +888,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         width: 100%;
         .layer-row {
           display: table-row;
-          height: 34px;
+          height: 35px;
 
           .layer-label,
           .switch {
             display: table-cell;
-            padding-top: 1px;
+            padding-top: 0px;
             vertical-align: top;
           }
 
@@ -906,7 +906,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
             display: table-cell;
             color: #ffffff;
             font-size: 80%;
-            padding: 2%;
+            /*padding: 2%;*/
             width: 100%;
             .intensity-slider-box .intensity-label {
               font-size: 0.8em;
@@ -972,8 +972,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           -o-transition: margin 0.4s, background 0.4s;
           transition: margin 0.4s, background 0.4s;
           border-style: solid;
-          border-width: .80rem;
-          border-color: #999999;
+          border-width: .55rem;
+          border-color: #bbbbbb;
 
         }
       }
@@ -982,11 +982,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         + .switch-line {
 
                   &:after {
-            width: 8px;
-            height: 8px;
+            width: 5px;
+            height: 5px;
             margin-left: 15px;
           border-style: solid;
-          border-width: .80rem;
+          border-width: .55rem;
           border-color: inherit;
 
           }
@@ -997,8 +997,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       &:checked + .switch-line {
         background-color: #ffffff;
         border-radius: 10px;
-        width: 33px;
-        height: 18px;
+        width: 27px;
+        height: 12px;
         padding: 1px;
       }
     }
