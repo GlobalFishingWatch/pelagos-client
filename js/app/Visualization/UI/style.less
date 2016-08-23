@@ -714,18 +714,26 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 #w {
   position: absolute;
   pointer-events: none;
-  right: 10px;
   width: 14.349%; /* 551px / 3180px */
   min-width: 225px;
   max-width: 551px;
   height: 100%;
   padding-bottom: 135pt;
   z-index: 1;
+  margin-right: 10px;
 
   &.expanded {
+    left: auto;
+    right: 0px;
+
     #expand-button {
       display: none;
     }
+  }
+
+  &.collapsed {
+    left: 100%;
+    right: auto;
   }
 
   #expand-button, #collapse-button {
@@ -1086,13 +1094,14 @@ div.cartodb-legend-stack {
     right: 0;
   }
   #w {
-    right: 0px;
+    margin-right: 0px !important;
   }
 }
 
 @media screen and (max-height: 400px) { 
   #w {
     padding-bottom: 66pt;
+    margin-right: 8px;
   }
   .control_box {
     bottom: 11pt;
@@ -1113,4 +1122,3 @@ div.cartodb-legend-stack {
     height: 55pt;
   }
 }
-

@@ -81,7 +81,7 @@ define([
         self.node.removeClass('collapsed');
         self.node.addClass('expanded');
         self.node.css({right: "-" + self.node.width() + "px", left: "auto"});
-        self.node.animate({right: "15px"});
+        self.node.animate({right: "0px"});
       });
 
       var resize = self.node.find(".sidebar-content");
