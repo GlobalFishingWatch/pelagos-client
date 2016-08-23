@@ -72,6 +72,6 @@ define([
         "text/plain": url,
         "text/html": "<a href='" + url + "'>" + self.visualization.state.getValue('title') + "</a>"
       });
-    },
+    }
   });
 });

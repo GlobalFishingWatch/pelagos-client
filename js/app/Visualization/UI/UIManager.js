@@ -77,7 +77,7 @@ define([
         self.initLoopButton.bind(self),
         self.initSidePanels.bind(self),
         self.initPopups.bind(self),
-        self.initSaveButton.bind(self),
+        self.initSaveButton.bind(self)
       ], function () {
         self.visualization.animations.windowSizeChanged();
         cb();
