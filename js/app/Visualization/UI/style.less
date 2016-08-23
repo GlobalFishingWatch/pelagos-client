@@ -1091,13 +1091,26 @@ div.cartodb-legend-stack {
 }
 
 @media screen and (max-height: 400px) { 
-  .main-timeline {
-    bottom: 11pt;
-  }
   #w {
-    padding-bottom: 87pt;
+    padding-bottom: 66pt;
   }
   .control_box {
     bottom: 11pt;
+    height: 56pt;
+
+    .divide {
+      margin: 2px;
+    }
+  }
+  .Timeline .overlay .window .frame .lengthLabel {
+    bottom: inherit;
+  }
+  .Timeline .line-visibility .line .tickmarks-container {
+    height: 69%;
+  }
+  .main-timeline {
+    bottom: 11pt;
+    height: 55pt;
   }
 }
+
