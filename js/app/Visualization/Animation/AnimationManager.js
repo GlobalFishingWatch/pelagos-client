@@ -56,7 +56,7 @@ function(Class,
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       disableDoubleClickZoom: true,
       zoomControlOptions: {
-        position: google.maps.ControlPosition.LEFT_CENTER,
+        position: google.maps.ControlPosition.LEFT_TOP,
         style: google.maps.ZoomControlStyle.LARGE
       },
       mapTypeControl: false,
