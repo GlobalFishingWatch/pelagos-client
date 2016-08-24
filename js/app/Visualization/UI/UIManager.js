@@ -5,7 +5,6 @@ define([
   "app/UrlValues",
   "app/Visualization/KeyBindings",
   "app/Visualization/UI/Widgets/Timeline/Timeline",
-  "app/Visualization/UI/PlayControl",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/Search",
   "app/Visualization/UI/AnimationLibrary",
@@ -30,7 +29,6 @@ define([
   UrlValues,
   KeyBindings,
   Timeline,
-  PlayControl,
   SidePanelManager,
   Search,
   AnimationLibrary,
@@ -209,67 +207,22 @@ define([
       var updatingTimelineFromState = false;
       var updatingStateFromTimeline = false;
 
-      self.timeline = new Timeline({'class': 'main-timeline'});
+      self.timeline = new Timeline({
+        'class': 'main-timeline',
+        startLabelPosition: 'inside',
+        lengthLabelPosition: 'inside',
+        endLabelPosition: 'inside',
+
+        startLabelTitle: false,
+        lengthLabelTitle: false,
+        endLabelTitle: false,
+
+        dragHandles: false,
+
+        zoomPosition: 'left'
+      });
       self.timeline.placeAt(self.visualization.node[0]);
       self.timeline.startup();
-
-
-      /* FIXME: The following code to be removed once testing of the
-       * new design is done */
-
-      var setDesign = function (design) {
-        Object.items(design.timeline).map(function (item) {
-          self.timeline.set(item.key, item.value);
-        });
-        self.controlButtonsNode.toggle(design.controlButtons);
-        $(self.playControl.domNode).toggle(design.playControl);
-      };
-      var designs = [
-        {
-          controlButtons: true,
-          playControl: false,
-          timeline: {
-            startLabelPosition: 'inside',
-            lengthLabelPosition: 'inside',
-            endLabelPosition: 'inside',
-
-            startLabelTitle: false,
-            lengthLabelTitle: false,
-            endLabelTitle: false,
-
-            dragHandles: false,
-
-            zoomPosition: 'left'
-          }
-        },
-        {
-          controlButtons: false,
-          playControl: true,
-          timeline: {
-            startLabelPosition: 'top-right',
-            lengthLabelPosition: 'inside',
-            endLabelPosition: 'top-right',
-
-            startLabelTitle: 'FROM ',
-            lengthLabelTitle: false,
-            endLabelTitle: 'TO ',
-
-            dragHandles: true,
-
-            zoomPosition: 'right'
-          }
-        }
-      ];
-      var designIdx = 1;
-      setDesign(designs[0]);
-      KeyBindings.register(
-        ['Alt', 'T'], null, 'General',
-        'Switch between timeline designs',
-        function () {
-          setDesign(designs[designIdx % designs.length]);
-          designIdx++;
-        }
-      );
 
       var setRange = function (e) {
         var timeExtent = e.end - e.start;
@@ -434,12 +387,6 @@ define([
 
     initPlayButton: function(cb) {
       var self = this;
-
-      /* FIXME: The display: none to be removed once testing of the
-       * new design is done */
-      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization, style: "display: none;"});
-      self.playControl.placeAt($("body")[0]);
-      self.playControl.startup();
 
       KeyBindings.register(
         ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
