@@ -65,9 +65,7 @@ define([
     toggle: function () {
       var self = this;
       self.animation.setVisible(self.inputNode.checked);
-      if (self.animation.constructor.prototype.name == "ClusterAnimation") {
-        $(self.intensityNode).toggle(self.inputNode.checked);
-      }
+      $(self.intensityNode).toggle(self.inputNode.checked && self.animation.constructor.prototype.name == "ClusterAnimation");
     },
 
     startup: function () {
