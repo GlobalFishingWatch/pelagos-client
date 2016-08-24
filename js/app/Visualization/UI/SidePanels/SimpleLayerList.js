@@ -93,6 +93,7 @@ define([
         self.intensitySlider.startup();
 
         self.colorDropDown = new ColorPicker({
+          'class': "sidebarColorPicker",
           onChange: self.colorSelected.bind(self),
           style: 'background: white; padding: 10px;',
           id: self.id + "_colorPopup",
