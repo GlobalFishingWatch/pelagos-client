@@ -1079,3 +1079,39 @@ div.cartodb-legend-stack {
     /*font-size: 125%;*/
   }
 }
+
+@media screen and (max-width: 600px) { 
+  .main-timeline {
+    left: 0;
+    right: 0;
+  }
+  #w {
+    margin-right: 0px !important;
+  }
+}
+
+@media screen and (max-height: 400px) { 
+  #w {
+    padding-bottom: 60pt;
+    margin-right: 8px;
+  }
+  .Timeline .overlay .window .frame .lengthLabel {
+    bottom: inherit;
+  }
+  .Timeline .line-visibility .line .tickmarks-container {
+    height: 69%;
+  }
+  .control_box {
+    bottom: 36pt;
+  }
+  .main-timeline {
+    bottom: 5pt;
+    height: 55pt;
+  }
+}
+
+@media screen and (max-width: 600px) and (max-height: 400px) { 
+  .lengthLabel {
+    display: none;
+  }
+}
