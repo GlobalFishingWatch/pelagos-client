@@ -1082,7 +1082,7 @@ div.cartodb-legend-stack {
 
 @media screen and (max-width: 600px) { 
   .main-timeline {
-    left: 65px;
+    left: 0;
     right: 0;
   }
   #w {
@@ -1092,16 +1092,8 @@ div.cartodb-legend-stack {
 
 @media screen and (max-height: 400px) { 
   #w {
-    padding-bottom: 66pt;
+    padding-bottom: 60pt;
     margin-right: 8px;
-  }
-  .control_box {
-    bottom: 11pt;
-    height: 56pt;
-
-    .divide {
-      margin: 2px;
-    }
   }
   .Timeline .overlay .window .frame .lengthLabel {
     bottom: inherit;
@@ -1109,8 +1101,11 @@ div.cartodb-legend-stack {
   .Timeline .line-visibility .line .tickmarks-container {
     height: 69%;
   }
+  .control_box {
+    bottom: 36pt;
+  }
   .main-timeline {
-    bottom: 11pt;
+    bottom: 5pt;
     height: 55pt;
   }
 }
