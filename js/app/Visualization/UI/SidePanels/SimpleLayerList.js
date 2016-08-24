@@ -7,7 +7,9 @@ define([
   "dijit/_Container",
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "dijit/form/HorizontalSlider",
-  "shims/jQuery/main"
+  "shims/jQuery/main",
+  "dijit/popup",
+  "dojox/widget/ColorPicker"
 ], function(
   declare,
   domStyle,
@@ -17,7 +19,9 @@ define([
   _Container,
   AnimationListBase,
   HorizontalSlider,
-  $
+  $,
+  popup,
+  ColorPicker
 ){
   var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
     baseClass: 'SimpleLayerList',
@@ -48,7 +52,7 @@ define([
       '    <div>' +
       '      <span data-dojo-attach-point="titleNode"></span>' +
       '      <div class="layer-buttons">' +
-      '        <a target="_blank" data-dojo-attach-point="configNode" data-dojo-attache-event="click:onConfig"><i class="fa fa-cog"></i></a>' +
+      '        <a target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-cog"></i></a>' +
       '        <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
       '      </div>' +
       '    </div>' +
@@ -89,12 +93,50 @@ define([
         }, "mySlider");
         self.intensitySlider.placeAt(self.intensityNode);
         self.intensitySlider.startup();
+
+        self.colorDropDown = new ColorPicker({
+          onChange: self.colorSelected.bind(self),
+          style: 'background: white; padding: 10px;',
+          id: self.id + "_colorPopup",
+          value: self.animation.color,
+        });
+        popup.moveOffScreen(self.colorDropDown);
+        self.colorDropDown.startup();
       }
 
       self.updatedHandler();
     },
 
     onConfig: function () {
+      var self = this;
+      popup.open({
+        parent: self,
+        popup: self.colorDropDown,
+        around: this.configNode,
+        orient: ["below", "before"],
+        onExecute: function(){
+          popup.close(dropDown);
+        },
+        onCancel: function(){
+          popup.close(dropDown);
+        }
+      });
+    },
+
+    colorSelected: function(value) {
+      var self = this;
+
+      self.animation.color = value;
+      if (self.animation.data_view != undefined && self.animation.data_view.header.uniforms.red != undefined) {
+        var c = self.animation.color;
+        var rgb = [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
+        self.animation.data_view.header.uniforms.red.value = rgb[0];
+        self.animation.data_view.header.uniforms.green.value = rgb[1];
+        self.animation.data_view.header.uniforms.blue.value = rgb[2];
+      }
+      self.animation.events.triggerEvent("updated");
+
+      popup.close(self.colorDropDown);
     },
 
     slider2val: function(val) {
