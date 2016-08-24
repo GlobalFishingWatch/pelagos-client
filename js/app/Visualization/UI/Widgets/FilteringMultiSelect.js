@@ -27,18 +27,17 @@ define([
   var FilteringMultiSelect = declare("FilteringMultiSelect", _FormValueWidget, {
     baseClass: "filteringMultiSelect",
 
-    templateString: "<div data-dojo-attach-point='domNode,focusNode'></div>",
+    templateString: "<div data-dojo-attach-point='focusNode'></div>",
+
+    value: [],
+    
+    proxyAttrs: ["name", "store", "labelAttr", "labelType", "searchAttr"],
 
     startup: function(){
       var self = this;
 
-      self._select = new FilteringSelect({
+      var selectProps = {
         id: self.get("id") + "_select",
-        name: self.get('name'),
-        store: self.get('store'),
-        labelAttr: self.get('labelAttr'),
-        labelType: self.get('labelType'),
-        searchAttr: self.get('searchAttr'),
         required: false,
         onInput: function(event) {
           if (event.key == "Backspace" && $(this.textbox).val() == "") {
@@ -51,7 +50,15 @@ define([
             self._select.set("value", null);
           }
         }
+      };
+      self.proxyAttrs.map(function (attr) {
+        var value = self.get(attr);
+        if (value != undefined) {
+          selectProps[attr] = value;
+        }
       });
+
+      self._select = new FilteringSelect(selectProps);
 
       self.focusNode = self._select.focusNode;
       $(self.domNode).append(self._select.domNode);
@@ -67,33 +74,11 @@ define([
       this.inherited(arguments);
     },
 
-    _setNameAttr: function(value) {
+    set: function (name, value) {
       var self = this;
-      if (self._select) self._select.set("name", value);
-      this.inherited(arguments);
-    },
-
-    _setStoreAttr: function(value) {
-      var self = this;
-      if (self._select) self._select.set("store", value);
-      this.inherited(arguments);
-    },
-
-    _setLabelAttrAttr: function(value) {
-      var self = this;
-      if (self._select) self._select.set("labelAttr", value);
-      this.inherited(arguments);
-    },
-
-    _setLabelTypeAttr: function(value) {
-      var self = this;
-      if (self._select) self._select.set("labelType", value);
-      this.inherited(arguments);
-    },
-
-    _setSearchAttrAttr: function(value) {
-      var self = this;
-      if (self._select) self._select.set("searchAttr", value);
+      if (self.proxyAttrs.indexOf(name) != -1 && self._select) {
+        self._select.set(name, value);
+      }
       this.inherited(arguments);
     },
 
