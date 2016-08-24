@@ -8,9 +8,10 @@ define([
   Dialog,
   TemplatedContainer
 ){
-  return declare("FilterEditorBase", [Dialog], {
+  return declare("FilterEditorBase", [TemplatedDialog], {
     animation: null,
     sourcename: null,
+    contentTemplate: '',
     actionBarTemplate: '' +
       '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
       '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-event="click: clearFilter">Clear filter</button>' +

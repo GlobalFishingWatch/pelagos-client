@@ -13,20 +13,22 @@ define([
     searchAttr: "name",
     labelAttr: "label",
     labelType: "text",
+    contentTemplate: '<div>' + 
+                     '  <div>Type the filters below:</div>' +
+                     '  <div' +
+                     '   data-dojo-type="FilteringMultiSelect"' +
+                     '   data-dojo-attach-point="select"' +
+                     '   data-dojo-attach-event="onChange:handleSelectionChange"' +
+                     '   style="width: 100%;"></div>' +
+                     '</div>',
     startup: function () {
       var self = this;
       self.inherited(arguments);
 
-      self.select = new FilteringMultiSelect({
-          value: [],
-          store: self.getStore(),
-          searchAttr: self.get("searchAttr"),
-          labelAttr: self.get("labelAttr"),
-          labelType: self.get("labelType"),
-          style: 'width: 100%;',
-          onChange: self.handleSelectionChange.bind(self)
+      ['searchAttr', 'labelAttr', 'labelType'].map(function (attr) {
+        self.select.set(attr, self.get(attr));
       });
-      self.addChild(self.select);
+      self.select.set("store", self.getStore());
       self.setSlectValueFromFilter();
     },
     getStore: function () {
