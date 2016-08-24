@@ -186,11 +186,6 @@ define([
       self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + Paths.LoaderIcon + '"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
-      /* Add a class to the zoom buttons so we can modify them with our css */
-
-      $(".gm-bundled-control .gmnoprint:has(div[title='Zoom in'])").addClass('zoomButtons')
-
-
       self.loadingNode.hide();
       LoadingInfo.main.events.on({
         start: setActive.bind(this, true),

@@ -152,7 +152,12 @@ function(Class,
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
 
-      cb();
+      var initIdleListener = google.maps.event.addListener(self.map, 'idle', function () {
+        /* Add a class to the zoom buttons so we can modify them with our css */
+        $(".gm-bundled-control .gmnoprint:has(div[title='Zoom in'])").addClass('zoomButtons')
+        initIdleListener.remove();
+        cb();
+      });
     },
 
     tilesLoaded: function() {    
