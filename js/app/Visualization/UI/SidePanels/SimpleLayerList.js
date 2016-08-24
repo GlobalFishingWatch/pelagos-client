@@ -45,13 +45,16 @@ define([
       '    <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
       '  </label>' +
       '  <div class="layer-label">' +
-      '    <span data-dojo-attach-point="titleNode"></span>' +
+      '    <div>' +
+      '      <span data-dojo-attach-point="titleNode"></span>' +
+      '      <div class="layer-buttons">' +
+      '        <a target="_blank" data-dojo-attach-point="configNode" data-dojo-attache-event="click:onConfig"><i class="fa fa-cog"></i></a>' +
+      '        <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
+      '      </div>' +
+      '    </div>' +
       '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
       '      <div class="intensity-label">Intensity:</div>' +
       '    </div>' +
-      '  </div>' +
-      '  <div class="layer-buttons" data-dojo-attach-point="infoNodeContainer">' +
-      '    <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
       '  </div>' +
       '</div>',
 
@@ -86,15 +89,12 @@ define([
         }, "mySlider");
         self.intensitySlider.placeAt(self.intensityNode);
         self.intensitySlider.startup();
-
-        if (!self.animation.visible) {
-          $(self.intensityNode).hide();
-        }
-      } else {
-        $(self.intensityNode).hide();
       }
 
       self.updatedHandler();
+    },
+
+    onConfig: function () {
     },
 
     slider2val: function(val) {
@@ -126,14 +126,15 @@ define([
       } else {
         $(self.inputNode).removeAttr('checked');
       }
+      self.toggle();
 
       var descriptionUrl = self.animation.descriptionUrl;
       if (descriptionUrl) {
-        $(self.infoNodeContainer).show();
         $(self.infoNode).attr("href", descriptionUrl);
-      } else {
-        $(self.infoNodeContainer).hide();
       }
+      $(self.infoNode).toggle(!!descriptionUrl);
+      var isConfigurable = self.animation.constructor.prototype.name == "ClusterAnimation";
+      $(self.configNode).toggle(isConfigurable);
     }
   });
 
