@@ -35,7 +35,7 @@ define([
 
       self.node = $(new ObjectTemplate('' +        
         '<div id="w" class="expanded">' +
-        '  <div id="expand-button"><img src="%(img)s/buttons/open.png"></div>' +
+        '  <div id="expand-button"><i class="fa fa-chevron-circle-left"></i><!--img src="%(img)s/buttons/open.png"--></div>' +
         '  <div class="border">' +
         '    <div class="sidebar-content">' +    
         '      <div class="header">' +
@@ -45,7 +45,7 @@ define([
         '        <a id="feedback_url" target="_blank">' +
         '          Feedback' +
         '        </a>' +
-        '        <div id="collapse-button"><img src="%(img)s/buttons/close.png"></div>' +
+        '        <div id="collapse-button"><i class="fa fa-chevron-circle-right"></i><!--img src="%(img)s/buttons/close.png"--></div>' +
         '      </div>' +    
         '      <div class="blades"></div>' +
         '      <div class="sponsor_logos">&nbsp;</div>' +
@@ -69,7 +69,7 @@ define([
         self.visualization.ui.help.displayHelpDialog();
       });
 
-      self.node.find("#collapse-button img").click(function () {
+      self.node.find("#collapse-button").click(function () {
         self.node.css({left:self.node.offset().left + "px"});
         self.node.animate({left:"100%"}, undefined, undefined, function () {
           self.node.addClass('collapsed');
@@ -77,7 +77,7 @@ define([
         });
       });
 
-      self.node.find("#expand-button img").click(function () {
+      self.node.find("#expand-button").click(function () {
         self.node.removeClass('collapsed');
         self.node.addClass('expanded');
         self.node.css({right: "-" + self.node.width() + "px", left: "auto"});
