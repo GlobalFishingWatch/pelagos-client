@@ -109,25 +109,23 @@ body {
 .loading {
   padding-left: 14px;
   padding-top: 10px;
+  position: absolute;
+  top: 175px !important;
 }
+
+.zoomButtons {
+  position: absolute;
+  top: 100px !important;
+}
+
 
 .main-timeline {
   position: absolute;
-  left: 80px;
+  left: 5px;
   right: 8px;
-  bottom: 28pt;
+  bottom: 5pt;
   height: 75pt;
 }
-
-/*.Timeline .overlay .window .frame .startLabel,
-.Timeline .overlay .window .frame .endLabel {
-    font-size: 10pt !important;
-    top: 0 !important;
-}
-
-.Timeline .overlay .window .frame .lengthLabel {
-    font-size: 8pt;
-}*/
 
 .AnimationUI {
   border: 0px;
@@ -151,7 +149,7 @@ body {
             -moz-border-left-colors: none;
             -moz-border-right-colors: none;
             -moz-border-top-colors: none;
-            background-color: #061531;
+            background-color: #2b4f93;
             border-image: none;
             border-style: none solid solid;
             border-width: medium 0px 0px;
@@ -465,20 +463,18 @@ content: "\f067";
 }
 
 .control_box {
-  width:48pt;
-  height: 76pt;
+  width: 35pt;
+  height: 20pt;
   text-align: center;
-  padding-top: 12px;
-  /*padding: 8px;*/
-  /*background-color: #F9FAFB;*/
-  background-color: #061531;
-  border-top: solid 1px #294480;
-  box-shadow: 1px 1px 1px #294480;
-  border-top-right-radius: 2pt;
-  border-bottom-right-radius: 2pt;
   position: absolute;
-  bottom: 28pt;
+  bottom: 55pt;
+  left: 10px;
   z-index: 5;
+
+  div {
+    display: inline-block;
+
+  }
 
   .btn-lg, .btn-xs {
     width: 15pt;
@@ -487,23 +483,17 @@ content: "\f067";
     border-radius: 4pt;
     margin-bottom: 7.666pt;
     margin-right: 7.666pt;
-    padding: 5px 0;
-    /*font-size: 12pt;*/
   }
 
   .fa {
     color: #ffffff;
     font-size: 12pt;
+    width: 22px;
+    height: 22px;
+    text-align: center;
   }
 
-  .divide {
-    border: solid 1px #294480;
-    margin: 15px 15px 10px;
-    /*margin: 2px 0 3px 0;*/
-  }
   button {
-    /*width: 30pt;
-    height: 30pt;*/
     border: hidden;
     background-color: transparent;
     border: none !important;
@@ -515,6 +505,10 @@ content: "\f067";
         height: 15pt;
 
     }
+  }
+
+  button.btn:focus {
+      outline: none;
   }
 
   a.balloon {
@@ -572,7 +566,7 @@ content: "\f067";
 
 /* hide Google, CartoDB logos */
 
-.cartodb-logo, #cartodb-gmaps-attribution, .logo img {
+.cartodb-logo, #cartodb-gmaps-attribution, .logo img, .gmnoprint a, .gmnoprint span  {
     visibility: hidden;
     display: none;
     width: 0;
@@ -738,12 +732,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
   #expand-button, #collapse-button {
     background: transparent;
-    border-bottom-left-radius: 4pt; 
-    img {
-      width: 4%;
-      min-width: 11px;
-      margin: 5pt;
-      cursor: pointer;
+    border-bottom-left-radius: 4pt;
+
+    .fa {
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 1.5em;
     }
   }
 
@@ -801,8 +795,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
       .sponsor_logos {
         display: none;
-        /*height: 23pt;*/
-        /*margin-top: -46pt;*/
       }
     }
 
@@ -896,12 +888,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         width: 100%;
         .layer-row {
           display: table-row;
-          height: 34px;
+          height: 35px;
 
           .layer-label,
           .switch {
             display: table-cell;
-            padding-top: 1px;
+            padding-top: 0px;
             vertical-align: top;
           }
 
@@ -914,7 +906,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
             display: table-cell;
             color: #ffffff;
             font-size: 80%;
-            padding: 2%;
+            /*padding: 2%;*/
             width: 100%;
             .intensity-slider-box .intensity-label {
               font-size: 0.8em;
@@ -980,8 +972,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           -o-transition: margin 0.4s, background 0.4s;
           transition: margin 0.4s, background 0.4s;
           border-style: solid;
-          border-width: .80rem;
-          border-color: #999999;
+          border-width: .55rem;
+          border-color: #bbbbbb;
 
         }
       }
@@ -990,11 +982,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         + .switch-line {
 
                   &:after {
-            width: 8px;
-            height: 8px;
-            margin-left: 15px;
+            width: 5px;
+            height: 5px;
+            margin-left: 13px;
           border-style: solid;
-          border-width: .80rem;
+          border-width: .55rem;
           border-color: inherit;
 
           }
@@ -1005,8 +997,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       &:checked + .switch-line {
         background-color: #ffffff;
         border-radius: 10px;
-        width: 33px;
-        height: 18px;
+        width: 25px;
+        height: 12px;
         padding: 1px;
       }
     }

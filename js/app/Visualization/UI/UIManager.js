@@ -101,9 +101,9 @@ define([
 
       self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
-        + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share"></i></button>'
-        + '  <div class="divide"></div>'        
-        + '  <button class="btn btn-default btn-lg" data-name="play"><i class="fa fa-play paused"></i><i class="fa fa-pause playing"></i><!--<img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png">--></button>'
+        + '  <div><button class="btn btn-default btn-lg" data-name="play"><i title="play" class="fa fa-play paused"></i><i title="pause" class="fa fa-pause playing"></i><!--<img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png">--></button></div>'
+        + '  <!--div class="divide"></div-->'
+        + '  <div><button class="btn btn-default btn-lg" data-name="share"><i title="share workspace" class="fa fa-share-alt"></i></button></div>'
         + ''
         + '  <a class="balloon">'
         + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
@@ -185,6 +185,11 @@ define([
 
       self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + Paths.LoaderIcon + '"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
+
+      /* Add a class to the zoom buttons so we can modify them with our css */
+
+      $(".gm-bundled-control .gmnoprint:has(div[title='Zoom in'])").addClass('zoomButtons')
+
 
       self.loadingNode.hide();
       LoadingInfo.main.events.on({
