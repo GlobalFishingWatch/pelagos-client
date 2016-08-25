@@ -5,12 +5,12 @@ define([
   "app/UrlValues",
   "app/Visualization/KeyBindings",
   "app/Visualization/UI/Widgets/Timeline/Timeline",
-  "app/Visualization/UI/PlayControl",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/Search",
   "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/Performance",
   "app/Visualization/UI/SimpleAnimationEditor",
+  "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
   "app/ObjectTemplate",
@@ -20,6 +20,7 @@ define([
   "shims/jQuery/main",
   "shims/less/main",
   "shims/Styles",
+  "shims/clipboard/main",
   "app/Visualization/UI/Paths"
 ], function (
   Class,
@@ -28,12 +29,12 @@ define([
   UrlValues,
   KeyBindings,
   Timeline,
-  PlayControl,
   SidePanelManager,
   Search,
   AnimationLibrary,
   Performance,
   SimpleAnimationEditor,
+  SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
   ObjectTemplate,
@@ -43,6 +44,7 @@ define([
   $,
   less,
   Styles,
+  clipboard,
   Paths
 ) {
   return Class({
@@ -71,9 +73,9 @@ define([
         self.initPlayButton.bind(self),
         self.initTimeline.bind(self),
         self.initLoopButton.bind(self),
-        self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
-        self.initPopups.bind(self)
+        self.initPopups.bind(self),
+        self.initSaveButton.bind(self)
       ], function () {
         self.visualization.animations.windowSizeChanged();
         cb();
@@ -97,9 +99,9 @@ define([
 
       self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
-        + '  <button class="btn btn-default btn-lg" data-name="share"><i class="fa fa-share"></i></button>'
-        + '  <div class="divide"></div>'        
-        + '  <button class="btn btn-default btn-lg" data-name="play"><i class="fa fa-play paused"></i><i class="fa fa-pause playing"></i><!--<img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png">--></button>'
+        + '  <div><button class="btn btn-default btn-lg" data-name="play"><i title="play" class="fa fa-play paused"></i><i title="pause" class="fa fa-pause playing"></i><!--<img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png">--></button></div>'
+        + '  <!--div class="divide"></div-->'
+        + '  <div><button class="btn btn-default btn-lg" data-name="share"><i title="share workspace" class="fa fa-share-alt"></i></button></div>'
         + ''
         + '  <a class="balloon">'
         + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
@@ -200,67 +202,22 @@ define([
       var updatingTimelineFromState = false;
       var updatingStateFromTimeline = false;
 
-      self.timeline = new Timeline({'class': 'main-timeline'});
+      self.timeline = new Timeline({
+        'class': 'main-timeline',
+        startLabelPosition: 'inside',
+        lengthLabelPosition: 'inside',
+        endLabelPosition: 'inside',
+
+        startLabelTitle: false,
+        lengthLabelTitle: false,
+        endLabelTitle: false,
+
+        dragHandles: false,
+
+        zoomPosition: 'left'
+      });
       self.timeline.placeAt(self.visualization.node[0]);
       self.timeline.startup();
-
-
-      /* FIXME: The following code to be removed once testing of the
-       * new design is done */
-
-      var setDesign = function (design) {
-        Object.items(design.timeline).map(function (item) {
-          self.timeline.set(item.key, item.value);
-        });
-        self.controlButtonsNode.toggle(design.controlButtons);
-        $(self.playControl.domNode).toggle(design.playControl);
-      };
-      var designs = [
-        {
-          controlButtons: true,
-          playControl: false,
-          timeline: {
-            startLabelPosition: 'inside',
-            lengthLabelPosition: 'inside',
-            endLabelPosition: 'inside',
-
-            startLabelTitle: false,
-            lengthLabelTitle: false,
-            endLabelTitle: false,
-
-            dragHandles: false,
-
-            zoomPosition: 'left'
-          }
-        },
-        {
-          controlButtons: false,
-          playControl: true,
-          timeline: {
-            startLabelPosition: 'top-right',
-            lengthLabelPosition: 'inside',
-            endLabelPosition: 'top-right',
-
-            startLabelTitle: 'FROM ',
-            lengthLabelTitle: false,
-            endLabelTitle: 'TO ',
-
-            dragHandles: true,
-
-            zoomPosition: 'right'
-          }
-        }
-      ];
-      var designIdx = 1;
-      setDesign(designs[0]);
-      KeyBindings.register(
-        ['Alt', 'T'], null, 'General',
-        'Switch between timeline designs',
-        function () {
-          setDesign(designs[designIdx % designs.length]);
-          designIdx++;
-        }
-      );
 
       var setRange = function (e) {
         var timeExtent = e.end - e.start;
@@ -426,12 +383,6 @@ define([
     initPlayButton: function(cb) {
       var self = this;
 
-      /* FIXME: The display: none to be removed once testing of the
-       * new design is done */
-      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization, style: "display: none;"});
-      self.playControl.placeAt($("body")[0]);
-      self.playControl.startup();
-
       KeyBindings.register(
         ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
         'Toggle play/pause',
@@ -501,41 +452,11 @@ define([
       cb();
     },
 
-    saveWorkspace: function () {
-      var self = this;
-      self.visualization.save(function (url) {
-        var dialog = new Dialog({
-          style: "width: 50%;",
-          title: "Workspace saved",
-          content: '' +
-            'Share this link: <input type="text" class="link" style="width: 300pt">',
-          actionBarTemplate: '' +
-            '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-            '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-            '</div>'
-        });
-        $(dialog.containerNode).find("input").val(url);
-        $(dialog.closeButton).on('click', function () {
-          dialog.hide();
-        });
-        dialog.show();
-      });
-    },
-
     initSaveButton: function(cb) {
       var self = this;
 
-      /* Ctrl-Alt-S would have been more logical, but doesn't work in
-       * some browsers (As soon as Ctrl and S are pressed, it's
-       * eaten)
-       */
-      KeyBindings.register(
-        ['Alt', 'S'], null, 'General',
-        'Save workspace',
-        self.saveWorkspace.bind(self)
-      );
-
-      self.buttonNodes.share.click(self.saveWorkspace.bind(self));
+      self.buttonNodes.share.click(
+        self.saveWorkspace.saveWorkspace.bind(self.saveWorkspace));
 
       cb();
     },
@@ -566,6 +487,8 @@ define([
       self.performance.startup();
       self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
       self.simpleAnimationEditor.startup();
+      self.saveWorkspace = new SaveWorkspaceDialog({visualization: self.visualization});
+      self.saveWorkspace.startup();
       self.help = new Help({visualization: self.visualization});
       self.help.startup();
       cb();
