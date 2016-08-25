@@ -97,7 +97,7 @@ define([
           onChange: self.colorSelected.bind(self),
           style: 'background: white; padding: 10px;',
           id: self.id + "_colorPopup",
-          value: self.animation.color,
+          value: self.animation.color
         });
         popup.moveOffScreen(self.colorDropDown);
         self.colorDropDown.startup();
