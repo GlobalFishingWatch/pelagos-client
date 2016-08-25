@@ -35,7 +35,7 @@ define([
 
       self.node = $(new ObjectTemplate('' +        
         '<div id="w" class="expanded">' +
-        '  <div id="expand-button"><i class="fa fa-chevron-circle-left"></i><!--img src="%(img)s/buttons/open.png"--></div>' +
+        '  <div id="expand-button"><i class="fa fa-chevron-left"></i></div>' +
         '  <div class="border">' +
         '    <div class="sidebar-content">' +    
         '      <div class="header">' +
@@ -45,7 +45,7 @@ define([
         '        <a id="feedback_url" target="_blank">' +
         '          Feedback' +
         '        </a>' +
-        '        <div id="collapse-button"><i class="fa fa-chevron-circle-right"></i><!--img src="%(img)s/buttons/close.png"--></div>' +
+        '        <div id="collapse-button"><i class="fa fa-chevron-right"></i></div>' +
         '      </div>' +    
         '      <div class="blades"></div>' +
         '      <div class="sponsor_logos">&nbsp;</div>' +

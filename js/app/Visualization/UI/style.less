@@ -578,8 +578,13 @@ content: "\f067";
     height: 0;
 }
 
-a[href^="http://maps.google.com/maps"]{display:none !important}
-a[href^="https://maps.google.com/maps"]{display:none !important}
+a[href^="http://maps.google.com/maps"]{display:none !important;}
+a[href^="https://maps.google.com/maps"]{display:none !important;}
+
+.gm-style .gmnoprint .gm-style-cc div,
+.gm-style .gm-style-cc div {
+    display: none;
+}
 
 
 .DataViewUI .value {
@@ -828,7 +833,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     }
 
     #layers, .InfoUI .wrapper {
-      padding: 0 5%;
+      padding: 5% 5%;
       word-wrap: break-word;
     }
 
