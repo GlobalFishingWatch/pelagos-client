@@ -1,41 +1,55 @@
 define([
   "dojo/_base/declare",
   "app/Visualization/UI/FilterEditorBase",
-  "dijit/form/MultiSelect",
-  "dojo/dom-construct",
-  "dijit/form/Button"
+  "./Widgets/FilteringMultiSelect",
+  "dojo/store/Memory"
 ], function(
   declare,
   FilterEditorBase,
-  MultiSelect,
-  domConstruct
+  FilteringMultiSelect,
+  Memory
 ){
   return declare("FilterEditor", [FilterEditorBase], {
+    searchAttr: "name",
+    labelAttr: "label",
+    labelType: "text",
+    contentTemplate: '<div>' + 
+                     '  <div>Type the filters below:</div>' +
+                     '  <div' +
+                     '   data-dojo-type="FilteringMultiSelect"' +
+                     '   data-dojo-attach-point="select"' +
+                     '   data-dojo-attach-event="onChange:handleSelectionChange"></div>' +
+                     '</div>',
     startup: function () {
       var self = this;
       self.inherited(arguments);
 
-      self.select = new MultiSelect({
-        style: 'min-height: 200px; height: 100%; width: 100%;',
-        onChange: self.handleSelectionChange.bind(self)
+      ['searchAttr', 'labelAttr', 'labelType'].map(function (attr) {
+        self.select.set(attr, self.get(attr));
       });
-      self.addChild(self.select);
-
+      self.select.set("store", self.getStore());
+      self.select._select.on("click", self.handleClick.bind(self));
+      self.setSlectValueFromFilter();
+    },
+    getStore: function () {
+      var self = this;
       var source = self.animation.data_view.source.header.colsByName[self.sourcename];
 
       var names = Object.keys(source.choices);
       names.sort();
-      names.map(function (name) {
+      var data = names.map(function (name) {
         var value = source.choices[name];
-
-        domConstruct.place('<option value="' + value + '">' + name + '</option>', self.select.domNode);
+        return {id: value, name: name, label: name};
       });
-      self.setSlectValueFromFilter();
+      return new Memory({data: data});
     },
     setSlectValueFromFilter: function () {
       var self = this;
-      var selection = self.animation.data_view.selections.selections.active_category;
-      self.select.set("value", selection.data[self.sourcename]);
+      self.select.set("value", self.getFilter());
+    },
+    handleClick: function () {
+      var self = this;
+      self.select._select.loadAndOpenDropDown();
     },
     handleSelectionChange: function () {
       var self = this;

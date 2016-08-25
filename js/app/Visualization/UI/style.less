@@ -323,6 +323,16 @@ content: "\f067";
   }
 }
 
+.filter-editor-dialog {
+  .filteringMultiSelect {
+    width: 300px;
+    margin-top: 10px;
+    .dijitDownArrowButton {
+      display: none;
+    }
+  }
+}
+
 .library-dialog {
   .query {
     height: 2em;
@@ -1022,6 +1032,77 @@ div.cartodb-legend-stack {
 
 .cartodb-timeslider {
   display: none !important;
+}
+
+
+.filteringMultiSelect {
+  width: 15em;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.1) inset;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1) inset;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  -webkit-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  -moz-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  -o-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  -ms-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+
+  .dijitArrowButtonContainer {
+    border-width: 1px !important;
+  }
+
+  .dijitTextBox {
+    width: inherit;
+
+    input {
+      float: none;
+      display: inline-block;
+      width: inherit !important;
+      margin-left: 2px !important;
+    }
+
+    .filteringMultiSelect-selectedItem {
+      white-space: nowrap;
+      display: inline-block;
+      margin: 1px;
+      border: 1px solid rgba(0,122,194,0.8);
+      -webkit-border-radius: 2px;
+      border-radius: 2px;
+
+      button {
+        display: inline-block;
+        border: none;
+        margin-left: 2px;
+        margin-top: 0;
+        margin-bottom: 0;
+        height: 20px;
+        background: rgba(0, 122, 194, 0.8);
+        box-sizing: initial;
+        color: white;
+      }
+    }
+  }
+
+  &.filteringMultiSelectFocused {
+    border: 1px solid rgba(0,122,194,0.8);
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.15) inset;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15) inset;
+    -webkit-transition-duration: 0.1s;
+    -moz-transition-duration: 0.1s;
+    -o-transition-duration: 0.1s;
+    -ms-transition-duration: 0.1s;
+    transition-duration: 0.1s;
+  }
+  &.filteringMultiSelectDisabled {
+    background: #f5f5f5;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    opacity: 0.65;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=65)";
+    filter: alpha(opacity=65);
+  }
 }
 
 @media screen and (min-width: 3000px) { 
