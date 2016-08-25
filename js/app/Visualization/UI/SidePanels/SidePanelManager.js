@@ -203,18 +203,26 @@ define([
       var data = new ObjectTemplate(self.config).eval(Paths);
 
       self.node.find(".sponsor_logos").html("");
-      data.sponsorLogos.map(function (spec) {
-        if (typeof(spec) == "string") {
-          self.node.find(".sponsor_logos").append(spec);
-        } else {
-          var logo = $("<img>");
-          logo.attr(spec.attr);
-          logo.css(spec.css);
-          self.node.find(".sponsor_logos").append(logo);
-        }
-      });
+      if (data.sponsorLogos.length) {
+        data.sponsorLogos.map(function (spec) {
+          if (typeof(spec) == "string") {
+            self.node.find(".sponsor_logos").append(spec);
+          } else {
+            var logo = $("<img>");
+            logo.attr(spec.attr);
+            logo.css(spec.css);
+            self.node.find(".sponsor_logos").append(logo);
+          }
+        });
+        self.node.find(".sidebar-content").addClass("has-sponsor-logos");
+      } else {
+        self.node.find(".sidebar-content").removeClass("has-sponsor-logos");
+      }
       
-      self.node.find("#feedback_url").attr("href", data.feedback_url);
+      self.node.find("#feedback_url").toggle(!!data.feedback_url);
+      if (data.feedback_url) {
+        self.node.find("#feedback_url").attr("href", data.feedback_url);
+      }
 
       data.filters_tab = !!data.filters_tab;
       self.setTabs();
