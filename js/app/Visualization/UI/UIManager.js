@@ -566,13 +566,18 @@ define([
       self.config = config;
       data = new ObjectTemplate(self.config).eval(Paths);
 
-      if (typeof(data.logo) == "string") {
-        self.logoNode.append(data.logo);
+      if (data.logo) {
+        self.logoNode.show();
+        if (typeof(data.logo) == "string") {
+          self.logoNode.append(data.logo);
+        } else {
+          var logo = $("<img>");
+          logo.attr(data.logo.attr);
+          logo.css(data.logo.css);
+          self.logoNode.append(logo);
+        }
       } else {
-        var logo = $("<img>");
-        logo.attr(data.logo.attr);
-        logo.css(data.logo.css);
-        self.logoNode.append(logo);
+        self.logoNode.hide();
       }
 
       self.sideBar.load(config.sideBar, cb);
