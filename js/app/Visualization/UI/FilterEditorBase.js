@@ -9,6 +9,7 @@ define([
   TemplatedContainer
 ){
   return declare("FilterEditorBase", [TemplatedDialog], {
+    'class': 'filter-editor-dialog',
     animation: null,
     sourcename: null,
     contentTemplate: '',
