@@ -18,7 +18,7 @@ define([
                      '  <div' +
                      '   data-dojo-type="FilteringMultiSelect"' +
                      '   data-dojo-attach-point="select"' +
-                     '   data-dojo-attach-event="onChange:handleSelectionChange,onFocus:handleFocus"></div>' +
+                     '   data-dojo-attach-event="onChange:handleSelectionChange"></div>' +
                      '</div>',
     startup: function () {
       var self = this;
@@ -28,7 +28,7 @@ define([
         self.select.set(attr, self.get(attr));
       });
       self.select.set("store", self.getStore());
-      self.select._select.on("click", self.handleFocus.bind(self));
+      self.select._select.on("click", self.handleClick.bind(self));
       self.setSlectValueFromFilter();
     },
     getStore: function () {
@@ -47,7 +47,7 @@ define([
       var self = this;
       self.select.set("value", self.getFilter());
     },
-    handleFocus: function () {
+    handleClick: function () {
       var self = this;
       self.select._select.loadAndOpenDropDown();
     },
