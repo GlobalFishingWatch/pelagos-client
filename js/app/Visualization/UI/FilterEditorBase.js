@@ -97,12 +97,18 @@ define([
         var selection = self.animation.data_view.selections.selections.active_category;
         var source = self.animation.data_view.source.header.colsByName[self.sourcename];
         var range = selection.data[self.sourcename];
+        var filterChoices;
+        if (self.animation.args.colsByName && self.animation.args.colsByName[self.sourcename] && self.animation.args.colsByName[self.sourcename].choices) {
+          filterChoices = self.animation.args.colsByName[self.sourcename].choices;
+        }
 
         var title = 'All';
         if (range.length != 2 || range[0] != Number.NEGATIVE_INFINITY || range[1] != Number.POSITIVE_INFINITY) {
           var choicesById = {};
           for (var name in source.choices) {
-            choicesById[source.choices[name]] = name;
+            if (!filterChoices || filterChoices.findIndex(name)) {
+              choicesById[source.choices[name]] = name;
+            }
           }
 
           var res = [];
