@@ -522,6 +522,13 @@ define([
         self.logoNode.hide();
       }
 
+      KeyBindings.show();
+      if (config.hideKeys) {
+        config.hideKeys.map(function (key) {
+          KeyBindings.hide(key.keys, key.context);
+        });
+      }
+
       self.sideBar.load(config.sideBar, cb);
     }
   });
