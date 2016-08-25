@@ -4,6 +4,7 @@ import vectortile
 import click
 import json
 import datetime
+import hashlib
 
 DATE_FORMAT="%Y-%m-%dT%H:%M:%S"
 DEFAULT_EXTENT=1000. * 60. * 60. * 24. * 30
@@ -21,6 +22,11 @@ last_series = 0
 def get_series_group():
     global last_series
     return last_series
+
+countries = ['AD', 'AE', 'AF', 'AG', 'AI', 'AL', 'AM', 'AN', 'AO', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AW', 'AX', 'AZ', 'BA', 'BB', 'BD', 'BE', 'BF', 'BG', 'BH', 'BI', 'BJ', 'BL', 'BM', 'BN', 'BO', 'BR', 'BS', 'BT', 'BV', 'BW', 'BY', 'BZ', 'CA', 'CC', 'CD', 'CF', 'CG', 'CH', 'CI', 'CK', 'CL', 'CM', 'CN', 'CO', 'CR', 'CU', 'CV', 'CW', 'CX', 'CY', 'CZ', 'DE', 'DJ', 'DK', 'DM', 'DO', 'DZ', 'EC', 'EE', 'EG', 'EH', 'ER', 'ES', 'ET', 'FI', 'FJ', 'FK', 'FM', 'FO', 'FR', 'GA', 'GB', 'GD', 'GE', 'GF', 'GG', 'GH', 'GI', 'GL', 'GM', 'GN', 'GP', 'GQ', 'GR', 'GS', 'GT', 'GU', 'GW', 'GY', 'HK', 'HM', 'HN', 'HR', 'HT', 'HU', 'ID', 'IE', 'IL', 'IM', 'IN', 'IO', 'IQ', 'IR', 'IS', 'IT', 'JE', 'JM', 'JO', 'JP', 'KE', 'KG', 'KH', 'KI', 'KM', 'KN', 'KP', 'KP', 'KR', 'KW', 'KY', 'KZ', 'LA', 'LB', 'LC', 'LI', 'LK', 'LR', 'LS', 'LT', 'LU', 'LV', 'LY', 'MA', 'MC', 'MD', 'ME', 'MF', 'MG', 'MH', 'MK', 'ML', 'MM', 'MN', 'MO', 'MP', 'MQ', 'MR', 'MS', 'MT', 'MU', 'MV', 'MW', 'MX', 'MY', 'MZ', 'NA', 'NC', 'NE', 'NF', 'NG', 'NI', 'NL', 'NO', 'NP', 'NR', 'NU', 'NZ', 'OM', 'PA', 'PE', 'PF', 'PG', 'PH', 'PK', 'PL', 'PM', 'PN', 'PR', 'PS', 'PT', 'PW', 'PY', 'QA', 'RE', 'RO', 'RS', 'RU', 'RW', 'SA', 'SB', 'SC', 'SD', 'SE', 'SEE', 'SG', 'SH', 'SI', 'SJ', 'SK', 'SL', 'SM', 'SN', 'SO', 'SR', 'SS', 'ST', 'SV', 'SY', 'SZ', 'TC', 'TD', 'TF', 'TG', 'TH', 'TJ', 'TK', 'TL', 'TM', 'TN', 'TO', 'TR', 'TT', 'TV', 'TW', 'TZ', 'UA', 'UG', 'UM', 'US', 'UY', 'UZ', 'VA', 'VC', 'VE', 'VG', 'VI', 'VN', 'VU', 'WF', 'WS', 'XK', 'YE', 'YT', 'ZA', 'ZM', 'ZW'][:5]
+
+def series_group2country(series_group):
+    return float(int(hashlib.md5(str(series_group)).hexdigest(), 16) % len(countries))
 
 def generate_tile(outdir, bounds, series_group, tile_bounds = None, time_range = None):
     global last_series
@@ -44,6 +50,7 @@ def generate_tile(outdir, bounds, series_group, tile_bounds = None, time_range =
         data.append({
                 "seriesgroup": series_group,
                 "series": last_series,
+                "category": series_group2country(series_group),
                 "longitude": bbox.lonmin,
                 "latitude": idx * (bbox.latmax - bbox.latmin) / float(points) + bbox.latmin,
                 "datetime": time_range[0] + idx * time_len / float(points),
@@ -56,6 +63,7 @@ def generate_tile(outdir, bounds, series_group, tile_bounds = None, time_range =
         data.append({
                 "seriesgroup": series_group,
                 "series": last_series,
+                "category": series_group2country(series_group),
                 "longitude": idx * (bbox.lonmax - bbox.lonmin) / float(points) + bbox.lonmin,
                 "latitude": bbox.latmin,
                 "datetime": time_range[0] + idx * time_len / float(points),
@@ -82,6 +90,13 @@ def generate_header(outdir, title, time_min, time_max, temporalExtents=False):
                                    "series": {"max": 4711.,
                                               "type": "Float32",
                                               "min": 0.},
+                                   "category": {
+                                     "type": "Float32",
+                                     "min": -1.0,
+                                     "max": 2.0,
+                                     "choices_type": "ISO 3166-1 alpha-2",
+                                     "choices": {code: float(idx) for idx, code in enumerate(countries)}
+                                   },
                                    "longitude": {"min": -180.,
                                                  "max": 180.,
                                                  "hidden": True,
