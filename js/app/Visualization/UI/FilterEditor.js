@@ -1,58 +1,25 @@
 define([
   "dojo/_base/declare",
-  "app/Visualization/UI/FilterEditorBase",
-  "./Widgets/FilteringMultiSelect",
-  "dojo/store/Memory"
+  "./FilterEditorText",
+  "./FilterEditorFlags",
+  "./FilterEditorFlagSelector"
 ], function(
   declare,
-  FilterEditorBase,
-  FilteringMultiSelect,
-  Memory
+  FilterEditorText,
+  FilterEditorFlags,
+  FilterEditorFlagSelector
 ){
-  return declare("FilterEditor", [FilterEditorBase], {
-    searchAttr: "name",
-    labelAttr: "name",
-    labelType: "text",
-    contentTemplate: '<div>' + 
-                     '  <div>Type the filters below:</div>' +
-                     '  <div' +
-                     '   data-dojo-type="FilteringMultiSelect"' +
-                     '   data-dojo-attach-point="select"' +
-                     '   data-dojo-attach-event="onChange:handleSelectionChange,onFocus:handleFocus"></div>' +
-                     '</div>',
-    startup: function () {
-      var self = this;
-      self.inherited(arguments);
+  var FilterEditor = declare("FilterEditor", null, {});
 
-      ['searchAttr', 'labelAttr', 'labelType'].map(function (attr) {
-        self.select.set(attr, self.get(attr));
-      });
-      self.select.set("store", self.getStore());
-      self.select._select.on("click", self.handleFocus.bind(self));
-      self.setSlectValueFromFilter();
-    },
-    getStore: function () {
-      var self = this;
-      return new Memory({data: self.getItemList()});
-    },
-    setSlectValueFromFilter: function () {
-      var self = this;
-      self.select.set("value", self.getFilter());
-    },
-    handleFocus: function () {
-      var self = this;
-      self.select._select.loadAndOpenDropDown();
-    },
-    handleSelectionChange: function () {
-      var self = this;
-      var success = self.setFilter(
-        self.select.get('value').map(function (x) {
-          return parseInt(x);
-        })
-      );
-      if (!success) {
-        self.setSlectValueFromFilter();
-      }
+  FilterEditor.getEditorClass = function (data_view, source_name) {
+    var source = data_view.source.header.colsByName[source_name];
+
+    var cls = FilterEditorText;
+    if (source.choices_type == 'ISO 3166-1 alpha-2') {
+      cls = FilterEditorFlags;
     }
-  });
+    return cls;
+  };
+
+  return FilterEditor;
 });

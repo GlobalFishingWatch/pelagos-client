@@ -6,8 +6,7 @@ define([
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
   "app/Visualization/UI/SidePanels/AnimationListBase",
-  "app/Visualization/UI/FilterEditor",
-  "app/Visualization/UI/FilterEditorFlags"
+  "app/Visualization/UI/FilterEditor"
 ], function(
   declare,
   domStyle,
@@ -16,8 +15,7 @@ define([
   _WidgetsInTemplateMixin,
   _Container,
   AnimationListBase,
-  FilterEditor,
-  FilterEditorFlags
+  FilterEditor
 ){
   var Filters = declare("Filters", [AnimationListBase], {
     baseClass: 'Filters',
@@ -76,23 +74,25 @@ define([
       var self = this;
       self.inherited(arguments);
       var selection = self.animation.data_view.selections.selections.active_category;
-      self.display = new (self.getEditorClass().prototype.Display)({animation: self.animation, sourcename: self.sourcename});
+      self.display = new (
+        FilterEditor.getEditorClass(
+          self.animation.data_view, self.sourcename
+        ).prototype.Display
+      )({
+        animation: self.animation,
+        sourcename: self.sourcename
+      });
       self.display.placeAt(self.selectionNode);
       self.display.startup();
     },
-    getEditorClass: function () {
-      var self = this;
-      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
-
-      var cls = FilterEditor;
-      if (source.choices_type == 'ISO 3166-1 alpha-2') {
-        cls = FilterEditorFlags;
-      }
-      return cls;
-    },
     edit: function () {
       var self = this;
-      new (self.getEditorClass())({animation: self.animation, sourcename: self.sourcename}).show();
+      new (
+        FilterEditor.getEditorClass(self.animation.data_view, self.sourcename)
+      )({
+        animation: self.animation,
+        sourcename: self.sourcename
+      }).show();
     }
   });
 

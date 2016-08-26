@@ -97,7 +97,7 @@ define([
       if (   self.selection.hidden
           || self.selection.sortcols.length != 1
           || !source
-             || !source.choices) {
+          || !source.choices) {
         $(self.domNode).hide();
         return;
       }
