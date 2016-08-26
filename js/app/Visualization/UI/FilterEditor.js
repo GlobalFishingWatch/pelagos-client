@@ -11,7 +11,7 @@ define([
 ){
   return declare("FilterEditor", [FilterEditorBase], {
     searchAttr: "name",
-    labelAttr: "label",
+    labelAttr: "name",
     labelType: "text",
     contentTemplate: '<div>' + 
                      '  <div>Type the filters below:</div>' +
@@ -33,15 +33,7 @@ define([
     },
     getStore: function () {
       var self = this;
-      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
-
-      var names = Object.keys(source.choices);
-      names.sort();
-      var data = names.map(function (name) {
-        var value = source.choices[name];
-        return {id: value, name: name, label: name};
-      });
-      return new Memory({data: data});
+      return new Memory({data: self.getItemList()});
     },
     setSlectValueFromFilter: function () {
       var self = this;
