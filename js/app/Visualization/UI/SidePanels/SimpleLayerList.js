@@ -52,12 +52,12 @@ define([
       '    <div>' +
       '      <span data-dojo-attach-point="titleNode"></span>' +
       '      <div class="layer-buttons">' +
-      '        <a target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-cog"></i></a>' +
       '        <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
       '      </div>' +
       '    </div>' +
       '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
       '      <div class="intensity-label">Intensity:</div>' +
+      '      <div class="eyedropper"><i class="fa fa-eyedropper"></i></div>' +
       '    </div>' +
       '  </div>' +
       '</div>',
