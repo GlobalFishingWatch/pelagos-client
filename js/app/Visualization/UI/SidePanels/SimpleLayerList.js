@@ -56,8 +56,8 @@ define([
       '      </div>' +
       '    </div>' +
       '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
-      '      <div class="intensity-label">Intensity:</div>' +
-      '      <div class="eyedropper"><i class="fa fa-eyedropper"></i></div>' +
+      '      <div class="intensity-label">Intensity &amp; Color:</div>' +
+      '      <div class="eyedropper"><a target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a></div>' +
       '    </div>' +
       '  </div>' +
       '</div>',
