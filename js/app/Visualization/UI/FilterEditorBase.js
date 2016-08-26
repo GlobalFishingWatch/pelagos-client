@@ -10,7 +10,7 @@ define([
   TemplatedContainer,
   _WidgetBase
 ){
-  var FilterHandlerMixin = declare("Display", [], {
+  var FilterHandlerMixin = declare("FilterHandlerMixin", null, {
     getItemList: function () {
       var self = this;
       var source = self.animation.data_view.source.header.colsByName[self.sourcename];
