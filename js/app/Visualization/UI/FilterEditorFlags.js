@@ -12,21 +12,16 @@ define([
   Paths
 ){
   return declare("FilterEditor", [FilterEditor], {
+    labelAttr: "label",
     labelType: "html",
     getStore: function () {
       var self = this;
-      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
 
-      var codes = Object.keys(source.choices);
-      codes.sort();
-      var data = codes.map(function (code) {
-        var value = source.choices[code];
-        name = CountryCodes.codeToName[code.toUpperCase()];
-        return {
-          id: value,
-          name: name,
-          label: '<img src="' + Paths.img + '/flags/png/' + code.toLowerCase() + '.png" style="margin: 1px; vertical-align: middle;"> ' + name
-        };
+      var data = self.getItemList();
+      data.map(function (item) {
+        var code = item.name;
+        item.name = CountryCodes.codeToName[code.toUpperCase()];
+        item.label = '<img src="' + Paths.img + '/flags/png/' + code.toLowerCase() + '.png" style="margin: 1px; vertical-align: middle;"> ' + item.name;
       });
       return new Memory({data: data});
     },
@@ -34,7 +29,7 @@ define([
       rangeUpdated: function () {
         var self = this;
 
-        var list = self.getItemList();
+        var list = self.getSelectedItemList();
         var title = self.noFilterTitle;;
         if (list.length > 0) {
           title = list.map(function (item) {
