@@ -146,9 +146,13 @@ define([
 
       config = _.clone(config);
 
+      var isObject = function(obj) {
+        return typeof(obj) == 'object' && obj !== null;
+      };
+
       var unmerge = function(defaults, config) {
         for (var key in defaults) {
-          if (typeof(defaults[key]) == 'object') {
+          if (isObject(defaults[key]) && isObject(config[key])) {
             config[key] = unmerge(defaults[key], config[key]);
             if (Object.keys(config[key]).length == 0) {
               delete config[key];
