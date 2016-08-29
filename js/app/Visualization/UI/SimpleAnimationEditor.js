@@ -70,7 +70,7 @@ define([
 
       visualization.animations.animations.map(function (animation) {
         /* FIXME: Horrible hack to conform to UX */
-        if (animation.name != 'CartoDBAnimation') return;
+        // if (animation.name != 'CartoDBAnimation') return;
         var row = $("<div></div>");
         row.text(animation.title);
         var description = animation.name;
@@ -130,6 +130,13 @@ define([
       $(editor.containerNode).find('.save').click(function () {
         animation.title = $(editor.containerNode).find('.title').val();
         animation.color = colorDropdown.get("value");
+        if (animation.data_view != undefined && animation.data_view.header.uniforms.red != undefined) {
+          var c = animation.color;
+          var rgb = [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
+          animation.data_view.header.uniforms.red.value = rgb[0];
+          animation.data_view.header.uniforms.green.value = rgb[1];
+          animation.data_view.header.uniforms.blue.value = rgb[2];
+        }
         animation.events.triggerEvent("updated");
         self.setEditor();
       });

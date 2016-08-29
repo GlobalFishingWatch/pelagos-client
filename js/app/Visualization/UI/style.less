@@ -101,7 +101,7 @@ body {
 
 .logo {
   position: absolute;
-  left: 40pt;
+  left: 8pt;
   top: 10pt;
   pointer-events: none;
 }
@@ -179,6 +179,11 @@ body {
             color: #ffffff;
         }
 
+}
+
+.dojoxHuePickerPoint {
+  left: inherit !important;
+  margin-left: -5px;
 }
 
 .dijitBorderContainer-dijitContentPane.AnimationContainer,
@@ -576,15 +581,20 @@ content: "\f067";
 
 /* hide Google, CartoDB logos */
 
-.cartodb-logo, #cartodb-gmaps-attribution, .logo img, .gmnoprint a, .gmnoprint span  {
+.cartodb-logo, #cartodb-gmaps-attribution, .gmnoprint a, .gmnoprint span  {
     visibility: hidden;
     display: none;
     width: 0;
     height: 0;
 }
 
-a[href^="http://maps.google.com/maps"]{display:none !important}
-a[href^="https://maps.google.com/maps"]{display:none !important}
+a[href^="http://maps.google.com/maps"]{display:none !important;}
+a[href^="https://maps.google.com/maps"]{display:none !important;}
+
+.gm-style .gmnoprint .gm-style-cc div,
+.gm-style .gm-style-cc div {
+    display: none;
+}
 
 
 .DataViewUI .value {
@@ -658,6 +668,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 */
 
+
+.sidebarColorPicker tr:nth-child(2) {
+  display: none;
+}
+
 #w {
   position: absolute;
   pointer-events: none;
@@ -724,6 +739,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         cursor: default;
       }
       .header {
+        height: 23px;
         #activate_help{
           font-size: 15pt;
           float: right;
@@ -740,7 +756,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
       .blades {
         height: 100%;
-        padding-bottom: 25pt;
+        padding-bottom: 23pt;
         .basic-sidebar {
           height: 100%;
           width: 100%;
@@ -748,6 +764,17 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
       .sponsor_logos {
         display: none;
+      }
+
+      &.has-sponsor-logos {
+        .sponsor_logos {
+          height: 23pt;
+          margin-top: -46pt;
+          display: block;
+        }
+        .blades {
+          padding-bottom: 46pt;
+        }
       }
     }
 
@@ -816,7 +843,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     }
 
     #layers, .InfoUI .wrapper {
-      padding: 0 5%;
+      padding: 5% 5%;
       word-wrap: break-word;
     }
 
@@ -867,7 +894,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           }
 
           .layer-buttons {
-            display: table-cell;
+            float: right;
             vertical-align: top;
             padding-top: 2px;
           }

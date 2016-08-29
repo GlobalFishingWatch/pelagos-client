@@ -99,12 +99,10 @@ define([
 
       self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
-        + '  <div><button class="btn btn-default btn-lg" data-name="play"><i title="play" class="fa fa-play paused"></i><i title="pause" class="fa fa-pause playing"></i><!--<img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png">--></button></div>'
-        + '  <!--div class="divide"></div-->'
+        + '  <div><button class="btn btn-default btn-lg" data-name="play"><i title="play" class="fa fa-play paused"></i><i title="pause" class="fa fa-pause playing"></i></button></div>'
         + '  <div><button class="btn btn-default btn-lg" data-name="share"><i title="share workspace" class="fa fa-share-alt"></i></button></div>'
         + ''
         + '  <a class="balloon">'
-        + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
         + '    <div>'
         + '      <img class="arrow" src="%(img)s/buttons/arrow.png">'
         + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
@@ -508,13 +506,25 @@ define([
       self.config = config;
       data = new ObjectTemplate(self.config).eval(Paths);
 
-      if (typeof(data.logo) == "string") {
-        self.logoNode.append(data.logo);
+      if (data.logo) {
+        self.logoNode.show();
+        if (typeof(data.logo) == "string") {
+          self.logoNode.append(data.logo);
+        } else {
+          var logo = $("<img>");
+          logo.attr(data.logo.attr);
+          logo.css(data.logo.css);
+          self.logoNode.append(logo);
+        }
       } else {
-        var logo = $("<img>");
-        logo.attr(data.logo.attr);
-        logo.css(data.logo.css);
-        self.logoNode.append(logo);
+        self.logoNode.hide();
+      }
+
+      KeyBindings.show();
+      if (config.hideKeys) {
+        config.hideKeys.map(function (key) {
+          KeyBindings.hide(key.keys, key.context);
+        });
       }
 
       self.sideBar.load(config.sideBar, cb);

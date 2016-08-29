@@ -119,7 +119,7 @@ define([
         });
       }
       this.inherited(arguments);
-    },
+    }
   });
 
   FilteringMultiSelect.SelectedItem = dojo.declare("SelectedItem", [_Widget, _Templated], {
