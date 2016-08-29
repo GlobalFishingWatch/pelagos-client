@@ -146,8 +146,8 @@ define([
 
       config = _.clone(config);
 
-      var isObject = function(obj) {
-        return typeof(obj) == 'object' && obj !== null;
+      var isObject = function (obj) {
+        return obj !== null && typeof(obj) == 'object';
       };
 
       var unmerge = function(defaults, config) {
