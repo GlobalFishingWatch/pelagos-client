@@ -71,9 +71,9 @@ clean-integration-tests:
 clean: clean-js-build clean-dependencies clean-integration-tests
 
 prerequisites:
-	curl -sL https://deb.nodesource.com/setup_0.12 | bash -
+	curl -sL https://deb.nodesource.com/setup_6.x | bash -
 	apt-get update
-	apt-get install -y firefox chromium-browser nodejs unzip openjdk-6-jre xvfb python python-dev python-pip git-core libglapi-mesa libosmesa6 mesa-utils
+	apt-get install -y firefox chromium-browser nodejs unzip openjdk-7-jre xvfb python python-dev python-pip git-core libglapi-mesa libosmesa6 mesa-utils
 	npm install -g testem
 	pip install --upgrade pip
 	pip install -r requirements.txt
