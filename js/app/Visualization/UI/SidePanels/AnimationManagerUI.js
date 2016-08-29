@@ -123,6 +123,7 @@ define([
       if (self.animation.data_view) {
         self.addChild(new DataViewUI({
           visualization: self.visualization,
+          animation: self.animation,
           dataview: self.animation.data_view
         }));
       }
