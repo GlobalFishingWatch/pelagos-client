@@ -10,7 +10,6 @@ define([
   "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/AddAnimationDialog",
   "app/Visualization/UI/Performance",
-  "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
@@ -35,7 +34,6 @@ define([
   AnimationLibrary,
   AddAnimationDialog,
   Performance,
-  SimpleAnimationEditor,
   SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
@@ -487,8 +485,6 @@ define([
       self.addAnimation.startup();
       self.performance = new Performance({visualization: self.visualization});
       self.performance.startup();
-      self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
-      self.simpleAnimationEditor.startup();
       self.saveWorkspace = new SaveWorkspaceDialog({visualization: self.visualization});
       self.saveWorkspace.startup();
       self.help = new Help({visualization: self.visualization});
