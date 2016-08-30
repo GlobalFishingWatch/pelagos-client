@@ -24,17 +24,45 @@ define([
   ColorPicker
 ){
   var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
-    baseClass: 'SimpleLayerList',
+    baseClass: 'SimpleLayerList display-mode',
     title: 'Layers',
     advanced: false,
     select_default: true,
 
     templateString: '' +
         '<div class="${baseClass}" style="overflow: auto;">' +
-        '  <div id="layers">' +
-        '    <form class="layer-list" data-dojo-attach-point="containerNode"></form>' +
+        '  <div class="titleButtons">' +
+        '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
-        '</div>'
+        '  <div id="layers">' +
+        '    <form class="layer-list" data-dojo-attach-point="containerNode">'+
+        '      <div class="layer-row editing-mode-only">' +
+        '        <div class="left-buttons">' +
+        '          <label class="add-layer">' +
+        '            <a href="javascript:undefined" data-dojo-attach-event="click:addLayer"><i class="fa fa-plus-square"></i></a>' +
+        '          </label>' +
+        '        </div>' + 
+        '        <div class="layer-content">' +
+        '          <div>' +
+        '            <span>Add new layer</span>' +
+        '          </div>' +
+        '        </div>' +
+        '      </div>' +
+        '    </form>' +
+        '  </div>' +
+        '</div>',
+
+    toggleEditingMode: function () {
+      var self = this;
+
+      var editing_mode = $(self.domNode).hasClass("editing-mode");
+
+      $(self.domNode).toggleClass("editing-mode", !editing_mode);
+      $(self.domNode).toggleClass("display-mode", editing_mode);
+    },
+
+    addLayer: function () {
+    }
   });
 
   SimpleLayerList.AnimationWidget = declare("AnimationWidget", [AnimationListBase.AnimationWidget], {
@@ -44,18 +72,23 @@ define([
 
     templateString: '' +
       '<div class="layer-row">' +
-      '  <label class="switch">' +
-      '    <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggle">' +
-      '    <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
-      '  </label>' +
-      '  <div class="layer-label">' +
+      '  <div class="left-buttons">' +
+      '    <label class="remove-layer editing-mode-only">' +
+      '      <a href="javascript:undefined" data-dojo-attach-event="click:remove"><i class="fa fa-trash"></i></a>' +
+      '    </label>' +
+      '    <label class="switch display-mode-only">' +
+      '      <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggle">' +
+      '      <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
+      '    </label>' +
+      '  </div>' + 
+      '  <div class="layer-content">' +
       '    <div>' +
       '      <span data-dojo-attach-point="titleNode"></span>' +
       '      <div class="layer-buttons">' +
-      '        <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
+      '        <a target="_blank" data-dojo-attach-point="infoNode" class="display-mode-only"><i class="fa fa-info"></i></a>' +
       '      </div>' +
       '    </div>' +
-      '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
+      '    <div class="intensity-slider-box display-mode-only" data-dojo-attach-point="intensityNode">' +
       '      <div class="intensity-label">Intensity &amp; Color:</div>' +
       '      <div class="eyedropper"><a target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a></div>' +
       '    </div>' +

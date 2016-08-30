@@ -861,6 +861,22 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       margin: 0 0 1rem 0;
     }
 
+    .display-mode {
+      .editing-mode-only {
+        display: none !important;
+      }
+    }
+
+    .editing-mode {
+      .editing-mode-toggle {
+        color: #ff0000;
+      }
+
+      .display-mode-only {
+        display: none !important;
+      }
+    }
+
     /* toggle styles */
     #layers {
       .layer-list {
@@ -870,23 +886,25 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           display: table-row;
           height: 35px;
 
-          .layer-label,
-          .switch {
+          .layer-content,
+          .left-buttons {
             display: table-cell;
             padding-top: 0px;
             vertical-align: top;
           }
 
+          .remove-layer,
           .switch {
-            width: 18%;
+            padding-right: 10px;
+          }
+
+          .switch {
             font-size: 90%;
           }
 
-          .layer-label {
-            display: table-cell;
+          .layer-content {
             color: #ffffff;
             font-size: 80%;
-            /*padding: 2%;*/
             width: 100%;
             .intensity-slider-box .intensity-label {
               font-size: 0.8em;
@@ -1140,7 +1158,7 @@ div.cartodb-legend-stack {
     /*font-size: 125%;*/
   }
 
-  #layers .layer-label {
+  #layers .layer-content {
     /*font-size: 125%;*/
   }
 }
