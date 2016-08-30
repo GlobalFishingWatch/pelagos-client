@@ -54,6 +54,16 @@ define([
       }
     },
 
+    add: function () {
+      var self = this;
+
+      if (self.visualization.state.getValue('edit')) {
+        self.visualization.ui.addAnimation.show();
+      } else {
+        self.visualization.ui.library.displayAnimationLibraryDialog();
+      }
+    },
+
     removeHandler: function (event) {
       var self = this;
       var animation = event.animation;

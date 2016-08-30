@@ -8,6 +8,7 @@ define([
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/Search",
   "app/Visualization/UI/AnimationLibrary",
+  "app/Visualization/UI/AddAnimationDialog",
   "app/Visualization/UI/Performance",
   "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/SaveWorkspaceDialog",
@@ -32,6 +33,7 @@ define([
   SidePanelManager,
   Search,
   AnimationLibrary,
+  AddAnimationDialog,
   Performance,
   SimpleAnimationEditor,
   SaveWorkspaceDialog,
@@ -481,6 +483,8 @@ define([
       self.search.startup();
       self.library = new AnimationLibrary({visualization: self.visualization});
       self.library.startup();
+      self.addAnimation = new AddAnimationDialog({visualization: self.visualization});
+      self.addAnimation.startup();
       self.performance = new Performance({visualization: self.visualization});
       self.performance.startup();
       self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});

@@ -85,13 +85,6 @@ define([
         self.endEdit();
         event.preventDefault();
       }
-    },
-    add: function () {
-      var self = this;
-      new self.constructor.AddDialog({
-        visualization: self.visualization,
-        menuFor: self.addNode
-      }).startup();
     }
   });
 
@@ -179,99 +172,6 @@ define([
         self.endEdit();
         event.preventDefault();
       }
-    }
-  });
-
-  AnimationManagerUI.AddDialog = declare("AddDialog", [TooltipDialog], {
-    baseClass: 'AnimationManagerUI-AddDialog',
-    visualization: null,
-    menuFor: null,
-    startup: function () {
-      var self = this;
-      self.inherited(arguments);
-
-      self.visualization.data.listSources(function (sources) {
-        self.visualization.data.listSourceTypes(function (sourceTypes) {
-
-          var typeselect = new Select({
-            name: "typeselect",
-            options: Object.items(Animation.animationClasses).map(function (item) {
-              return {label:item.key, value:item.key};
-            })
-          });
-          self.addChild(typeselect);
-
-          var sourceselect = new Select({
-            name: "sourceselect",
-            options: [{label:"New", value:null}].concat(
-              sources.map(function (source) {
-                return {label:source.type + ": " + source.args.url, value:source};
-              })
-            )
-          });
-          self.addChild(sourceselect);
-
-          var sourcetypeselect = new Select({
-            name: "sourcetypeselect",
-            options: sourceTypes.map(function (type) {
-              return {label:type, value:type};
-            })
-          });
-          self.addChild(sourcetypeselect);
-
-          var urlbox = new dijit.form.TextBox({
-            name: "url",
-            value: "",
-            placeHolder: "Data source URL"
-          });
-          self.addChild(urlbox);
-
-          var addbutton = new Button({
-            label: "Add",
-            onClick: function(){
-              var type = typeselect.get('value');
-              var source = sourceselect.get('value');
-              if (!source) {
-                source = {type:sourcetypeselect.get('value'), args: {url:urlbox.get('value')}};
-              }
-              self.visualization.animations.addAnimation({type:type, args: {source: source}}, function (err, animation) {});
-              self.onExecute();
-            }
-          });
-          self.addChild(addbutton);
-
-          var librarybutton = new Button({
-            label: "From library",
-            onClick: function(){
-              self.visualization.ui.library.displayAnimationLibraryDialog();
-              self.onCancel();
-            }
-          });
-          self.addChild(librarybutton);
-
-          var cancelbutton = new Button({
-            label: "Cancel",
-            onClick: function(){
-              self.onCancel();
-            }
-          });
-          self.addChild(cancelbutton);
-
-          popup.open({
-            popup: self,
-            onExecute: self.close.bind(self),
-            onCancel: self.close.bind(self),
-            onClose: self.close.bind(self),
-            around: self.menuFor
-          });
-        });
-      });
-    },
-
-    close: function () {
-      var self = this;
-      popup.close(self);
-      self.destroy();
     }
   });
 

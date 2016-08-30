@@ -39,7 +39,7 @@ define([
         '      <div class="layer-row editing-mode-only">' +
         '        <div class="left-buttons">' +
         '          <label class="add-layer">' +
-        '            <a href="javascript:undefined" data-dojo-attach-event="click:addLayer"><i class="fa fa-plus-square"></i></a>' +
+        '            <a href="javascript:undefined" data-dojo-attach-event="click:add"><i class="fa fa-plus-square"></i></a>' +
         '          </label>' +
         '        </div>' + 
         '        <div class="layer-content">' +
@@ -59,9 +59,6 @@ define([
 
       $(self.domNode).toggleClass("editing-mode", !editing_mode);
       $(self.domNode).toggleClass("display-mode", editing_mode);
-    },
-
-    addLayer: function () {
     }
   });
 
