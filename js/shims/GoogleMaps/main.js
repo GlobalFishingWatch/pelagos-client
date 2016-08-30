@@ -14,7 +14,7 @@ if (false) {
     window.googleMapsLoader = function (req, callback) {
       req(["shims/apikeys"], function (apikeys) {
         window.googleMapsLoaded = callback;
-        req(["http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded&key=" + apikeys.GoogleMaps], function () {});
+        req(["https://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded&key=" + apikeys.GoogleMaps], function () {});
       });
     }
 
