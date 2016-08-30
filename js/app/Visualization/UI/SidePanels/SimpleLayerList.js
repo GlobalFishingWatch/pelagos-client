@@ -7,7 +7,9 @@ define([
   "dijit/_Container",
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "dijit/form/HorizontalSlider",
-  "shims/jQuery/main"
+  "shims/jQuery/main",
+  "dijit/popup",
+  "dojox/widget/ColorPicker"
 ], function(
   declare,
   domStyle,
@@ -17,11 +19,16 @@ define([
   _Container,
   AnimationListBase,
   HorizontalSlider,
-  $
+  $,
+  popup,
+  ColorPicker
 ){
   var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
     baseClass: 'SimpleLayerList',
     title: 'Layers',
+    advanced: false,
+    select_default: true,
+
     templateString: '' +
         '<div class="${baseClass}" style="overflow: auto;">' +
         '  <div id="layers">' +
@@ -42,22 +49,23 @@ define([
       '    <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
       '  </label>' +
       '  <div class="layer-label">' +
-      '    <span data-dojo-attach-point="titleNode"></span>' +
-      '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
-      '      <div class="intensity-label">Intensity:</div>' +
+      '    <div>' +
+      '      <span data-dojo-attach-point="titleNode"></span>' +
+      '      <div class="layer-buttons">' +
+      '        <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
+      '      </div>' +
       '    </div>' +
-      '  </div>' +
-      '  <div class="layer-buttons" data-dojo-attach-point="infoNodeContainer">' +
-      '    <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
+      '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
+      '      <div class="intensity-label">Intensity &amp; Color:</div>' +
+      '      <div class="eyedropper"><a target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a></div>' +
+      '    </div>' +
       '  </div>' +
       '</div>',
 
     toggle: function () {
       var self = this;
       self.animation.setVisible(self.inputNode.checked);
-      if (self.animation.constructor.prototype.name == "ClusterAnimation") {
-        $(self.intensityNode).toggle(self.inputNode.checked);
-      }
+      $(self.intensityNode).toggle(self.inputNode.checked && self.animation.constructor.prototype.name == "ClusterAnimation");
     },
 
     startup: function () {
@@ -84,14 +92,50 @@ define([
         self.intensitySlider.placeAt(self.intensityNode);
         self.intensitySlider.startup();
 
-        if (!self.animation.visible) {
-          $(self.intensityNode).hide();
-        }
-      } else {
-        $(self.intensityNode).hide();
+        self.colorDropDown = new ColorPicker({
+          'class': "sidebarColorPicker",
+          onChange: self.colorSelected.bind(self),
+          style: 'background: white; padding: 10px;',
+          id: self.id + "_colorPopup",
+          value: self.animation.color
+        });
+        popup.moveOffScreen(self.colorDropDown);
+        self.colorDropDown.startup();
       }
 
       self.updatedHandler();
+    },
+
+    onConfig: function () {
+      var self = this;
+      popup.open({
+        parent: self,
+        popup: self.colorDropDown,
+        around: this.configNode,
+        orient: ["below", "before"],
+        onExecute: function(){
+          popup.close(dropDown);
+        },
+        onCancel: function(){
+          popup.close(dropDown);
+        }
+      });
+    },
+
+    colorSelected: function(value) {
+      var self = this;
+
+      self.animation.color = value;
+      if (self.animation.data_view != undefined && self.animation.data_view.header.uniforms.red != undefined) {
+        var c = self.animation.color;
+        var rgb = [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
+        self.animation.data_view.header.uniforms.red.value = rgb[0];
+        self.animation.data_view.header.uniforms.green.value = rgb[1];
+        self.animation.data_view.header.uniforms.blue.value = rgb[2];
+      }
+      self.animation.events.triggerEvent("updated");
+
+      popup.close(self.colorDropDown);
     },
 
     slider2val: function(val) {
@@ -123,14 +167,15 @@ define([
       } else {
         $(self.inputNode).removeAttr('checked');
       }
+      self.toggle();
 
       var descriptionUrl = self.animation.descriptionUrl;
       if (descriptionUrl) {
-        $(self.infoNodeContainer).show();
         $(self.infoNode).attr("href", descriptionUrl);
-      } else {
-        $(self.infoNodeContainer).hide();
       }
+      $(self.infoNode).toggle(!!descriptionUrl);
+      var isConfigurable = self.animation.constructor.prototype.name == "ClusterAnimation";
+      $(self.configNode).toggle(isConfigurable);
     }
   });
 

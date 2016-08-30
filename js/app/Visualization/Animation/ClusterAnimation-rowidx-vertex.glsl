@@ -2,13 +2,13 @@
 #pragma include 'app/Visualization/Animation/mercator.glsl';
 #pragma include 'app/Visualization/Animation/rowidx.glsl';
 
-uniform float pointSize;
-
-uniform mat4 googleMercator2webglMatrix;
-
 uniform float tileidx;
 uniform float animationidx;
+
 uniform float width;
+uniform float zoom;
+
+uniform mat4 googleMercator2webglMatrix;
 
 varying float vPointSize;
 varying float vSigma;
@@ -35,20 +35,27 @@ void main() {
     vWeight = _weight;
     baseColor = rowidxColor(animationidx, tileidx, rowidx);
   } else {
-    float ps = 0.005; // In WebGL units
+    float ps = 7.0 ; // In pixels
 
-    float webglSigma = latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
+    float pixelSigma = pixelsPerWebGlX * latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
 
-    float radius = ps + 2.5 * webglSigma;
+    float radius = ps + 2.5 * pixelSigma;
     float areaScale = ps*ps / (radius*radius);
 
-    gl_PointSize = pixelsPerWebGlX * radius;
-    if (gl_PointSize > 5.0) {gl_PointSize = 5.0;}
+    gl_PointSize = radius;
+    if (gl_PointSize > 8.0) {gl_PointSize = 8.0;}
+
+    if (zoom >= heatmap_zoom) {
+      vWeight = -1.;
+      gl_PointSize = gl_PointSize / 2.0;
+    } else {
+      if (_weight > 1.0)
+          _weight = (log(_weight)/log(4.0)) + 1.0;
+
+      vWeight = areaScale * _weight;
+    }
 
     gl_PointSize += 2.0;
-
-    vWeight = areaScale * _weight;
-
     baseColor = rowidxColor(animationidx, tileidx, rowidx);
   }
 }

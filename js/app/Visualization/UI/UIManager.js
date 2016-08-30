@@ -5,13 +5,12 @@ define([
   "app/UrlValues",
   "app/Visualization/KeyBindings",
   "app/Visualization/UI/Widgets/Timeline/Timeline",
-  "app/Visualization/UI/PlayControl",
   "app/Visualization/UI/SidePanels/SidePanelManager",
-  "app/Visualization/UI/BasicSidebar",
   "app/Visualization/UI/Search",
   "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/Performance",
   "app/Visualization/UI/SimpleAnimationEditor",
+  "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
   "app/ObjectTemplate",
@@ -21,6 +20,7 @@ define([
   "shims/jQuery/main",
   "shims/less/main",
   "shims/Styles",
+  "shims/clipboard/main",
   "app/Visualization/UI/Paths"
 ], function (
   Class,
@@ -29,13 +29,12 @@ define([
   UrlValues,
   KeyBindings,
   Timeline,
-  PlayControl,
   SidePanelManager,
-  BasicSidebar,
   Search,
   AnimationLibrary,
   Performance,
   SimpleAnimationEditor,
+  SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
   ObjectTemplate,
@@ -45,6 +44,7 @@ define([
   $,
   less,
   Styles,
+  clipboard,
   Paths
 ) {
   return Class({
@@ -68,17 +68,15 @@ define([
 
       async.series([
         self.initStyles.bind(self),
-        self.initContainer.bind(self),
         self.initButtons.bind(self),
         self.initLoadSpinner.bind(self),
         self.initPlayButton.bind(self),
         self.initTimeline.bind(self),
         self.initLoopButton.bind(self),
-        self.initSaveButton.bind(self),
         self.initSidePanels.bind(self),
-        self.initPopups.bind(self)
+        self.initPopups.bind(self),
+        self.initSaveButton.bind(self)
       ], function () {
-        self.container.resize();
         self.visualization.animations.windowSizeChanged();
         cb();
       });
@@ -92,21 +90,6 @@ define([
       less.refresh().done(function () { cb(); });
     },
 
-    initContainer: function (cb) {
-      var self = this;
-
-      self.container = new BorderContainer({'class': 'AnimationUI', liveSplitters: true, design: 'sidebar', style: 'padding: 0; margin: 0;'});
-      self.animationsContainer = new ContentPane({'class': 'AnimationContainer', region: 'center', style: 'border: none; overflow: hidden;'});
-      self.container.addChild(self.animationsContainer);
-
-      $(self.animationsContainer.domNode).append(self.visualization.node.children());
-      self.visualization.node.append(self.container.domNode);
-      self.visualization.node = $(self.animationsContainer.domNode);
-
-      self.container.startup();
-      cb();
-    },
-
     initButtons: function (cb) {
       var self = this;
       self.buttonNodes = {};
@@ -116,12 +99,10 @@ define([
 
       self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
-        + '  <button class="btn btn-default btn-lg" data-name="share"><img src="%(img)s/buttons/share.png"></button>'
-        + '  <div class="divide"></div>'        
-        + '  <button class="btn btn-default btn-lg" data-name="play"><img class="paused" src="%(img)s/buttons/play.png"><img class="playing" src="%(img)s/buttons/pause.png"></button>'
+        + '  <div><button class="btn btn-default btn-lg" data-name="play"><i title="play" class="fa fa-play paused"></i><i title="pause" class="fa fa-pause playing"></i></button></div>'
+        + '  <div><button class="btn btn-default btn-lg" data-name="share"><i title="share workspace" class="fa fa-share-alt"></i></button></div>'
         + ''
         + '  <a class="balloon">'
-        + '  <!--<button class="btn btn-default btn-lg" data-name="expand"><i class="fa fa-ellipsis-h fa-fw"></i></button>-->'
         + '    <div>'
         + '      <img class="arrow" src="%(img)s/buttons/arrow.png">'
         + '      <button class="btn btn-default btn-xs" data-name="start"><i class="fa fa-step-backward"></i></button>'
@@ -211,6 +192,11 @@ define([
           SimpleMessageDialog.show("Error", data.toString());
         }
       });
+      self.visualization.events.on({
+        error: function (data) {
+          SimpleMessageDialog.show("Error", data.toString());
+        }
+      });
       cb();
     },
 
@@ -219,67 +205,22 @@ define([
       var updatingTimelineFromState = false;
       var updatingStateFromTimeline = false;
 
-      self.timeline = new Timeline({'class': 'main-timeline'});
+      self.timeline = new Timeline({
+        'class': 'main-timeline',
+        startLabelPosition: 'inside',
+        lengthLabelPosition: 'inside',
+        endLabelPosition: 'inside',
+
+        startLabelTitle: false,
+        lengthLabelTitle: false,
+        endLabelTitle: false,
+
+        dragHandles: false,
+
+        zoomPosition: 'left'
+      });
       self.timeline.placeAt(self.visualization.node[0]);
       self.timeline.startup();
-
-
-      /* FIXME: The following code to be removed once testing of the
-       * new design is done */
-
-      var setDesign = function (design) {
-        Object.items(design.timeline).map(function (item) {
-          self.timeline.set(item.key, item.value);
-        });
-        self.controlButtonsNode.toggle(design.controlButtons);
-        $(self.playControl.domNode).toggle(design.playControl);
-      };
-      var designs = [
-        {
-          controlButtons: true,
-          playControl: false,
-          timeline: {
-            startLabelPosition: 'inside',
-            lengthLabelPosition: 'inside',
-            endLabelPosition: 'inside',
-
-            startLabelTitle: false,
-            lengthLabelTitle: false,
-            endLabelTitle: false,
-
-            dragHandles: false,
-
-            zoomPosition: 'left'
-          }
-        },
-        {
-          controlButtons: false,
-          playControl: true,
-          timeline: {
-            startLabelPosition: 'top-right',
-            lengthLabelPosition: 'inside',
-            endLabelPosition: 'top-right',
-
-            startLabelTitle: 'FROM ',
-            lengthLabelTitle: false,
-            endLabelTitle: 'TO ',
-
-            dragHandles: true,
-
-            zoomPosition: 'right'
-          }
-        }
-      ];
-      var designIdx = 1;
-      setDesign(designs[0]);
-      KeyBindings.register(
-        ['Alt', 'T'], null, 'General',
-        'Switch between timeline designs',
-        function () {
-          setDesign(designs[designIdx % designs.length]);
-          designIdx++;
-        }
-      );
 
       var setRange = function (e) {
         var timeExtent = e.end - e.start;
@@ -445,12 +386,6 @@ define([
     initPlayButton: function(cb) {
       var self = this;
 
-      /* FIXME: The display: none to be removed once testing of the
-       * new design is done */
-      self.playControl = new PlayControl({'class': 'main-playcontrol', visualization: self.visualization, style: "display: none;"});
-      self.playControl.placeAt($("body")[0]);
-      self.playControl.startup();
-
       KeyBindings.register(
         ['Ctrl', 'Alt', 'Space'], null, 'Timeline',
         'Toggle play/pause',
@@ -520,41 +455,11 @@ define([
       cb();
     },
 
-    saveWorkspace: function () {
-      var self = this;
-      self.visualization.save(function (url) {
-        var dialog = new Dialog({
-          style: "width: 50%;",
-          title: "Workspace saved",
-          content: '' +
-            'Share this link: <input type="text" class="link" style="width: 300pt">',
-          actionBarTemplate: '' +
-            '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-            '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
-            '</div>'
-        });
-        $(dialog.containerNode).find("input").val(url);
-        $(dialog.closeButton).on('click', function () {
-          dialog.hide();
-        });
-        dialog.show();
-      });
-    },
-
     initSaveButton: function(cb) {
       var self = this;
 
-      /* Ctrl-Alt-S would have been more logical, but doesn't work in
-       * some browsers (As soon as Ctrl and S are pressed, it's
-       * eaten)
-       */
-      KeyBindings.register(
-        ['Alt', 'S'], null, 'General',
-        'Save workspace',
-        self.saveWorkspace.bind(self)
-      );
-
-      self.buttonNodes.share.click(self.saveWorkspace.bind(self));
+      self.buttonNodes.share.click(
+        self.saveWorkspace.saveWorkspace.bind(self.saveWorkspace));
 
       cb();
     },
@@ -570,8 +475,7 @@ define([
         }
       );
 
-      self.sidePanels = new SidePanelManager(self);
-      self.sideBar = new BasicSidebar(self);
+      self.sideBar = new SidePanelManager(self);
       cb();
     },
 
@@ -586,6 +490,8 @@ define([
       self.performance.startup();
       self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
       self.simpleAnimationEditor.startup();
+      self.saveWorkspace = new SaveWorkspaceDialog({visualization: self.visualization});
+      self.saveWorkspace.startup();
       self.help = new Help({visualization: self.visualization});
       self.help.startup();
       cb();
@@ -605,13 +511,25 @@ define([
       self.config = config;
       data = new ObjectTemplate(self.config).eval(Paths);
 
-      if (typeof(data.logo) == "string") {
-        self.logoNode.append(data.logo);
+      if (data.logo) {
+        self.logoNode.show();
+        if (typeof(data.logo) == "string") {
+          self.logoNode.append(data.logo);
+        } else {
+          var logo = $("<img>");
+          logo.attr(data.logo.attr);
+          logo.css(data.logo.css);
+          self.logoNode.append(logo);
+        }
       } else {
-        var logo = $("<img>");
-        logo.attr(data.logo.attr);
-        logo.css(data.logo.css);
-        self.logoNode.append(logo);
+        self.logoNode.hide();
+      }
+
+      KeyBindings.show();
+      if (config.hideKeys) {
+        config.hideKeys.map(function (key) {
+          KeyBindings.hide(key.keys, key.context);
+        });
       }
 
       self.sideBar.load(config.sideBar, cb);

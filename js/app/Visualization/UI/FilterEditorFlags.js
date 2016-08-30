@@ -1,61 +1,35 @@
 define([
   "dojo/_base/declare",
   "app/CountryCodes",
-  "app/Visualization/UI/FilterEditorBase",
-  "app/Visualization/UI/Widgets/FlagSelector",
+  "app/Visualization/UI/FilterEditor",
+    "dojo/store/Memory",
   "app/Visualization/UI/Paths"
 ], function(
   declare,
   CountryCodes,
-  FilterEditorBase,
-  FlagSelector,
+  FilterEditor,
+  Memory,
   Paths
 ){
-  return declare("FilterEditorFlags", [FilterEditorBase], {
-    startup: function () {
+  return declare("FilterEditor", [FilterEditor], {
+    labelAttr: "label",
+    labelType: "html",
+    getStore: function () {
       var self = this;
-      self.inherited(arguments);
 
-      var selection = self.animation.data_view.selections.selections.active_category;
-      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
-
-      self.select = new FlagSelector({
-        choices: Object.keys(source.choices),
-        onChange: self.handleSelectionChange.bind(self)
+      var data = self.getItemList();
+      data.map(function (item) {
+        var code = item.name;
+        item.name = CountryCodes.codeToName[code.toUpperCase()];
+        item.label = '<img src="' + Paths.img + '/flags/png/' + code.toLowerCase() + '.png" style="margin: 1px; vertical-align: middle;"> ' + item.name;
       });
-      self.addChild(self.select);
-
-      self.choicesById = {};
-      for (var name in source.choices) {
-        self.choicesById[source.choices[name]] = name;
-      }
-
-      self.setSlectValueFromFilter();
+      return new Memory({data: data});
     },
-    setSlectValueFromFilter: function () {
-      var self = this;
-      self.select.set("value", self.getFilter().map(function (value) {
-        return self.choicesById[value];
-      }));
-    },
-    handleSelectionChange: function () {
-      var self = this;
-      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
-      var success = self.setFilter(
-        self.select.get('value').map(function (key) {
-          return source.choices[key];
-        })
-      );
-      if (!success) {
-        self.setSlectValueFromFilter();
-      }
-    },
-
-    Display: declare("Display", [FilterEditorBase.prototype.Display], {
+    Display: declare("Display", [FilterEditor.prototype.Display], {
       rangeUpdated: function () {
         var self = this;
 
-        var list = self.getItemList();
+        var list = self.getSelectedItemList();
         var title = self.noFilterTitle;;
         if (list.length > 0) {
           title = list.map(function (item) {

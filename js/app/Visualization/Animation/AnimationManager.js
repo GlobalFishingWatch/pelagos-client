@@ -54,6 +54,7 @@ function(Class,
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
+      disableDoubleClickZoom: true,
       zoomControlOptions: {
         position: google.maps.ControlPosition.LEFT_TOP,
         style: google.maps.ZoomControlStyle.LARGE
@@ -151,7 +152,12 @@ function(Class,
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
 
-      cb();
+      var initIdleListener = google.maps.event.addListener(self.map, 'idle', function () {
+        /* Add a class to the zoom buttons so we can modify them with our css */
+        $(".gm-bundled-control .gmnoprint:has(div[title='Zoom in'])").addClass('zoomButtons')
+        initIdleListener.remove();
+        cb();
+      });
     },
 
     tilesLoaded: function() {    
@@ -383,7 +389,7 @@ function(Class,
      return _.find(self.animations, predicate);
     },
 
-    handleMouse: function (e, type) {
+    handleMouse: function (e, type, clear) {
       var self = this;
 
       var x, y;
@@ -416,7 +422,7 @@ function(Class,
         }
       );
 
-      if (rowidx) {
+      if (rowidx && clear != true) {
         var animation = self.animations[rowidx[0]];
         if (animation && animation.data_view) {
           animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
@@ -425,7 +431,7 @@ function(Class,
         if (animation && animation.select([rowidx[1], rowidx[2]], type, true, e)) {
           return animation;
         }
-      } else {
+      } else if (clear != false) {
         self.animations.map(function (animation) {
           animation.select(undefined, type, true, e);
         });
@@ -551,6 +557,10 @@ function(Class,
         'Show object information in the sidebar'
       );
       KeyBindings.register(
+        [], 'double click (on background)', 'Map',
+        'Deselect currently selected object'
+      );
+      KeyBindings.register(
         [], 'right click (on object)', 'Map',
         'Show object information in a popup'
       );
@@ -570,10 +580,16 @@ function(Class,
       });
 
       google.maps.event.addListener(self.map, "click", function(e) {
-        self.handleMouse(e, 'selected');
+        self.handleMouse(e, 'selected', false);
         if (e.preventDefault) e.preventDefault();
         if (e.stopPropagation) e.stopPropagation();
       });
+      google.maps.event.addListener(self.map, "dblclick", function(e) {
+        self.handleMouse(e, 'selected', true);
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+      });
+
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;

@@ -4,6 +4,7 @@ define([
   "app/SubscribableDict",
   "app/UrlValues",
   "app/Data/DataManager",
+  "app/Events",
   "app/Visualization/Animation/AnimationManager",
   "shims/async/main",
   "shims/jQuery/main",
@@ -15,6 +16,7 @@ define([
   SubscribableDict,
   UrlValues,
   DataManager,
+  Events,
   AnimationManager,
   async,
   $,
@@ -75,6 +77,9 @@ define([
 
     init: function (cb) {
       var self = this;
+
+      self.events = new Events("Visualization");
+
       self.state = new SubscribableDict(self.paramspec);
 
       self.state.events.on({
@@ -146,9 +151,13 @@ define([
 
       config = _.clone(config);
 
+      var isObject = function (obj) {
+        return obj !== null && typeof(obj) == 'object';
+      };
+
       var unmerge = function(defaults, config) {
         for (var key in defaults) {
-          if (typeof(defaults[key]) == 'object') {
+          if (isObject(defaults[key]) && isObject(config[key])) {
             config[key] = unmerge(defaults[key], config[key]);
             if (Object.keys(config[key]).length == 0) {
               delete config[key];
@@ -209,6 +218,13 @@ define([
         },
         dataType: 'text'
       }).fail(function(jqXHR, textStatus, errorThrown) {
+        self.events.triggerEvent("error", {
+          error: errorThrown,
+          url: url,
+          toString: function () {
+            return "Unable to load workspace " + this.url + ": " + this.error.toString();
+          }
+        });
         /* Load defaults only */
         return self.loadData({}, function () {
           cb(errorThrown);

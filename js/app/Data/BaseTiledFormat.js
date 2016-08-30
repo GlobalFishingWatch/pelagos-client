@@ -268,7 +268,6 @@ define([
 
       var request = new XMLHttpRequest();
       request.open('GET', url, true);
-      request.withCredentials = true;
       Ajax.setHeaders(request, self.headers);
       LoadingInfo.main.add(url, {request: request});
       request.onreadystatechange = function() {

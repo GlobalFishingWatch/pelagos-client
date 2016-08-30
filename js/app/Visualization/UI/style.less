@@ -33,7 +33,7 @@ html, body {
 }
 
 a {
-  color: #6D6E70;
+  color: #ffffff;
   text-decoration: none;
 }
 
@@ -61,6 +61,7 @@ label {
 
 .dijitAccordionChildWrapper {
   overflow: visible;
+  background-color: #011137;
 }
 
 .dijitAccordionChildWrapper .titleButtons {
@@ -100,7 +101,7 @@ body {
 
 .logo {
   position: absolute;
-  left: 40pt;
+  left: 8pt;
   top: 10pt;
   pointer-events: none;
 }
@@ -108,13 +109,21 @@ body {
 .loading {
   padding-left: 14px;
   padding-top: 10px;
+  position: absolute;
+  top: 175px !important;
 }
+
+.zoomButtons {
+  position: absolute;
+  top: 100px !important;
+}
+
 
 .main-timeline {
   position: absolute;
-  left: 108px;
+  left: 5px;
   right: 8px;
-  bottom: 28pt;
+  bottom: 5pt;
   height: 75pt;
 }
 
@@ -127,81 +136,94 @@ body {
 #shortcuts {
   padding-right: 5px;
 }
+.claro {
 
-.claro .dijitDialog {
-  border: 1px solid #b8bda7;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+    .dijitDialog {
+        border: none;
+        box-shadow: none;
+        background-color: transparent !important;
+    }
+
+        .dijitDialogTitleBar {
+            -moz-border-bottom-colors: none;
+            -moz-border-left-colors: none;
+            -moz-border-right-colors: none;
+            -moz-border-top-colors: none;
+            background-color: #2b4f93;
+            border-image: none;
+            border-style: none solid solid;
+            border-width: medium 0px 0px;
+            padding: 5px 7px 4px;
+        }
+
+        .dijitDialogTitle {
+            color: #ffffff;
+            font-size: 1.091em;
+            padding: 0 1px;
+        }
+
+        .dijitDialogPaneContent {
+            a {
+            color: #333333;
+            }
+        }
+
+        .dijitDialogPaneActionBar {
+            background-color: #efefef;
+            border-top: 1px solid #d3d3d3;
+            padding: 3px 5px 2px 7px;
+            text-align: right;
+        }
+
+        .dijitDialogCloseIcon {
+            color: #ffffff;
+        }
+
 }
 
-.dijitDialog .dijitDialogCloseIcon {
-  color: #ffffff;
+.dojoxHuePickerPoint {
+  left: inherit !important;
+  margin-left: -5px;
 }
 
-.claro .dijitDialogTitleBar {
-  -moz-border-bottom-colors: none;
-  -moz-border-left-colors: none;
-  -moz-border-right-colors: none;
-  -moz-border-top-colors: none;
-  background-color: #ef4223;
-  background-repeat: repeat-x;
-  border-color: #b8bda7 #b8bda7 #ef4223;
-  border-image: none;
-  border-style: none solid solid;
-  border-width: medium 1px 1px;
-  padding: 5px 7px 4px;
+.dijitBorderContainer-dijitContentPane.AnimationContainer,
+.dijitAccordionContainer .dijitAccordionContainer-child.dijitContentPane {
+    padding: 0;
+    background-color: transparent;
 }
 
-.claro .dijitDialogTitle {
-  color: #ffffff;
-  font-size: 1.091em;
-  padding: 0 1px;
+.dijitAccordionInnerContainer {
+    background-color: #011137;
+    color: #ffffff;
+    text-transform: uppercase;
+    border-top: solid 1px #294480;
+    border-bottom: solid 1px #294480;
 }
 
-.claro .dijitDialogPaneContent {
-  background: #fcfcfc none repeat-x scroll left top;
-  border-top: 1px solid #fcfcfc;
-  padding: 10px 8px;
-  position: relative;
-}
-
-.dijitDialogPaneContent {
-  color: #6d6e70;
-}
-
-.claro .dijitDialogPaneActionBar {
-  background-color: #efefef;
-  border-top: 1px solid #d3d3d3;
-  padding: 3px 5px 2px 7px;
-  text-align: right;
-}
-
-.claro .dijitBorderContainer-dijitContentPane.AnimationContainer,
-.claro .dijitAccordionContainer .dijitAccordionContainer-child.dijitContentPane {
-  padding: 0;
-  background-color: transparent;
-}
-
-.claro 
-.dijitAccordionInnerContainerHover 
 .dijitAccordionTitle {
-  color: #333333;
+    background: none !important;
+    padding: 4px 6px;
+    text-shadow: none;
 }
 
-.claro .dijitAccordionTitleSelected {
+.dijitAccordionTitleSelected {
 	padding: 5px 7px 2px;
 }
 
-.claro .dijitAccordionInnerContainerSelected .dijitAccordionTitle { 
-	background-color: #ef4223;
-    color: #fff;
-    border-right: none;
-    border-left: none;
+.dijitAccordionTitleFocus {
+    outline: none;
 }
 
-.claro .dijitAccordionInnerContainer {
-    background-color: #dddcd6;
-    border-top: #b8bda7;
-    border-bottom: #b8bda7;
+.dijitAccordionInnerContainerSelected .dijitAccordionTitle {
+	background-color: #011137;
+    color: #ffffff;
+    text-transform: uppercase;
+    text-shadow: none;
+    font-weight: 400;
+}
+
+.dijitAccordionInnerContainer {
+    background-color: #011137;
     border-right: none;
     border-left: none;
     margin-bottom: 1px;
@@ -210,22 +232,51 @@ body {
     transition-timing-function: linear;
 }
 
-.claro .dijitAccordionInnerContainerHover {
-	background-color: #ef4223;
+.dijitAccordionInnerContainerHover {
+	background-color: #011137;
 }
 
-.claro .dijitAccordionInnerContainerHover dijitAccordionTitle {
-	color: #767777;
-}	
-
-.claro .dijitAccordionContainer .dijitAccordionChildWrapper {
-    background-color: #fcfcfc;
+.dijitAccordionContainer .dijitAccordionChildWrapper {
+    background-color: #011137;
+    color: #ffffff !important;
     border: none;
     margin: 0;
 }
 
-.dijitAccordionContainer-child {
-    border-color: #dddcd6;
+.dijitAccordionInnerContainer:last-child, .dijitAccordionInnerContainer:last-child .dijitAccordionTitle {
+    border-radius: 0 !important;
+}
+
+/* intensity slider fixes */
+
+.intensity-label {
+    color: #ffffff;
+    padding: 3px 0;
+}
+
+.dijitSliderButtonInner {
+    color: #2b4f93;
+}
+
+.dijitSliderDecrementIconH .dijitSliderButtonInner:before,
+.dijitSliderDecrementIconV .dijitSliderButtonInner:before {
+    content: "\f068";
+    font-size: 10px;
+}
+
+.dijitSliderIncrementIconH .dijitSliderButtonInner:before,
+.dijitSliderIncrementIconV .dijitSliderButtonInner:before {
+content: "\f067";
+    font-size: 10px;
+}
+
+.dijitSliderDecrementIconH,
+.dijitSliderIncrementIconH,
+.dijitSliderDecrementIconV,
+.dijitSliderIncrementIconV {
+    height: 15px;
+    width: 15px;
+    line-height: 15px;
 }
 
 .animations {
@@ -269,6 +320,16 @@ body {
 .simple-animation-editor-dialog {
   .list {
     .stripedLinkList();
+  }
+}
+
+.filter-editor-dialog {
+  .filteringMultiSelect {
+    width: 300px;
+    margin-top: 10px;
+    .dijitDownArrowButton {
+      display: none;
+    }
   }
 }
 
@@ -354,6 +415,36 @@ body {
   }
 }
 
+.saveWorkspaceDialog {
+  .dijitDialogPaneContent {
+    padding: 20px;
+    .label {
+      margin-bottom: 10px;
+    }
+    .link {
+      .link.dijitTextBox {
+        -webkit-border-top-right-radius: 0px;
+        -webkit-border-bottom-right-radius: 0px;
+        -moz-border-radius-topright: 0px;
+        -moz-border-radius-bottomright: 0px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+      }
+      .copyButton {
+        margin: 0;
+        .dijitButtonNode {
+          border-left: none;
+          -webkit-border-top-left-radius: 0px;
+          -webkit-border-bottom-left-radius: 0px;
+          -moz-border-radius-topleft: 0px;
+          -moz-border-radius-bottomleft: 0px;
+          border-top-left-radius: 0px;
+          border-bottom-left-radius: 0px;
+        }
+      }
+    }
+  }
+}
 
 .Filters {
   .FiltersContainer {
@@ -361,8 +452,9 @@ body {
   }
   .Filters-AnimationFilters {
     margin-bottom: 10px;
+    padding-left: 5px;
     h2 {
-      color: #767777;
+      color: #ffffff;
       font-size: 100%;
       padding: 0;
       margin: 0;
@@ -386,37 +478,52 @@ body {
 }
 
 .control_box {
-  width:48pt;
-  height: 80pt;
+  width: 35pt;
+  height: 20pt;
   text-align: center;
-  padding-top: 9px;
-  background-color: #F9FAFB;
-  border-top: solid 1px #dbdcdd;
-  box-shadow: 1px 1px 1px #5F5D5c;
-  border-top-right-radius: 2pt;
-  border-bottom-right-radius: 2pt;
-  /*width: 75pt;
-  height: 75pt;
-  padding-top: 7.666pt;
-  padding-left: 7.666pt;*/
-
   position: absolute;
-  bottom: 28pt;
-  /*left: 2.333pt;*/
+  bottom: 55pt;
+  left: 10px;
   z-index: 5;
 
-  .divide {
-    border: solid 1px #DBDCDD;
-    margin: 10px 15px;
+  div {
+    display: inline-block;
+
   }
+
+  .btn-lg, .btn-xs {
+    width: 15pt;
+    height: 15pt;
+    border: solid 1pt #888888;
+    border-radius: 4pt;
+    margin-bottom: 7.666pt;
+    margin-right: 7.666pt;
+  }
+
+  .fa {
+    color: #ffffff;
+    font-size: 12pt;
+    width: 22px;
+    height: 22px;
+    text-align: center;
+  }
+
   button {
-    width: 30pt;
-    height: 30pt;
     border: hidden;
     background-color: transparent;
     border: none !important;
     margin: 0 !important;
     cursor: pointer;
+
+    img {
+        width: 15pt;
+        height: 15pt;
+
+    }
+  }
+
+  button.btn:focus {
+      outline: none;
   }
 
   a.balloon {
@@ -470,24 +577,25 @@ body {
     background-color: transparent;
   }
 
-
-  /* icon styles */
-
-  .btn-lg, .btn-xs {
-    width: 24pt;
-    height: 24pt;
-    border: solid 1pt #888888;
-    border-radius: 4pt;
-    margin-bottom: 7.666pt;
-    margin-right: 7.666pt;
-    padding: 0;
-    font-size: 12pt;
-  }
-
-  .fa {
-    color: #5b5b5b;
-  }
 }
+
+/* hide Google, CartoDB logos */
+
+.cartodb-logo, #cartodb-gmaps-attribution, .gmnoprint a, .gmnoprint span  {
+    visibility: hidden;
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+a[href^="http://maps.google.com/maps"]{display:none !important;}
+a[href^="https://maps.google.com/maps"]{display:none !important;}
+
+.gm-style .gmnoprint .gm-style-cc div,
+.gm-style .gm-style-cc div {
+    display: none;
+}
+
 
 .DataViewUI .value {
   width: 3em;
@@ -498,63 +606,6 @@ body {
   }
   &.null-value {
     width: auto;
-  }
-}
-
-.main-playcontrol {
-  left: -20px;
-  bottom: -20px;
-  position: absolute;
-}
-
-.PlayControl {
-  text-align: center;
-
-  .share {
-    cursor:pointer;
-    display: inline-block;
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    -webkit-border-radius: 25px;
-    -moz-border-radius: 25px;
-    border-radius: 25px;
-    background: #70bdd0;
-    border: 2px solid #ff0000;
-    margin-bottom: 20px;
-    i {
-      font-size: 25px;
-      padding-top: 11px;
-    }
-  }
-  .main {
-    width: 200px;
-    height: 200px;
-    line-height: 200px;
-    -webkit-border-radius: 100px;
-    -moz-border-radius: 100px;
-    border-radius: 100px;
-    background: #70bdd0;
-    border: 2px solid #ff0000;
-    text-align: center;
-
-    .content {
-      line-height: 1em;
-      display: inline-block;
-      vertical-align: middle;
-      .pause, .play {
-        cursor:pointer;
-        font-size: 50px;
-        margin-bottom: 10px;
-      }
-      .speed {
-        margin-bottom: 10px;
-        .less, .more {
-          cursor:pointer;
-          font-weight: bold;
-        }
-      }
-    }
   }
 }
 
@@ -617,31 +668,44 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 */
 
+
+.sidebarColorPicker tr:nth-child(2) {
+  display: none;
+}
+
 #w {
   position: absolute;
   pointer-events: none;
-  right: 10px;
   width: 14.349%; /* 551px / 3180px */
   min-width: 225px;
   max-width: 551px;
   height: 100%;
   padding-bottom: 135pt;
-  z-index: 10000;
+  z-index: 1;
+  margin-right: 10px;
 
   &.expanded {
+    left: auto;
+    right: 0px;
+
     #expand-button {
       display: none;
     }
   }
 
+  &.collapsed {
+    left: 100%;
+    right: auto;
+  }
+
   #expand-button, #collapse-button {
-    background-color: white;
-    border-bottom-left-radius: 4pt; 
-    img {
-      width: 4%;
-      min-width: 11px;
-      margin: 5pt;
-      cursor: pointer;
+    background: transparent;
+    border-bottom-left-radius: 4pt;
+
+    .fa {
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 1.5em;
     }
   }
 
@@ -656,20 +720,26 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     height: 100%;
     padding: 0;
     font-family: 'Roboto', sans-serif; 
-    background-color: #fcfcfc;
+    /*background-color: #fcfcfc;
     box-shadow: -3px 1px 2px #b8bda7;
-    border-right: solid 1px #dddcd6;
-
+    border-right: solid 1px #dddcd6;*/
+    background-color: #011137;
     font-size: 11pt;
     line-height: normal !important;
     box-sizing: initial !important;
 
     .sidebar-content {
+      cursor: ew-resize;
+      border-left: 2px solid #011137;
       height: 100%;
       width: 100%;
       overflow: hidden;
 
+      * {
+        cursor: default;
+      }
       .header {
+        height: 23px;
         #activate_help{
           font-size: 15pt;
           float: right;
@@ -686,15 +756,25 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
       .blades {
         height: 100%;
-        padding-bottom: 46pt;
+        padding-bottom: 23pt;
         .basic-sidebar {
           height: 100%;
           width: 100%;
         }
       }
       .sponsor_logos {
-        height: 23pt;
-        margin-top: -46pt;
+        display: none;
+      }
+
+      &.has-sponsor-logos {
+        .sponsor_logos {
+          height: 23pt;
+          margin-top: -46pt;
+          display: block;
+        }
+        .blades {
+          padding-bottom: 46pt;
+        }
       }
     }
 
@@ -745,15 +825,13 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     th {
       text-align: left;
       vertical-align: top;
-      color: #6d6e71;
-      font-size: 90%;
+      font-size: 80%;
       font-weight: 400;
       padding: 0;
       margin: 0;
 
       td {
-        color: #939598;
-        font-size: 90%;
+        font-size: 80%;
         font-weight: normal;
         padding: 0;
         margin: 0;
@@ -765,12 +843,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     }
 
     #layers, .InfoUI .wrapper {
-      padding: 0 5%;
+      padding: 5% 5%;
       word-wrap: break-word;
     }
 
     #layers h2, .InfoUI h2 {
-      color: #767777;
       font-size: 100%;
       padding-top: 0.5rem;
       font-weight: 500;
@@ -791,12 +868,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
         width: 100%;
         .layer-row {
           display: table-row;
-          height: 30px;
+          height: 35px;
 
           .layer-label,
           .switch {
             display: table-cell;
-            padding-top: 10px;
+            padding-top: 0px;
             vertical-align: top;
           }
 
@@ -807,9 +884,9 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
           .layer-label {
             display: table-cell;
-            color: #6D6E70;
-            font-size: 90%;
-            padding: 2%;
+            color: #ffffff;
+            font-size: 80%;
+            /*padding: 2%;*/
             width: 100%;
             .intensity-slider-box .intensity-label {
               font-size: 0.8em;
@@ -817,7 +894,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           }
 
           .layer-buttons {
-            display: table-cell;
+            float: right;
             vertical-align: top;
             padding-top: 2px;
           }
@@ -832,32 +909,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
 
       + .switch-line {
-        display: block;
-        position: relative;
-        cursor: pointer;
-        outline: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-
-        max-width: auto;
-        margin-bottom: 0;
-        font-weight: normal;
-
-        padding: 0;
-        width: 25px;
-        height: 5px;
-        border-bottom: 2px solid;
-        -webkit-transition: background 0.4s;
-        -moz-transition: background 0.4s;
-        -o-transition: background 0.4s;
-        transition: background 0.4s;
 
         &:before,
         &:after {
           display: block;
-          position: absolute;
+          position: relative;
           content: "";
         }
 
@@ -872,13 +928,20 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           transition: background 0.4s;
         }
 
+        .cmn-toggle + label {
+          display: block;
+          cursor: pointer;
+          outline: none;
+          user-select: none;
+        }
+
         /* switch color styles */
         &:after {
-          top: -1px;
+          top: 0;
           left: 0;
           bottom: 0;
-          width: 10px; 
-          height: 10px;
+          width: 10px;
+          height: 5px;
           -webkit-border-radius: 100%; /*52px;*/
           -moz-border-radius: 100%;
           -ms-border-radius: 100%;
@@ -888,44 +951,53 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           -moz-transition: margin 0.4s, background 0.4s;
           -o-transition: margin 0.4s, background 0.4s;
           transition: margin 0.4s, background 0.4s;
-          background-color: #fff; 
           border-style: solid;
-          border-width: .25rem;
-          border-color: inherit;
+          border-width: .55rem;
+          border-color: #bbbbbb;
+
         }
       }
 
       &:checked {
         + .switch-line {
-          background-color: transparent;
-          &:after {
-            margin-left: 15px;
+
+                  &:after {
+            width: 5px;
+            height: 5px;
+            margin-left: 13px;
+          border-style: solid;
+          border-width: .55rem;
+          border-color: inherit;
+
           }
         }
       }
 
       + .switch-line,
       &:checked + .switch-line {
-        background-repeat: repeat-x;
-        background-position: center center;
+        background-color: #ffffff;
+        border-radius: 10px;
+        width: 25px;
+        height: 12px;
+        padding: 1px;
       }
     }
 
-    .vessel_id {
-      th {
-        color: #6D6E70;
-        vertical-align: top;
-        padding: 4px 0 0 0;
-      }
-      td {
-        color: #939597; 
-        vertical-align: top;
-        padding-left: 5px; 
-        word-break: break-all;
-      }
+    .intensity-slider-box {
+        margin: 5px 20px 5px 0;
+
+        .intensity-label {
+            display: inline-block;
+            width: 80%;
+        }
+        .eyedropper {
+            display: inline-block;
+            width: 18%;
+            text-align: right;
+            float: right;
+        }
     }
 
-    /* Override default styles for jquery ui slider */
     .ui-slider-horizontal {
       height: 4px;
     }
@@ -976,6 +1048,77 @@ div.cartodb-legend-stack {
   display: none !important;
 }
 
+
+.filteringMultiSelect {
+  width: 15em;
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.1) inset;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.1) inset;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  -webkit-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  -moz-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  -o-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  -ms-transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+  transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+
+  .dijitArrowButtonContainer {
+    border-width: 1px !important;
+  }
+
+  .dijitTextBox {
+    width: inherit;
+
+    input {
+      float: none;
+      display: inline-block;
+      width: inherit !important;
+      margin-left: 2px !important;
+    }
+
+    .filteringMultiSelect-selectedItem {
+      white-space: nowrap;
+      display: inline-block;
+      margin: 1px;
+      border: 1px solid rgba(0,122,194,0.8);
+      -webkit-border-radius: 2px;
+      border-radius: 2px;
+
+      button {
+        display: inline-block;
+        border: none;
+        margin-left: 2px;
+        margin-top: 0;
+        margin-bottom: 0;
+        height: 20px;
+        background: rgba(0, 122, 194, 0.8);
+        box-sizing: initial;
+        color: white;
+      }
+    }
+  }
+
+  &.filteringMultiSelectFocused {
+    border: 1px solid rgba(0,122,194,0.8);
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.15) inset;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15) inset;
+    -webkit-transition-duration: 0.1s;
+    -moz-transition-duration: 0.1s;
+    -o-transition-duration: 0.1s;
+    -ms-transition-duration: 0.1s;
+    transition-duration: 0.1s;
+  }
+  &.filteringMultiSelectDisabled {
+    background: #f5f5f5;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    opacity: 0.65;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=65)";
+    filter: alpha(opacity=65);
+  }
+}
+
 @media screen and (min-width: 3000px) { 
   #w {
     box-shadow: -6px 2px 4px #5F5D5c;
@@ -990,14 +1133,50 @@ div.cartodb-legend-stack {
   }
 
   .vessel_id th {
-    font-size: 125%;
+    /*font-size: 125%;*/
   }
 
   .vessel_id td {
-    font-size: 125%;
+    /*font-size: 125%;*/
   }
 
   #layers .layer-label {
-    font-size: 125%;
+    /*font-size: 125%;*/
+  }
+}
+
+@media screen and (max-width: 600px) { 
+  .main-timeline {
+    left: 0;
+    right: 0;
+  }
+  #w {
+    margin-right: 0px !important;
+  }
+}
+
+@media screen and (max-height: 400px) { 
+  #w {
+    padding-bottom: 60pt;
+    margin-right: 8px;
+  }
+  .Timeline .overlay .window .frame .lengthLabel {
+    bottom: inherit;
+  }
+  .Timeline .line-visibility .line .tickmarks-container {
+    height: 69%;
+  }
+  .control_box {
+    bottom: 36pt;
+  }
+  .main-timeline {
+    bottom: 5pt;
+    height: 55pt;
+  }
+}
+
+@media screen and (max-width: 600px) and (max-height: 400px) { 
+  .lengthLabel {
+    display: none;
   }
 }

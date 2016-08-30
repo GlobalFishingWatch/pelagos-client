@@ -32,6 +32,8 @@ define([
   var AnimationManagerUI = declare("AnimationManagerUI", [AnimationListBase], {
     baseClass: 'AnimationManagerUI',
     title: 'Layers',
+    advanced: true,
+    select_default: true,
 
     templateString: '' +
         '<div class="${baseClass}">' +

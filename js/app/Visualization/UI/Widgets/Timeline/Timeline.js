@@ -161,12 +161,12 @@ define([
       '    <div class="rightFrame"></div>' +
       '  </div>' +
       '  <div class="zoom">' +
-      '    <a class="zoomIn" data-dojo-attach-event="touchstart:zoomIn,click:zoomIn,mousedown:eatEvent">' +
-            '<img src="${paths.img}/smaller_increments.png"> smaller increments' +
-          '</a>' +
-      '    <a class="zoomOut" data-dojo-attach-event="touchstart:zoomOut,click:zoomOut,mousedown:eatEvent">' +
-            '<img src="${paths.img}/larger_increments.png"> larger increments' +
-          '</a>' +
+      '    <div><a class="zoomIn" data-dojo-attach-event="touchstart:zoomIn,click:zoomIn,mousedown:eatEvent">' +
+            '<i title="zoom in"class="fa fa-plus"></i>' +
+          '</a></div>' +
+      '    <div><a class="zoomOut" data-dojo-attach-event="touchstart:zoomOut,click:zoomOut,mousedown:eatEvent">' +
+            '<i title="zoom out" class="fa fa-minus"></i>' +
+          '</a></div>' +
       '  </div>' +
       '</div>',
 
