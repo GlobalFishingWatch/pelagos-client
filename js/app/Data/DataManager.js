@@ -285,7 +285,7 @@ define([
         "total": 0,
         "limit": limit,
         "offset": offset,
-        "nextOffset": offset + limit,
+        "nextOffset": offset + limit
       };
 
       async.each(self.directories, function (baseUrl, cb) {

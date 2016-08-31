@@ -6,7 +6,7 @@ define([
 
   "dijit/form/Select",
   "dijit/form/TextBox",
-  "dijit/form/Button",
+  "dijit/form/Button"
 ], function(
   declare,
   TemplatedDialog,
