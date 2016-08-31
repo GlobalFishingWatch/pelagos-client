@@ -11,7 +11,7 @@ define([
   "dijit/popup",
   "app/Visualization/Animation/Animation",
   "app/Visualization/UI/SidePanels/AnimationListBase",
-  "app/Visualization/UI/SidePanels/DataViewUI",
+  "app/Visualization/UI/AnimationEditor",
   "shims/jQuery/main"
 ], function(
   declare,
@@ -26,7 +26,7 @@ define([
   popup,
   Animation,
   AnimationListBase,
-  DataViewUI,
+  AnimationEditor,
   $
 ){
   var AnimationManagerUI = declare("AnimationManagerUI", [AnimationListBase], {
@@ -97,9 +97,7 @@ define([
             '<i class="fa fa-chevron-right"></i>' +
           '</a>' +
       '    <input type="checkbox"  data-dojo-attach-point="visibleNode" data-dojo-attach-event="change:setVisible"></input>' +
-        '  <span class="title">' +
-        '    <input type="text" style="display: none" class="input" data-dojo-attach-point="titleInputNode" data-dojo-attach-event="keypress:maybeEndEdit,blur:endEdit"></input>' +
-        '    <span class="text" data-dojo-attach-point="titleNode" data-dojo-attach-event="click:beginEdit"></span>' +
+        '  <span class="title" data-dojo-attach-point="titleNode">' +
       '    <a href="javascript:void(0);" class="remove" data-dojo-attach-event="click:remove">' +
             '<i class="fa fa-minus-square"></i>' +
           '</a>' +
@@ -113,13 +111,11 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      if (self.animation.data_view) {
-        self.addChild(new DataViewUI({
-          visualization: self.visualization,
-          animation: self.animation,
-          dataview: self.animation.data_view
-        }));
-      }
+      self.addChild(new AnimationEditor({
+        visualization: self.visualization,
+        animation: self.animation,
+        dataview: self.animation.data_view
+      }));
 
       self.animation.events.on({updated: self.updatedHandler.bind(self)});
       self.updatedHandler();
@@ -128,7 +124,6 @@ define([
       var self = this;
 
       var title = self.animation.title;
-      $(self.titleInputNode).val(title);
       $(self.titleNode).html(title);
 
       if (self.animation.visible) {
@@ -153,26 +148,6 @@ define([
     setVisible: function () {
       var self = this;
       self.animation.setVisible(self.visibleNode.checked);
-    },
-    beginEdit: function () {
-      var self = this;
-      $(self.titleInputNode).show();
-      $(self.titleInputNode).focus();
-      $(self.titleNod).hide();
-    },
-    endEdit: function () {
-      var self = this;
-      self.animation.title = $(self.titleInputNode).val();
-      self.animation.events.triggerEvent("updated", {});
-      $(self.titleInputNode).hide();
-      $(self.titleNod).show();
-    },
-    maybeEndEdit: function (event) {
-      var self = this;
-      if (event.which == 13) {
-        self.endEdit();
-        event.preventDefault();
-      }
     }
   });
 
