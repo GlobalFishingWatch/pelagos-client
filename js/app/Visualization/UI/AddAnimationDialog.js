@@ -93,7 +93,7 @@ define([
 
     addFromLibrary: function () {
       var self = this;
-      self.visualization.ui.library.displayAnimationLibraryDialog();
+      self.visualization.ui.library.show();
       self.hide();
     }
   });
