@@ -2,13 +2,44 @@ define([
   "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
   "./TemplatedContainer",
+  "dijit/_WidgetBase",
   "dijit/form/Button"
 ], function(
   declare,
   Dialog,
-  TemplatedContainer
+  TemplatedContainer,
+  _WidgetBase
 ){
-  return declare("FilterEditorBase", [TemplatedDialog], {
+  var FilterHandlerMixin = declare("FilterHandlerMixin", null, {
+    getItemList: function () {
+      var self = this;
+      var source = self.animation.data_view.source.header.colsByName[self.sourcename];
+      var filterChoices;
+      if (self.animation.args.colsByName && self.animation.args.colsByName[self.sourcename] && self.animation.args.colsByName[self.sourcename].choices) {
+        filterChoices = self.animation.args.colsByName[self.sourcename].choices;
+      }
+
+      var res = [];
+      for (var name in source.choices) {
+        if (!filterChoices || filterChoices.indexOf(name) != -1) {
+          res.push({id: source.choices[name], name: name});
+        }
+      }
+      return res;
+    },
+    getSelectedItemList: function () {
+      var self = this;
+      var items = self.getItemList();
+      var selection = self.animation.data_view.selections.selections.active_category;
+      var range = selection.data[self.sourcename];
+
+      return items.filter(function (item) {
+        return range.indexOf(item.id) != -1;
+      });
+    }
+  });
+
+  return declare("FilterEditorBase", [TemplatedDialog, FilterHandlerMixin], {
     'class': 'filter-editor-dialog',
     animation: null,
     sourcename: null,
@@ -79,13 +110,13 @@ define([
       return true;
     },
 
-    Display: declare("Display", [TemplatedContainer], {
+  Display: declare("Display", [TemplatedContainer, FilterHandlerMixin], {
+    animation: null,
       templateString: '' +
         '<div class="${baseClass}" style="display: inline-block;">' +
         '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
         '</div>',
       noFilterTitle: 'All',
-      animation: null,
       sourcename: null,
       startup: function () {
         var self = this;
@@ -94,31 +125,10 @@ define([
         selection.events.on({update: self.rangeUpdated.bind(self)});
         self.rangeUpdated();
       },
-      getItemList: function () {
-        var self = this;
-        var selection = self.animation.data_view.selections.selections.active_category;
-        var source = self.animation.data_view.source.header.colsByName[self.sourcename];
-        var range = selection.data[self.sourcename];
-
-        var title = 'All';
-        if (range.length != 2 || range[0] != Number.NEGATIVE_INFINITY || range[1] != Number.POSITIVE_INFINITY) {
-          var choicesById = {};
-          for (var name in source.choices) {
-            choicesById[source.choices[name]] = name;
-          }
-
-          var res = [];
-          for (var i = 0; i < range.length; i+=2) {
-            res.push({name: choicesById[range[i]], id:range[i]});
-          }
-          return res;
-        }
-        return [];
-      },
       rangeUpdated: function () {
         var self = this;
 
-        var list = self.getItemList();
+        var list = self.getSelectedItemList();
         var title = self.noFilterTitle;;
         if (list.length > 0) {
           title = list.map(function (item) { return item.name; }).join(", ");

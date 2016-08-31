@@ -1,6 +1,7 @@
 define([
   "dojo/_base/declare",
   "app/Visualization/UI/TemplatedContainer",
+  "app/Visualization/UI/FilterViewer",
   "app/Logging",
   "shims/jQuery/main",
   "dijit/Fieldset",
@@ -17,6 +18,7 @@ define([
 ], function(
   declare,
   TemplatedContainer,
+  FilterViewer,
   Logging,
   $,
   Fieldset,
@@ -39,7 +41,7 @@ define([
 
       self.selections = new self.constructor.SelectionsUI({
         visualization: self.visualization,
-        dataview: self.dataview
+        animation: self.animation
       });
       self.addChild(self.selections);
 
@@ -60,83 +62,18 @@ define([
   DataViewUI.SelectionsUI = declare("SelectionsUI", [TemplatedContainer], {
     baseClass: 'DataViewUI-SelectionsUI',
     visualization: null,
-    dataview: null,
+    animation: null,
     startup: function () {
       var self = this;
       self.inherited(arguments);
 
-      Object.items(self.dataview.selections.selections).map(function (item) {
-        self.addChild(new self.constructor.SelectionUI({
+      FilterViewer.filteredSelections(self.animation).map(function (selection_name) {
+        self.addChild(new FilterViewer({
           visualization: self.visualization,
-          dataview: self.dataview,
-          name: item.key,
-          selection: item.value
+          animation: self.animation,
+          selection_name: selection_name,
         }));
       });
-    }
-  });
-
-  DataViewUI.SelectionsUI.SelectionUI = declare("SelectionUI", [TemplatedContainer], {
-    templateString: '' +
-      '<div class="${baseClass}">' +
-      '  <div>${name} from ${selection.sortcols.0}</div>' +
-      '  <select multiple="true" data-dojo-attach-point="selectNode" data-dojo-attach-event="change:change"></select>' +
-      '</div>',
-    baseClass: 'DataViewUI-SelectionsUI-SelectionUI',
-    visualization: null,
-    dataview: null,
-    name: 'unknown',
-    selection: null,
-    startup: function () {
-      var self = this;
-      self.inherited(arguments);
-
-      var sourcename = self.selection.sortcols[0];
-      var source = self.dataview.source.header.colsByName[sourcename];
-
-      if (   self.selection.hidden
-          || self.selection.sortcols.length != 1
-          || !source
-             || !source.choices) {
-        $(self.domNode).hide();
-        return;
-      }
-
-      var selectionselect = $(self.selectNode);
-      var choices = Object.keys(source.choices);
-      choices.sort();
-      choices.map(function (key) {
-        var value = source.choices[key];
-        var option = $("<option>");
-        option.text(key);
-        option.attr({value:value});
-        if (self.selection.data[sourcename].indexOf(value) != -1) {
-          option.attr({selected:'true'});
-        }
-        selectionselect.append(option);
-      })
-    },
-
-    change: function () {
-      var self = this;
-      var selectionselect = $(self.selectNode);
-      var sourcename = self.selection.sortcols[0];
-
-      self.selection.clearRanges();
-      var values = selectionselect.val();
-      if (values) {
-        values.map(function (value) {
-          var data = {};
-          data[sourcename] = parseFloat(value);
-          self.selection.addDataRange(data, data);
-        });
-      } else {
-        var startData = {};
-        var endData = {};
-        startData[sourcename] = -1.0/0.0;
-        endData[sourcename] = 1.0/0.0;
-        self.selection.addDataRange(startData, endData);
-      }
     }
   });
 
