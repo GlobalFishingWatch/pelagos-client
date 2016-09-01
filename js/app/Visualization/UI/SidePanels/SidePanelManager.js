@@ -8,6 +8,7 @@ define([
   "app/Visualization/UI/SidePanels/Filters",
   "app/Visualization/UI/SidePanels/LoggingUI",
   "app/Visualization/UI/SidePanels/AnimationManagerUI",
+  "app/Visualization/UI/SidePanels/SimpleSettings",
   "app/Visualization/UI/SidePanels/DataUI",
   "app/Visualization/UI/Paths"
 ], function(
@@ -20,6 +21,7 @@ define([
   Filters,
   LoggingUI,
   AnimationManagerUI,
+  SimpleSettings,
   DataUI,
   Paths
 ) {
@@ -105,6 +107,7 @@ define([
       AnimationManagerUI,
       Filters,
       LoggingUI,
+      SimpleSettings,
       DataUI
     ],
       

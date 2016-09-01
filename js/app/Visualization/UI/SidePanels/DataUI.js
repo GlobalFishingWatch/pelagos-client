@@ -4,7 +4,7 @@ define([
   "app/Data/BaseTiledFormat",
   "app/Visualization/UI/SidePanels/SidePanelBase",
   "app/Visualization/UI/TemplatedContainer",
-  "dijit/form/HorizontalSlider",
+  "app/Visualization/UI/TilesPerScreen",
   "shims/jQuery/main"
 ], function(
   declare,
@@ -12,7 +12,7 @@ define([
   BaseTiledFormat,
   SidePanelBase,
   TemplatedContainer,
-  HorizontalSlider,
+  TilesPerScreen,
   $
 ){
   var DataUI = declare("DataUI", [SidePanelBase], {
@@ -24,7 +24,7 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      self.tilesPerScreen = new self.constructor.TilesPerScreen({
+      self.tilesPerScreen = new TilesPerScreen({
         visualization: self.visualization
       });
       self.addChild(self.tilesPerScreen);
@@ -38,41 +38,6 @@ define([
         visualization: self.visualization
       });
       self.addChild(self.tileList);
-    }
-  });
-
-  DataUI.TilesPerScreen = declare("TilesPerScreen", [TemplatedContainer], {
-    baseClass: 'TilesPerScreen',
-    templateString: '' +
-      '<div class="${baseClass}" style="overflow: auto;">' +
-      '  Tiles per screen:' +
-      '  <span class="${baseClass}Container" data-dojo-attach-point="containerNode"></span>' +
-      '  <span class="value" style="float: right;" data-dojo-attach-point="valueNode"></span>' +
-      '</div>',
-    visualization: null,
-
-    startup: function () {
-      var self = this;
-      self.inherited(arguments);
-
-      self.addChild(new HorizontalSlider({
-        "class": "pull-right",
-        value: BaseTiledFormat.prototype.tilesPerScreen,
-        minimum: 4,
-        maximum: 128,
-        intermediateChanges: false,
-        style: "width:200px;",
-        onChange: self.change.bind(self)
-      }));
-    },
-
-    change: function (value) {
-      var self = this;
-
-      value = Math.round(value);
-      self.valueNode.innerHTML = value.toPrecision(3);
-      BaseTiledFormat.prototype.tilesPerScreen = value;
-      self.visualization.data.zoomTo(self.visualization.data.bounds);
     }
   });
 
