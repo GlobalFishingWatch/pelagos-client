@@ -53,13 +53,29 @@ define([
         '  </div>' +
         '</div>',
 
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      self.visualization.state.events.on({"editing": self.updatedHandler.bind(self)});
+      self.updatedHandler();
+    },
+
+    updatedHandler: function () {
+      var self = this;
+      var editing = !!self.visualization.state.getValue('editing');
+
+      $(self.domNode).toggleClass("editing-mode", editing);
+      $(self.domNode).toggleClass("display-mode", !editing);
+    },
+
     toggleEditingMode: function () {
       var self = this;
 
-      var editing_mode = $(self.domNode).hasClass("editing-mode");
-
-      $(self.domNode).toggleClass("editing-mode", !editing_mode);
-      $(self.domNode).toggleClass("display-mode", editing_mode);
+      self.visualization.state.setValue(
+        'editing',
+        !self.visualization.state.getValue('editing'));
     }
   });
 
