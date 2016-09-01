@@ -192,6 +192,11 @@ define([
           SimpleMessageDialog.show("Error", data.toString());
         }
       });
+      self.visualization.events.on({
+        error: function (data) {
+          SimpleMessageDialog.show("Error", data.toString());
+        }
+      });
       cb();
     },
 

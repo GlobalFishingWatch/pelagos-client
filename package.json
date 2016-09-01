@@ -1,0 +1,13 @@
+{
+  "name": "pelagos-client",
+  "description": "Pelagos Client is a stand-alone web application for visualizing large time series datasets on top of a zoomable world map",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalFishingWatch/pelagos-client.git"
+  },
+  "author": "Global Fishing Watch",
+  "bugs": {
+    "url": "https://github.com/GlobalFishingWatch/pelagos-client/issues"
+  },
+  "homepage": "https://github.com/GlobalFishingWatch/pelagos-client#readme"
+}

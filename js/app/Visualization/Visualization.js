@@ -4,6 +4,7 @@ define([
   "app/SubscribableDict",
   "app/UrlValues",
   "app/Data/DataManager",
+  "app/Events",
   "app/Visualization/Animation/AnimationManager",
   "shims/async/main",
   "shims/jQuery/main",
@@ -15,6 +16,7 @@ define([
   SubscribableDict,
   UrlValues,
   DataManager,
+  Events,
   AnimationManager,
   async,
   $,
@@ -75,6 +77,9 @@ define([
 
     init: function (cb) {
       var self = this;
+
+      self.events = new Events("Visualization");
+
       self.state = new SubscribableDict(self.paramspec);
 
       self.state.events.on({
@@ -214,6 +219,13 @@ define([
         },
         dataType: 'text'
       }).fail(function(jqXHR, textStatus, errorThrown) {
+        self.events.triggerEvent("error", {
+          error: errorThrown,
+          url: url,
+          toString: function () {
+            return "Unable to load workspace " + this.url + ": " + this.error.toString();
+          }
+        });
         /* Load defaults only */
         return self.loadData({}, function () {
           cb(errorThrown);
