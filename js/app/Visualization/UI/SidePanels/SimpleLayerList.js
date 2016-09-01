@@ -5,6 +5,7 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
+  "app/Visualization/KeyBindings",
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/AnimationEditor",
@@ -18,6 +19,7 @@ define([
   _TemplatedMixin,
   _WidgetsInTemplateMixin,
   _Container,
+  KeyBindings,
   AnimationListBase,
   SimpleAnimationEditor,
   AnimationEditor,
@@ -61,6 +63,12 @@ define([
     startup: function () {
       var self = this;
       self.inherited(arguments);
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'E'], null, 'General',
+        'Toggle between editing and view mode',
+        self.toggleEditingMode.bind(self)
+      );
 
       self.visualization.state.events.on({
         "editing": self.updatedHandler.bind(self),
