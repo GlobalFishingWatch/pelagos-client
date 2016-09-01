@@ -5,7 +5,7 @@ define([
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
   "dijit/form/TextBox",
-  "app/Visualization/UI/SidePanels/DataViewUI",
+  "app/Visualization/UI/DataViewUI",
   "shims/jQuery/main"
 ], function(
   declare,
