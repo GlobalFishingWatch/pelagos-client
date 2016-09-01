@@ -921,6 +921,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
             > * {
               padding-right: 10px;
+              margin-bottom: 0;
             }
           }
 
@@ -952,13 +953,39 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
-    input.cmn-toggle {
-      position: absolute;
-      margin-left: -9999px;
-      visibility: hidden;
+    .switch {
+      .cmn-toggle {
+        position: absolute;
+        margin-left: -9999px;
+        visibility: hidden;
+      }
 
+      .cmn-toggle:checked + .switch-line,
+      .switch-line.active {
+        &:after {
+          width: 5px;
+          height: 5px;
+          margin-left: 13px;
+          border-style: solid;
+          border-width: .55rem;
+          border-color: inherit;
+        }
+      }
 
-      + .switch-line {
+      .switch-line.active {
+        width: inherit;
+
+        &:after {
+          margin-left: 0;
+        }
+      }
+
+      .switch-line {
+        background-color: #ffffff;
+        border-radius: 10px;
+        width: 25px;
+        height: 12px;
+        padding: 1px;
 
         &:before,
         &:after {
@@ -1006,30 +1033,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           border-color: #bbbbbb;
 
         }
-      }
-
-      &:checked {
-        + .switch-line {
-
-                  &:after {
-            width: 5px;
-            height: 5px;
-            margin-left: 13px;
-          border-style: solid;
-          border-width: .55rem;
-          border-color: inherit;
-
-          }
-        }
-      }
-
-      + .switch-line,
-      &:checked + .switch-line {
-        background-color: #ffffff;
-        border-radius: 10px;
-        width: 25px;
-        height: 12px;
-        padding: 1px;
       }
     }
 

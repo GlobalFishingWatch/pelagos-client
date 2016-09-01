@@ -113,8 +113,11 @@ define([
       '      <a href="javascript:undefined" data-dojo-attach-event="click:remove"><i class="fa fa-trash"></i></a>' +
       '    </label>' +
       '    <label class="switch display-mode-only">' +
-      '      <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggleVisible">' +
-      '      <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
+      '      <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggleVisible"></input>' +
+      '      <div class="switch-line" for="cmn-toggle-${idCounter}"></div>' +
+      '    </label>' +
+      '    <label class="switch editing-mode-only">' +
+      '      <div class="switch-line active"></div>' +
       '    </label>' +
       '  </div>' + 
       '  <div class="animation-content">' +
@@ -155,7 +158,7 @@ define([
 
       var color = self.animation.color;
       if (!color) color = 'orange';
-      $(self.switchNode).css({'border-color': color});
+        $(self.domNode).find(".switch-line").css({'border-color': color});
 
       if (self.animation.visible) {
         $(self.inputNode).attr('checked','checked');
