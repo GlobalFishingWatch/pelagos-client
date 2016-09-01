@@ -5,7 +5,7 @@ define([
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
   "dijit/form/TextBox",
-  "app/Visualization/UI/SidePanels/DataViewUI",
+  "app/Visualization/UI/AnimationFilterEditor",
   "dijit/form/HorizontalSlider",
   "dojox/widget/ColorPicker",
   "dijit/popup",
@@ -17,7 +17,7 @@ define([
   _WidgetsInTemplateMixin,
   _Container,
   TextBox,
-  DataViewUI,
+  AnimationFilterEditor,
   HorizontalSlider,
   ColorPicker,
   popup,
@@ -52,6 +52,9 @@ define([
           intermediateChanges: true
         }, "mySlider");
         self.intensitySlider.placeAt(self.domNode);
+
+        self.animationFilterEditor = new AnimationFilterEditor({animation: self.animation});
+        self.animationFilterEditor.placeAt(self.domNode);
 
         self.colorDropDown = new ColorPicker({
           'class': "sidebarColorPicker",

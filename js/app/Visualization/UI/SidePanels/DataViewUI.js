@@ -1,7 +1,7 @@
 define([
   "dojo/_base/declare",
   "app/Visualization/UI/TemplatedContainer",
-  "app/Visualization/UI/FilterViewer",
+  "app/Visualization/UI/AnimationFilterEditor",
   "app/Logging",
   "shims/jQuery/main",
   "dijit/Fieldset",
@@ -18,7 +18,7 @@ define([
 ], function(
   declare,
   TemplatedContainer,
-  FilterViewer,
+  AnimationFilterEditor,
   Logging,
   $,
   Fieldset,
@@ -39,7 +39,7 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      self.selections = new self.constructor.SelectionsUI({
+      self.selections = new AnimationFilterEditor({
         visualization: self.visualization,
         animation: self.animation
       });
@@ -56,24 +56,6 @@ define([
         dataview: self.dataview
       });
       self.addChild(self.uniforms);
-    }
-  });
-
-  DataViewUI.SelectionsUI = declare("SelectionsUI", [TemplatedContainer], {
-    baseClass: 'DataViewUI-SelectionsUI',
-    visualization: null,
-    animation: null,
-    startup: function () {
-      var self = this;
-      self.inherited(arguments);
-
-      FilterViewer.filteredSelections(self.animation).map(function (selection_name) {
-        self.addChild(new FilterViewer({
-          visualization: self.visualization,
-          animation: self.animation,
-          selection_name: selection_name,
-        }));
-      });
     }
   });
 

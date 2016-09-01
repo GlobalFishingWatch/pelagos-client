@@ -22,7 +22,7 @@ define([
   var FilterViewer = declare("FilterViewer", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
     baseClass: 'Filters-Filter',
     templateString: '<div>' +
-                    '  <span class="${baseClass}-sourcename" data-dojo-attach-point="sourceNameNode"></span>' +
+                    '  <span class="${baseClass}-sourcename" data-dojo-attach-point="sourceNameNode"></span>:' +
                     '  <span class="${baseClass}-selection" data-dojo-attach-point="selectionNode"></span>' +
                     '  <span class="${baseClass}-actions"><i class="fa fa-cog" data-dojo-attach-event="click:edit"></i></span>' +
                     '</div>',
