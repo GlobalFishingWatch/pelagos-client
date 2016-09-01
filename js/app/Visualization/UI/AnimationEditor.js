@@ -23,7 +23,7 @@ define([
     templateString: '' +
       '<div class="${baseClass}">' +
       '  <div data-dojo-attach-point="containerNode">' +
-      '    <div><label>Title:</label> <div data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input></div>' +
+      '    <div><label>Title:</label> <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input></div>' +
       '    <div>${animation.args.source.type}:${animation.args.source.args.url}</div>' +
       '  </div>' +
       '</div>',

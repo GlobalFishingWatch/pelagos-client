@@ -35,6 +35,10 @@ define([
         '  <div class="titleButtons">' +
         '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
+        '  <div class="advanced-mode-only">' +
+        '    <label>Title:</label>' +
+        '    <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
+        '  </div>' +
         '  <div id="layers">' +
         '    <form class="animation-list" data-dojo-attach-point="containerNode">'+
         '      <div class="animation-row editing-mode-only">' +
@@ -58,7 +62,10 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      self.visualization.state.events.on({"editing": self.updatedHandler.bind(self)});
+      self.visualization.state.events.on({
+        "editing": self.updatedHandler.bind(self),
+        "title": self.updatedHandler.bind(self),
+      });
       self.updatedHandler();
     },
 
@@ -68,6 +75,8 @@ define([
 
       $(self.domNode).toggleClass("editing-mode", editing);
       $(self.domNode).toggleClass("display-mode", !editing);
+
+      self.titleInput.set("value", self.visualization.state.getValue('title'))
     },
 
     toggleEditingMode: function () {
@@ -76,6 +85,11 @@ define([
       self.visualization.state.setValue(
         'editing',
         !self.visualization.state.getValue('editing'));
+    },
+
+    titleChange: function () {
+      var self = this;
+      self.visualization.state.setValue('title', self.titleInput.get("value"));
     }
   });
 
