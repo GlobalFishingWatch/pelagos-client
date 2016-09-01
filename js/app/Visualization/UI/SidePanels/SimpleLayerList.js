@@ -35,7 +35,7 @@ define([
         '  <div class="titleButtons">' +
         '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
-        '  <div class="advanced-mode-only">' +
+        '  <div class="editing-mode-only advanced-mode-only">' +
         '    <label>Title:</label>' +
         '    <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
         '  </div>' +
