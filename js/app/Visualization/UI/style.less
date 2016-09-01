@@ -882,7 +882,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     }
 
     #layers, .InfoUI .wrapper {
-      padding: 5% 5%;
+      padding: 11px;
       word-wrap: break-word;
     }
 
@@ -902,30 +902,37 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
     /* toggle styles */
     #layers {
-      .layer-list {
+      .animation-list {
         display: table;
         width: 100%;
-        .layer-row {
+        .animation-row {
           display: table-row;
-          height: 35px;
 
-          .layer-content,
+          &.animation-editor-collapsed .animation-editor-expansion {
+            display: none;
+          }
+
+          .left-buttons,
+          .animation-buttons {
+            vertical-align: top;
+            padding-top: 2px;
+            white-space: nowrap;
+            font-size: 90%;
+
+            > * {
+              padding-right: 10px;
+            }
+          }
+
+          .animation-content,
           .left-buttons {
             display: table-cell;
             padding-top: 0px;
+            padding-bottom: 15px;
             vertical-align: top;
           }
 
-          .remove-layer,
-          .switch {
-            padding-right: 10px;
-          }
-
-          .switch {
-            font-size: 90%;
-          }
-
-          .layer-content {
+          .animation-content {
             color: #ffffff;
             font-size: 80%;
             width: 100%;
@@ -934,10 +941,12 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
             }
           }
 
-          .layer-buttons {
+          .animation-buttons {
             float: right;
-            vertical-align: top;
-            padding-top: 2px;
+          }
+
+          .remove-layer,
+          .switch {
           }
         }
       }
@@ -1181,7 +1190,7 @@ div.cartodb-legend-stack {
     /*font-size: 125%;*/
   }
 
-  #layers .layer-content {
+  #layers .animation-content {
     /*font-size: 125%;*/
   }
 }

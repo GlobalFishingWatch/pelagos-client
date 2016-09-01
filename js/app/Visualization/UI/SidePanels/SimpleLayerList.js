@@ -26,26 +26,26 @@ define([
   ColorPicker
 ){
   var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
-    baseClass: 'SimpleLayerList display-mode',
+    baseClass: 'SimpleLayerList',
     title: 'Layers',
     select_default: true,
 
     templateString: '' +
-        '<div class="${baseClass}" style="overflow: auto;">' +
+        '<div class="display-mode" style="overflow: auto;">' +
         '  <div class="titleButtons">' +
         '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
         '  <div id="layers">' +
-        '    <form class="layer-list" data-dojo-attach-point="containerNode">'+
-        '      <div class="layer-row editing-mode-only">' +
+        '    <form class="animation-list" data-dojo-attach-point="containerNode">'+
+        '      <div class="animation-row editing-mode-only">' +
         '        <div class="left-buttons">' +
         '          <label class="add-layer">' +
         '            <a href="javascript:undefined" data-dojo-attach-event="click:add"><i class="fa fa-plus-square"></i></a>' +
         '          </label>' +
         '        </div>' + 
-        '        <div class="layer-content">' +
+        '        <div class="animation-content">' +
         '          <div>' +
-        '            <span>Add new layer</span>' +
+        '            <a href="javascript:undefined" data-dojo-attach-event="click:add">Add new layer</a>' +
         '          </div>' +
         '        </div>' +
         '      </div>' +
@@ -69,34 +69,32 @@ define([
     idCounter: 0,
 
     templateString: '' +
-      '<div class="layer-row">' +
+      '<div class="animation-row">' +
       '  <div class="left-buttons">' +
       '    <label class="remove-layer editing-mode-only">' +
       '      <a href="javascript:undefined" data-dojo-attach-event="click:remove"><i class="fa fa-trash"></i></a>' +
       '    </label>' +
       '    <label class="switch display-mode-only">' +
-      '      <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggle">' +
+      '      <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggleVisible">' +
       '      <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
       '    </label>' +
       '  </div>' + 
-      '  <div class="layer-content">' +
+      '  <div class="animation-content">' +
       '    <div>' +
-      '      <span data-dojo-attach-point="titleNode"></span>' +
-      '      <div class="layer-buttons">' +
+      '      <span class="animation-title" data-dojo-attach-point="titleNode"></span>' +
+      '      <div class="animation-buttons">' +
       '        <a target="_blank" data-dojo-attach-point="infoNode" class="display-mode-only"><i class="fa fa-info"></i></a>' +
+      '        <a class="expander advanced-mode-only editing-mode-only" data-dojo-attach-point="expanderNode" data-dojo-attach-event="click:toggleExpanded">' +
+                '<i class="fa fa-chevron-right"></i>' +
+              '</a>' +
       '      </div>' +
       '    </div>' +
-      '    <div class="simple-mode-only editing-mode-only" data-dojo-attach-point="simpleAnimationEditorNode"></div>' +
-      '    <div class="advanced-mode-only editing-mode-only" data-dojo-attach-point="animationEditorNode"></div>' +
+      '    <div class="animation-editor">' +
+      '      <div class="simple-mode-only editing-mode-only" data-dojo-attach-point="simpleAnimationEditorNode"></div>' +
+      '      <div class="advanced-mode-only editing-mode-only animation-editor-expansion" data-dojo-attach-point="animationEditorNode"></div>' +
+      '    </div>' +
       '  </div>' +
       '</div>',
-
-    toggle: function () {
-      var self = this;
-      self.animation.setVisible(self.inputNode.checked);
-      $(self.simpleAnimationEditorNode).toggle(self.inputNode.checked);
-      $(self.animationEditorNode).toggle(self.inputNode.checked);
-    },
 
     startup: function () {
       var self = this;
@@ -109,6 +107,7 @@ define([
       self.animationEditor = new AnimationEditor({animation: self.animation});
       self.animationEditor.placeAt(self.animationEditorNode);
 
+      self.animation.events.on({updated: self.updatedHandler.bind(self)});
       self.updatedHandler();
     },
 
@@ -125,13 +124,35 @@ define([
       } else {
         $(self.inputNode).removeAttr('checked');
       }
-      self.toggle();
 
       var descriptionUrl = self.animation.descriptionUrl;
       if (descriptionUrl) {
         $(self.infoNode).attr("href", descriptionUrl);
       }
       $(self.infoNode).toggle(!!descriptionUrl);
+
+      var expand = !!self.animation.args.editorExpanded;
+      var expander = $(self.expanderNode);
+      if (expand) {
+        expander.find('i').addClass('fa-chevron-down');
+        expander.find('i').removeClass('fa-chevron-right');
+      } else {
+        expander.find('i').addClass('fa-chevron-right');
+        expander.find('i').removeClass('fa-chevron-down');
+      }
+      $(self.domNode).toggleClass('animation-editor-collapsed', !expand);
+    },
+
+    toggleVisible: function () {
+      var self = this;
+      self.animation.setVisible(self.inputNode.checked);
+      self.animation.events.triggerEvent("updated")
+    },
+
+    toggleExpanded: function () {
+      var self = this;
+      self.animation.args.editorExpanded = !self.animation.args.editorExpanded;
+      self.animation.events.triggerEvent("updated")
     }
   });
 
