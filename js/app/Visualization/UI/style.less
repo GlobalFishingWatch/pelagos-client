@@ -44,6 +44,41 @@ label {
   font-weight: 700;
 }
 
+
+/* Application modes
+ * These corresponds to global sets of visible / hidden UX controls
+ * They operate in pairs (display/editing and simple/advanced).
+ */
+.display-mode {
+  .editing-mode-only {
+    display: none !important;
+  }
+}
+.editing-mode {
+  .editing-mode-toggle {
+    color: #ff0000;
+  }
+  .display-mode-only {
+    display: none !important;
+  }
+}
+.simple-mode {
+  .advanced-mode-only {
+    display: none !important;
+  }
+}
+.advanced-mode {
+  .advanced-mode-toggle {
+    color: #ff0000;
+  }
+  .simple-mode-only {
+    display: none !important;
+  }
+}
+
+
+
+
 .dijitInputField[aria-hidden="true"] {
   display: none;
 }
@@ -863,22 +898,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
     .InfoUI .cartodb-popup-content p {
       margin: 0 0 1rem 0;
-    }
-
-    .display-mode {
-      .editing-mode-only {
-        display: none !important;
-      }
-    }
-
-    .editing-mode {
-      .editing-mode-toggle {
-        color: #ff0000;
-      }
-
-      .display-mode-only {
-        display: none !important;
-      }
     }
 
     /* toggle styles */

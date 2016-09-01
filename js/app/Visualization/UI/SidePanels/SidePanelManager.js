@@ -7,7 +7,6 @@ define([
   "app/Visualization/UI/SidePanels/SimpleLayerList",
   "app/Visualization/UI/SidePanels/Filters",
   "app/Visualization/UI/SidePanels/LoggingUI",
-  "app/Visualization/UI/SidePanels/AnimationManagerUI",
   "app/Visualization/UI/SidePanels/DataUI",
   "app/Visualization/UI/Paths"
 ], function(
@@ -19,7 +18,6 @@ define([
   SimpleLayerList,
   Filters,
   LoggingUI,
-  AnimationManagerUI,
   DataUI,
   Paths
 ) {
@@ -94,7 +92,7 @@ define([
       $(document).on('touchend', self.resizeEnd.bind(self));
 
       self.initTabs();
-      self.ui.visualization.state.events.on({'edit': self.setTabs.bind(self)});
+      self.ui.visualization.state.events.on({'advanced': self.setTabs.bind(self)});
       self.setTabs();
 
     },
@@ -102,7 +100,6 @@ define([
     tabClasses: [
       InfoUI,
       SimpleLayerList,
-      AnimationManagerUI,
       Filters,
       LoggingUI,
       DataUI
@@ -121,7 +118,7 @@ define([
 
     setTabs: function () {
       var self = this;
-      var advanced = !!self.visualization.state.getValue('edit');
+      var advanced = !!self.visualization.state.getValue('advanced');
 
       self.sidebarContainer.getChildren().map(function (tab) {
         self.sidebarContainer.removeChild(tab);

@@ -57,7 +57,7 @@ define([
     add: function () {
       var self = this;
 
-      if (self.visualization.state.getValue('edit')) {
+      if (self.visualization.state.getValue('advanced')) {
         self.visualization.ui.addAnimation.show();
       } else {
         self.visualization.ui.library.show();
