@@ -36,6 +36,7 @@ define([
       $(self.containerNode).css({height: "300pt", overflow: "auto"});
 
       self.set("content", KeyBindings.toHelp()[0]);
+      $(self.containerNode).find("a").click(self.hide.bind(self));
       self.show();
     }
   });
