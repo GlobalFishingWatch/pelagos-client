@@ -86,8 +86,8 @@ define([
       '        <a target="_blank" data-dojo-attach-point="infoNode" class="display-mode-only"><i class="fa fa-info"></i></a>' +
       '      </div>' +
       '    </div>' +
-      '    <div class="simple-mode-only" data-dojo-attach-point="simpleAnimationEditorNode"></div>' +
-      '    <div class="advanced-mode-only" data-dojo-attach-point="animationEditorNode"></div>' +
+      '    <div class="simple-mode-only editing-mode-only" data-dojo-attach-point="simpleAnimationEditorNode"></div>' +
+      '    <div class="advanced-mode-only editing-mode-only" data-dojo-attach-point="animationEditorNode"></div>' +
       '  </div>' +
       '</div>',
 

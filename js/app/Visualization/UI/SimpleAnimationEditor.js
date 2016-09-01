@@ -27,7 +27,7 @@ define([
     baseClass: 'AnimationEditor',
     animation: null,
     templateString: '' +
-      '<div class="intensity-slider-box display-mode-only" data-dojo-attach-point="domNode">' +
+      '<div class="intensity-slider-box" data-dojo-attach-point="domNode">' +
       '  <div class="intensity-label">Intensity &amp; Color:</div>' +
       '  <div class="eyedropper"><a target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a></div>' +
       '</div>',
