@@ -117,7 +117,7 @@ define([
       '      <div class="switch-line" for="cmn-toggle-${idCounter}"></div>' +
       '    </label>' +
       '    <label class="switch editing-mode-only">' +
-      '      <div class="switch-line active"></div>' +
+      '      <div class="switch-line active" data-dojo-attach-point="colorPickerNode" data-dojo-attach-event="click:popupColorPicker"></div>' +
       '    </label>' +
       '  </div>' + 
       '  <div class="animation-content">' +
@@ -194,6 +194,22 @@ define([
       var self = this;
       self.animation.args.editorExpanded = !self.animation.args.editorExpanded;
       self.animation.events.triggerEvent("updated")
+    },
+
+    popupColorPicker: function () {
+      var self = this;
+      popup.open({
+        parent: self,
+        popup: self.simpleAnimationEditor.colorDropDown,
+        around: this.colorPickerNode,
+        orient: ["below", "before"],
+        onExecute: function(){
+          popup.close(dropDown);
+        },
+        onCancel: function(){
+          popup.close(dropDown);
+        }
+      });
     }
   });
 

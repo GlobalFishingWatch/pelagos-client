@@ -23,13 +23,18 @@ define([
   popup,
   $
 ){
-  return declare("AnimationEditor", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
-    baseClass: 'AnimationEditor',
+  return declare("SimpleAnimationEditor", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+    baseClass: 'SimpleAnimationEditor',
     animation: null,
     templateString: '' +
       '<div class="intensity-slider-box" data-dojo-attach-point="domNode">' +
-      '  <div class="intensity-label">Intensity &amp; Color:</div>' +
-      '  <div class="eyedropper"><a target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a></div>' +
+      '  <div data-dojo-attach-point="intensityNode">' +
+      '    <div class="intensity-label">Intensity:</div>' +
+      '  </div>' +
+      '  <div>' +
+      '    <span class="eyedropper-label">Color:</span>' +
+      '    <a style="float: right;" target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a>' +
+      '  </div>' +
       '</div>',
 
     startup: function () {
@@ -51,7 +56,7 @@ define([
           onChange: self.intensityChange.bind(self),
           intermediateChanges: true
         }, "mySlider");
-        self.intensitySlider.placeAt(self.domNode);
+        self.intensitySlider.placeAt(self.intensityNode);
 
         self.animationFilterEditor = new AnimationFilterEditor({animation: self.animation});
         self.animationFilterEditor.placeAt(self.domNode);

@@ -286,13 +286,6 @@ body {
     border-radius: 0 !important;
 }
 
-/* intensity slider fixes */
-
-.intensity-label {
-    color: #ffffff;
-    padding: 3px 0;
-}
-
 .dijitSliderButtonInner {
     color: #2b4f93;
 }
@@ -937,8 +930,18 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
             color: #ffffff;
             font-size: 80%;
             width: 100%;
-            .intensity-slider-box .intensity-label {
-              font-size: 0.8em;
+
+            .animation-editor {
+              font-size: 80%;
+
+              .SimpleAnimationEditor {
+                > * {
+                  margin-bottom: 10px;
+                }
+                .Filters-Filter-actions {
+                  float: right;
+                }
+              }
             }
           }
 
