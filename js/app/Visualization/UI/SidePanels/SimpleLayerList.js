@@ -72,7 +72,7 @@ define([
 
       self.visualization.state.events.on({
         "editing": self.updatedHandler.bind(self),
-        "title": self.updatedHandler.bind(self),
+        "title": self.updatedHandler.bind(self)
       });
       self.updatedHandler();
     },
