@@ -160,7 +160,11 @@ define([
 
     resizeStart: function (e) {
       var self = this;
+      var resize = self.node.find(".sidebar-content");
       var pos = self.getFirstPosition(self.getEventPositions(e));
+
+      if (pos.pageX > resize.offset().left + (resize.outerWidth() - resize.innerWidth())) return;
+
       self.resizing = {
         original_pos: pos,
         original_width: self.node.outerWidth()
