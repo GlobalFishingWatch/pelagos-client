@@ -198,18 +198,20 @@ define([
 
     popupColorPicker: function () {
       var self = this;
-      popup.open({
-        parent: self,
-        popup: self.simpleAnimationEditor.colorDropDown,
-        around: this.colorPickerNode,
-        orient: ["below", "before"],
-        onExecute: function(){
-          popup.close(dropDown);
-        },
-        onCancel: function(){
-          popup.close(dropDown);
-        }
-      });
+      if (self.simpleAnimationEditor.colorDropDown != undefined) {
+        popup.open({
+          parent: self,
+          popup: self.simpleAnimationEditor.colorDropDown,
+          around: this.colorPickerNode,
+          orient: ["below", "before"],
+          onExecute: function(){
+            popup.close(dropDown);
+          },
+          onCancel: function(){
+            popup.close(dropDown);
+          }
+        });
+      }
     }
   });
 
