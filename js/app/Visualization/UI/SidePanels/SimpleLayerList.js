@@ -31,7 +31,7 @@ define([
 
     templateString: '' +
         '<div class="${baseClass}" style="overflow: auto;">' +
-        '  <div id="layers">' +
+        '  <div id="layers" class="contentWrapper">' +
         '    <form class="layer-list" data-dojo-attach-point="containerNode"></form>' +
         '  </div>' +
         '</div>'

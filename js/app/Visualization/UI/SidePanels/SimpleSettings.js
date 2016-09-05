@@ -16,7 +16,7 @@ define([
   $
 ){
   return declare("SimpleSettings", [SidePanelBase], {
-    baseClass: 'SimpleSettings',
+    baseClass: 'SimpleSettings contentWrapper',
     title: 'Settings',
     advanced: false,
 

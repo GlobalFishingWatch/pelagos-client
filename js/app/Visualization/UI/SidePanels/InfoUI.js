@@ -32,7 +32,7 @@ define([
       '    <a class="download_kml" target="_new" href="javascript:undefined" style="display: none;" data-dojo-attach-point="downloadNode"><i class="fa fa-download" title="Download as KML"></i></a>' +
       '    <a class="report" href="javascript:undefined" style="display: none;" data-dojo-attach-point="reportNode"><i class="fa fa-list-alt" title="Generate report"></i></a>' +
       '  </div>' +
-      '  <div class="wrapper">' +
+      '  <div class="contentWrapper">' +
       '    <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
       '    <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
              '<img style="width: 20px;" src="${paths.LoaderIcon}">'+
