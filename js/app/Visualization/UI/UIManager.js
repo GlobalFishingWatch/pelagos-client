@@ -55,6 +55,7 @@ define([
       "libs/dojo-theme-flat/CSS/dojo/flat.css",
       "libs/dojox/layout/resources/FloatingPane.css",
       "libs/dojox/layout/resources/ResizeHandle.css",
+      "libs/dojox/widget/ColorPicker/ColorPicker.css",
       {url: "app/Visualization/UI/style.less", rel:"stylesheet/less"}
     ],
 
