@@ -152,12 +152,17 @@ function(Class,
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
 
-      var initIdleListener = google.maps.event.addListener(self.map, 'idle', function () {
-        /* Add a class to the zoom buttons so we can modify them with our css */
-        $(".gm-bundled-control .gmnoprint:has(div[title='Zoom in'])").addClass('zoomButtons')
-        initIdleListener.remove();
-        cb();
-      });
+      /* Add a class to the zoom buttons so we can modify them with our css */
+      var addZoomBtnClass = function () {
+         var zoomBtn = $(".gm-bundled-control .gmnoprint:has(div[title='Zoom in'])");
+         if (zoomBtn.length) {
+           zoomBtn.addClass('zoomButtons')
+           cb();
+         } else {
+           setTimeout(addZoomBtnClass, 100);
+         }
+      };
+      addZoomBtnClass();
     },
 
     tilesLoaded: function() {    
