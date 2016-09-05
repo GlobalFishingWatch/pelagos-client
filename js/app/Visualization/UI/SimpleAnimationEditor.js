@@ -100,6 +100,7 @@ define([
         self.animation.data_view.header.uniforms.blue.value = rgb[2];
       }
       self.animation.events.triggerEvent("updated");
+      self.animation.data_view.events.triggerEvent("update");
 
       popup.close(self.colorDropDown);
     },
