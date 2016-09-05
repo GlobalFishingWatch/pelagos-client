@@ -5,8 +5,10 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
+  "app/Visualization/KeyBindings",
   "app/Visualization/UI/SidePanels/AnimationListBase",
-  "dijit/form/HorizontalSlider",
+  "app/Visualization/UI/SimpleAnimationEditor",
+  "app/Visualization/UI/AnimationEditor",
   "shims/jQuery/main",
   "dijit/popup",
   "dojox/widget/ColorPicker"
@@ -17,8 +19,10 @@ define([
   _TemplatedMixin,
   _WidgetsInTemplateMixin,
   _Container,
+  KeyBindings,
   AnimationListBase,
-  HorizontalSlider,
+  SimpleAnimationEditor,
+  AnimationEditor,
   $,
   popup,
   ColorPicker
@@ -26,15 +30,75 @@ define([
   var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
     baseClass: 'SimpleLayerList',
     title: 'Layers',
-    advanced: false,
     select_default: true,
 
     templateString: '' +
-        '<div class="${baseClass}" style="overflow: auto;">' +
-        '  <div id="layers">' +
-        '    <form class="layer-list" data-dojo-attach-point="containerNode"></form>' +
+        '<div class="display-mode" style="overflow: auto;">' +
+        '  <div class="titleButtons">' +
+        '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
-        '</div>'
+        '  <div class="editing-mode-only advanced-mode-only">' +
+        '    <label>Title:</label>' +
+        '    <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
+        '  </div>' +
+        '  <div id="layers">' +
+        '    <form class="animation-list" data-dojo-attach-point="containerNode">'+
+        '      <div class="animation-row editing-mode-only">' +
+        '        <div class="left-buttons">' +
+        '          <label class="add-layer">' +
+        '            <a href="javascript:undefined" data-dojo-attach-event="click:add"><i class="fa fa-plus-square"></i></a>' +
+        '          </label>' +
+        '        </div>' + 
+        '        <div class="animation-content">' +
+        '          <div>' +
+        '            <a href="javascript:undefined" data-dojo-attach-event="click:add">Add new layer</a>' +
+        '          </div>' +
+        '        </div>' +
+        '      </div>' +
+        '    </form>' +
+        '  </div>' +
+        '</div>',
+
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'E'], null, 'General',
+        'Toggle between editing and view mode',
+        self.toggleEditingMode.bind(self)
+      );
+
+      self.visualization.state.events.on({
+        "editing": self.updatedHandler.bind(self),
+        "title": self.updatedHandler.bind(self)
+      });
+      self.updatedHandler();
+    },
+
+    updatedHandler: function () {
+      var self = this;
+      var editing = !!self.visualization.state.getValue('editing');
+
+      $(self.domNode).toggleClass("editing-mode", editing);
+      $(self.domNode).toggleClass("display-mode", !editing);
+
+      self.titleInput.set("value", self.visualization.state.getValue('title'))
+    },
+
+    toggleEditingMode: function () {
+      var self = this;
+
+      self.visualization.state.setValue(
+        'editing',
+        !self.visualization.state.getValue('editing'));
+    },
+
+    titleChange: function () {
+      var self = this;
+      self.visualization.state.setValue('title', self.titleInput.get("value"));
+    }
   });
 
   SimpleLayerList.AnimationWidget = declare("AnimationWidget", [AnimationListBase.AnimationWidget], {
@@ -43,115 +107,49 @@ define([
     idCounter: 0,
 
     templateString: '' +
-      '<div class="layer-row">' +
-      '  <label class="switch">' +
-      '    <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggle">' +
-      '    <div class="switch-line" for="cmn-toggle-${idCounter}" data-dojo-attach-point="switchNode"></div>' +
-      '  </label>' +
-      '  <div class="layer-label">' +
+      '<div class="animation-row">' +
+      '  <div class="left-buttons">' +
+      '    <label class="remove-layer editing-mode-only">' +
+      '      <a href="javascript:undefined" data-dojo-attach-event="click:remove"><i class="fa fa-trash"></i></a>' +
+      '    </label>' +
+      '    <label class="switch display-mode-only">' +
+      '      <input class="cmn-toggle" id="cmn-toggle-${idCounter}" type="checkbox" data-dojo-attach-point="inputNode" data-dojo-attach-event="change:toggleVisible"></input>' +
+      '      <div class="switch-line" for="cmn-toggle-${idCounter}"></div>' +
+      '    </label>' +
+      '    <label class="switch editing-mode-only">' +
+      '      <div class="switch-line active" data-dojo-attach-point="colorPickerNode"></div>' +
+      '    </label>' +
+      '  </div>' + 
+      '  <div class="animation-content">' +
       '    <div>' +
-      '      <span data-dojo-attach-point="titleNode"></span>' +
-      '      <div class="layer-buttons">' +
-      '        <a target="_blank" data-dojo-attach-point="infoNode"><i class="fa fa-info"></i></a>' +
+      '      <span class="animation-title" data-dojo-attach-point="titleNode"></span>' +
+      '      <div class="animation-buttons">' +
+      '        <a target="_blank" data-dojo-attach-point="infoNode" class="display-mode-only"><i class="fa fa-info"></i></a>' +
+      '        <a class="expander advanced-mode-only editing-mode-only" data-dojo-attach-point="expanderNode" data-dojo-attach-event="click:toggleExpanded">' +
+                '<i class="fa fa-chevron-right"></i>' +
+              '</a>' +
       '      </div>' +
       '    </div>' +
-      '    <div class="intensity-slider-box" data-dojo-attach-point="intensityNode">' +
-      '      <div class="intensity-label">Intensity &amp; Color:</div>' +
-      '      <div class="eyedropper"><a target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a></div>' +
+      '    <div class="animation-editor">' +
+      '      <div class="simple-mode-only editing-mode-only" data-dojo-attach-point="simpleAnimationEditorNode"></div>' +
+      '      <div class="advanced-mode-only editing-mode-only animation-editor-expansion" data-dojo-attach-point="animationEditorNode"></div>' +
       '    </div>' +
       '  </div>' +
       '</div>',
-
-    toggle: function () {
-      var self = this;
-      self.animation.setVisible(self.inputNode.checked);
-      $(self.intensityNode).toggle(self.inputNode.checked && self.animation.constructor.prototype.name == "ClusterAnimation");
-    },
 
     startup: function () {
       var self = this;
       self.inherited(arguments);
       self.idCounter = self.constructor.prototype.idCounter++;
 
-      if (self.animation.constructor.prototype.name == "ClusterAnimation") {
-        var val2slider = function(val) { return Math.log(1 + val)/Math.log(4); };
-        var slider2val = function(val) { return Math.pow(4, val) - 1; };
+      self.simpleAnimationEditor = new SimpleAnimationEditor({animation: self.animation});
+      self.simpleAnimationEditor.placeAt(self.simpleAnimationEditorNode);
 
-        var maxv = val2slider(self.animation.data_view.header.colsByName.weight.max);
-        var minv = val2slider(self.animation.data_view.header.colsByName.weight.min);
-        var curv = val2slider(self.animation.data_view.header.colsByName.weight.source.weight);
+      self.animationEditor = new AnimationEditor({animation: self.animation});
+      self.animationEditor.placeAt(self.animationEditorNode);
 
-        self.intensitySlider = new HorizontalSlider({
-          value:curv,
-          minimum: minv,
-          maximum: maxv,
-          discreteValues: 100,
-          onChange: self.intensityChange.bind(self),
-          intermediateChanges: true
-        }, "mySlider");
-        self.intensitySlider.placeAt(self.intensityNode);
-        self.intensitySlider.startup();
-
-        self.colorDropDown = new ColorPicker({
-          'class': "sidebarColorPicker",
-          onChange: self.colorSelected.bind(self),
-          style: 'background: white; padding: 10px;',
-          id: self.id + "_colorPopup",
-          value: self.animation.color
-        });
-        popup.moveOffScreen(self.colorDropDown);
-        self.colorDropDown.startup();
-      }
-
+      self.animation.events.on({updated: self.updatedHandler.bind(self)});
       self.updatedHandler();
-    },
-
-    onConfig: function () {
-      var self = this;
-      popup.open({
-        parent: self,
-        popup: self.colorDropDown,
-        around: this.configNode,
-        orient: ["below", "before"],
-        onExecute: function(){
-          popup.close(dropDown);
-        },
-        onCancel: function(){
-          popup.close(dropDown);
-        }
-      });
-    },
-
-    colorSelected: function(value) {
-      var self = this;
-
-      self.animation.color = value;
-      if (self.animation.data_view != undefined && self.animation.data_view.header.uniforms.red != undefined) {
-        var c = self.animation.color;
-        var rgb = [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
-        self.animation.data_view.header.uniforms.red.value = rgb[0];
-        self.animation.data_view.header.uniforms.green.value = rgb[1];
-        self.animation.data_view.header.uniforms.blue.value = rgb[2];
-      }
-      self.animation.events.triggerEvent("updated");
-
-      popup.close(self.colorDropDown);
-    },
-
-    slider2val: function(val) {
-      return Math.pow(4, val) - 1;
-    },
-
-    intensityChange: function () {
-      var self = this;
-      if (self.update != undefined) return;
-      self.update = setTimeout(function () {
-        var value = self.intensitySlider.get("value");
-
-        self.animation.data_view.header.colsByName.weight.source.weight = self.slider2val(value);
-        self.animation.data_view.changeCol(self.animation.data_view.header.colsByName.weight);
-        self.update = undefined;
-      }, 100);
     },
 
     updatedHandler: function () {
@@ -160,22 +158,42 @@ define([
 
       var color = self.animation.color;
       if (!color) color = 'orange';
-      $(self.switchNode).css({'border-color': color});
+        $(self.domNode).find(".switch-line").css({'border-color': color});
 
       if (self.animation.visible) {
         $(self.inputNode).attr('checked','checked');
       } else {
         $(self.inputNode).removeAttr('checked');
       }
-      self.toggle();
 
       var descriptionUrl = self.animation.descriptionUrl;
       if (descriptionUrl) {
         $(self.infoNode).attr("href", descriptionUrl);
       }
       $(self.infoNode).toggle(!!descriptionUrl);
-      var isConfigurable = self.animation.constructor.prototype.name == "ClusterAnimation";
-      $(self.configNode).toggle(isConfigurable);
+
+      var expand = !!self.animation.args.editorExpanded;
+      var expander = $(self.expanderNode);
+      if (expand) {
+        expander.find('i').addClass('fa-chevron-down');
+        expander.find('i').removeClass('fa-chevron-right');
+      } else {
+        expander.find('i').addClass('fa-chevron-right');
+        expander.find('i').removeClass('fa-chevron-down');
+      }
+      $(self.domNode).toggleClass('animation-editor-collapsed', !expand);
+    },
+
+    toggleVisible: function () {
+      var self = this;
+      self.animation.setVisible(self.inputNode.checked);
+      self.animation.events.triggerEvent("updated")
+    },
+
+    toggleExpanded: function () {
+      var self = this;
+      self.animation.args.editorExpanded = !self.animation.args.editorExpanded;
+      self.animation.events.triggerEvent("updated")
     }
   });
 

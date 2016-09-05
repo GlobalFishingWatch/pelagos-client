@@ -179,6 +179,7 @@ define([
       return {
         state: self.state.values,
         map: self.animations.toJSON(),
+        data: self.data.toJSON(),
         ui: ui
       };
     },
@@ -252,6 +253,10 @@ define([
         function (cb) {
           if (!data.map) return cb();
           self.animations.load(data.map, cb);
+        },
+        function (cb) {
+          if (!data.data) return cb();
+          self.data.load(data.data, cb);
         },
         function (cb) {
           if (!data.ui || !self.ui) return cb();

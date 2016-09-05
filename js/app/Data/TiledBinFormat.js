@@ -15,11 +15,6 @@ define(["app/Class", "app/Data/Format", "app/Data/BaseTiledFormat", "app/Data/Bi
     name: "TiledBinFormat",
     withCredentials: false,
 
-    getDirectory: function () {
-      var self = this;
-      return self.url.slice(0, self.url.lastIndexOf("/"));
-    },
-
     getTileContent: function (tile) {
       var self = this;
       var base = self.getUrl(

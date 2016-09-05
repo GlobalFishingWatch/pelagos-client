@@ -44,6 +44,41 @@ label {
   font-weight: 700;
 }
 
+
+/* Application modes
+ * These corresponds to global sets of visible / hidden UX controls
+ * They operate in pairs (display/editing and simple/advanced).
+ */
+.display-mode {
+  .editing-mode-only {
+    display: none !important;
+  }
+}
+.editing-mode {
+  .editing-mode-toggle {
+    color: #ff0000;
+  }
+  .display-mode-only {
+    display: none !important;
+  }
+}
+.simple-mode {
+  .advanced-mode-only {
+    display: none !important;
+  }
+}
+.advanced-mode {
+  .advanced-mode-toggle {
+    color: #ff0000;
+  }
+  .simple-mode-only {
+    display: none !important;
+  }
+}
+
+
+
+
 .dijitInputField[aria-hidden="true"] {
   display: none;
 }
@@ -53,6 +88,10 @@ label {
   width: 20px;
   border-width: 0;
   display: block;
+}
+
+.dijitTextBox {
+  color: #000000;
 }
 
 .dijitDropDownButton .dijitArrowButtonInner:before, .dijitArrowButton:before {
@@ -181,11 +220,6 @@ body {
 
 }
 
-.dojoxHuePickerPoint {
-  left: inherit !important;
-  margin-left: -5px;
-}
-
 .dijitBorderContainer-dijitContentPane.AnimationContainer,
 .dijitAccordionContainer .dijitAccordionContainer-child.dijitContentPane {
     padding: 0;
@@ -245,13 +279,6 @@ body {
 
 .dijitAccordionInnerContainer:last-child, .dijitAccordionInnerContainer:last-child .dijitAccordionTitle {
     border-radius: 0 !important;
-}
-
-/* intensity slider fixes */
-
-.intensity-label {
-    color: #ffffff;
-    padding: 3px 0;
 }
 
 .dijitSliderButtonInner {
@@ -669,8 +696,8 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 */
 
 
-.sidebarColorPicker tr:nth-child(2) {
-  display: none;
+.sidebarColorPicker td:nth-child(3) {
+  display: none !important;
 }
 
 #w {
@@ -843,7 +870,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     }
 
     #layers, .InfoUI .wrapper {
-      padding: 5% 5%;
+      padding: 11px;
       word-wrap: break-word;
     }
 
@@ -863,52 +890,100 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
     /* toggle styles */
     #layers {
-      .layer-list {
+      .animation-list {
         display: table;
         width: 100%;
-        .layer-row {
+        .animation-row {
           display: table-row;
-          height: 35px;
 
-          .layer-label,
-          .switch {
-            display: table-cell;
-            padding-top: 0px;
+          &.animation-editor-collapsed .animation-editor-expansion {
+            display: none;
+          }
+
+          .left-buttons,
+          .animation-buttons {
             vertical-align: top;
-          }
-
-          .switch {
-            width: 18%;
+            padding-top: 2px;
+            white-space: nowrap;
             font-size: 90%;
-          }
 
-          .layer-label {
-            display: table-cell;
-            color: #ffffff;
-            font-size: 80%;
-            /*padding: 2%;*/
-            width: 100%;
-            .intensity-slider-box .intensity-label {
-              font-size: 0.8em;
+            > * {
+              padding-right: 10px;
+              margin-bottom: 0;
             }
           }
 
-          .layer-buttons {
-            float: right;
+          .animation-content,
+          .left-buttons {
+            display: table-cell;
+            padding-top: 0px;
+            padding-bottom: 15px;
             vertical-align: top;
-            padding-top: 2px;
+          }
+
+          .animation-content {
+            color: #ffffff;
+            font-size: 80%;
+            width: 100%;
+
+            .animation-editor {
+              font-size: 80%;
+
+              .SimpleAnimationEditor {
+                > * {
+                  margin-bottom: 10px;
+                }
+                .Filters-Filter-actions {
+                  float: right;
+                }
+              }
+            }
+          }
+
+          .animation-buttons {
+            float: right;
+          }
+
+          .remove-layer,
+          .switch {
           }
         }
       }
     }
 
-    input.cmn-toggle {
-      position: absolute;
-      margin-left: -9999px;
-      visibility: hidden;
+    .switch {
+      .cmn-toggle {
+        position: absolute;
+        margin-left: -9999px;
+        visibility: hidden;
+      }
 
+      .cmn-toggle:checked + .switch-line,
+      .switch-line.active {
+        &:after {
+          width: 5px;
+          height: 5px;
+          margin-left: 13px;
+          border-style: solid;
+          border-width: .55rem;
+          border-color: inherit;
+        }
+      }
 
-      + .switch-line {
+      .switch-line.active {
+        width: inherit;
+
+        &:after {
+          margin-left: 0;
+        }
+      }
+
+      .switch-line {
+        background-color: #ffffff;
+        border-radius: 10px;
+        width: 25px;
+        height: 12px;
+        padding: 1px;
 
         &:before,
         &:after {
@@ -956,30 +1031,6 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           border-color: #bbbbbb;
 
         }
-      }
-
-      &:checked {
-        + .switch-line {
-
-                  &:after {
-            width: 5px;
-            height: 5px;
-            margin-left: 13px;
-          border-style: solid;
-          border-width: .55rem;
-          border-color: inherit;
-
-          }
-        }
-      }
-
-      + .switch-line,
-      &:checked + .switch-line {
-        background-color: #ffffff;
-        border-radius: 10px;
-        width: 25px;
-        height: 12px;
-        padding: 1px;
       }
     }
 
@@ -1140,7 +1191,7 @@ div.cartodb-legend-stack {
     /*font-size: 125%;*/
   }
 
-  #layers .layer-label {
+  #layers .animation-content {
     /*font-size: 125%;*/
   }
 }
