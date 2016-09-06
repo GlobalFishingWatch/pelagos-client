@@ -33,7 +33,7 @@ define([
     select_default: true,
 
     templateString: '' +
-        '<div class="display-mode" style="overflow: auto;">' +
+        '<div class="${baseClass} display-mode" style="overflow: auto;">' +
         '  <div class="titleButtons">' +
         '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
@@ -41,7 +41,7 @@ define([
         '    <label>Title:</label>' +
         '    <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
         '  </div>' +
-        '  <div id="layers">' +
+        '  <div id="layers" class="contentWrapper">' +
         '    <form class="animation-list" data-dojo-attach-point="containerNode">'+
         '      <div class="animation-row editing-mode-only">' +
         '        <div class="left-buttons">' +

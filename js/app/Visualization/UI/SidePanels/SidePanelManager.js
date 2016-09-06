@@ -6,6 +6,7 @@ define([
   "app/Visualization/UI/SidePanels/InfoUI",
   "app/Visualization/UI/SidePanels/SimpleLayerList",
   "app/Visualization/UI/SidePanels/LoggingUI",
+  "app/Visualization/UI/SidePanels/SimpleSettings",
   "app/Visualization/UI/SidePanels/DataUI",
   "app/Visualization/UI/Paths"
 ], function(
@@ -16,6 +17,7 @@ define([
   InfoUI,
   SimpleLayerList,
   LoggingUI,
+  SimpleSettings,
   DataUI,
   Paths
 ) {
@@ -99,6 +101,7 @@ define([
       InfoUI,
       SimpleLayerList,
       LoggingUI,
+      SimpleSettings,
       DataUI
     ],
       

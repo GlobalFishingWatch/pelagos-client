@@ -60,7 +60,7 @@ define([
       Format.prototype.initialize.apply(self, arguments);
     },
 
-    tilesPerScreen: 32,
+    dataQualityLevel: 3,
 
     retries: 10,
     retryTimeout: 2000,
@@ -328,7 +328,7 @@ define([
 
       var wantedTileBounds = TileBounds.tileBounds({
         bounds: bounds,
-        tilesPerScreen: self.tilesPerScreen,
+        dataQualityLevel: self.dataQualityLevel,
         temporalExtents: self.header.temporalExtents,
         temporalExtentsBase: self.header.temporalExtentsBase
       });
