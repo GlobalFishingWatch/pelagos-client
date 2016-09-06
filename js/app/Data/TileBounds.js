@@ -169,7 +169,9 @@ define([
     var bounds = args.bounds;
 
     var addSet = function(set) {
-      args.dataQualityLevel = set.dataQualityLevel;
+      if (args.autoAdjustQuality !== false) {
+        args.dataQualityLevel = set.dataQualityLevel;
+      }
       sets.push(set.set);
     };
 
