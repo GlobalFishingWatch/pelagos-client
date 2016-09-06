@@ -11,26 +11,27 @@ define([
   HorizontalSlider,
   $
 ){
-  return declare("TilesPerScreen", [TemplatedContainer], {
-    baseClass: 'TilesPerScreen',
+  return declare("DataQualityLevel", [TemplatedContainer], {
+    baseClass: 'DataQualityLevel',
     templateString: '' +
       '<div class="${baseClass}" style="overflow: auto;">' +
       '  <div>Data resolution:</div>' +
       '  <div><span class="${baseClass}Container" data-dojo-attach-point="containerNode"></span></div>' +
-      '  <div><span class="value" data-dojo-attach-point="valueNode"></span> tiles per screen</div>' +
+      '  <div><span class="value" data-dojo-attach-point="valueNode"></span> zoom levels</div>' +
       '</div>',
     visualization: null,
 
     startup: function () {
       var self = this;
       self.inherited(arguments);
-      var value = BaseTiledFormat.prototype.tilesPerScreen;
+      var value = BaseTiledFormat.prototype.dataQualityLevel;
 
       self.addChild(new HorizontalSlider({
         "class": "pull-right",
         value: value,
-        minimum: 4,
-        maximum: 128,
+        minimum: 0,
+        maximum: 6,
+        discreteValues: 7,
         intermediateChanges: false,
         onChange: self.change.bind(self)
       }));
@@ -42,7 +43,7 @@ define([
 
       value = Math.round(value);
       self.valueNode.innerHTML = value.toPrecision(3);
-      BaseTiledFormat.prototype.tilesPerScreen = value;
+      BaseTiledFormat.prototype.dataQualityLevel = value;
       self.visualization.data.zoomTo(self.visualization.data.bounds);
     }
   });

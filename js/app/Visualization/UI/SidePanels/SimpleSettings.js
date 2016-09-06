@@ -4,7 +4,7 @@ define([
   "app/Data/BaseTiledFormat",
   "app/Visualization/UI/SidePanels/SidePanelBase",
   "app/Visualization/UI/TemplatedContainer",
-  "app/Visualization/UI/TilesPerScreen",
+  "app/Visualization/UI/DataQualityLevel",
   "shims/jQuery/main"
 ], function(
   declare,
@@ -12,7 +12,7 @@ define([
   BaseTiledFormat,
   SidePanelBase,
   TemplatedContainer,
-  TilesPerScreen,
+  DataQualityLevel,
   $
 ){
   return declare("SimpleSettings", [SidePanelBase], {
@@ -24,10 +24,10 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      self.tilesPerScreen = new TilesPerScreen({
+      self.dataQualityLevel = new DataQualityLevel({
         visualization: self.visualization
       });
-      self.addChild(self.tilesPerScreen);
+      self.addChild(self.dataQualityLevel);
     }
   });
 });

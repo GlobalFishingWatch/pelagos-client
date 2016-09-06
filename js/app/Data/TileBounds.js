@@ -16,9 +16,13 @@ define([
 
   TileBounds.world = new Bounds([-180, -90, 180, 90]);
 
+  TileBounds.log = function(x, base) {
+    return Math.log(x) / Math.log(base);
+  };
+
   TileBounds.tileParamsForRegion = function(args) {
     var bounds = args.bounds;
-    var tilesPerScreen = args.tilesPerScreen;
+    var dataQualityLevel = args.dataQualityLevel;
 
     var origBounds = new Bounds(bounds);
     bounds = origBounds.unwrapDateLine(TileBounds.world);
@@ -39,8 +43,8 @@ define([
       }
     };
 
-    res.level = Math.min(Math.floor(Math.log(res.worldheight / (res.height/Math.sqrt(tilesPerScreen)), 2)),
-                         Math.floor(Math.log(res.worldwidth / (res.width/Math.sqrt(tilesPerScreen)), 2)));
+    res.level = Math.floor(Math.min(TileBounds.log(res.worldheight / res.height, 2),
+                                    TileBounds.log(res.worldwidth / res.width, 2)) + dataQualityLevel);
 
     res.tilewidth = res.worldwidth / Math.pow(2, res.level);
     res.tileheight = res.worldheight / Math.pow(2, res.level);
@@ -59,7 +63,6 @@ define([
   TileBounds.tileBoundsForRegion = function(args) {
     /* Returns a list of tile bounds covering a region. */
     var bounds = args.bounds;
-    var tilesPerScreen = args.tilesPerScreen;
 
     var params = TileBounds.tileParamsForRegion(args);
     Logging.main.log("Data.BaseTiledFormat.tileBoundsForRegion", params);
@@ -78,7 +81,7 @@ define([
 
     return {
       set: res,
-      tilesPerScreen: 1,
+      dataQualityLevel: 1,
       params: params
     }
   };
@@ -112,7 +115,7 @@ define([
   TileBounds.tileBoundsForRange = function(args) {
     /* Returns a list of tile bounds covering a region. */
     var temporalExtents = args.temporalExtents || TileBounds.temporalExtents;
-    var tilesPerScreen = args.tilesPerScreen;
+    var dataQualityLevel = args.dataQualityLevel;
 
     if (typeof(temporalExtents) == "number") {
       var params = TileBounds.tileParamsForRange(args);
@@ -126,7 +129,7 @@ define([
 
       return {
         set: res,
-        tilesPerScreen: Math.ceil(tilesPerScreen / Math.max(1, params.length / temporalExtents)),
+        dataQualityLevel: dataQualityLevel - Math.round(TileBounds.log(Math.max(1, params.length / temporalExtents), 4)),
         params: params
       };
     } else {
@@ -141,7 +144,7 @@ define([
       });
       return {
         set: res,
-        tilesPerScreen: Math.ceil(tilesPerScreen / Math.max(1, res.length))
+        dataQualityLevel: dataQualityLevel - Math.round(TileBounds.log(Math.max(1, res.length), 4))
       };
     }
   };
@@ -156,7 +159,7 @@ define([
    * @function Data/TileBounds#tileBounds
    * @static
    * @param {Bounds|SpaceTime} args.bounds - Screen bbox or screen bbox and time range
-   * @param {Integer} args.tilesPerScreen - Approximate number of tiles to load
+   * @param {Integer} args.dataQualityLevel - How many zoom levels deeper than one tile filling the whole screen to show
    * @param {Float|Object[]} [args.temporalExtents] - Length of each temporal extent or explicit list of temporal extents, see docs on tileset header for details
    * @param {Float} [args.temporalExtentsBase] - Optional, start of first temporal extent. If not given, 1970-01-01 00:00:00 UTC
    * @returns {Bounds[]|SpaceTime} - List of tile bounds to load or list of tile bounds and time ranges to load
@@ -166,7 +169,7 @@ define([
     var bounds = args.bounds;
 
     var addSet = function(set) {
-      args.tilesPerScreen = set.tilesPerScreen;
+      args.dataQualityLevel = set.dataQualityLevel;
       sets.push(set.set);
     };
 
