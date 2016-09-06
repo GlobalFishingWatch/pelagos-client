@@ -5,9 +5,7 @@ define([
   "app/ObjectTemplate",
   "app/Visualization/UI/SidePanels/InfoUI",
   "app/Visualization/UI/SidePanels/SimpleLayerList",
-  "app/Visualization/UI/SidePanels/Filters",
   "app/Visualization/UI/SidePanels/LoggingUI",
-  "app/Visualization/UI/SidePanels/AnimationManagerUI",
   "app/Visualization/UI/SidePanels/SimpleSettings",
   "app/Visualization/UI/SidePanels/DataUI",
   "app/Visualization/UI/Paths"
@@ -18,9 +16,7 @@ define([
   ObjectTemplate,
   InfoUI,
   SimpleLayerList,
-  Filters,
   LoggingUI,
-  AnimationManagerUI,
   SimpleSettings,
   DataUI,
   Paths
@@ -96,7 +92,7 @@ define([
       $(document).on('touchend', self.resizeEnd.bind(self));
 
       self.initTabs();
-      self.ui.visualization.state.events.on({'edit': self.setTabs.bind(self)});
+      self.ui.visualization.state.events.on({'advanced': self.setTabs.bind(self)});
       self.setTabs();
 
     },
@@ -104,8 +100,6 @@ define([
     tabClasses: [
       InfoUI,
       SimpleLayerList,
-      AnimationManagerUI,
-      Filters,
       LoggingUI,
       SimpleSettings,
       DataUI
@@ -113,7 +107,6 @@ define([
       
     initTabs: function () {
       var self = this;
-      self.filters_tab = true;
       self.tabs = self.tabClasses.map(function (tabClass) {
         var tab = new tabClass({visualization: self.visualization});
         tab.startup();
@@ -124,13 +117,12 @@ define([
 
     setTabs: function () {
       var self = this;
-      var advanced = !!self.visualization.state.getValue('edit');
+      var advanced = !!self.visualization.state.getValue('advanced');
 
       self.sidebarContainer.getChildren().map(function (tab) {
         self.sidebarContainer.removeChild(tab);
       });
       self.tabs.map(function (tab) {
-        if (!self.filters_tab && tab.name == "Filters") return;
         if ((tab.advanced === undefined) || (tab.advanced == advanced)) {
           self.sidebarContainer.addChild(tab);
           if (tab.select_default) {
@@ -171,7 +163,11 @@ define([
 
     resizeStart: function (e) {
       var self = this;
+      var resize = self.node.find(".sidebar-content");
       var pos = self.getFirstPosition(self.getEventPositions(e));
+
+      if (pos.pageX > resize.offset().left + (resize.outerWidth() - resize.innerWidth())) return;
+
       self.resizing = {
         original_pos: pos,
         original_width: self.node.outerWidth()
@@ -227,7 +223,6 @@ define([
         self.node.find("#feedback_url").attr("href", data.feedback_url);
       }
 
-      data.filters_tab = !!data.filters_tab;
       self.setTabs();
 
       cb && cb();

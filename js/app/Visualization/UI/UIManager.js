@@ -8,8 +8,8 @@ define([
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/Search",
   "app/Visualization/UI/AnimationLibrary",
+  "app/Visualization/UI/AddAnimationDialog",
   "app/Visualization/UI/Performance",
-  "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
@@ -32,8 +32,8 @@ define([
   SidePanelManager,
   Search,
   AnimationLibrary,
+  AddAnimationDialog,
   Performance,
-  SimpleAnimationEditor,
   SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
@@ -55,6 +55,7 @@ define([
       "libs/dojo-theme-flat/CSS/dojo/flat.css",
       "libs/dojox/layout/resources/FloatingPane.css",
       "libs/dojox/layout/resources/ResizeHandle.css",
+      "libs/dojox/widget/ColorPicker/ColorPicker.css",
       {url: "app/Visualization/UI/style.less", rel:"stylesheet/less"}
     ],
 
@@ -468,15 +469,25 @@ define([
       var self = this;
 
       KeyBindings.register(
-        ['Ctrl', 'Alt', 'E'], null, 'General',
-        'Toggle between view and edit sidebar (advanced mode)',
+        ['Ctrl', 'Alt', 'A'], null, 'General',
+        'Toggle between simple and advanced mode',
         function () {
-          self.visualization.state.setValue('edit', !self.visualization.state.getValue('edit'));
+          self.visualization.state.setValue('advanced', !self.visualization.state.getValue('advanced'));
         }
       );
+      self.visualization.state.events.on({'advanced': self.setAdvancedSimpleMode.bind(self)});
+      self.setAdvancedSimpleMode();
 
       self.sideBar = new SidePanelManager(self);
       cb();
+    },
+
+    setAdvancedSimpleMode: function () {
+      var self = this;
+      var advanced = !!self.visualization.state.getValue('advanced');
+
+      $("body").toggleClass('advanced-mode', advanced);
+      $("body").toggleClass('simple-mode', !advanced);
     },
 
     initPopups: function (cb) {
@@ -486,10 +497,10 @@ define([
       self.search.startup();
       self.library = new AnimationLibrary({visualization: self.visualization});
       self.library.startup();
+      self.addAnimation = new AddAnimationDialog({visualization: self.visualization});
+      self.addAnimation.startup();
       self.performance = new Performance({visualization: self.visualization});
       self.performance.startup();
-      self.simpleAnimationEditor = new SimpleAnimationEditor({visualization: self.visualization});
-      self.simpleAnimationEditor.startup();
       self.saveWorkspace = new SaveWorkspaceDialog({visualization: self.visualization});
       self.saveWorkspace.startup();
       self.help = new Help({visualization: self.visualization});
