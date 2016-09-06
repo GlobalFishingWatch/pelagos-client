@@ -15,7 +15,7 @@ define([
     baseClass: 'DataQualityLevel',
     templateString: '' +
       '<div class="${baseClass}" style="overflow: auto;">' +
-      '  <div>Data resolution:</div>' +
+      '  <div>Data quality:</div>' +
       '  <div><span class="${baseClass}Container" data-dojo-attach-point="containerNode"></span></div>' +
       '  <div><span class="value" data-dojo-attach-point="valueNode"></span> zoom levels</div>' +
       '</div>',
