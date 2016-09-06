@@ -154,7 +154,7 @@ function(Class,
 
       /* Add a class to the zoom buttons so we can modify them with our css */
       var addZoomBtnClass = function () {
-         var zoomBtn = $(".gm-bundled-control .gmnoprint:has(div[title='Zoom in'])");
+         var zoomBtn = $(".gm-bundled-control .gmnoprint:has(img[src='http://maps.gstatic.com/mapfiles/api-3/images/tmapctrl.png'])");
          if (zoomBtn.length) {
            zoomBtn.addClass('zoomButtons')
            cb();
