@@ -436,9 +436,9 @@ function(Class,
         if (animation && animation.select([rowidx[1], rowidx[2]], type, true, e)) {
           return animation;
         }
-      } else if (clear != false) {
+      } else {
         self.animations.map(function (animation) {
-          animation.select(undefined, type, true, e);
+          animation.select(undefined, type, clear != false, e);
         });
       }
       return false;
