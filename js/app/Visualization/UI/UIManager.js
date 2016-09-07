@@ -7,6 +7,7 @@ define([
   "app/Visualization/UI/Widgets/Timeline/Timeline",
   "app/Visualization/UI/SidePanels/SidePanelManager",
   "app/Visualization/UI/Search",
+  "app/Visualization/UI/MouseLatLon",
   "app/Visualization/UI/AnimationLibrary",
   "app/Visualization/UI/AddAnimationDialog",
   "app/Visualization/UI/Performance",
@@ -31,6 +32,7 @@ define([
   Timeline,
   SidePanelManager,
   Search,
+  MouseLatLon,
   AnimationLibrary,
   AddAnimationDialog,
   Performance,
@@ -493,6 +495,8 @@ define([
     initPopups: function (cb) {
       var self = this;
 
+      self.mouseLatLon = new MouseLatLon({visualization: self.visualization});
+      self.mouseLatLon.startup();
       self.search = new Search({visualization: self.visualization});
       self.search.startup();
       self.library = new AnimationLibrary({visualization: self.visualization});
