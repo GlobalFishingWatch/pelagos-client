@@ -71,6 +71,7 @@ define([
       return (   !selection.hidden
               && selection.sortcols.length == 1
               && selection.sortcols[0]
+              && animation.data_view.source.header.colsByName[selection.sortcols[0]]
               && animation.data_view.source.header.colsByName[selection.sortcols[0]].choices);
     }).map(function (item) {
       return item.key;
