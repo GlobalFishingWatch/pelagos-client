@@ -43,15 +43,16 @@ define([
     'class': 'filter-editor-dialog',
     animation: null,
     sourcename: null,
+    selectionname: null,
     contentTemplate: '',
     actionBarTemplate: '' +
       '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
       '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-event="click: clearFilter">Clear filter</button>' +
       '  <button data-dojo-type="dijit/form/Button" type="button" data-dojo-attach-event="click: filterBySelection">Filter by selection</button>' +
       '</div>',
-    _setSourcenameAttr: function (sourcename) {
+    _setSelectionnameAttr: function (selectionname) {
       var self = this;
-      self._set("sourcename", sourcename);
+      self._set("selectionname", selectionname);
       self._updateTitle();
     },
     _setAnimationAttr: function (animation) {
@@ -61,7 +62,7 @@ define([
     },
     _updateTitle: function () {
       var self = this;
-      self.set("title", self.animation.title + ": " + self.sourcename);
+      self.set("title", self.animation.title + ": " + self.selectionname);
     },
     clearFilter: function () {
       var self = this;
@@ -118,10 +119,11 @@ define([
         '</div>',
       noFilterTitle: 'All',
       sourcename: null,
+      selectionname: null,
       startup: function () {
         var self = this;
         self.inherited(arguments);
-        var selection = self.animation.data_view.selections.selections.active_category;
+        var selection = self.animation.data_view.selections.selections[self.selectionname];
         selection.events.on({update: self.rangeUpdated.bind(self)});
         self.rangeUpdated();
       },
