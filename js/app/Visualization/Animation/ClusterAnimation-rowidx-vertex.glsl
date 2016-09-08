@@ -34,6 +34,10 @@ void main() {
     gl_PointSize = 3.0;
     vWeight = _weight;
     baseColor = rowidxColor(animationidx, tileidx, rowidx);
+  } else if (_weight == 0.0) {
+     gl_PointSize = 0.0;
+     vWeight = 0.0;
+     baseColor = rowidxNone;
   } else {
     float ps = 7.0 ; // In pixels
 
