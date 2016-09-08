@@ -88,11 +88,12 @@ define([
         return;
       }
 
-      Ajax.get(self.url + "/header", self.headers, function (err, data) {
+      Ajax.get(self.url + "/header", self.headers, function (err, data, withCredentials) {
         if (err) {
           self.handleError(err);
         } else {
           self.header = data;
+          self.withCredentials = withCredentials;
 
           if (self.header.alternatives == undefined) {
             self.header.alternatives = [self.url];
@@ -203,56 +204,39 @@ define([
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
-      var getSelectionInfo = function (fallbackLevel, withCredentials) {
+      var getSelectionInfo = function (fallbackLevel) {
         var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
-        var request = new XMLHttpRequest();
-        request.open('GET', url, true);
-        request.withCredentials = withCredentials;
-        Ajax.setHeaders(request, self.headers);
-        LoadingInfo.main.add(url, {request:request});
-        request.onreadystatechange = function() {
-          if (request.readyState === 4) {
-            LoadingInfo.main.remove(url);
-            var data = {};
-            try {
-              data = JSON.parse(request.responseText);
-            } catch (e) {
-            }
 
-            if (Ajax.isSuccess(request, url)) {
-              cb(null, data);
-            } else {
-              if (request.status == 403) {
-                data.level = 'info';
-                data.toString = function () {
-                  var res = $("<span>You have to be registered on GFW in order to see vessel information. You can <a href='javascript: void(0);'>register here</a>. If you are already registred, you need to <a href='javascript: void(0);'>login</a>.");
-                  res.find('a').click(function () {
-                    new PopupAuth(data.auth_location, function (success) {
-                      if (success) {
-                        cb(null, null);
-                        getSelectionInfo(fallbackLevel, withCredentials);
-                      }
-                    });
-                  });
-                  return res;
-                };
-                cb(data, null);
-              } else if (request.status == 0 && withCredentials) {
-                getSelectionInfo(fallbackLevel, false);
-              } else if (fallbackLevel + 1 < self.getUrlFallbackLevels("selection-info")) {
-                getSelectionInfo(fallbackLevel + 1, true);
-              } else {
-                var e = Ajax.makeError(request, url, "selection information from ");
-                e.source = self;
-                cb(e, null);
-              }
-            }
+        Ajax.get(url, self.headers, function (err, data) {
+          if (!err) {
+            cb(null, data);
+          } else if (err.status == 403) {
+            data = {};
+            data.level = 'info';
+            data.toString = function () {
+              var res = $("<span>You have to be registered on GFW in order to see vessel information. You can <a href='javascript: void(0);'>register here</a>. If you are already registred, you need to <a href='javascript: void(0);'>login</a>.");
+              res.find('a').click(function () {
+                new PopupAuth(data.auth_location, function (success) {
+                  if (success) {
+                    cb(null, null);
+                    getSelectionInfo(fallbackLevel);
+                  }
+                });
+              });
+              return res;
+            };
+            cb(data, null);
+          } else if (fallbackLevel + 1 < self.getUrlFallbackLevels("selection-info")) {
+            getSelectionInfo(fallbackLevel + 1);
+          } else {
+            e.name = "selection information from ";
+            e.source = self;
+            cb(e, null);
           }
-        };
-        request.send();
+        }, self.withCredentials);
       };
 
-      getSelectionInfo(0, true);
+      getSelectionInfo(0);
     },
 
     search: function(query, offset, limit, cb) {
@@ -266,24 +250,12 @@ define([
         url += "&limit=" + limit.toString();
       }
 
-      var request = new XMLHttpRequest();
-      request.open('GET', url, true);
-      Ajax.setHeaders(request, self.headers);
-      LoadingInfo.main.add(url, {request: request});
-      request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-          LoadingInfo.main.remove(url);
-          if (Ajax.isSuccess(request, url)) {
-            var data = JSON.parse(request.responseText);
-            cb(null, data);
-          } else {
-            var e = Ajax.makeError(request, url, "search results from ");
-            e.source = self;
-            cb(e, null);
-          }
+      Ajax.get(url, self.headers, function (err, data) {
+        if (err) {
+          err.name = "search results from ";
         }
-      };
-      request.send();
+        cb(err, data);
+      }, self.withCredentials);
     },
 
     clear: function () {
