@@ -54,10 +54,7 @@ function(Class,
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
-      zoomControlOptions: {
-        position: google.maps.ControlPosition.LEFT_CENTER,
-        style: google.maps.ZoomControlStyle.LARGE
-      },
+      zoomControl: false,
       mapTypeControl: false,
       streetViewControl: false,
       overviewMapControl: false,

@@ -156,9 +156,31 @@ body {
   top: 175px !important;
 }
 
-.zoomButtons {
+.ZoomButtons {
   position: absolute;
-  top: 100px !important;
+  top: 100px;
+  left: 8px;
+  background-color: #ffffff;
+  border-radius: 2px;
+  width: 29px;
+
+  .zoomIn, .zoomOut {
+      text-align: center;
+      height: 29px;
+      color: #666666;
+      font-family: "Roboto", sans-serif;
+      font-size: 18px;
+      font-weight: bold;
+      padding-top: 2px;
+  }
+
+  .zoomDivider {
+    height: 1px;
+    background-color: rgb(90%,90%,90%);
+    position: absolute;
+    width: 19px;
+    left: 5px;
+  }
 }
 
 

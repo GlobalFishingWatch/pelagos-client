@@ -13,6 +13,7 @@ define([
   "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
+  "app/Visualization/UI/ZoomButtons",
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
@@ -37,6 +38,7 @@ define([
   SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
+  ZoomButtons,
   ObjectTemplate,
   BorderContainer,
   ContentPane,
@@ -493,6 +495,8 @@ define([
     initPopups: function (cb) {
       var self = this;
 
+      self.zoomButtons = new ZoomButtons({visualization: self.visualization});
+      self.zoomButtons.startup();
       self.search = new Search({visualization: self.visualization});
       self.search.startup();
       self.library = new AnimationLibrary({visualization: self.visualization});
