@@ -56,7 +56,7 @@ function(Class,
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       disableDoubleClickZoom: true,
       zoomControlOptions: {
-        position: google.maps.ControlPosition.LEFT_TOP,
+        position: google.maps.ControlPosition.LEFT_CENTER,
         style: google.maps.ZoomControlStyle.LARGE
       },
       mapTypeControl: false,
@@ -152,17 +152,7 @@ function(Class,
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
 
-      /* Add a class to the zoom buttons so we can modify them with our css */
-      var addZoomBtnClass = function () {
-         var zoomBtn = $(".gm-bundled-control .gmnoprint:has(img[src='http://maps.gstatic.com/mapfiles/api-3/images/tmapctrl.png'])");
-         if (zoomBtn.length) {
-           zoomBtn.addClass('zoomButtons')
-           cb();
-         } else {
-           setTimeout(addZoomBtnClass, 100);
-         }
-      };
-      addZoomBtnClass();
+      cb();
     },
 
     tilesLoaded: function() {    
@@ -775,7 +765,7 @@ function(Class,
         var data = {
           layer: animation.title,
           toString: function () {
-            return 'Cluster selected.';
+            return 'There are multiple vessesls at this location. Zoom in on the map some more to see individual points.';
           }
         };
         self.handleSelectionInfo(animation, selectionEvent, null, data);

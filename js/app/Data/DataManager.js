@@ -327,7 +327,7 @@ define([
       };
 
       var url = baseUrl + "?query=" + encodeURIComponent(query) + "&offset=" + offset.toString() + "&limit=" + limit.toString();
-      Ajax.get(url, {}, function (err, data) {
+      Ajax.get(url, self.headers, function (err, data) {
         if (err) {
           cb(err);
         } else {
