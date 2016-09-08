@@ -30,7 +30,7 @@ define([
     getSelectedItemList: function () {
       var self = this;
       var items = self.getItemList();
-      var selection = self.animation.data_view.selections.selections.active_category;
+      var selection = self.animation.data_view.selections.selections[self.selectionname];
       var range = selection.data[self.sourcename];
 
       return items.filter(function (item) {
@@ -74,7 +74,7 @@ define([
     },
     getFilter: function () {
       var self = this;
-      var selection = self.animation.data_view.selections.selections.active_category;
+      var selection = self.animation.data_view.selections.selections[self.selectionname];
       var range = selection.data[self.sourcename];
 
       var value = [];
@@ -87,7 +87,7 @@ define([
     },
     setFilter: function (values) {
       var self = this;
-      var selection = self.animation.data_view.selections.selections.active_category;
+      var selection = self.animation.data_view.selections.selections[self.selectionname];
 
       if (values.length > selection.max_range_count) {
         alert("You can not select more than " + selection.max_range_count + " flags at the same time.");
