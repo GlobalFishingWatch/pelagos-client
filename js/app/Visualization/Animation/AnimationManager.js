@@ -54,7 +54,6 @@ function(Class,
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
-      disableDoubleClickZoom: true,
       zoomControlOptions: {
         position: google.maps.ControlPosition.LEFT_CENTER,
         style: google.maps.ZoomControlStyle.LARGE
@@ -384,7 +383,7 @@ function(Class,
      return _.find(self.animations, predicate);
     },
 
-    handleMouse: function (e, type, clear) {
+    handleMouse: function (e, type) {
       var self = this;
 
       var x, y;
@@ -417,7 +416,7 @@ function(Class,
         }
       );
 
-      if (rowidx && clear != true) {
+      if (rowidx) {
         var animation = self.animations[rowidx[0]];
 
         if (animation) {
@@ -431,7 +430,7 @@ function(Class,
             }
           }
         }
-      } else if (clear != false) {
+      } else {
         self.animations.map(function (animation) {
           animation.select(undefined, type, true, e);
         });
@@ -580,16 +579,10 @@ function(Class,
       });
 
       google.maps.event.addListener(self.map, "click", function(e) {
-        self.handleMouse(e, 'selected', false);
+        self.handleMouse(e, 'selected');
         if (e.preventDefault) e.preventDefault();
         if (e.stopPropagation) e.stopPropagation();
       });
-      google.maps.event.addListener(self.map, "dblclick", function(e) {
-        self.handleMouse(e, 'selected', true);
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-      });
-
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;
