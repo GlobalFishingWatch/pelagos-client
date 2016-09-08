@@ -202,9 +202,9 @@ define([
 
     getSelectionInfo: function(selection, cb) {
       var self = this;
+      var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
 
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
-        var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
