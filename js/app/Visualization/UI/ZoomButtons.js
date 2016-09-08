@@ -13,8 +13,9 @@ define([
     visualisation: null,
 
     templateString: '' +
-      '<div class="${baseClass} data-dojo-attach-point="containerNode" style="position: absolute; left: 50%; top: 50%; background: red;">' +
+      '<div class="${baseClass} data-dojo-attach-point="containerNode">' +
       '  <div class="zoomIn" data-dojo-attach-event="click:zoomIn">+</div>' +
+      '  <div class="zoomDivider"></div>' +
       '  <div class="zoomOut" data-dojo-attach-event="click:zoomOut">-</div>' +
       '</div>',
 
