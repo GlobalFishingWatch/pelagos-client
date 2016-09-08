@@ -22,7 +22,7 @@ define([
   var FilterViewer = declare("FilterViewer", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin], {
     baseClass: 'Filters-Filter',
     templateString: '<div>' +
-                    '  <span class="${baseClass}-sourcename" data-dojo-attach-point="sourceNameNode"></span>:' +
+                    '  <span class="${baseClass}-selectionname" data-dojo-attach-point="selectionNameNode"></span>:' +
                     '  <span class="${baseClass}-selection" data-dojo-attach-point="selectionNode"></span>' +
                     '  <span class="${baseClass}-actions"><i class="fa fa-cog" data-dojo-attach-event="click:edit"></i></span>' +
                     '</div>',
@@ -37,11 +37,12 @@ define([
         ).prototype.Display
       )({
         animation: self.animation,
-        sourcename: self.getSourceName()
+        sourcename: self.getSourceName(),
+        selectionname: self.selection_name
       });
       self.display.placeAt(self.selectionNode);
       self.display.startup();
-      html.set(self.sourceNameNode, self.getSourceName());
+      html.set(self.selectionNameNode, self.selection_name);
     },
     getSelection: function () {
       var self = this;
@@ -57,7 +58,8 @@ define([
         FilterEditor.getEditorClass(self.animation.data_view, self.getSourceName())
       )({
         animation: self.animation,
-        sourcename: self.getSourceName()
+        sourcename: self.getSourceName(),
+        selectionname: self.selection_name
       }).show();
     }
   });
@@ -71,6 +73,7 @@ define([
       return (   !selection.hidden
               && selection.sortcols.length == 1
               && selection.sortcols[0]
+              && animation.data_view.source.header.colsByName[selection.sortcols[0]]
               && animation.data_view.source.header.colsByName[selection.sortcols[0]].choices);
     }).map(function (item) {
       return item.key;

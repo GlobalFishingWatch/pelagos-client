@@ -119,8 +119,8 @@ define([
       var self = this;
 
       function compareTilesByCol(colidx) {
-        if (colidx > self.sortcols.length) return 0;
-        var col = self.sortcols[colidx];
+        if (colidx > other.sortcols.length) return 0;
+        var col = other.sortcols[colidx];
         if (self.data[col] == undefined || other.data[col] == undefined) {
           // Ignore any sort columns we don't have...
           return compareTilesByCol(colidx + 1);

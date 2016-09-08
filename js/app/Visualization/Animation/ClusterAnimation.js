@@ -21,7 +21,7 @@ define([
 
       time: {type: "Float32", hidden: true, source: {datetime: 1.0}},
 
-      filter: {type: "Float32", source: {_: null, timerange: -1.0, active_category: -1.0}},
+      filter: {type: "Float32", source: {_: null, timerange: -1.0 /*, active_category: -1.0 */}},
 
       selected: {type: "Float32", hidden: true, source: {selected: 1.0}},
       hover: {type: "Float32", hidden: true, source: {hover: 1.0}}
@@ -43,10 +43,12 @@ define([
       hover_blue: {value: 1.0, min:0.0, max: 1.0}
     },
 
+/*
     selections: $.extend(
       {active_category: {sortcols: ["category"], max_range_count: 3, data: {category: [-1.0/0.0, 1.0/0.0]}, header: {length: 2}}},
       DataAnimation.prototype.selections
     ),
+*/
 
     programSpecs: {
       program: {
