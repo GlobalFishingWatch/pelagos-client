@@ -1,202 +1,127 @@
 define([
   "dojo/_base/declare",
-  "./Widgets/TemplatedDialog",
-  "dijit/layout/BorderContainer",
-  "dijit/layout/ContentPane",
-  "dijit/form/Button",
-  "shims/async/main",
-  "shims/jQuery/main",
-  "app/Visualization/KeyBindings",
-  "app/LoadingInfo",
-  "app/Visualization/UI/Widgets/ColorDropdown"
+  "dijit/_WidgetBase",
+  "dijit/_TemplatedMixin",
+  "dijit/_WidgetsInTemplateMixin",
+  "dijit/_Container",
+  "dijit/form/TextBox",
+  "app/Visualization/UI/AnimationFilterEditor",
+  "dijit/form/HorizontalSlider",
+  "dojox/widget/ColorPicker",
+  "dijit/popup",
+  "shims/jQuery/main"
 ], function(
   declare,
-  Dialog,
-  BorderContainer,
-  ContentPane,
-  Button,
-  async,
-  $,
-  KeyBindings,
-  LoadingInfo,
-  ColorDropdown
+  _WidgetBase,
+  _TemplatedMixin,
+  _WidgetsInTemplateMixin,
+  _Container,
+  TextBox,
+  AnimationFilterEditor,
+  HorizontalSlider,
+  ColorPicker,
+  popup,
+  $
 ){
-  return declare("SimpleAnimationEdtor", [Dialog], {
-    style: "width: 50%;",
-    title: "Animation editor",
-    "class": 'simple-animation-editor-dialog',
-    contentTemplate: '' +
-      '<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="liveSplitters: true" style="min-height: 300px; height: 100%; width: 100%; padding: 0; margin: 0;">' +
-      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'top\'" class="actions" style="border: none; padding: 0; margin: 0;" data-dojo-attach-point="container">' +
-      '    <div data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:addCartoDBAnimation">Add CartoDB</div>' +
-      '    <div data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:addFromLibrary">From library</div>' +
+  return declare("SimpleAnimationEditor", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+    baseClass: 'SimpleAnimationEditor',
+    animation: null,
+    templateString: '' +
+      '<div class="intensity-slider-box" data-dojo-attach-point="domNode">' +
+      '  <div data-dojo-attach-point="intensityNode">' +
+      '    <div class="intensity-label">Intensity:</div>' +
       '  </div>' +
-      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'center\'" class="list" style="border: none; padding: 0; margin: 0;" data-dojo-attach-point="list">' +
-      '  </div>' +
-      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'right\'" style="border: none; padding: 10px; margin: 0; width: 50%" data-dojo-attach-point="editorPane">' +
+      '  <div>' +
+      '    <span class="eyedropper-label">Color:</span>' +
+      '    <a style="float: right;" target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a>' +
       '  </div>' +
       '</div>',
 
-    actionBarTemplate: '' +
-      '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-      '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-event="click:hide">Close</button>' +
-      '</div>',
-
-    visualization: null,
-    addFromLibrary: function () {
-      var self = this;
-      self.visualization.ui.library.displayAnimationLibraryDialog();
-    },
     startup: function () {
       var self = this;
       self.inherited(arguments);
 
-      KeyBindings.register(
-        ['Ctrl', 'Alt', 'G'], null, 'General',
-        'Simple animation editor', self.display.bind(self)
-      );
+      var is_editable = self.animation.constructor.prototype.name == "ClusterAnimation";
+      $(self.domNode).toggle(is_editable);
+      if (is_editable) {
+        var maxv = self.val2slider(self.animation.data_view.header.colsByName.weight.max);
+        var minv = self.val2slider(self.animation.data_view.header.colsByName.weight.min);
+        var curv = self.val2slider(self.animation.data_view.header.colsByName.weight.source.weight);
 
-      self.updateListHandler = self.updateList.bind(self)
-      self.visualization.animations.events.on({
-        'add': self.updateListHandler,
-        'remove': self.updateListHandler
-      });
-      self.updateList();
-    },
+        self.intensitySlider = new HorizontalSlider({
+          value:curv,
+          minimum: minv,
+          maximum: maxv,
+          discreteValues: 100,
+          onChange: self.intensityChange.bind(self),
+          intermediateChanges: true
+        }, "mySlider");
+        self.intensitySlider.placeAt(self.intensityNode);
 
-    updateList: function () {
-      var self = this;
-      $(self.list.containerNode).html('');
+        self.animationFilterEditor = new AnimationFilterEditor({animation: self.animation});
+        self.animationFilterEditor.placeAt(self.domNode);
 
-      visualization.animations.animations.map(function (animation) {
-        /* FIXME: Horrible hack to conform to UX */
-        // if (animation.name != 'CartoDBAnimation') return;
-        var row = $("<div></div>");
-        row.text(animation.title);
-        var description = animation.name;
-        try {
-          if (animation.args.source.args.url) {
-            description += ': ' + animation.args.source.args.url;
-          }
-        } catch (e) {};
-
-        row.attr({title: description});
-        row.data('animation', animation);
-        row.click(self.editAnimation.bind(self));
-
-        animation.events.un({updated: self.updateListHandler});
-        animation.events.on({updated: self.updateListHandler});
-
-        $(self.list.containerNode).append(row);
-      });
-    },
-
-    setEditor: function (editor) {
-      var self = this;
-
-      if (self.editor) {
-        self.editorPane.removeChild(self.editor);
-      }
-      self.editor = editor;
-      if (self.editor) {
-        self.editorPane.addChild(self.editor);
+        self.colorDropDown = new ColorPicker({
+          'class': "sidebarColorPicker",
+          onChange: self.colorSelected.bind(self),
+          style: 'background: white; padding: 10px;',
+          value: self.animation.color
+        });
+        popup.moveOffScreen(self.colorDropDown);
+        self.colorDropDown.startup();
       }
     },
 
-    editAnimation: function (event) {
+    onConfig: function () {
       var self = this;
-      var animation = $(event.target).data('animation');
-
-      var editor = new ContentPane({'class': 'editor', style: 'border: none; padding: 0; margin: 0; width: 100%; height: 100%;', content: '' +
-        '<table>' +
-        '  <tr><th>Title:</th><td><input class="title" type="text"></td></tr>' +
-        '  <tr><th>Type:</th><td class="type"></td></tr>' +
-        '  <tr><th>Url:</th><td><input class="url" type="text" disabled="disabled"></td></tr>' +
-        '  <tr><th>Color:</th><td class="color"></td></tr>' +
-        '</table>' +
-        '<button class="save">Save</button> ' +
-        '<button class="delete">Delete</button>'
-      });
-
-      var colorDropdown = new ColorDropdown();
-      colorDropdown.placeAt($(editor.containerNode).find('.color')[0]);
-      colorDropdown.startup();
-
-      $(editor.containerNode).find('.title').val(animation.title);
-      $(editor.containerNode).find('.type').text(animation.name);
-      $(editor.containerNode).find('.url').val(animation.args.source.args.url);
-      colorDropdown.set("value", animation.color);
-
-      $(editor.containerNode).find('.save').click(function () {
-        animation.title = $(editor.containerNode).find('.title').val();
-        animation.color = colorDropdown.get("value");
-        if (animation.data_view != undefined && animation.data_view.header.uniforms.red != undefined) {
-          var c = animation.color;
-          var rgb = [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
-          animation.data_view.header.uniforms.red.value = rgb[0];
-          animation.data_view.header.uniforms.green.value = rgb[1];
-          animation.data_view.header.uniforms.blue.value = rgb[2];
+      popup.open({
+        parent: self,
+        popup: self.colorDropDown,
+        around: this.configNode,
+        orient: ["below", "before"],
+        onExecute: function(){
+          popup.close(dropDown);
+        },
+        onCancel: function(){
+          popup.close(dropDown);
         }
-        animation.events.triggerEvent("updated");
-        self.setEditor();
       });
-      $(editor.containerNode).find('.delete').click(function () {
-        self.visualization.animations.removeAnimation(animation);
-        self.setEditor();
-      });
-
-      self.setEditor(editor);
     },
 
-    addCartoDBAnimation: function (event) {
+    colorSelected: function(value) {
       var self = this;
 
-      var editor = new ContentPane({'class': 'editor', style: 'border: none; padding: 0; margin: 0; width: 100%; height: 100%;', content: '' +
-        '<table>' +
-        '  <tr><th>Title:</th><td><input class="title" type="text"></td></tr>' +
-        '  <tr><th>Type:</th><td class="type">CartoDBAnimation</td></tr>' +
-        '  <tr><th>Url:</th><td><input class="url" type="text"></td></tr>' +
-        '  <tr><th>Color:</th><td class="color"></td></tr>' +
-        '</table>' +
-        '<button class="add">Add animation</button'
-      });
+      self.animation.color = value;
+      if (self.animation.data_view != undefined && self.animation.data_view.header.uniforms.red != undefined) {
+        var c = self.animation.color;
+        var rgb = [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
+        self.animation.data_view.header.uniforms.red.value = rgb[0];
+        self.animation.data_view.header.uniforms.green.value = rgb[1];
+        self.animation.data_view.header.uniforms.blue.value = rgb[2];
+      }
+      self.animation.events.triggerEvent("updated");
+      self.animation.data_view.events.triggerEvent("update");
 
-      var colorDropdown = new ColorDropdown({value: "#0000ff"});
-      colorDropdown.placeAt($(editor.containerNode).find('.color')[0]);
-      colorDropdown.startup();
-
-      $(editor.containerNode).find('.add').click(function () {
-        var title = $(editor.containerNode).find('.title').val();
-        var url = $(editor.containerNode).find('.url').val();
-        var color = colorDropdown.get("value");
-
-        if (url.length == 0) {
-          alert("You must provide a layer URL");
-          return;
-        }
-        if (title.length == 0) {
-          title = 'CartoDBAnimation: ' + url;
-        }
-
-        self.visualization.animations.addAnimation({
-          type:'CartoDBAnimation',
-          args: {
-            title: title,
-            color: color,
-            source: {type:'EmptyFormat', args: {url:url}}
-          }
-        }, function (err, animation) {});
-
-        self.setEditor();
-      });
-
-      self.setEditor(editor);
+      popup.close(self.colorDropDown);
     },
 
+    val2slider: function(val) {
+      return Math.log(1 + val)/Math.log(4);
+    },
+    slider2val: function(val) {
+      return Math.pow(4, val) - 1;
+    },
 
-    display: function () {
+    intensityChange: function () {
       var self = this;
-      self.show();
+      if (self.update != undefined) return;
+      self.update = setTimeout(function () {
+        var value = self.intensitySlider.get("value");
+
+        self.animation.data_view.header.colsByName.weight.source.weight = self.slider2val(value);
+        self.animation.data_view.changeCol(self.animation.data_view.header.colsByName.weight);
+        self.update = undefined;
+      }, 100);
     }
   });
 });

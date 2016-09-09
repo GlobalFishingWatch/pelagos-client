@@ -65,7 +65,7 @@ define([
       var self = this;
 
       self.sources = {};
-      self.directories = {};
+      self.directories = [];
 
       /** @member {Events} */
       self.events = new Events("Data.DataManager");
@@ -243,13 +243,6 @@ define([
 
     handleHeader: function (source, header) {
       var self = this;
-      var directory;
-      if (source.getDirectory) {
-        directory = source.getDirectory();
-      }
-      if (directory && !self.directories[directory]) {
-        self.directories[directory] = false;
-      }
       header.source = source;
       self.updateHeader();
     },
@@ -280,54 +273,68 @@ define([
       self.events.triggerEvent("update", update);
     },
 
-    listAvailableSources: function (cb) {
+    queryDirectories: function (query, offset, limit, cb) {
       var self = this;
 
-      var sources = {};
+      if (offset == undefined) offset = 0;
+      if (limit == undefined) limit = 10;
 
-      async.each(Object.keys(self.directories), function (url, cb) {
-        Ajax.get(url, {}, function (err, data) {
+      var res = {
+        "entries": [],
+        "query": query,
+        "total": 0,
+        "limit": limit,
+        "offset": offset,
+        "nextOffset": offset + limit
+      };
+
+      async.each(self.directories, function (baseUrl, cb) {
+        self.queryDirectory(baseUrl, query, offset, limit, function (err, data) {
           if (err) {
             cb(err);
           } else {
-            for (var name in data) {
-              for (var key in data[name]) {
-                if (key.slice(-4) == '_url') {
-                  data[name][key] = UrlValues.realpath(url, data[name][key]);
-                }
-              }
-            }
-            _.assign(sources, data);
+            res.entries = res.entries.concat(data.entries);
+            res.total += data.total;
             cb();
           }
         });
       }, function (err) {
-          if (err) {
-            cb(err);
-          } else {
-            cb(null, sources);
-          }
-      });
-    },
-
-    listAvailableSourceAnimations: function (source, cb) {
-      Ajax.get(source.workspace_url, {}, function (err, data) {
         if (err) {
           cb(err);
         } else {
-          cb(null, data.map.animations.filter(function (animation) {
-            if (source.filter == false) {
-              return true;
+          cb(null, res);
+        }
+      });
+    },
+
+    queryDirectory: function (baseUrl, query, offset, limit, cb) {
+      var self = this;
+
+      if (offset == undefined) offset = 0;
+      if (limit == undefined) limit = 10;
+
+      var handleRelativeUrls = function (baseUrl, obj) {
+        if (obj != null && typeof(obj) == "object") {
+          for (var key in obj) {
+            if (key.slice(-4) == '_url') {
+              obj[key] = UrlValues.realpath(baseUrl, obj[key]);
+            } else {
+              obj[key] = handleRelativeUrls(baseUrl, obj[key]);
             }
-            if (animation.is_main != undefined) {
-              return animation.is_main;
-            }
-            try {
-              return animation.args.source.args.url == source.tile_url
-            } catch (err) {
-              return false;
-            }
-          }));
+          }
+        }
+        return obj;
+      };
+
+      var url = baseUrl + "?query=" + encodeURIComponent(query) + "&offset=" + offset.toString() + "&limit=" + limit.toString();
+      Ajax.get(url, self.headers, function (err, data) {
+        if (err) {
+          cb(err);
+        } else {
+          data.entries = data.entries.map(function (animation) {
+            return handleRelativeUrls(url, animation);
+          });
+          cb(null, data);
         }
       });
     },
@@ -349,6 +356,19 @@ define([
       return Object.items(self.sources).map(function (item) {
         return indent + item.key + " (Usage: " + item.value.usage + ")" + '\n' + item.value.source.printTree(subargs);
       }).join('\n');
+    },
+
+    toJSON: function () {
+      var self = this;
+
+      return {
+        directories: self.directories
+      };
+    },
+
+    load: function (data, cb) {
+      var self = this;
+      self.directories = data.directories || [];
     }
   });
 });

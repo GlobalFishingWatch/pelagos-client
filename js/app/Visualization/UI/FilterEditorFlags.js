@@ -1,17 +1,17 @@
 define([
   "dojo/_base/declare",
   "app/CountryCodes",
-  "app/Visualization/UI/FilterEditor",
+  "app/Visualization/UI/FilterEditorText",
     "dojo/store/Memory",
   "app/Visualization/UI/Paths"
 ], function(
   declare,
   CountryCodes,
-  FilterEditor,
+  FilterEditorText,
   Memory,
   Paths
 ){
-  return declare("FilterEditor", [FilterEditor], {
+  return declare("FilterEditor", [FilterEditorText], {
     labelAttr: "label",
     labelType: "html",
     getStore: function () {
@@ -25,7 +25,7 @@ define([
       });
       return new Memory({data: data});
     },
-    Display: declare("Display", [FilterEditor.prototype.Display], {
+    Display: declare("Display", [FilterEditorText.prototype.Display], {
       rangeUpdated: function () {
         var self = this;
 

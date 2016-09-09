@@ -11,7 +11,7 @@ define([
   _WidgetsInTemplateMixin,
   _Container
 ){
-  return declare("SidePanelBase", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+  return declare("TemplatedContainer", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
     templateString: '<div class="${baseClass}">' +
                     '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
                     '</div>'
