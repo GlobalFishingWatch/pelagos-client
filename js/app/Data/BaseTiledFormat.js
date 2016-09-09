@@ -184,11 +184,14 @@ define([
 
     getSelectionUrl: function(selection, fallbackLevel) {
       var self = this;
-      /* FIXME: self.header.infoUsesSelection is a workaround for
-         current info database that doesn't contain seriesgroup
-         values. This should be removed in the future. */
 
       var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+
+      return self.getQueryUrl(query, fallbackLevel);
+    },
+
+    getQueryUrl: function(query, fallbackLevel) {
+      var self = this;
 
       var baseUrl = self.getUrl("selection-info", query, fallbackLevel);
       if (baseUrl.indexOf("/sub/") != -1) {
@@ -203,8 +206,14 @@ define([
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
+      /* FIXME: self.header.infoUsesSelection is a workaround for
+         current info database that doesn't contain seriesgroup
+         values. This should be removed in the future. */
+
+      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
-        var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
+        var url = self.getQueryUrl(query, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
