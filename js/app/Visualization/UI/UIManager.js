@@ -63,6 +63,7 @@ define([
 
     initialize: function (visualization) {
       var self = this;
+      self.config = {};
       self.visualization = visualization;
     },
 
