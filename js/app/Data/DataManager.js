@@ -369,6 +369,7 @@ define([
     load: function (data, cb) {
       var self = this;
       self.directories = data.directories || [];
+      cb();
     }
   });
 });
