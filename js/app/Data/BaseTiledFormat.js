@@ -267,7 +267,8 @@ define([
     search: function(query, offset, limit, cb) {
       var self = this;
 
-      var url = self.getUrl("search", data, -1) + "/search?query=" + encodeURIComponent(query);
+      var key = {query: query, offset: offset, limit: limit};
+      var url = self.getUrl("search", key, -1) + "/search?query=" + encodeURIComponent(query);
       if (offset != undefined) {
         url += "&offset=" + offset.toString();
       }
