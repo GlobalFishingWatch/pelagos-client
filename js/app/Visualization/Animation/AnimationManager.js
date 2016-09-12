@@ -760,7 +760,7 @@ function(Class,
         var data = {
           layer: animation.title,
           toString: function () {
-            return 'There are multiple vessesls at this location. Zoom in on the map some more to see individual points.';
+            return 'There are multiple vessels at this location. Zoom in to see individual points.';
           }
         };
         self.handleSelectionInfo(animation, selectionEvent, null, data);
