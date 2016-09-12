@@ -14,6 +14,7 @@ define([
   "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
+  "app/Visualization/UI/ZoomButtons",
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
@@ -39,6 +40,7 @@ define([
   SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
+  ZoomButtons,
   ObjectTemplate,
   BorderContainer,
   ContentPane,
@@ -63,6 +65,7 @@ define([
 
     initialize: function (visualization) {
       var self = this;
+      self.config = {};
       self.visualization = visualization;
     },
 
@@ -102,8 +105,8 @@ define([
 
       self.controlButtonsNode = $(new ObjectTemplate(''
         + '<div class="control_box">'
-        + '  <div><button class="btn btn-default btn-lg" data-name="play"><i title="play" class="fa fa-play paused"></i><i title="pause" class="fa fa-pause playing"></i></button></div>'
-        + '  <div><button class="btn btn-default btn-lg" data-name="share"><i title="share workspace" class="fa fa-share-alt"></i></button></div>'
+        + '  <div><button class="btn btn-default btn-lg share" data-name="share"><i title="share workspace" class="fa fa-share-alt"></i></button></div>'
+        + '  <div><button class="btn btn-default btn-lg play" data-name="play"><i title="play" class="fa fa-play paused"></i><i title="pause" class="fa fa-pause playing"></i></button></div>'
         + ''
         + '  <a class="balloon">'
         + '    <div>'
@@ -497,6 +500,8 @@ define([
 
       self.mouseLatLon = new MouseLatLon({visualization: self.visualization});
       self.mouseLatLon.startup();
+      self.zoomButtons = new ZoomButtons({visualization: self.visualization});
+      self.zoomButtons.startup();
       self.search = new Search({visualization: self.visualization});
       self.search.startup();
       self.library = new AnimationLibrary({visualization: self.visualization});

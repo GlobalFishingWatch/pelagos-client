@@ -9,6 +9,7 @@ define([
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/AnimationEditor",
+  "app/Visualization/UI/SimpleMessageDialog",
   "shims/jQuery/main",
   "dijit/popup",
   "dojox/widget/ColorPicker"
@@ -23,6 +24,7 @@ define([
   AnimationListBase,
   SimpleAnimationEditor,
   AnimationEditor,
+  SimpleMessageDialog,
   $,
   popup,
   ColorPicker
@@ -33,7 +35,7 @@ define([
     select_default: true,
 
     templateString: '' +
-        '<div class="display-mode" style="overflow: auto;">' +
+        '<div class="${baseClass} display-mode" style="overflow: auto;">' +
         '  <div class="titleButtons">' +
         '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
@@ -41,7 +43,7 @@ define([
         '    <label>Title:</label>' +
         '    <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
         '  </div>' +
-        '  <div id="layers">' +
+        '  <div id="layers" class="contentWrapper">' +
         '    <form class="animation-list" data-dojo-attach-point="containerNode">'+
         '      <div class="animation-row editing-mode-only">' +
         '        <div class="left-buttons">' +
@@ -124,7 +126,7 @@ define([
       '    <div>' +
       '      <span class="animation-title" data-dojo-attach-point="titleNode"></span>' +
       '      <div class="animation-buttons">' +
-      '        <a target="_blank" data-dojo-attach-point="infoNode" class="display-mode-only"><i class="fa fa-info"></i></a>' +
+      '        <a target="_blank" data-dojo-attach-point="infoNode" data-dojo-attach-event="click:infoClick" class="display-mode-only"><i class="fa fa-info"></i></a>' +
       '        <a class="expander advanced-mode-only editing-mode-only" data-dojo-attach-point="expanderNode" data-dojo-attach-event="click:toggleExpanded">' +
                 '<i class="fa fa-chevron-right"></i>' +
               '</a>' +
@@ -170,7 +172,7 @@ define([
       if (descriptionUrl) {
         $(self.infoNode).attr("href", descriptionUrl);
       }
-      $(self.infoNode).toggle(!!descriptionUrl);
+      $(self.infoNode).toggle(!!descriptionUrl || !!self.animation.description);
 
       var expand = !!self.animation.args.editorExpanded;
       var expander = $(self.expanderNode);
@@ -182,6 +184,13 @@ define([
         expander.find('i').removeClass('fa-chevron-down');
       }
       $(self.domNode).toggleClass('animation-editor-collapsed', !expand);
+    },
+
+    infoClick: function () {
+      var self = this;
+      if (self.animation.description) {
+        SimpleMessageDialog.show("About " + self.animation.title, self.animation.description);
+      }
     },
 
     toggleVisible: function () {

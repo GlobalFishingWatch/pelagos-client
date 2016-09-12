@@ -54,11 +54,7 @@ function(Class,
 
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
-      disableDoubleClickZoom: true,
-      zoomControlOptions: {
-        position: google.maps.ControlPosition.LEFT_TOP,
-        style: google.maps.ZoomControlStyle.LARGE
-      },
+      zoomControl: false,
       mapTypeControl: false,
       streetViewControl: false,
       overviewMapControl: false,
@@ -152,17 +148,7 @@ function(Class,
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
 
-      /* Add a class to the zoom buttons so we can modify them with our css */
-      var addZoomBtnClass = function () {
-         var zoomBtn = $(".gm-bundled-control .gmnoprint:has(div[title='Zoom in'])");
-         if (zoomBtn.length) {
-           zoomBtn.addClass('zoomButtons')
-           cb();
-         } else {
-           setTimeout(addZoomBtnClass, 100);
-         }
-      };
-      addZoomBtnClass();
+      cb();
     },
 
     tilesLoaded: function() {    
@@ -394,7 +380,7 @@ function(Class,
      return _.find(self.animations, predicate);
     },
 
-    handleMouse: function (e, type, clear) {
+    handleMouse: function (e, type) {
       var self = this;
 
       var x, y;
@@ -427,16 +413,21 @@ function(Class,
         }
       );
 
-      if (rowidx && clear != true) {
+      if (rowidx) {
         var animation = self.animations[rowidx[0]];
-        if (animation && animation.data_view) {
-          animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
-        }
 
-        if (animation && animation.select([rowidx[1], rowidx[2]], type, true, e)) {
-          return animation;
+        if (animation) {
+          if (animation.data_view) {
+            animation.data_view.selections.selections[type].rawInfo = KeyModifiers.active.Shift;
+          }
+
+          if (!animation.selectionAnimationFor || animation.data_view.selections.selections[type].rawInfo) {
+            if (animation.select([rowidx[1], rowidx[2]], type, true, e)) {
+              return animation;
+            }
+          }
         }
-      } else if (clear != false) {
+      } else {
         self.animations.map(function (animation) {
           animation.select(undefined, type, true, e);
         });
@@ -585,16 +576,10 @@ function(Class,
       });
 
       google.maps.event.addListener(self.map, "click", function(e) {
-        self.handleMouse(e, 'selected', false);
+        self.handleMouse(e, 'selected');
         if (e.preventDefault) e.preventDefault();
         if (e.stopPropagation) e.stopPropagation();
       });
-      google.maps.event.addListener(self.map, "dblclick", function(e) {
-        self.handleMouse(e, 'selected', true);
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-      });
-
       google.maps.event.addListener(self.map, "rightclick", function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;
@@ -737,7 +722,7 @@ function(Class,
 
       if (type == 'selected') {
         self.events.triggerEvent('info-loading', {});
-        if (dataView.source.header.seriesTilesets) {
+        if (dataView.source.header.seriesTilesets && !dataView.selections.selections[type].rawInfo) {
           self.hideAllSelectionAnimations();
         }
 
@@ -775,12 +760,12 @@ function(Class,
         var data = {
           layer: animation.title,
           toString: function () {
-            return 'Cluster selected.';
+            return 'There are multiple vessels at this location. Zoom in to see individual points.';
           }
         };
         self.handleSelectionInfo(animation, selectionEvent, null, data);
       } else {
-        if (type == 'selected') {
+        if (type == 'selected' && !dataView.selections.selections[type].rawInfo) {
           self.showSelectionAnimations(animation, selection);
         }
         dataView.selections.getSelectionInfo(type, function (err, data) {

@@ -128,7 +128,7 @@ class HomeTest(unittest.TestCase):
             driver.get_screenshot_as_file(name)
             raise
 
-    def test_timeslider(self):
+    def DISABLED_timeslider(self):
         driver = server.driver
         try:
             driver.set_window_size(1280, 776)
@@ -176,7 +176,7 @@ class HomeTest(unittest.TestCase):
             self.assertEqual(get_tiles(), [u'-22.5,-11.25,0,0', u'-22.5,-22.5,0,-11.25', u'-22.5,-33.75,0,-22.5', u'-22.5,0,0,11.25', u'-22.5,11.25,0,22.5', u'-22.5,22.5,0,33.75', u'-45,-11.25,-22.5,0', u'-45,-22.5,-22.5,-11.25', u'-45,-33.75,-22.5,-22.5', u'-45,0,-22.5,11.25', u'-45,11.25,-22.5,22.5', u'-45,22.5,-22.5,33.75', u'-67.5,-11.25,-45,0', u'-67.5,-22.5,-45,-11.25', u'-67.5,-33.75,-45,-22.5', u'-67.5,0,-45,11.25', u'-67.5,11.25,-45,22.5', u'-67.5,22.5,-45,33.75', u'0,-11.25,22.5,0', u'0,-22.5,22.5,-11.25', u'0,-33.75,22.5,-22.5', u'0,0,22.5,11.25', u'0,11.25,22.5,22.5', u'0,22.5,22.5,33.75', u'22.5,-11.25,45,0', u'22.5,-22.5,45,-11.25', u'22.5,-33.75,45,-22.5', u'22.5,0,45,11.25', u'22.5,11.25,45,22.5', u'22.5,22.5,45,33.75', u'45,-11.25,67.5,0', u'45,-22.5,67.5,-11.25', u'45,-33.75,67.5,-22.5', u'45,0,67.5,11.25', u'45,11.25,67.5,22.5', u'45,22.5,67.5,33.75'])
 
             actions = ActionChains(driver)
-            actions.click(driver.find_element_by_xpath('//div[@title="Zoom in"]'))
+            actions.click(driver.find_element_by_xpath('//div[@class="zoomIn"]'))
             actions.perform()
 
             time.sleep(1)
@@ -242,7 +242,7 @@ class HomeTest(unittest.TestCase):
             driver.get_screenshot_as_file(name)
             raise
 
-    def test_vessel_track(self):
+    def DISABLED_vessel_track(self):
         driver = server.driver
         try:
             driver.set_window_size(1280, 776)

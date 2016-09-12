@@ -114,6 +114,10 @@ label {
   }
 }
 
+.dijitAccordionChildWrapper .contentWrapper {
+  padding: 11px;
+}
+
 #test, #visualization {
   position: absolute;
   left: 0;
@@ -152,9 +156,31 @@ body {
   top: 175px !important;
 }
 
-.zoomButtons {
+.ZoomButtons {
   position: absolute;
-  top: 100px !important;
+  top: 100px;
+  left: 8px;
+  background-color: #ffffff;
+  border-radius: 2px;
+  width: 29px;
+
+  .zoomIn, .zoomOut {
+      text-align: center;
+      height: 29px;
+      color: #666666;
+      font-family: "Roboto", sans-serif;
+      font-size: 18px;
+      font-weight: bold;
+      padding-top: 2px;
+  }
+
+  .zoomDivider {
+    height: 1px;
+    background-color: rgb(90%,90%,90%);
+    position: absolute;
+    width: 19px;
+    left: 5px;
+  }
 }
 
 
@@ -168,7 +194,7 @@ body {
 
 .main-timeline {
   position: absolute;
-  left: 5px;
+  left: 8px;
   right: 8px;
   bottom: 5pt;
   height: 75pt;
@@ -495,7 +521,7 @@ content: "\f067";
       margin: 0;
       font-weight: 500;
     }
-    .Filters-Filter-sourcename {
+    .Filters-Filter-selectionname {
       width: 50%;
       text-align: left;
     }
@@ -513,33 +539,31 @@ content: "\f067";
 }
 
 .control_box {
-  width: 35pt;
-  height: 20pt;
   text-align: center;
   position: absolute;
-  bottom: 55pt;
-  left: 10px;
+  bottom: 8px;
+  left: 8px;
   z-index: 5;
 
-  div {
-    display: inline-block;
-
+  .btn-lg.play {
+    background-color: #011137;
+    opacity: .95;
+    height: 99px;
+    width: 50px;
   }
 
-  .btn-lg, .btn-xs {
-    width: 15pt;
-    height: 15pt;
-    border: solid 1pt #888888;
-    border-radius: 4pt;
-    margin-bottom: 7.666pt;
-    margin-right: 7.666pt;
+    .btn-lg.share {
+    background-color: #011137;
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    border: solid 5px #294480 !important;
+    margin-bottom: 10px !important;
   }
 
   .fa {
     color: #ffffff;
-    font-size: 12pt;
-    width: 22px;
-    height: 22px;
+    font-size: 15pt;
     text-align: center;
   }
 
@@ -860,13 +884,13 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
     th {
       text-align: left;
       vertical-align: top;
-      font-size: 80%;
+      font-size: 9pt;
       font-weight: 400;
       padding: 0;
       margin: 0;
 
       td {
-        font-size: 80%;
+        font-size: 9pt;
         font-weight: normal;
         padding: 0;
         margin: 0;
@@ -877,8 +901,16 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
       }
     }
 
+    #vessel_identifiers {
+        font-size: 9pt;
+    }
+
+    #DataQualityLevel_0 div,
+    #DataQualityLevel_0 div .value {
+        font-size: 9pt;
+    }
+
     #layers, .InfoUI .wrapper {
-      padding: 11px;
       word-wrap: break-word;
     }
 
@@ -911,9 +943,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
           .left-buttons,
           .animation-buttons {
             vertical-align: top;
-            padding-top: 2px;
             white-space: nowrap;
-            font-size: 90%;
 
             > * {
               padding-right: 10px;
@@ -931,11 +961,11 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
 
           .animation-content {
             color: #ffffff;
-            font-size: 80%;
+            font-size: 9pt;
             width: 100%;
 
             .animation-editor {
-              font-size: 80%;
+              font-size: 9pt;
 
               .SimpleAnimationEditor {
                 > * {
@@ -1219,14 +1249,8 @@ div.cartodb-legend-stack {
     padding-bottom: 60pt;
     margin-right: 8px;
   }
-  .Timeline .overlay .window .frame .lengthLabel {
-    bottom: inherit;
-  }
   .Timeline .line-visibility .line .tickmarks-container {
     height: 69%;
-  }
-  .control_box {
-    bottom: 36pt;
   }
   .main-timeline {
     bottom: 5pt;
