@@ -29,8 +29,11 @@ void main() {
   } else {
     gl_PointSize = 3.0;
 
-    baseColor = (_weight * vec4(high_red, high_green, high_blue, high_alpha)
-                 + (1. - _weight) * vec4(low_red, low_green, low_blue, low_alpha));
+    if (_weight > 0.0) {
+      baseColor = vec4(high_red, high_green, high_blue, high_alpha);
+    } else {
+      baseColor = vec4(low_red, low_green, low_blue, low_alpha);
+    }
     focusColor = vec4(focus_red, focus_green, focus_blue, 1.0);
   }
 }
