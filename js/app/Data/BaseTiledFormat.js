@@ -340,7 +340,8 @@ define([
         bounds: bounds,
         dataQualityLevel: self.dataQualityLevel,
         temporalExtents: self.header.temporalExtents,
-        temporalExtentsBase: self.header.temporalExtentsBase
+        temporalExtentsBase: self.header.temporalExtentsBase,
+        autoAdjustQuality: self.header.autoAdjustQuality
       });
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
