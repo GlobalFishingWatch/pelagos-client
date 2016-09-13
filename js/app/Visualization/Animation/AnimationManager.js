@@ -1041,7 +1041,14 @@ function(Class,
         self.setMapOptions(animations.options);
       }
 
-      async.mapSeries(animations.animations, self.addAnimation.bind(self), cb || function () {});
+      async.mapSeries(
+        animations.animations,
+        function (item, cb) {
+          self.addAnimation(item, function (err) {
+            cb(); // Ignore load errors and keep loading other animations
+          });
+        },
+        cb || function () {});
     },
 
     toJSON: function () {
