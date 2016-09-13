@@ -23,9 +23,9 @@ define([
     },
 
     uniforms: {
-      high_red: {value: 0.9, min:0.0, max: 1.0},
+      high_red: {value: 0.4, min:0.0, max: 1.0},
       high_green: {value: 0.6, min:0.0, max: 1.0},
-      high_blue: {value: 0.4, min:0.0, max: 1.0},
+      high_blue: {value: 0.9, min:0.0, max: 1.0},
       high_alpha: {value: 1.0, min:0.0, max: 1.0},
 
       low_red: {value: 0.4, min:0.0, max: 1.0},
