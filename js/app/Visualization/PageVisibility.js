@@ -2,7 +2,7 @@
 
 define([
   "app/Class",
-  "app/Events",
+  "app/Events"
 ], function(
   Class,
   Events
