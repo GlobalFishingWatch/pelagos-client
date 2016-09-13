@@ -6,7 +6,8 @@ define([
   "dijit/_Container",
   "dijit/form/TextBox",
   "app/Visualization/UI/DataViewUI",
-  "shims/jQuery/main"
+  "shims/jQuery/main",
+  "app/Visualization/UI/Widgets/ClickToEdit"
 ], function(
   declare,
   _WidgetBase,
@@ -15,7 +16,8 @@ define([
   _Container,
   TextBox,
   DataViewUI,
-  $
+  $,
+  ClickToEdit
 ){
   return declare("AnimationEditor", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
     baseClass: 'AnimationEditor',
@@ -23,7 +25,12 @@ define([
     templateString: '' +
       '<div class="${baseClass}">' +
       '  <div data-dojo-attach-point="containerNode">' +
-      '    <div><label>Title:</label> <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input></div>' +
+      '    <div>' +
+      '      <label>Title:</label>' +
+      '      <div data-dojo-type="app/Visualization/UI/Widgets/ClickToEdit">' +
+      '        <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
+      '      </div>' +
+      '    </div>' +
       '    <div>${animation.args.source.type}:${animation.args.source.args.url}</div>' +
       '  </div>' +
       '</div>',
