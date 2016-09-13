@@ -14,7 +14,7 @@ define([
 ){
   return declare("AnimationLibrary", [TemplatedDialog], {
     style: "width: 50%;",
-    title: "Animation library",
+    title: "Layer library",
     "class": 'search-dialog',
     content: '' +
       '<input type="text" class="query" style="width: 100%;" placeholder="Animation title or keywords"></input>' +
