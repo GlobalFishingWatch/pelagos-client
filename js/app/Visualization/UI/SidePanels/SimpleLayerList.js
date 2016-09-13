@@ -12,7 +12,8 @@ define([
   "app/Visualization/UI/SimpleMessageDialog",
   "shims/jQuery/main",
   "dijit/popup",
-  "dojox/widget/ColorPicker"
+  "dojox/widget/ColorPicker",
+  "app/Visualization/UI/Widgets/ClickToEdit"
 ], function(
   declare,
   domStyle,
@@ -27,7 +28,8 @@ define([
   SimpleMessageDialog,
   $,
   popup,
-  ColorPicker
+  ColorPicker,
+  ClickToEdit
 ){
   var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
     baseClass: 'SimpleLayerList',
@@ -124,7 +126,12 @@ define([
       '  </div>' + 
       '  <div class="animation-content">' +
       '    <div>' +
-      '      <span class="animation-title" data-dojo-attach-point="titleNode"></span>' +
+      '      <span class="animation-title">' +
+      '        <div class="editing-mode-only" data-dojo-type="app/Visualization/UI/Widgets/ClickToEdit">' +
+      '          <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
+      '        </div>' +
+      '        <span class="display-mode-only" data-dojo-attach-point="titleNode"></span>' +
+      '      </span>' +
       '      <div class="animation-buttons">' +
       '        <a target="_blank" data-dojo-attach-point="infoNode" data-dojo-attach-event="click:infoClick" class="display-mode-only"><i class="fa fa-info"></i></a>' +
       '        <a class="expander advanced-mode-only editing-mode-only" data-dojo-attach-point="expanderNode" data-dojo-attach-event="click:toggleExpanded">' +
@@ -184,6 +191,14 @@ define([
         expander.find('i').removeClass('fa-chevron-down');
       }
       $(self.domNode).toggleClass('animation-editor-collapsed', !expand);
+
+      self.titleInput.set("value", self.animation.title);
+    },
+
+    titleChange: function () {
+      var self = this;
+      self.animation.title = self.titleInput.get("value");
+      self.animation.events.triggerEvent("updated", {});
     },
 
     infoClick: function () {

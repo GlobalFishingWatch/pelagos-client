@@ -23,8 +23,7 @@ define([
     templateString: '' +
       '<div class="${baseClass}">' +
       '  <div data-dojo-attach-point="containerNode">' +
-      '    <div><label>Title:</label> <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input></div>' +
-      '    <div>${animation.args.source.type}:${animation.args.source.args.url}</div>' +
+      '    <div>Source: ${animation.args.source.type}:${animation.args.source.args.url}</div>' +
       '  </div>' +
       '</div>',
 
@@ -39,18 +38,6 @@ define([
           dataview: self.animation.data_view
         }));
       }
-
-      self.animation.events.on({updated: self.updatedHandler.bind(self)});
-      self.updatedHandler();
-    },
-    updatedHandler: function () {
-      var self = this;
-      self.titleInput.set("value", self.animation.title);
-    },
-    titleChange: function () {
-      var self = this;
-      self.animation.title = self.titleInput.get("value");
-      self.animation.events.triggerEvent("updated", {});
     }
   });
 });
