@@ -6,8 +6,7 @@ define([
   "dijit/_Container",
   "dijit/form/TextBox",
   "app/Visualization/UI/DataViewUI",
-  "shims/jQuery/main",
-  "app/Visualization/UI/Widgets/ClickToEdit"
+  "shims/jQuery/main"
 ], function(
   declare,
   _WidgetBase,
@@ -16,8 +15,7 @@ define([
   _Container,
   TextBox,
   DataViewUI,
-  $,
-  ClickToEdit
+  $
 ){
   return declare("AnimationEditor", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
     baseClass: 'AnimationEditor',
@@ -25,13 +23,7 @@ define([
     templateString: '' +
       '<div class="${baseClass}">' +
       '  <div data-dojo-attach-point="containerNode">' +
-      '    <div>' +
-      '      <label>Title:</label>' +
-      '      <div data-dojo-type="app/Visualization/UI/Widgets/ClickToEdit">' +
-      '        <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
-      '      </div>' +
-      '    </div>' +
-      '    <div>${animation.args.source.type}:${animation.args.source.args.url}</div>' +
+      '    <div>Source: ${animation.args.source.type}:${animation.args.source.args.url}</div>' +
       '  </div>' +
       '</div>',
 
@@ -46,18 +38,6 @@ define([
           dataview: self.animation.data_view
         }));
       }
-
-      self.animation.events.on({updated: self.updatedHandler.bind(self)});
-      self.updatedHandler();
-    },
-    updatedHandler: function () {
-      var self = this;
-      self.titleInput.set("value", self.animation.title);
-    },
-    titleChange: function () {
-      var self = this;
-      self.animation.title = self.titleInput.get("value");
-      self.animation.events.triggerEvent("updated", {});
     }
   });
 });
