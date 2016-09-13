@@ -9,6 +9,7 @@ define([
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/AnimationEditor",
+  "app/Visualization/UI/SimpleMessageDialog",
   "shims/jQuery/main",
   "dijit/popup",
   "dojox/widget/ColorPicker"
@@ -23,6 +24,7 @@ define([
   AnimationListBase,
   SimpleAnimationEditor,
   AnimationEditor,
+  SimpleMessageDialog,
   $,
   popup,
   ColorPicker
@@ -124,7 +126,7 @@ define([
       '    <div>' +
       '      <span class="animation-title" data-dojo-attach-point="titleNode"></span>' +
       '      <div class="animation-buttons">' +
-      '        <a target="_blank" data-dojo-attach-point="infoNode" class="display-mode-only"><i class="fa fa-info"></i></a>' +
+      '        <a target="_blank" data-dojo-attach-point="infoNode" data-dojo-attach-event="click:infoClick" class="display-mode-only"><i class="fa fa-info"></i></a>' +
       '        <a class="expander advanced-mode-only editing-mode-only" data-dojo-attach-point="expanderNode" data-dojo-attach-event="click:toggleExpanded">' +
                 '<i class="fa fa-chevron-right"></i>' +
               '</a>' +
@@ -170,7 +172,7 @@ define([
       if (descriptionUrl) {
         $(self.infoNode).attr("href", descriptionUrl);
       }
-      $(self.infoNode).toggle(!!descriptionUrl);
+      $(self.infoNode).toggle(!!descriptionUrl || !!self.animation.description);
 
       var expand = !!self.animation.args.editorExpanded;
       var expander = $(self.expanderNode);
@@ -182,6 +184,13 @@ define([
         expander.find('i').removeClass('fa-chevron-down');
       }
       $(self.domNode).toggleClass('animation-editor-collapsed', !expand);
+    },
+
+    infoClick: function () {
+      var self = this;
+      if (self.animation.description) {
+        SimpleMessageDialog.show("About " + self.animation.title, self.animation.description);
+      }
     },
 
     toggleVisible: function () {

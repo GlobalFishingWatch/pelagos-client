@@ -184,11 +184,14 @@ define([
 
     getSelectionUrl: function(selection, fallbackLevel) {
       var self = this;
-      /* FIXME: self.header.infoUsesSelection is a workaround for
-         current info database that doesn't contain seriesgroup
-         values. This should be removed in the future. */
 
       var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+
+      return self.getQueryUrl(query, fallbackLevel);
+    },
+
+    getQueryUrl: function(query, fallbackLevel) {
+      var self = this;
 
       var baseUrl = self.getUrl("selection-info", query, fallbackLevel);
       if (baseUrl.indexOf("/sub/") != -1) {
@@ -203,8 +206,14 @@ define([
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
+      /* FIXME: self.header.infoUsesSelection is a workaround for
+         current info database that doesn't contain seriesgroup
+         values. This should be removed in the future. */
+
+      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
-        var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
+        var url = self.getQueryUrl(query, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
@@ -258,7 +267,8 @@ define([
     search: function(query, offset, limit, cb) {
       var self = this;
 
-      var url = self.getUrl("search", data, -1) + "/search?query=" + encodeURIComponent(query);
+      var key = {query: query, offset: offset, limit: limit};
+      var url = self.getUrl("search", key, -1) + "/search?query=" + encodeURIComponent(query);
       if (offset != undefined) {
         url += "&offset=" + offset.toString();
       }
@@ -330,7 +340,8 @@ define([
         bounds: bounds,
         dataQualityLevel: self.dataQualityLevel,
         temporalExtents: self.header.temporalExtents,
-        temporalExtentsBase: self.header.temporalExtentsBase
+        temporalExtentsBase: self.header.temporalExtentsBase,
+        autoAdjustQuality: self.header.autoAdjustQuality
       });
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;
