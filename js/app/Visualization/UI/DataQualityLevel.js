@@ -15,9 +15,10 @@ define([
     baseClass: 'DataQualityLevel',
     templateString: '' +
       '<div class="${baseClass}" style="overflow: auto;">' +
-      '  <div>Data quality:</div>' +
-      '  <div><span class="${baseClass}Container" data-dojo-attach-point="containerNode"></span></div>' +
-      '  <div><span class="value" data-dojo-attach-point="valueNode"></span> zoom levels</div>' +
+      '  <div>Heatmap density</div>' +
+      '  <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' +
+      '  <div class="labels"><div style="float: left;">Low</div><div style="float: right;">High</div><div style="clear: both;"></div></div>' +
+      '  <div class="value"><span data-dojo-attach-point="valueNode"></span> zoom levels</div>' +
       '</div>',
     visualization: null,
 
@@ -29,9 +30,9 @@ define([
       self.addChild(new HorizontalSlider({
         "class": "pull-right",
         value: value,
-        minimum: 0,
-        maximum: 6,
-        discreteValues: 7,
+        minimum: 2,
+        maximum: 4,
+        discreteValues: 3,
         intermediateChanges: false,
         onChange: self.change.bind(self)
       }));

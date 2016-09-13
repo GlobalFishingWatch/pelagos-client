@@ -267,7 +267,8 @@ define([
     search: function(query, offset, limit, cb) {
       var self = this;
 
-      var url = self.getUrl("search", data, -1) + "/search?query=" + encodeURIComponent(query);
+      var key = {query: query, offset: offset, limit: limit};
+      var url = self.getUrl("search", key, -1) + "/search?query=" + encodeURIComponent(query);
       if (offset != undefined) {
         url += "&offset=" + offset.toString();
       }
@@ -339,7 +340,8 @@ define([
         bounds: bounds,
         dataQualityLevel: self.dataQualityLevel,
         temporalExtents: self.header.temporalExtents,
-        temporalExtentsBase: self.header.temporalExtentsBase
+        temporalExtentsBase: self.header.temporalExtentsBase,
+        autoAdjustQuality: self.header.autoAdjustQuality
       });
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;

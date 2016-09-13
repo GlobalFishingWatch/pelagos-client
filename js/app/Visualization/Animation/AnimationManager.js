@@ -760,7 +760,7 @@ function(Class,
         var data = {
           layer: animation.title,
           toString: function () {
-            return 'There are multiple vessesls at this location. Zoom in on the map some more to see individual points.';
+            return 'There are multiple vessels at this location. Zoom in to see individual points.';
           }
         };
         self.handleSelectionInfo(animation, selectionEvent, null, data);
@@ -1041,7 +1041,14 @@ function(Class,
         self.setMapOptions(animations.options);
       }
 
-      async.mapSeries(animations.animations, self.addAnimation.bind(self), cb || function () {});
+      async.mapSeries(
+        animations.animations,
+        function (item, cb) {
+          self.addAnimation(item, function (err) {
+            cb(); // Ignore load errors and keep loading other animations
+          });
+        },
+        cb || function () {});
     },
 
     toJSON: function () {

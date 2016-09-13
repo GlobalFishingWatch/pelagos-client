@@ -30,7 +30,7 @@ define([
       '    Share this link:' +
       '  </div>' +
       '  <div class="link">' +
-      '    <input data-dojo-type="dijit/form/TextBox" type="text" class="link dijit dijitReset dijitInline dijitLeft" style="width: 300pt" data-dojo-attach-point="link">' +
+      '    <input data-dojo-type="dijit/form/TextBox" type="text" class="link dijit dijitReset dijitInline dijitLeft" style="width: 382pt" data-dojo-attach-point="link">' +
           '<div data-dojo-type="dijit/form/Button" class="copyButton dijit dijitReset dijitInline dijitLeft" data-dojo-attach-event="click:copyLink"><i class="fa fa-copy" aria-hidden="true"></i> COPY</div>' +
       '  </div>' +
       '</div>',
