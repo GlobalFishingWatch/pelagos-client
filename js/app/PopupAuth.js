@@ -18,11 +18,11 @@ define([
       self.window = window.open(login_url, self.id, 'directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=no,resizable=no,width=400,height=350');
     },
 
-    done: function (success) {
+    done: function (args) {
       var self = this;
-      if (success == undefined) success = true;
+      if (args == undefined) args = true;
       delete PopupAuth.open_dialogs[self.id];
-      self.cb(success);
+      self.cb(args);
     },
 
     guuid: function () {
@@ -34,8 +34,8 @@ define([
   });
   PopupAuth.open_dialogs = {};
 
-  window.popup_auth_done = function (window_name, success) {
-    PopupAuth.open_dialogs[window_name].done(success);
+    window.popup_auth_done = function (window_name, args) {
+    PopupAuth.open_dialogs[window_name].done(args);
   };
 
   return PopupAuth;
