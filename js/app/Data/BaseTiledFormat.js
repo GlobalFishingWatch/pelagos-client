@@ -236,8 +236,9 @@ define([
                 data.toString = function () {
                   var res = $("<span class='auth_required'><a href='javascript: void(0);'>Log in</a> to view vessel identity or <a href='javascript: void(0);'>Sign up</a> for free.");
                   res.find('a').click(function () {
-                    new PopupAuth(data.auth_location, function (success) {
-                      if (success) {
+                    new PopupAuth(data.auth_location, function (args) {
+                      if (args) {
+                        if (args.headers != undefined) self.manager.setHeaders(args.headers);
                         cb(null, null);
                         getSelectionInfo(fallbackLevel, withCredentials);
                       }
