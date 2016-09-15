@@ -103,6 +103,7 @@ define([
         var formatClass = Format.formatClasses[source.spec.type];
 
         source.source = new formatClass(source.spec.args);
+        source.source.manager = self;
         source.source.setHeaders(self.headers);
         source.source.events.on({
           error: self.handleError.bind(self, source),
