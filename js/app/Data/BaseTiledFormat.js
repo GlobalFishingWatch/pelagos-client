@@ -234,7 +234,7 @@ define([
               if (request.status == 403) {
                 data.level = 'info';
                 data.toString = function () {
-                  var res = $("<span>You have to be registered on GFW in order to see vessel information. You can <a href='javascript: void(0);'>register here</a>. If you are already registred, you need to <a href='javascript: void(0);'>login</a>.");
+                  var res = $("<span class='auth_required'><a href='javascript: void(0);'>Log in</a> to view vessel identity or <a href='javascript: void(0);'>Sign up</a> for free.");
                   res.find('a').click(function () {
                     new PopupAuth(data.auth_location, function (success) {
                       if (success) {
