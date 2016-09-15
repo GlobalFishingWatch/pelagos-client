@@ -284,16 +284,22 @@ define([
         data:data,
         headers: self.data.headers,
         complete:function (data) {
+          var status = data.status;
           data = Json.decode(data.responseText);
-          if (!data.urls) data.urls = {};
 
-          if (!data.urls.load) {
-            data.urls.load = self.workspaceSaveUrl + "/" + data.id
+          if (status >= 200 && status < 300) {
+            if (!data.urls) data.urls = {};
+
+            if (!data.urls.load) {
+              data.urls.load = self.workspaceSaveUrl + "/" + data.id
+            }
+            if (!data.urls.visualization) {
+              data.urls.visualization = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + data.urls.load;
+            }
+            cb(null, data.urls.visualization);
+          } else {
+            cb({status: status, data: data});
           }
-          if (!data.urls.visualization) {
-            data.urls.visualization = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + data.urls.load;
-          }
-          cb(data.urls.visualization);
         },
         dataType: 'text',
         contentType: 'application/json'

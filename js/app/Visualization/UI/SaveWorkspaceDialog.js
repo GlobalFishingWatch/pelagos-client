@@ -7,7 +7,8 @@ define([
   "shims/async/main",
   "shims/jQuery/main",
   "shims/clipboard/main",
-  "app/Visualization/KeyBindings"
+  "app/Visualization/KeyBindings",
+  "./PopupAuthDialog"
 ], function(
   declare,
   Dialog,
@@ -17,7 +18,8 @@ define([
   async,
   $,
   clipboard,
-  KeyBindings
+  KeyBindings,
+  PopupAuthDialog
 ){
   return declare("SaveWorkspaceDialog", [Dialog], {
     'class': 'saveWorkspaceDialog',
@@ -59,9 +61,20 @@ define([
 
     saveWorkspace: function () {
       var self = this;
-      self.visualization.save(function (url) {
-        self.link.set("value", url);
-        self.show();
+      self.visualization.save(function (err, data) {
+        if (err) {
+          if (err.status == 403) {
+            new PopupAuthDialog({
+              action_name: "Save workspace",
+              visualization: self.visualization,
+              authInformation: err.data,
+              callback: self.saveWorkspace.bind(self)
+            }).show();
+          }
+        } else {
+          self.link.set("value", data.urls.visualization);
+          self.show();
+        }
       });
     },
 
