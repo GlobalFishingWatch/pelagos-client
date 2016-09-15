@@ -15,7 +15,22 @@ define([
       self.id = 'pelagos-client-auth-' + self.guuid()
       PopupAuth.open_dialogs[self.id] = self;
 
-      self.window = window.open(login_url, self.id, 'directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=yes,resizable=yes,width=640,height=480');
+      var options = {
+        directories: 0,
+        titlebar: 0,
+        toolbar: 0,
+        location: 0,
+        status: 0,
+        menubar: 0,
+        scrollbars: "yes",
+        resizable: "yes",
+        fullscreen: "yes",
+        width: screen.width,
+        height: screen.height
+      };
+      options = Object.keys(options).map(function (key) { return key + "=" + options[key].toString(); }).join(",");
+
+      self.window = window.open(login_url, self.id, options);
     },
 
     done: function (args) {
