@@ -15,7 +15,7 @@ define([
       self.id = 'pelagos-client-auth-' + self.guuid()
       PopupAuth.open_dialogs[self.id] = self;
 
-      self.window = window.open(login_url, self.id, 'directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=no,resizable=no,width=400,height=350');
+      self.window = window.open(login_url, self.id, 'directories=0,titlebar=0,toolbar=0,location=0,status=0,menubar=0,scrollbars=yes,resizable=yes,width=640,height=480');
     },
 
     done: function (args) {
