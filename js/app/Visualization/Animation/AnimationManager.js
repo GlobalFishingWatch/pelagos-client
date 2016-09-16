@@ -489,26 +489,39 @@ function(Class,
           ];
         }
 
+        baseAnimation.args.seriesTilesets = seriesTilesets;
+
         var query = baseAnimation.data_view.source.getSelectionQuery(selection);
-        seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
-          url: baseAnimation.data_view.source.url,
-          versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
-          query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
-          query: query,
-          header: baseAnimation.data_view.source.header,
-          selection: selection
-        });
 
         self.hideSelectionAnimations(baseAnimation);
 
         var seriesAnimations = [];
-        async.each(seriesTilesets, function (seriesTileset, cb) {
+        async.each(seriesTilesets, function (seriesTilesetTemplate, cb) {
+
+          seriesTileset = new ObjectTemplate(seriesTilesetTemplate).eval({
+            url: baseAnimation.data_view.source.url,
+            versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
+            query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
+            query: query,
+            header: baseAnimation.data_view.source.header,
+            selection: selection
+          });
+
           self.addAnimation(
             seriesTileset,
             function (err, animation) {
               if (err) {
                 self.removeAnimation(animation);
               } else {
+                animation.events.on({
+                  updated: self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset)
+                });
+                if (animation.data_view) {
+                  animation.data_view.events.on({
+                    update: self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset)
+                  });
+                }
+
                 animation.selectionAnimationFor = baseAnimation;
                 baseAnimation.selectionAnimations.push(animation);
                 seriesAnimations.push(animation);
@@ -543,6 +556,52 @@ function(Class,
           }            
         });
       }
+    },
+
+    selectionAnimationUpdate: function (animation, specTemplate, spec) {
+      var self = this;
+
+      newSpec = animation.toJSON();
+
+      var isObject = function (x) {
+        return x !== null && typeof(x) == "object";
+      };
+
+      var doDiff = function (a, b) {
+        var res = {};
+
+        var handleKey = function (key) {
+          if (a[key] != b[key]) {
+            if (isObject(a[key]) && isObject(b[key])) {
+              res[key] = doDiff(a[key], b[key]);
+            } else {
+              res[key] = b[key];
+            }
+          }
+        }
+
+        for (var key in a) {
+          handleKey(key);
+        }
+        for (var key in b) {
+          if (a[key] == undefined) {
+            handleKey(key);
+          }
+        }
+        return res;
+      };
+
+      var applyDiff = function (obj, diff) {
+        for (var key in diff) {
+          if (isObject(obj[key]) && isObject(diff[key])) {
+            applyDiff(obj[key], diff[key]);
+          } else {
+            obj[key] = diff[key];
+          }
+        }
+      };
+
+      applyDiff(specTemplate, doDiff(spec, newSpec));
     },
 
     initMouse: function(cb) {
