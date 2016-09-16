@@ -43,25 +43,30 @@ define([
         '  <div class="titleButtons">' +
         '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
-        '  <div class="editing-mode-only advanced-mode-only">' +
-        '    <label>Title:</label>' +
-        '    <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
-        '  </div>' +
-        '  <div id="layers" class="contentWrapper">' +
-        '    <form class="animation-list" data-dojo-attach-point="containerNode">'+
-        '      <div class="animation-row editing-mode-only">' +
-        '        <div class="left-buttons">' +
-        '          <label class="add-layer">' +
-        '            <a href="javascript:undefined" data-dojo-attach-event="click:add"><i class="fa fa-plus-square"></i></a>' +
-        '          </label>' +
-        '        </div>' + 
-        '        <div class="animation-content">' +
-        '          <div>' +
-        '            <a href="javascript:undefined" data-dojo-attach-event="click:add">Add new layer</a>' +
+        '  <div class="contentWrapper">' +
+        '    <div class="editing-mode-only advanced-mode-only workspaceTitle" data-dojo-type="app/Visualization/UI/Widgets/ClickToEdit">' +
+        '      <input' +
+        '       data-dojo-type="dijit/form/ValidationTextBox"' +
+        '       data-dojo-attach-point="titleInput"' +
+        '       data-dojo-attach-event="change:titleChange"' +
+        '       data-dojo-props="pattern: \'..*\', required: true"></input>' +
+        '    </div>' +
+        '    <div id="layers">' +
+        '      <form class="animation-list" data-dojo-attach-point="containerNode">'+
+        '        <div class="animation-row editing-mode-only">' +
+        '          <div class="left-buttons">' +
+        '            <label class="add-layer">' +
+        '              <a href="javascript:undefined" data-dojo-attach-event="click:add"><i class="fa fa-plus-square"></i></a>' +
+        '            </label>' +
+        '          </div>' + 
+        '          <div class="animation-content">' +
+        '            <div>' +
+        '              <a href="javascript:undefined" data-dojo-attach-event="click:add">Add new layer</a>' +
+        '            </div>' +
         '          </div>' +
         '        </div>' +
-        '      </div>' +
-        '    </form>' +
+        '      </form>' +
+        '    </div>' +
         '  </div>' +
         '</div>',
 
