@@ -13,7 +13,8 @@ define([
   "shims/jQuery/main",
   "dijit/popup",
   "dojox/widget/ColorPicker",
-  "app/Visualization/UI/Widgets/ClickToEdit"
+  "app/Visualization/UI/Widgets/ClickToEdit",
+  "dijit/form/ValidationTextBox"
 ], function(
   declare,
   domStyle,
@@ -29,7 +30,8 @@ define([
   $,
   popup,
   ColorPicker,
-  ClickToEdit
+  ClickToEdit,
+  ValidationTextBox
 ){
   var SimpleLayerList = declare("SimpleLayerList", [AnimationListBase], {
     baseClass: 'SimpleLayerList',
@@ -128,7 +130,11 @@ define([
       '    <div>' +
       '      <span class="animation-title">' +
       '        <div class="editing-mode-only" data-dojo-type="app/Visualization/UI/Widgets/ClickToEdit">' +
-      '          <input data-dojo-type="dijit/form/TextBox" data-dojo-attach-point="titleInput" data-dojo-attach-event="change:titleChange"></input>' +
+      '          <input' +
+      '           data-dojo-type="dijit/form/ValidationTextBox"' +
+      '           data-dojo-attach-point="titleInput"' +
+      '           data-dojo-attach-event="change:titleChange"' +
+      '           data-dojo-props="pattern: \'..*\', required: true"></input>' +
       '        </div>' +
       '        <span class="display-mode-only" data-dojo-attach-point="titleNode"></span>' +
       '      </span>' +
@@ -197,6 +203,7 @@ define([
 
     titleChange: function () {
       var self = this;
+      if (!self.titleInput.isValid()) return;
       self.animation.title = self.titleInput.get("value");
       self.animation.events.triggerEvent("updated", {});
     },
