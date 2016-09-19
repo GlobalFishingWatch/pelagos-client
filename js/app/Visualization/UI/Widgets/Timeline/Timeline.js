@@ -64,7 +64,7 @@ define([
 
     zoomPosition: 'left',
 
-    backgroundCss: {background: '#ff8888'},
+    backgroundCss: {background: '#4068b3'},
     rangemarks: [
       /* Example ranges. The first one is a white background range
        * below all the other ranges, that hides the styling from
