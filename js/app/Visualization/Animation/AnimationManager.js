@@ -651,8 +651,11 @@ function(Class,
         if (err) data = err;
         if (!data) return;
 
+        var content = data.toString();
+        if (typeof(content) != "string") content = content.html();
+
         self.infoPopup.setOptions({
-          content: data.toString(),
+          content: content,
           position: {lat: selectionData.latitude,
                      lng: selectionData.longitude}
         });
