@@ -148,8 +148,31 @@ function(Class,
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
+      google.maps.event.addListener(self.map, "bounds_changed", self.checkBounds.bind(self));
 
       cb();
+    },
+
+    maxLat: 88,
+    minLat: -88,
+
+    checkBounds: function() {
+      var self = this;
+
+      var bounds = self.map.getBounds();
+      var top = bounds.getNorthEast().lat();
+      var bottom = bounds.getSouthWest().lat();
+      var center = self.map.getCenter();
+
+      if (bottom < self.minLat) {
+        if (top > self.maxLat) {
+          self.map.setZoom(self.map.getZoom() + 1);
+        } else {
+          self.map.setCenter(new google.maps.LatLng(center.lat() + (self.minLat - bottom), center.lng()));
+        }
+      } else if (top > self.maxLat) {
+        self.map.setCenter(new google.maps.LatLng(center.lat() + (self.maxLat - top), center.lng()));
+      }
     },
 
     tilesLoaded: function() {    
