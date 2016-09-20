@@ -7,7 +7,7 @@ define([
   "dijit/form/TextBox",
   "app/Visualization/UI/AnimationFilterEditor",
   "dijit/form/HorizontalSlider",
-  "dojox/widget/ColorPicker",
+  "./Widgets/ColorPicker",
   "dijit/popup",
   "shims/jQuery/main"
 ], function(
