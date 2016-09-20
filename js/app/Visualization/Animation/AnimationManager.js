@@ -55,6 +55,7 @@ function(Class,
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       zoomControl: false,
+      scaleControl: true,
       mapTypeControl: false,
       streetViewControl: false,
       overviewMapControl: false,
@@ -413,6 +414,10 @@ function(Class,
         }
       );
 
+      if (type == "info" || type == "selected") {
+        self.infoPopup.close();
+      }
+
       if (rowidx) {
         var animation = self.animations[rowidx[0]];
 
@@ -701,7 +706,13 @@ function(Class,
           category: type,
           data: data,
           toString: function () {
-            return this.layer + "/" + this.category + ": " + this.data.toString();
+            var data
+            if (this.data !== undefined) {
+              data = this.data.toString();
+            } else {
+              data = 'CLEAR';
+            }
+            return this.layer + "/" + this.category + ": " + data;
           }
         }
       );
@@ -710,8 +721,11 @@ function(Class,
         if (err) data = err;
         if (!data) return;
 
+        var content = data.toString();
+        if (typeof(content) != "string") content = content.html();
+
         self.infoPopup.setOptions({
-          content: data.toString(),
+          content: content,
           position: {lat: selectionData.latitude,
                      lng: selectionData.longitude}
         });
