@@ -25,6 +25,17 @@ define([
           res.push({id: source.choices[name], name: name});
         }
       }
+
+      res.sort(function (a, b) {
+        if (a.name < b.name) {
+          return -1;
+        } else if (a.name == b.name) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+
       return res;
     },
     getSelectedItemList: function () {
