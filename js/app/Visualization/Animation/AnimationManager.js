@@ -438,7 +438,7 @@ function(Class,
       );
 
       if (type == "info" || type == "selected") {
-        self.infoPopup.close();
+        self.closeInfoPopup();
       }
 
       if (rowidx) {
@@ -657,6 +657,7 @@ function(Class,
       );
 
       self.infoPopup = new google.maps.InfoWindow({});
+      google.maps.event.addListener(self.infoPopup, "closeclick", self.closeInfoPopup.bind(self));
 
       self.node.mousemove(function (e) {
         if (!self.indrag) self.handleMouse(e, 'hover');
@@ -715,6 +716,14 @@ function(Class,
           }
           cb(null, animationInstance);
         });
+      });
+    },
+
+    closeInfoPopup: function () {
+      var self = this;
+      self.infoPopup.close();
+      self.animations.map(function (animation) {
+          animation.select(undefined, "info", true, {});
       });
     },
 
