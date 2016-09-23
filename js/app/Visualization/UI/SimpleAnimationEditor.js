@@ -7,7 +7,7 @@ define([
   "dijit/form/TextBox",
   "app/Visualization/UI/AnimationFilterEditor",
   "dijit/form/HorizontalSlider",
-  "dojox/widget/ColorPicker",
+  "./Widgets/ColorPicker",
   "dijit/popup",
   "shims/jQuery/main"
 ], function(
@@ -69,23 +69,48 @@ define([
         });
         popup.moveOffScreen(self.colorDropDown);
         self.colorDropDown.startup();
+
+        self.underlay = $("<div>");
+        self.underlay.css({position: "absolute", "z-index": 999})
+        $("body").append(self.underlay);
+        self.underlay.click(self.closeColorDropDown.bind(self));
+        self.hideUnderlay();
       }
+    },
+
+    hideUnderlay: function () {
+     var self = this;
+     self.underlay.css({display: "block", left: "-9999px", right: "auto", top: "-9999px", bottom: "auto"});
+   },
+
+    showUnderlay: function () {
+      var self = this;
+      self.underlay.css({display: "block", left: 0, right: 0, top: 0, bottom: 0});
     },
 
     onConfig: function () {
       var self = this;
+
+      self.showUnderlay();
       popup.open({
         parent: self,
         popup: self.colorDropDown,
         around: this.configNode,
         orient: ["below", "before"],
         onExecute: function(){
-          popup.close(dropDown);
+          self.closeColorDropDown();
         },
         onCancel: function(){
-          popup.close(dropDown);
+          self.closeColorDropDown();
         }
       });
+    },
+
+    closeColorDropDown: function () {
+      var self = this;
+
+      self.hideUnderlay();
+      popup.close(self.colorDropDown);
     },
 
     colorSelected: function(value) {
@@ -102,7 +127,7 @@ define([
       self.animation.events.triggerEvent("updated");
       self.animation.data_view.events.triggerEvent("update");
 
-      popup.close(self.colorDropDown);
+      self.closeColorDropDown();
     },
 
     val2slider: function(val) {

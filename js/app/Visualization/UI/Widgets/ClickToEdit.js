@@ -38,6 +38,7 @@ define([
       var self = this;
       self.editor = widget;
       self.editor.on("change", self.onChange.bind(self));
+      self.editor.on("blur", self.onChange.bind(self));
       self.editor.on("keyUp", self.onKeyUp.bind(self));
       self.onChange();
     },
@@ -46,6 +47,7 @@ define([
       var self = this;
       $(self.labelNode).hide();
       $(self.containerNode).show();
+      self.editor.focus();
     },
 
     endEdit: function () {
@@ -57,12 +59,13 @@ define([
     onKeyUp: function (e) {
       var self = this;
       if (e.which == 13) {
-        self.endEdit();
+        self.onChange();
       }
     },
 
     onChange: function () {
       var self = this;
+      if (self.editor.isValid && !self.editor.isValid()) return;
       $(self.labelNode).text(self.editor.get("value").toString());
       self.endEdit();
     }

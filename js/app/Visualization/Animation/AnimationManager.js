@@ -55,6 +55,7 @@ function(Class,
     mapOptions: {
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       zoomControl: false,
+      scaleControl: true,
       mapTypeControl: false,
       streetViewControl: false,
       overviewMapControl: false,
@@ -147,8 +148,31 @@ function(Class,
       google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
       google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
       google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
+      google.maps.event.addListener(self.map, "bounds_changed", self.checkBounds.bind(self));
 
       cb();
+    },
+
+    maxLat: 88,
+    minLat: -88,
+
+    checkBounds: function() {
+      var self = this;
+
+      var bounds = self.map.getBounds();
+      var top = bounds.getNorthEast().lat();
+      var bottom = bounds.getSouthWest().lat();
+      var center = self.map.getCenter();
+
+      if (bottom < self.minLat) {
+        if (top > self.maxLat) {
+          self.map.setZoom(self.map.getZoom() + 1);
+        } else {
+          self.map.setCenter(new google.maps.LatLng(center.lat() + (self.minLat - bottom), center.lng()));
+        }
+      } else if (top > self.maxLat) {
+        self.map.setCenter(new google.maps.LatLng(center.lat() + (self.maxLat - top), center.lng()));
+      }
     },
 
     tilesLoaded: function() {    
@@ -413,6 +437,10 @@ function(Class,
         }
       );
 
+      if (type == "info" || type == "selected") {
+        self.closeInfoPopup();
+      }
+
       if (rowidx) {
         var animation = self.animations[rowidx[0]];
 
@@ -489,26 +517,39 @@ function(Class,
           ];
         }
 
+        baseAnimation.args.seriesTilesets = seriesTilesets;
+
         var query = baseAnimation.data_view.source.getSelectionQuery(selection);
-        seriesTilesets = new ObjectTemplate(seriesTilesets).eval({
-          url: baseAnimation.data_view.source.url,
-          versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
-          query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
-          query: query,
-          header: baseAnimation.data_view.source.header,
-          selection: selection
-        });
 
         self.hideSelectionAnimations(baseAnimation);
 
         var seriesAnimations = [];
-        async.each(seriesTilesets, function (seriesTileset, cb) {
+        async.each(seriesTilesets, function (seriesTilesetTemplate, cb) {
+
+          seriesTileset = new ObjectTemplate(seriesTilesetTemplate).eval({
+            url: baseAnimation.data_view.source.url,
+            versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
+            query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
+            query: query,
+            header: baseAnimation.data_view.source.header,
+            selection: selection
+          });
+
           self.addAnimation(
             seriesTileset,
             function (err, animation) {
               if (err) {
                 self.removeAnimation(animation);
               } else {
+                animation.events.on({
+                  updated: self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset)
+                });
+                if (animation.data_view) {
+                  animation.data_view.events.on({
+                    update: self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset)
+                  });
+                }
+
                 animation.selectionAnimationFor = baseAnimation;
                 baseAnimation.selectionAnimations.push(animation);
                 seriesAnimations.push(animation);
@@ -545,6 +586,52 @@ function(Class,
       }
     },
 
+    selectionAnimationUpdate: function (animation, specTemplate, spec) {
+      var self = this;
+
+      newSpec = animation.toJSON();
+
+      var isObject = function (x) {
+        return x !== null && typeof(x) == "object";
+      };
+
+      var doDiff = function (a, b) {
+        var res = {};
+
+        var handleKey = function (key) {
+          if (a[key] != b[key]) {
+            if (isObject(a[key]) && isObject(b[key])) {
+              res[key] = doDiff(a[key], b[key]);
+            } else {
+              res[key] = b[key];
+            }
+          }
+        }
+
+        for (var key in a) {
+          handleKey(key);
+        }
+        for (var key in b) {
+          if (a[key] == undefined) {
+            handleKey(key);
+          }
+        }
+        return res;
+      };
+
+      var applyDiff = function (obj, diff) {
+        for (var key in diff) {
+          if (isObject(obj[key]) && isObject(diff[key])) {
+            applyDiff(obj[key], diff[key]);
+          } else {
+            obj[key] = diff[key];
+          }
+        }
+      };
+
+      applyDiff(specTemplate, doDiff(spec, newSpec));
+    },
+
     initMouse: function(cb) {
       var self = this;
 
@@ -570,6 +657,7 @@ function(Class,
       );
 
       self.infoPopup = new google.maps.InfoWindow({});
+      google.maps.event.addListener(self.infoPopup, "closeclick", self.closeInfoPopup.bind(self));
 
       self.node.mousemove(function (e) {
         if (!self.indrag) self.handleMouse(e, 'hover');
@@ -631,6 +719,14 @@ function(Class,
       });
     },
 
+    closeInfoPopup: function () {
+      var self = this;
+      self.infoPopup.close();
+      self.animations.map(function (animation) {
+          animation.select(undefined, "info", true, {});
+      });
+    },
+
     handleInfo: function (animation, type, err, data, selectionData) {
       var self = this;
       var dataView = animation.data_view;
@@ -642,7 +738,13 @@ function(Class,
           category: type,
           data: data,
           toString: function () {
-            return this.layer + "/" + this.category + ": " + this.data.toString();
+            var data
+            if (this.data !== undefined) {
+              data = this.data.toString();
+            } else {
+              data = 'CLEAR';
+            }
+            return this.layer + "/" + this.category + ": " + data;
           }
         }
       );
@@ -651,8 +753,11 @@ function(Class,
         if (err) data = err;
         if (!data) return;
 
+        var content = data.toString();
+        if (typeof(content) != "string") content = content.html();
+
         self.infoPopup.setOptions({
-          content: data.toString(),
+          content: content,
           position: {lat: selectionData.latitude,
                      lng: selectionData.longitude}
         });
