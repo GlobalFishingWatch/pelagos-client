@@ -4,6 +4,7 @@ define([
   "app/SubscribableDict",
   "app/UrlValues",
   "app/Data/DataManager",
+  "app/Events",
   "app/Visualization/Animation/AnimationManager",
   "shims/async/main",
   "shims/jQuery/main",
@@ -15,6 +16,7 @@ define([
   SubscribableDict,
   UrlValues,
   DataManager,
+  Events,
   AnimationManager,
   async,
   $,
@@ -75,6 +77,9 @@ define([
 
     init: function (cb) {
       var self = this;
+
+      self.events = new Events("Visualization");
+
       self.state = new SubscribableDict(self.paramspec);
 
       self.state.events.on({
@@ -96,7 +101,13 @@ define([
       async.series([
         function (cb) {
           self.data = new DataManager();
-          self.data.init(cb);
+          self.data.init(function () {
+            headers = UrlValues.getParameter("headers");
+            if (headers != undefined) {
+              self.data.setHeaders(JSON.parse(headers));
+            }
+            cb();
+          });
         },
         function (cb) {
           self.animations = new AnimationManager(self);
@@ -140,9 +151,13 @@ define([
 
       config = _.clone(config);
 
+      var isObject = function (obj) {
+        return obj !== null && typeof(obj) == 'object';
+      };
+
       var unmerge = function(defaults, config) {
         for (var key in defaults) {
-          if (typeof(defaults[key]) == 'object') {
+          if (isObject(defaults[key]) && isObject(config[key])) {
             config[key] = unmerge(defaults[key], config[key]);
             if (Object.keys(config[key]).length == 0) {
               delete config[key];
@@ -164,6 +179,7 @@ define([
       return {
         state: self.state.values,
         map: self.animations.toJSON(),
+        data: self.data.toJSON(),
         ui: ui
       };
     },
@@ -195,9 +211,21 @@ define([
       }
       self.workspaceUrl = url;
 
-      $.get(url, function (data) {
-        self.loadData(Json.decode(data), cb);
-      }, 'text').fail(function(jqXHR, textStatus, errorThrown) {
+      $.ajax({
+        url: url,
+        headers: self.data.headers,
+        success: function (data) {
+          self.loadData(Json.decode(data), cb);
+        },
+        dataType: 'text'
+      }).fail(function(jqXHR, textStatus, errorThrown) {
+        self.events.triggerEvent("error", {
+          error: errorThrown,
+          url: url,
+          toString: function () {
+            return "Unable to load workspace " + this.url + ": " + this.error.toString();
+          }
+        });
         /* Load defaults only */
         return self.loadData({}, function () {
           cb(errorThrown);
@@ -210,6 +238,10 @@ define([
 
       data = self.mergeDefaults(self.defaultConfig, data);
 
+      if (data.metadata && data.metadata.urls && data.metadata.urls.save) {
+        self.workspaceSaveUrl = data.metadata.urls.save;
+      }
+
       async.series([
         function (cb) {
           if (!data.state) return cb();
@@ -221,6 +253,10 @@ define([
         function (cb) {
           if (!data.map) return cb();
           self.animations.load(data.map, cb);
+        },
+        function (cb) {
+          if (!data.data) return cb();
+          self.data.load(data.data, cb);
         },
         function (cb) {
           if (!data.ui || !self.ui) return cb();
@@ -241,10 +277,27 @@ define([
       var self = this;
 
       var data = Json.encode(self.unmergeDefaults(self.defaultConfig, Json.decode(Json.encode(self, "  "))));
-      $.post(self.workspaceSaveUrl, data, function (data) {
-        data = Json.decode(data);
-        cb(self.workspaceSaveUrl + "/" + data.id);
-      }, 'text');
+      // FIXME: Use self.data.headers!!
+      $.ajax({
+        url: self.workspaceSaveUrl,
+        method: "POST",
+        data:data,
+        headers: self.data.headers,
+        complete:function (data) {
+          data = Json.decode(data.responseText);
+          if (!data.urls) data.urls = {};
+
+          if (!data.urls.load) {
+            data.urls.load = self.workspaceSaveUrl + "/" + data.id
+          }
+          if (!data.urls.visualization) {
+            data.urls.visualization = window.location.toString().split("?")[0].split("#")[0] + "?workspace=" + data.urls.load;
+          }
+          cb(data.urls.visualization);
+        },
+        dataType: 'text',
+        contentType: 'application/json'
+      });
     }
   });
 });

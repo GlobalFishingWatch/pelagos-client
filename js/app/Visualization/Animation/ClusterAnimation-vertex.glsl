@@ -2,14 +2,12 @@
 #pragma include 'app/Visualization/Animation/mercator.glsl';
 
 uniform float width;
-uniform float height;
 uniform float zoom;
 
 uniform mat4 googleMercator2webglMatrix;
 
 varying float vWeight;
 varying vec4 baseColor;
-
 
 void main() {
   mapper();
@@ -33,13 +31,6 @@ void main() {
     else
         baseColor = vec4(0.0, 0.0, 0.0, 1.0);
   } else {
-/*    float ps = 0.01 ; // In WebGL units
-
-    float webglSigma = latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
-
-    float radius = ps + 2.5 * webglSigma;
-    float areaScale = ps*ps / (radius*radius);*/
-
     float ps = 7.0 ; // In pixels
 
     float pixelSigma = pixelsPerWebGlX * latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
@@ -50,10 +41,15 @@ void main() {
     gl_PointSize = radius;
     if (gl_PointSize > 8.0) {gl_PointSize = 8.0;}
 
-    if (_weight > 1.0)
-        _weight = (log(_weight)/log(4.0)) + 1.0;
+    if (zoom >= heatmap_zoom) {
+      vWeight = -1.;
+      gl_PointSize = gl_PointSize / 2.0;
+    } else {
+      if (_weight > 1.0)
+          _weight = (log(_weight)/log(4.0)) + 1.0;
 
-    vWeight = areaScale * _weight;
+      vWeight = areaScale * _weight;
+    }
 
     if (_selected == 1.0)
         baseColor = vec4(selected_red, selected_green, selected_blue, 1.0);

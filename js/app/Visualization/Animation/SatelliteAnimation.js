@@ -27,7 +27,8 @@ define([
         self.previousMapType = self.manager.map.getMapTypeId();
         self.manager.map.setMapTypeId(google.maps.MapTypeId.HYBRID);
       } else {
-        self.manager.map.setMapTypeId(self.previousMapType == undefined ? google.maps.MapTypeId.ROADMAP : self.previousMapType);
+        var previous = self.previousMapType != undefined && self.previousMapType != google.maps.MapTypeId.HYBRID;
+        self.manager.map.setMapTypeId(previous ? self.previousMapType : google.maps.MapTypeId.ROADMAP);
       }
     }
   });

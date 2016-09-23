@@ -99,7 +99,8 @@ define([
         uniforms: self.uniforms,
         selections: self.selections
       }, function (err, data_view) {
-        if (err) throw err; // FIXME: Make cb handle cb(err);
+        if (err) return cb(err);
+
         self.data_view = data_view;
 
         var handleHeader = function () {
@@ -115,8 +116,13 @@ define([
           self.initGlPrograms(cb);
         }
 
+        var handleError = function (err) {
+          self.handleError(err);
+          cb(err);
+        }
+
         self.data_view.source.events.on({
-          error: self.handleError.bind(self),
+          error: handleError,
           "header": handleHeader
         });
         self.data_view.source.load();
@@ -153,8 +159,10 @@ define([
             );
           },
           function (err, programs) {
-            self.programs[programName] = programs;
-            cb();
+            if (!err) {
+              self.programs[programName] = programs;
+            }
+            cb(err);
           }
         );
       }, cb);

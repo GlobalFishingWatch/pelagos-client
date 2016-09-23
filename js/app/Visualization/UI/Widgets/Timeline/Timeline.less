@@ -30,30 +30,42 @@
   }
 
   .zoom {
-    z-index: 2;
+    z-index: 1000;
+    height: 22pt;
     position: absolute;
-    display: block;
+    width: 50pt;
     padding: 0;
-    top: 0;
+    top: 0px;
+    left: 0;
+    right: 0;
+    margin: auto;
+    div {
+        display: inline-block;
+    }
 
     &.right {
       right: 0;
     }
 
     .zoomIn, .zoomOut {
-      display: block;
-      color: #4f4e4e;
-      font-size: 7pt;
+      color: #ffffff;
       cursor: pointer;
       float: left;
+      padding: 3px;
       clear: both;
+      line-height: 22pt;
       &:hover {
         text-decoration: none;
       }
-      img {
-        height: 0.8em;
-        width: 6em;
-      }
+
+        .fa {
+    color: #ffffff;
+    font-size: 14pt;
+    width: 22px;
+    height: 22px;
+    padding: 0 5px;
+    text-align: center;
+  }
     }
   }
 
@@ -71,6 +83,8 @@
 
     .leftFrame, .rightFrame {
       z-index: 1;
+      background-color: #011137;
+      opacity: .5;
     }
 
     .window {
@@ -117,12 +131,14 @@
           white-space: nowrap;
         }
         .startLabel span, .endLabel span {
-          color: #535151;
+          color: #ffffff;
+          font-size: 14pt;
+          font-weight: 600;
         }
 
         .lengthLabel span {
           padding: 2pt;
-          color: #a7a7a7;
+          color: #ffffff;
         }
 
         .startLabel, .endLabel {
@@ -151,8 +167,6 @@
     top: -200%;
 
     .window {
-      /*background: white;*/
-      background: #f8f8f9;
       -moz-box-shadow: 3px 3px 13px #000000;
       -webkit-box-shadow: 3px 3px 13px #000000;
       box-shadow: 3px 3px 13px #000000;
@@ -174,13 +188,14 @@
 
       .rangemarks {
         position: absolute;
-        opacity: 0.5;
+        opacity: 0.9;
         width: 100%;
         height: 100%;
         font-size: 0;
         .rangemark {
           position: absolute;
           height: 100%;
+          background-color: #011137 !important;
         }
       }
 
@@ -194,9 +209,10 @@
 
       .tickmarks {
         width: 100%;
+        line-height: 1em;
 
         white-space: nowrap;
-        font-size: 0;
+        font-size: 10pt;
 
         .quanta {
           position: relative;
@@ -218,6 +234,7 @@
               width: 100%;
               height: 100%;
               text-align: center;
+              font-size: 5pt;
               .left {
                 float: left;
               }
@@ -234,16 +251,16 @@
         &.top {
           height: 60% !important;
           .even .frame {
-            background-color: rgba(189,189,189,0.5);
+            background-color: #567bc2;
             .quanta-label {
-              color: #4f4e4e;
+              color: #ffffff;
             }
           }
 
           .odd .frame {
-            background-color: rgba(224,224,224,0.5);
+            background-color: #567bc2;
             .quanta-label {
-              color: #4f4e4e;
+              color: #ffffff;
             }
           }
         }
@@ -256,16 +273,16 @@
           }
 
           .even .frame {
-            background-color: rgba(33,32,32,0.5);
+            background-color: #294480;
             .quanta-label {
-              color: #c7c6c5;
+              color: #ffffff;
             }
           }
 
           .odd .frame {
-            background-color: rgba(66,64,64,0.5);
+            background-color: #294480;
             .quanta-label {
-              color: #c7c6c5;
+              color: #ffffff;
             }
           }
         }  

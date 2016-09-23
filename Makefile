@@ -10,7 +10,8 @@ JSDEPS= \
   $(LIBS)/stats.js/build/stats.min.js \
   $(LIBS)/loggly-jslogger/src/loggly.tracker.js \
   $(LIBS)/cartodb.js/cartodb.js \
-  $(LIBS)/cartodb.js/cartodb.mod.torque.js
+  $(LIBS)/cartodb.js/cartodb.mod.torque.js \
+  $(LIBS)/clipboard.js/clipboard.min.js
 
 CSSDEPS= \
   $(LIBS)/font-awesome/css/font-awesome.min.css \
@@ -70,12 +71,14 @@ clean-integration-tests:
 clean: clean-js-build clean-dependencies clean-integration-tests
 
 prerequisites:
-	curl -sL https://deb.nodesource.com/setup_0.12 | bash -
+	curl -sL https://deb.nodesource.com/setup_6.x | bash -
 	apt-get update
-	apt-get install -y firefox chromium-browser nodejs unzip openjdk-6-jre xvfb python python-dev python-pip git-core libglapi-mesa libosmesa6 mesa-utils
+	apt-get install -y firefox chromium-browser nodejs unzip openjdk-8-jre xvfb python python-dev python-pip git-core libglapi-mesa libosmesa6 mesa-utils
 	npm install -g testem
 	pip install --upgrade pip
 	pip install -r requirements.txt
+	pip install chromedriver_installer>=0.0.4 --install-option="--chromedriver-version=2.10"
+
 
 unit-tests: dependencies
 	xvfb-run -a -s "-ac -screen 0 1280x1024x24" -l $(TESTEM_PATH)testem$(TESTEM_SUFFIX) ci

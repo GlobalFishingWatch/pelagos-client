@@ -14,16 +14,33 @@ define([
   KeyBindings.byCategory = {};
   KeyBindings.byKeys = {};
 
-  KeyBindings.keysToKeyPath = function (keys) {
-    return keys.sort().join('-');
-  };
-
-  KeyBindings.register = function (keys, context, category, description, cb) {
-    keys = keys.slice();
-    var keyPath = KeyBindings.keysToKeyPath(keys);
+  KeyBindings.keysToKeyPath = function (keys, context) {
+    var keyPath = keys.sort().join('-');
     if (context) {
       keyPath = keyPath + " " + context;
     }
+    return keyPath;
+  };
+
+  KeyBindings.hide = function (keys, context) {
+    var keyPath = KeyBindings.keysToKeyPath(keys, context);
+    if (KeyBindings.byKeys[keyPath]) KeyBindings.byKeys[keyPath].visible = false;
+  },
+
+  KeyBindings.show = function (keys, context) {
+    if (!keys) {
+      for (var keyPath in KeyBindings.byKeys) {
+        KeyBindings.byKeys[keyPath].visible = true;
+      }
+    } else {
+      var keyPath = KeyBindings.keysToKeyPath(keys, context);
+      if (KeyBindings.byKeys[keyPath]) KeyBindings.byKeys[keyPath].visible = true;
+    }
+  },
+
+  KeyBindings.register = function (keys, context, category, description, cb) {
+    keys = keys.slice();
+    var keyPath = KeyBindings.keysToKeyPath(keys, context);
 
     var registration = {
       keys: keys,
@@ -31,6 +48,7 @@ define([
       keyPath: keyPath,
       category: category,
       description: description,
+      visible: true,
       cb: cb
     };
 
@@ -50,7 +68,13 @@ define([
       var bindings = KeyBindings.byCategory[category];
       Object.keys(bindings).map(function (keyPath) {
         var registration = bindings[keyPath];
-        var regHtml = $("<div class='binding'><div class='key-codes'></div><div class='description'></div></div>");
+        if (!registration.visible) return;
+        var regHtml = $("<div class='binding'><a href='javascript: void(0);'><div class='key-codes'></div><div class='description'></div></a></div>");
+        regHtml.find("a").click(function () {
+          if (registration && registration.cb) {
+              registration.cb(registration, {});
+          }
+        });
         regHtml.find('.key-codes').text(registration.keyPath);
         regHtml.find('.description').html(registration.description);
         categoryHtml.find('.key-bindings').append(regHtml);
