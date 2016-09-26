@@ -31,6 +31,9 @@ dependencies: $(DEPENDENCIES)
 node_modules/.bin/bower:
 	npm install bower
 
+node_modules/.bin/uglifyjs:
+	npm install uglify-js
+
 $(DEPENDENCIES): node_modules/.bin/bower
 	node_modules/.bin/bower install
 	touch $@
@@ -46,8 +49,9 @@ js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-buil
 js-build-mkdir:
 	mkdir -p js-build
 
-js-build/build-succeded: dependencies
+js-build/build-succeded: dependencies node_modules/.bin/uglifyjs
 	cd $(LIBS)/util/buildscripts; ./build.sh --dojoConfig ../../../main.profile.js --release --bin node > build-log || { cat build-log; exit 1; }
+	node_modules/.bin/uglifyjs js-build/app/app.js.uncompressed.js --screw-ie8 --keep-fnames --stats -o js-build/app/app.js
 	touch $@
 
 js-build/deps.js: $(JSDEPS) js/app/CanvasLayer.js
