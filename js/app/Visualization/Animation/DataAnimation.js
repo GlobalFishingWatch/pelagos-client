@@ -256,6 +256,8 @@ define([
       program.gl.uniform1f(program.uniforms.canvasIndex, idx);
       var tileidx = 0;
       self.data_view.source.getContent().map(function (tile) {
+        if (tile.content.header.length == 0) return;
+
         program.gl.uniform1f(program.uniforms.tileidx, tileidx);
         tileidx++;
 
