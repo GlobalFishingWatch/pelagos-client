@@ -603,20 +603,51 @@ define([
 
     load: function (config, cb) {
       var self = this;
-
       self.config = config;
-      data = new ObjectTemplate(self.config).eval(Paths);
 
-      if (typeof(data.logo) == "string") {
-        self.logoNode.append(data.logo);
-      } else {
-        var logo = $("<img>");
-        logo.attr(data.logo.attr);
-        logo.css(data.logo.css);
-        self.logoNode.append(logo);
-      }
+      var data = new ObjectTemplate(self.config).eval(Paths);
 
-      self.sideBar.load(config.sideBar, cb);
+      async.series([
+        function (cb) {
+          if (typeof(data.logo) == "string") {
+            self.logoNode.append(data.logo);
+          } else {
+            var logo = $("<img>");
+            logo.attr(data.logo.attr);
+            logo.css(data.logo.css);
+            self.logoNode.append(logo);
+          }
+          cb();
+        },
+        function (cb) {
+          if (!data.welcomeMessage || !data.welcomeMessage.url) return cb();
+          $.get(data.welcomeMessage.url, function (html) {
+            // Workaround for limitation in jQuery
+            html = html
+              .replace("<html", "<div data-tag='html'>")
+              .replace('</html>', '</div>')
+              .replace('<head', '<div data-tag="head"')
+              .replace("</head", "</div")
+              .replace('<body', '<div data-tag="body"')
+              .replace("</body", "</div");
+            html = $(html);
+            data.welcomeMessage.title = html.find('title').html();
+            data.welcomeMessage.content = html.find('*[data-tag="body"]').html();
+            cb();
+          }, 'text');
+        },
+        function (cb) {
+          if (data.welcomeMessage) {
+            SimpleMessageDialog.show(
+                data.welcomeMessage.title,
+                data.welcomeMessage.content);
+          }
+          cb();
+        },
+        function (cb) {
+          self.sideBar.load(config.sideBar, cb);
+        }
+      ], cb);
     }
   });
 });
