@@ -58,7 +58,7 @@ js-build/deps.js: $(JSDEPS) js/app/CanvasLayer.js
 	for name in $^; do cat $$name; echo; done > $@
 
 js-build/deps.css: $(CSSDEPS)
-	cat $^ | sed -e "s+../fonts/fontawesome+../js/libs/font-awesome/fonts/fontawesome+g" > $@
+	cat $^ | sed -e "s+../fonts/fontawesome+../js-build/libs/font-awesome/fonts/fontawesome+g" > $@
 
 js-build/libs: dependencies
 	cp -a js/libs js-build/libs
