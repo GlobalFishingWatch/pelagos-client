@@ -6,7 +6,7 @@ dojoConfig = {
   selectorEngine: "lite",
   baseUrl: '.',
   useSourceMaps: false,
-  releaseDir: '../js-build',
+  releaseDir: '../js-dojo-build',
   packages: [
       {name: "dojo", location:"libs/dojo"},
       {name: "dijit", location:"libs/dijit"},
