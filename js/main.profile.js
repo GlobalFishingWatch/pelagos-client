@@ -1,13 +1,12 @@
 dojoConfig = {
   isDebug: true,
   async: true,
-  layerOptimize: "closure",
   cssOptimize: "comments.keepLines",
   cssOptimize: "comments",
   selectorEngine: "lite",
   baseUrl: '.',
   useSourceMaps: false,
-  releaseDir: '../js-build',
+  releaseDir: '../js-dojo-build',
   packages: [
       {name: "dojo", location:"libs/dojo"},
       {name: "dijit", location:"libs/dijit"},

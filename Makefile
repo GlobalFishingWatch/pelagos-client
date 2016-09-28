@@ -22,14 +22,18 @@ DEPENDENCIES= $(JSDEPS) $(CSSDEPS) \
   $(LIBS)/easyXDM/easyXDM.min.js \
   $(LIBS)/util/buildscripts/build.sh
 
-.PHONY: all prerequisites dependencies js-build clean clean-js-build clean-dependencies clean-integration-tests unit-tests integration-tests dev-server test-server
+.PHONY: all prerequisites js-build clean clean-js-build clean-dependencies clean-integration-tests unit-tests integration-tests dev-server test-server
 
 all: js-build js-docs
 
+.INTERMEDIATE: dependencies
 dependencies: $(DEPENDENCIES)
 
 node_modules/.bin/bower:
 	npm install bower
+
+node_modules/.bin/uglifyjs:
+	npm install uglify-js
 
 $(DEPENDENCIES): node_modules/.bin/bower
 	node_modules/.bin/bower install
@@ -41,26 +45,36 @@ node_modules/.bin/jsdoc:
 js-docs: node_modules/.bin/jsdoc
 	node_modules/.bin/jsdoc -a all -p -r -d docs/jsdoc -c jsdoc/jsdoc.json js/app
 
-js-build: dependencies js-build-mkdir js-build/deps.js js-build/deps.css js-build/libs js-build/build-succeded
+js-build: js-build/build-succeded
 
-js-build-mkdir:
-	mkdir -p js-build
-
-js-build/build-succeded: dependencies
+js-dojo-build/build-succeded: dependencies node_modules/.bin/uglifyjs
 	cd $(LIBS)/util/buildscripts; ./build.sh --dojoConfig ../../../main.profile.js --release --bin node > build-log || { cat build-log; exit 1; }
 	touch $@
 
+js-build/build-succeded: js-dojo-build/build-succeded js-build/deps.js js-build/deps.css
+	mkdir -p js-build
+	# Filter out all the non-compressed js files
+	(cd js-dojo-build; find . -type d) | while read name; do mkdir -p "js-build/$$name"; done
+	(cd js-dojo-build; find . -type f \! -name "*.js") | while read name; do cp "js-dojo-build/$$name" "js-build/$$name"; done
+	(cd js/libs; find . -type d) | while read name; do mkdir -p "js-build/libs/$$name"; done
+	(cd js/libs; find . -type f \! -name "*.js") | while read name; do cp "js/libs/$$name" "js-build/libs/$$name"; done
+	cp js-dojo-build/app/app.js.uncompressed.js js-build/app/app.js.uncompressed.js
+	cp js-dojo-build/app/nls/app_en-us.js js-build/app/nls/app_en-us.js
+	cp js-dojo-build/app/TabletMeta.js js-build/app/TabletMeta.js
+	# Minify app.js
+	node_modules/.bin/uglifyjs js-build/app/app.js.uncompressed.js --screw-ie8 --keep-fnames --stats -o js-build/app/app.js
+	touch $@
+
 js-build/deps.js: $(JSDEPS) js/app/CanvasLayer.js
+	mkdir -p js-build
 	for name in $^; do cat $$name; echo; done > $@
 
 js-build/deps.css: $(CSSDEPS)
-	cat $^ | sed -e "s+../fonts/fontawesome+../js/libs/font-awesome/fonts/fontawesome+g" > $@
-
-js-build/libs: dependencies
-	cp -a js/libs js-build/libs
+	mkdir -p js-build
+	cat $^ | sed -e "s+../fonts/fontawesome+../js-build/libs/font-awesome/fonts/fontawesome+g" > $@
 
 clean-js-build:
-	rm -rf js-build
+	rm -rf js-build js-dojo-build
 
 clean-dependencies:
 	rm -rf js/libs
