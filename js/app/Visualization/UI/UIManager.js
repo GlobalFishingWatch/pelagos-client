@@ -14,6 +14,7 @@ define([
   "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
+  "app/Visualization/UI/WelcomeMessageDialog",    
   "app/Visualization/UI/ZoomButtons",
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
@@ -40,6 +41,7 @@ define([
   SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
+  WelcomeMessageDialog,
   ZoomButtons,
   ObjectTemplate,
   BorderContainer,
@@ -80,6 +82,7 @@ define([
         self.initTimeline.bind(self),
         self.initLoopButton.bind(self),
         self.initSidePanels.bind(self),
+        self.initDialogs.bind(self),
         self.initPopups.bind(self),
         self.initSaveButton.bind(self)
       ], function () {
@@ -487,6 +490,13 @@ define([
       cb();
     },
 
+    initDialogs: function (cb) {
+      var self = this;
+
+      self.welcomeMessageDialog = new WelcomeMessageDialog();
+      cb();
+    },
+
     setAdvancedSimpleMode: function () {
       var self = this;
       var advanced = !!self.visualization.state.getValue('advanced');
@@ -550,27 +560,8 @@ define([
         },
         function (cb) {
           if (!data.welcomeMessage || !data.welcomeMessage.url) return cb();
-          $.get(data.welcomeMessage.url, function (html) {
-            // Workaround for limitation in jQuery
-            html = html
-              .replace("<html", "<div data-tag='html'>")
-              .replace('</html>', '</div>')
-              .replace('<head', '<div data-tag="head"')
-              .replace("</head", "</div")
-              .replace('<body', '<div data-tag="body"')
-              .replace("</body", "</div");
-            html = $(html);
-            data.welcomeMessage.title = html.find('title').html();
-            data.welcomeMessage.content = html.find('*[data-tag="body"]').html();
-            cb();
-          }, 'text');
-        },
-        function (cb) {
-          if (data.welcomeMessage) {
-            SimpleMessageDialog.show(
-                data.welcomeMessage.title,
-                data.welcomeMessage.content);
-          }
+          self.welcomeMessageDialog.set("url", data.welcomeMessage.url);
+          self.welcomeMessageDialog.show();
           cb();
         },
         function (cb) {
