@@ -59,7 +59,7 @@ js-build/build-succeded: js-dojo-build/build-succeded js-build/deps.js js-build/
 	(cd js/libs; find . -type d) | while read name; do mkdir -p "js-build/libs/$$name"; done
 	(cd js/libs; find . -type f \! -name "*.js") | while read name; do cp "js/libs/$$name" "js-build/libs/$$name"; done
 	cp js-dojo-build/app/app.js.uncompressed.js js-build/app/app.js.uncompressed.js
-	cp js-dojo-build/app/nls/app_en-us.js js-build/app/nls/app_en-us.js
+	cp js-dojo-build/app/nls/* js-build/app/nls/
 	cp js-dojo-build/app/TabletMeta.js js-build/app/TabletMeta.js
 	# Minify app.js
 	node_modules/.bin/uglifyjs js-build/app/app.js.uncompressed.js --screw-ie8 --keep-fnames --stats -o js-build/app/app.js
