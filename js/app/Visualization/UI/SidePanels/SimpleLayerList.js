@@ -212,13 +212,7 @@ define([
     saveLayer: function () {
       var self = this;
 
-      self.animation.selectionAnimationFor.selectionAnimations = self.animation.selectionAnimationFor.selectionAnimations.filter(
-        function (animation) {
-          return animation !== self.animation;
-        }
-      );
-      self.animation.selectionAnimationFor = undefined;
-
+      self.visualization.animations.saveSelectionAnimation(self.animation);
       self.updatedHandler();
     },
 
