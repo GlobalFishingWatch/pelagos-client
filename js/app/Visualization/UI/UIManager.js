@@ -559,9 +559,10 @@ define([
           cb();
         },
         function (cb) {
-          if (!data.welcomeMessage || !data.welcomeMessage.url) return cb();
-          self.welcomeMessageDialog.set("url", data.welcomeMessage.url);
-          self.welcomeMessageDialog.show();
+          if (data.welcomeMessage && data.welcomeMessage.url) {
+            self.welcomeMessageDialog.set("url", data.welcomeMessage.url);
+            self.welcomeMessageDialog.show();
+          }
           cb();
         },
         function (cb) {

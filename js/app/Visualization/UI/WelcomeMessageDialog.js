@@ -29,6 +29,8 @@ define([
     show: function () {
       var self = this;
 
+      if (!self.url) return;
+
       var seen = self.getSeen();
       if (seen[self.url]) return;
 
