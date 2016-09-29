@@ -494,6 +494,7 @@ define([
       var self = this;
 
       self.welcomeMessageDialog = new WelcomeMessageDialog();
+      self.welcomeMessageDialog.startup();
       cb();
     },
 

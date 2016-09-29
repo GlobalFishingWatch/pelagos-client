@@ -1,6 +1,7 @@
 define([
   "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
+  "app/Visualization/KeyBindings",
   "dojo/cookie",
   "shims/jQuery/main",
   "dijit/form/Button",
@@ -8,6 +9,7 @@ define([
 ], function(
   declare,
   Dialog,
+  KeyBindings,
   cookie,
   $,
   Button,
@@ -25,6 +27,25 @@ define([
       '  <span style="float: left;"><checkbox data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="dontShowAgain"></checkbox> <label>Don\'t show this message again</label></span>' +
       '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
       '</div>',
+
+    startup: function () {
+      var self = this;
+      self.inherited(arguments);
+
+      KeyBindings.register(
+        ['Ctrl', 'Alt', 'W'], null, 'General',
+        'Display welcome message',
+        function () {
+          if (!self.url) return;
+
+          var seen = self.getSeen();
+          delete seen[self.url];
+          self.setSeen(seen);
+
+          self.show();
+        }
+      );
+    },
 
     show: function () {
       var self = this;
