@@ -12,8 +12,10 @@ if (false) {
     });
   } else {
     window.googleMapsLoader = function (req, callback) {
-      window.googleMapsLoaded = callback;
-      req(["http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded"], function () {});
+      req(["shims/apikeys"], function (apikeys) {
+        window.googleMapsLoaded = callback;
+        req(["http://maps.googleapis.com/maps/api/js?libraries=visualization&sensor=false&callback=googleMapsLoaded&key=" + apikeys.GoogleMaps], function () {});
+      });
     }
 
     def(["shims/DefineCallback!googleMapsLoader"], function () {

@@ -2,4 +2,3 @@ vectortile
 selenium
 nose
 click
-chromedriver_installer >= 0.0.4 --install-option="--chromedriver-version=2.10"

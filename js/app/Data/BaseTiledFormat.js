@@ -60,7 +60,7 @@ define([
       Format.prototype.initialize.apply(self, arguments);
     },
 
-    tilesPerScreen: 32,
+    dataQualityLevel: 3,
 
     retries: 10,
     retryTimeout: 2000,
@@ -88,7 +88,7 @@ define([
         return;
       }
 
-      Ajax.get(self.url + "/header", self.header, function (err, data) {
+      Ajax.get(self.url + "/header", self.headers, function (err, data) {
         if (err) {
           self.handleError(err);
         } else {
@@ -184,11 +184,14 @@ define([
 
     getSelectionUrl: function(selection, fallbackLevel) {
       var self = this;
-      /* FIXME: self.header.infoUsesSelection is a workaround for
-         current info database that doesn't contain seriesgroup
-         values. This should be removed in the future. */
 
       var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+
+      return self.getQueryUrl(query, fallbackLevel);
+    },
+
+    getQueryUrl: function(query, fallbackLevel) {
+      var self = this;
 
       var baseUrl = self.getUrl("selection-info", query, fallbackLevel);
       if (baseUrl.indexOf("/sub/") != -1) {
@@ -203,8 +206,14 @@ define([
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
+      /* FIXME: self.header.infoUsesSelection is a workaround for
+         current info database that doesn't contain seriesgroup
+         values. This should be removed in the future. */
+
+      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
-        var url = self.getSelectionUrl(selection, fallbackLevel) + "/info";
+        var url = self.getQueryUrl(query, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.withCredentials = withCredentials;
@@ -258,15 +267,17 @@ define([
     search: function(query, offset, limit, cb) {
       var self = this;
 
-      var data = {query: query, offset: offset, limit: limit};
-      /* FIXME: JSON encoding is not unambiguous, so using it as a key
-       * is not a good idea... */
-      data = JSON.stringify(data);
-      var url = self.getUrl("search", data, -1) + "/search";
+      var key = {query: query, offset: offset, limit: limit};
+      var url = self.getUrl("search", key, -1) + "/search?query=" + encodeURIComponent(query);
+      if (offset != undefined) {
+        url += "&offset=" + offset.toString();
+      }
+      if (limit != undefined) {
+        url += "&limit=" + limit.toString();
+      }
 
       var request = new XMLHttpRequest();
-      request.open('POST', url, true);
-      request.withCredentials = true;
+      request.open('GET', url, true);
       Ajax.setHeaders(request, self.headers);
       LoadingInfo.main.add(url, {request: request});
       request.onreadystatechange = function() {
@@ -282,7 +293,7 @@ define([
           }
         }
       };
-      request.send(data);
+      request.send();
     },
 
     clear: function () {
@@ -327,9 +338,10 @@ define([
 
       var wantedTileBounds = TileBounds.tileBounds({
         bounds: bounds,
-        tilesPerScreen: self.tilesPerScreen,
+        dataQualityLevel: self.dataQualityLevel,
         temporalExtents: self.header.temporalExtents,
-        temporalExtentsBase: self.header.temporalExtentsBase
+        temporalExtentsBase: self.header.temporalExtentsBase,
+        autoAdjustQuality: self.header.autoAdjustQuality
       });
       var wantedTiles = {};
       var oldWantedTiles = self.wantedTiles;

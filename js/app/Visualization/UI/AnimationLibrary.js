@@ -1,46 +1,36 @@
 define([
   "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
-  "dijit/layout/BorderContainer",
-  "dijit/layout/ContentPane",
-  "shims/async/main",
   "shims/jQuery/main",
   "app/Visualization/KeyBindings",
-  "app/LoadingInfo",
-  "app/Visualization/UI/Paths"
+  "app/Visualization/UI/LoaderIcon",
+  "dijit/form/Button"
 ], function(
   declare,
-  Dialog,
-  BorderContainer,
-  ContentPane,
-  async,
+  TemplatedDialog,
   $,
   KeyBindings,
-  LoadingInfo,
-  Paths
+  LoaderIcon
 ){
-  return declare("AnimationLibrary", [Dialog], {
+  return declare("AnimationLibrary", [TemplatedDialog], {
     style: "width: 50%;",
-    title: "Animation library",
-    "class": 'library-dialog',
-    paths: Paths,
-    contentTemplate: '' +
-      '<div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="liveSplitters: true" style="min-height: 300px; height: 100%; width: 100%; padding: 0; margin: 0;">' +
-
-      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:\'top\'" style="border: none; padding: 0; padding-bottom: 10px; margin: 0; overflow: hidden;">' +
-      '    <input type="text" class="query" style="width: 100%;" placeholder="Search by name or tag" data-dojo-attach-event="keyup:queryQueyUp"></input>' +
-      '    <div class="search-loading">' +
-      '      <img style="width: 20px;" src="' + Paths.LoaderIcon + '">' +
-      '    </div>' +
-      '  </div>' +
-      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-attach-point="sourcesList" data-dojo-props="region:\'center\'" style="border: none; padding: 0; margin: 0;" class="sourcesList"></div>' +
-      '  <div data-dojo-type="dijit/layout/ContentPane" data-dojo-attach-point="animationsList" data-dojo-props="region:\'right\', splitter: true" style="border: none; padding: 0; margin: 0; width: 150px;" class="animationsList"></div>' +
+    title: "Layer library",
+    "class": 'search-dialog',
+    content: '' +
+      '<input type="text" class="query" style="width: 100%;" placeholder="Animation title or keywords"></input>' +
+      '<div class="search-loading">' +
+      '  <img style="width: 20px;" src="' + LoaderIcon + '">' +
+      '</div>' +
+      '<div class="results" style="max-height: 300px; overflow: auto;"></div>' +
+      '<div class="paging" style="display: hidden;">' +
+      '  <button class="prev">Prev</button>' +
+      '  <span class="start"></span>-<span class="end"></span> of <span class="total"></span>' +
+      '  <button class="next">Next</button>' +
       '</div>',
-
     actionBarTemplate: '' +
       '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-      '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-event="click:hide">Close</button>' +
-      '  <button data-dojo-type="dijit/form/Button" type="submit" disabled="disabled" data-dojo-attach-point="addButton" data-dojo-attach-event="click:add">Add</button>' +
+      '  <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:hide">Close</button>' +
+      '  <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:search">Search</button>' +
       '</div>',
 
     visualization: null,
@@ -49,119 +39,96 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      KeyBindings.register(
-        ['Ctrl', 'Alt', 'A'], null, 'General',
-        'Add animation', self.displayAnimationLibraryDialog.bind(self)
+      $(self.containerNode).find(".query").keyup(function(event) {
+        if (event.which == 13) {
+          self.search();
+        }
+      });
+
+      $(self.containerNode).find(".prev").click(function () {
+        self.performSearch(self.currentResults.query, self.currentResults.offset - self.currentResults.limit, self.currentResults.limit);
+      });
+      $(self.containerNode).find(".next").click(function () {
+        self.performSearch(self.currentResults.query, self.currentResults.offset + self.currentResults.limit, self.currentResults.limit);
+      });
+    },
+
+    show: function () {
+      var self = this;
+      $(self.containerNode).find('.results').html('');
+      $(self.containerNode).find('.paging').hide();
+      self.performSearch("");
+    },
+
+    search: function () {
+      var self = this;
+      self.performSearch($(self.containerNode).find(".query").val());
+    },
+
+    performSearch: function (query, offset, limit) {
+      var self = this;
+      $(self.containerNode).find('.results').html('');
+      $(self.containerNode).find('.paging').hide();
+      TemplatedDialog.prototype.show.call(self);
+
+      $(self.containerNode).find('.search-loading').show();
+
+      self.visualization.data.queryDirectories(
+        query, offset, limit,
+        self.displaySearchResults.bind(self)
       );
     },
 
-    add: function () {
-    },
-
-    queryQueyUp: function (event) {
+    displaySearchResults: function (err, res) {
       var self = this;
-      if (event.which == 13) {
-        self.performSearch($(event.target).val());
-      }
-    },
+      self.currentResults = res;
+      TemplatedDialog.prototype.show.call(self);
+      $(self.containerNode).find('.search-loading').hide();
+      var results = $(self.containerNode).find('.results');
+      if (err) {
+        results.html('<div class="error">An error occured: ' + err.toString() + '<div>');
+      } else if (res.total == 0) {
+        results.html('<div class="no-results">No results found</div>');
+      } else {
+        if (res.offset > 0 || res.total > res.offset + res.entries.length) {
+          $(self.containerNode).find('.paging').show();
 
-    displayAnimationLibraryDialog: function () {
-      var self = this;
-      $(self.sourcesList.containerNode).html('');
-      $(self.animationsList.containerNode).html('');
-      self.show();
-      self.performSearch();
-    },
+          $(self.containerNode).find(".start").html(res.offset);
+          $(self.containerNode).find(".end").html(res.offset + res.entries.length);
+          $(self.containerNode).find(".total").html(res.total);
 
-    performSearch: function (query) {
-      var self = this;
-
-      $(self.containerNode).find('.search-loading').show();
-      self.visualization.data.listAvailableSources(function (err, sources) {
-        $(self.containerNode).find('.search-loading').hide();
-
-        if (!sources) {
-          $(self.sourcesList.containerNode).html('<div class="error">Unable to retrieve library: ' + err.toString() + '</div>');
-          return;
-        }
-
-        self.sources = sources;
-        var results = [];
-        if (!query) {
-          results = Object.keys(sources);
+          if (res.offset <= 0) {
+            $(self.containerNode).find(".prev").attr({disabled: 'disabled'});
+          } else {
+            $(self.containerNode).find(".prev").removeAttr('disabled');
+          }
+          if (res.offset + res.limit  >= res.total) {
+            $(self.containerNode).find(".next").attr({disabled: 'disabled'});
+          } else {
+            $(self.containerNode).find(".next").removeAttr('disabled');
+          }
         } else {
-          for (var name in sources) {
-            if (name.indexOf(query) != -1) {
-              results.push(name);
-            } else {
-              if (sources[name].tags) {
-                for (var i = 0; i < sources[name].tags.length; i++) {
-                  if (sources[name].tags[i].indexOf(query) != -1) {
-                    results.push(name);
-                    break;
-                  }
-                }
-              }
-            }
-          }
+          $(self.containerNode).find('.paging').hide();
         }
-        results.sort();
 
-        $(self.sourcesList.containerNode).html('');
-        $(self.animationsList.containerNode).html('');
+        results.html('<table class="table result-table">' +
+                     '  <tr>' +
+                     '    <th class="title">Title</th>' +
+                     '    <th class="description">Description</th>' +
+                     '  </tr>' +
+                     '</table>');
+        res.entries.map(function (animation) {
+          var row = $('<tr><td><a class="title"></a></td><td><a class="description"></a></td>');
+          row.find(".title").html(animation.args.title);
+          row.find(".description").html(animation.args.description);
+          row.find('a').click(function () {
+            self.visualization.animations.addAnimation(animation, function () {});
+            self.hide();
+          });
 
-        results.map(function (key) {
-          var label = key;
-          if (sources[key].tags) {
-            label += ' [' + sources[key].tags.join(',') + ']';
-          }
-          var source = $("<div>" +  label + "</div>");
-          source.data('name', key);
-          source.click(self.displayAnimationsForSource.bind(self));
-          $(self.sourcesList.containerNode).append(source);
+          results.find(".result-table").append(row);
         });
-      });
-    },
-
-    displayAnimationsForSource: function (event) {
-      var self = this;
-      var name = $(event.target).data('name');
-
-      $(self.animationsList.containerNode).html('');
-      self.visualization.data.listAvailableSourceAnimations(self.sources[name], function (err, animations) {
-        animations.map(function (animation) {
-          var row = $("<div></div>");
-          row.text(animation.args.title);
-          row.attr({title: animation.type});
-
-          row.data('name', name);
-          row.data('animation', animation);
-          row.click(self.selectAnimation.bind(self));
-
-          $(self.animationsList.containerNode).append(row);
-        });
-      });
-
-      $(self.sourcesList.containerNode).find("*").removeClass("selected");
-      $(event.target).addClass("selected");
-
-      self.addButton.set("disabled", true);
-    },
-
-    selectAnimation: function (event) {
-      var self = this;
-      var name = $(event.target).data('name');
-      self.selectedAnimation = $(event.target).data('animation');
-      self.selectedAnimation.args.title = name + ": " + self.selectedAnimation.args.title;
-      $(self.animationsList.containerNode).find("*").removeClass("selected");
-      $(event.target).addClass("selected");
-      self.addButton.set("disabled", false);
-    },
-
-    add: function () {
-      var self = this;
-      self.visualization.animations.addAnimation(self.selectedAnimation, function () {});
-      self.hide();
+      }
     }
   });
 });

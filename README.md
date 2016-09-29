@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/SkyTruth/pelagos-client.svg?branch=master)](https://travis-ci.org/SkyTruth/pelagos-client)
+[![Build Status](https://travis-ci.org/GlobalFishingWatch/pelagos-client.svg?branch=master)](https://travis-ci.org/GlobalFishingWatch/pelagos-client)
 
 # About
 

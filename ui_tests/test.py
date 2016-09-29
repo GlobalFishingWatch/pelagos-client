@@ -76,13 +76,6 @@ class HomeTest(unittest.TestCase):
              && !require("app/LoadingInfo").main.isLoading());
          """ % name)
 
-    def getHover(self, point, animation):
-        actions = ActionChains(server.driver)
-        actions.move_to_element_with_offset(server.driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
-        actions.perform()
-        time.sleep(1)
-        return server.driver.execute_script("return visualization.animations.animations.filter(function (animation) { return animation.name == '%s'; })[0].data_view.selections.selections.hover.data.seriesgroup[0]" % animation)
-
     def test_coord_conversion(self):
         driver = server.driver
 
@@ -97,65 +90,6 @@ class HomeTest(unittest.TestCase):
         point = self.latLng2Point(latLng)
         self.assertAlmostEqual(point['x'], orig['x'])
         self.assertAlmostEqual(point['y'], orig['y'])
-
-    def test_home(self):
-        driver = server.driver
-        try:
-            driver.set_window_size(1280, 776)
-            driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
-            time.sleep(5)
-
-            self.setAnimation("ClusterAnimation")
-
-            self.load_helpers()
-            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
-
-            # Shift click is not supported by webdriver right now...
-            driver.execute_script("""
-              KeyModifiers = require("app/Visualization/KeyModifiers");
-              KeyModifiers.active.Shift = true
-            """)
-
-            actions = ActionChains(driver)
-            actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
-            actions.click()
-            actions.perform()
-
-            server.wait_for(lambda: not server.is_element_present('//div[@id="vessel_identifiers"]//table//td[@class="imo"]'))
-            self.failUnless(server.is_element_present('//div[@id="vessel_identifiers"]//table//td[text()="27200"]'))
-        except:
-            name = os.path.realpath("ui_tests.test.test_home.png")
-            driver.get_screenshot_as_file(name)
-            raise
-
-    def test_timeslider(self):
-        driver = server.driver
-        try:
-            driver.set_window_size(1280, 776)
-            driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
-            time.sleep(5)
-
-            self.setAnimation("ClusterAnimation")
-
-            self.load_helpers()
-
-            def moveTimeslider(offset):
-                actions = ActionChains(driver)
-                actions.drag_and_drop_by_offset(driver.find_element_by_xpath('//div[@class="Timeline timeline main-timeline"]//div[@class="window"]'), offset, 0)
-                actions.perform()
-
-            server.wait_for(lambda: self.animationHasLoaded("ClusterAnimation"))
-            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
-            self.assertEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup not present at x,y")
-            moveTimeslider(-272)
-            time.sleep(5)
-            server.wait_for(lambda: self.animationHasLoaded("ClusterAnimation"))
-            self.assertNotEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup present at x,y when timeslider has moved")
-
-        except:
-            name = os.path.realpath("ui_tests.test.test_timeslider.png")
-            driver.get_screenshot_as_file(name)
-            raise
 
     def test_zoom(self):
         driver = server.driver
@@ -176,7 +110,7 @@ class HomeTest(unittest.TestCase):
             self.assertEqual(get_tiles(), [u'-22.5,-11.25,0,0', u'-22.5,-22.5,0,-11.25', u'-22.5,-33.75,0,-22.5', u'-22.5,0,0,11.25', u'-22.5,11.25,0,22.5', u'-22.5,22.5,0,33.75', u'-45,-11.25,-22.5,0', u'-45,-22.5,-22.5,-11.25', u'-45,-33.75,-22.5,-22.5', u'-45,0,-22.5,11.25', u'-45,11.25,-22.5,22.5', u'-45,22.5,-22.5,33.75', u'-67.5,-11.25,-45,0', u'-67.5,-22.5,-45,-11.25', u'-67.5,-33.75,-45,-22.5', u'-67.5,0,-45,11.25', u'-67.5,11.25,-45,22.5', u'-67.5,22.5,-45,33.75', u'0,-11.25,22.5,0', u'0,-22.5,22.5,-11.25', u'0,-33.75,22.5,-22.5', u'0,0,22.5,11.25', u'0,11.25,22.5,22.5', u'0,22.5,22.5,33.75', u'22.5,-11.25,45,0', u'22.5,-22.5,45,-11.25', u'22.5,-33.75,45,-22.5', u'22.5,0,45,11.25', u'22.5,11.25,45,22.5', u'22.5,22.5,45,33.75', u'45,-11.25,67.5,0', u'45,-22.5,67.5,-11.25', u'45,-33.75,67.5,-22.5', u'45,0,67.5,11.25', u'45,11.25,67.5,22.5', u'45,22.5,67.5,33.75'])
 
             actions = ActionChains(driver)
-            actions.click(driver.find_element_by_xpath('//div[@title="Zoom in"]'))
+            actions.click(driver.find_element_by_xpath('//div[@class="zoomIn"]'))
             actions.perform()
 
             time.sleep(1)
@@ -186,84 +120,5 @@ class HomeTest(unittest.TestCase):
 
         except:
             name = os.path.realpath("ui_tests.test.test_zoom.png")
-            driver.get_screenshot_as_file(name)
-            raise
-
-    def test_arrows(self):
-        driver = server.driver
-
-        driver.set_window_size(1280, 776)
-        driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
-        time.sleep(5)
-
-        self.setAnimation("ArrowAnimation")
-
-        server.driver.execute_script("""
-          visualization.state.setValue("time", new Date("1970-01-01 00:00:00"))
-          visualization.state.setValue("timeExtent", 31*24*60*60*1000)
-        """)
-
-        self.load_helpers()
-
-        for coord in [{"lat":0.7031073524364655,"lng":-43.59376},
-                      {"lat":0.5273363048114915,"lng":-38.583984375},
-                      {"lat":-0.08789059053082421,"lng":-35.5078125},
-                      {"lat":-0.615222552406841,"lng":-28.212890625},
-                      {"lat":-0.7909904981540058,"lng":-22.060546875},
-                      {"lat":-0.615222552406841,"lng":-17.314453125},
-                      {"lat":-0.08789059053082421,"lng":-11.6015625},
-                      {"lat":0.5273363048114915,"lng":-5.888671875},
-                      {"lat":0.6152225524068282,"lng":-1.7578125}]:
-            
-            point = self.latLng2Point(coord)
-            self.assertEqual(self.getHover(point, "ArrowAnimation"), 20400)
-
-    def test_vessel_info(self):
-        driver = server.driver
-        try:
-            driver.set_window_size(1280, 776)
-            driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
-            time.sleep(5)
-
-            self.setAnimation("ClusterAnimation")
-
-            self.load_helpers()
-            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
-
-            actions = ActionChains(driver)
-            actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
-            actions.click()
-            actions.perform()
-
-            server.wait_for(lambda: not server.is_element_present('//div[@id="vessel_identifiers"]//table//td[@class="vesselname" and text()="---"]'))
-            self.failUnless(server.is_element_present('//div[@id="vessel_identifiers"]//table//*[text()="27200"]'))
-        except:
-            name = os.path.realpath("ui_tests.test.test_home.png")
-            driver.get_screenshot_as_file(name)
-            raise
-
-    def test_vessel_track(self):
-        driver = server.driver
-        try:
-            driver.set_window_size(1280, 776)
-            driver.get("http://localhost:8000/index.html?workspace=/ui_tests/data/testtiles/workspace")
-            time.sleep(5)
-
-            self.setAnimation("ClusterAnimation")
-
-            self.load_helpers()
-            point = self.latLng2Point({'lat':22.5, 'lng':0.0})
-
-            actions = ActionChains(driver)
-            actions.move_to_element_with_offset(driver.find_element_by_xpath("//div[@class='animations']/div/div/div[2]"), point['x'], point['y'])
-            actions.click()
-            actions.perform()
-
-            server.wait_for(lambda: self.animationHasLoaded("VesselTrackAnimation"))
-
-            self.assertEqual(self.getHover(point, "ClusterAnimation"), 27200, "Seriesgroup not present at x,y")
-
-        except:
-            name = os.path.realpath("ui_tests.test.test_home.png")
             driver.get_screenshot_as_file(name)
             raise
