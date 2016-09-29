@@ -32,7 +32,7 @@ define([
       '    Share this link:' +
       '  </div>' +
       '  <div class="link">' +
-      '    <input data-dojo-type="dijit/form/TextBox" type="text" class="link dijit dijitReset dijitInline dijitLeft" style="width: 382pt" data-dojo-attach-point="link">' +
+      '    <input data-dojo-type="dijit/form/TextBox" data-dojo-props="readOnly: true" type="text" class="link dijit dijitReset dijitInline dijitLeft" style="width: 382pt" data-dojo-attach-point="link">' +
           '<div class="save-loading">' +
           '  <img style="width: 20px;" src="' + LoaderIcon + '">' +
           '</div>' +
