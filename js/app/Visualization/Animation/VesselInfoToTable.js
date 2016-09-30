@@ -1,6 +1,6 @@
 define([
   "app/CountryCodes",
-  "app/Visualization/UI/Paths",
+  "app/Paths",
   "shims/jQuery/main"
 ], function(
   CountryCodes,

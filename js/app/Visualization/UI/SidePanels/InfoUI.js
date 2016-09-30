@@ -4,21 +4,21 @@ define([
   "app/Visualization/Animation/VesselInfoToTable",
   "app/Visualization/UI/GenerateReportDialog",
   "app/Visualization/UI/SidePanels/SidePanelBase",
-  "shims/jQuery/main",
-  "app/Visualization/UI/Paths"
+  "app/Visualization/UI/LoaderIcon",
+  "shims/jQuery/main"
 ], function(
   declare,
   domStyle,
   VesselInfoToTable,
   GenerateReportDialog,
   SidePanelBase,
-  $,
-  Paths
+  LoaderIcon,
+  $
 ){
   return declare("InfoUI", [SidePanelBase], {
     baseClass: 'InfoUI',
     title: 'Info',
-    paths: Paths,
+    LoaderIcon: LoaderIcon,
     colors: {
       info: 'inherit',
       warning: '#ff5500',
@@ -35,7 +35,7 @@ define([
       '  <div class="contentWrapper">' +
       '    <h2 data-dojo-attach-point="titleNode">Vessel Information</h2>' +
       '    <div class="loading-vessel-info" style="display: none;" data-dojo-attach-point="loadingNode">' +
-             '<img style="width: 20px;" src="${paths.LoaderIcon}">'+
+             '<img style="width: 20px;" src="${LoaderIcon}">'+
           '</div>' +
       '    <div id="vessel_identifiers" class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>' + 
       '  </div>' +
