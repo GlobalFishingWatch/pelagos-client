@@ -1,18 +1,22 @@
 define([
   "require",
   "app/Class",
+  "app/Data/Ajax",
   "app/LoadingInfo",
   "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation",
+  "shims/async/main",
   "shims/cartodb/main"
 ], function(
   require,
   Class,
+  Ajax,
   LoadingInfo,
   CartoDBInfoWindow,
   ObjectToTable,
   Animation,
+  async,
   cartodb
 ) {
   var CartoDBAnimation = Class(Animation, {
@@ -156,6 +160,49 @@ define([
         self.selected = false;
         self.manager.events.triggerEvent('info', {});
       }
+    },
+
+    getSelectionInfo: function (type, cb) {
+      var self = this;
+
+      if (type !== undefined) return cb("Not implemented", null);
+
+      var info;
+      var title;
+      async.series([
+        function (cb) {
+          Ajax.get(self.source.args.url, {}, function (err, data) {
+            if (err) return cb(err);
+            title = data.title;
+            info = data.description;
+            cb();
+          });
+        },
+        function (cb) {
+          try {
+            info = JSON.parse(info);
+            cb();
+          } catch (e) {
+            if (info.indexOf('://') != -1 && info.indexOf('<') != -1) {
+              Ajax.get(info, {}, function (err, data) {
+                if (err) return cb(err);
+                info = JSON.parse(data);
+                cb();
+              });
+            } else {
+              info = {'description': info};
+              info.toString = function () {
+                return ObjectToTable(this);
+              };
+              cb();
+            }
+          }
+        }
+      ], function (err) {
+        if (err) return cb(err);
+        info.title = title;
+        cb(null, info);
+      });
     }
   });
   CartoDBAnimation.layerIndex = 0;
