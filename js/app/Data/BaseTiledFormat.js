@@ -194,6 +194,9 @@ define([
       var self = this;
 
       var baseUrl = self.getUrl("selection-info", query, fallbackLevel);
+
+      if (query === undefined) return baseUrl;
+
       if (baseUrl.indexOf("/sub/") != -1) {
         baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
       } else {
@@ -210,7 +213,10 @@ define([
          current info database that doesn't contain seriesgroup
          values. This should be removed in the future. */
 
-      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+      var query;
+      if (selection !== undefined) {
+        query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+      }
 
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
         var url = self.getQueryUrl(query, fallbackLevel) + "/info";

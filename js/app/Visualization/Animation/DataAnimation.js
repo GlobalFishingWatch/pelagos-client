@@ -5,8 +5,10 @@ define([
   "app/UrlValues",
   "app/Visualization/Animation/Animation",
   "app/Visualization/Animation/Shader",
+  "app/Visualization/Animation/ObjectToTable",
   "app/Data/GeoProjection",
   "app/Data/DataView",
+  "shims/lodash/main",
   "shims/jQuery/main"
 ], function(
   Class,
@@ -15,8 +17,10 @@ define([
   UrlValues,
   Animation,
   Shader,
+  ObjectToTable,
   GeoProjection,
   DataView,
+  _,
   $
 ) {
   var DataAnimation = Class(Animation, {
@@ -365,6 +369,78 @@ define([
         });
       } else {
         cb(null, null);
+      }
+    },
+
+    getSelectionInfo: function (type, cb) {
+      var self = this;
+      var dataView = self.data_view;
+      var selection;
+      if (type !== undefined) selection = dataView.selections.selections[type];
+
+      if (selection && selection.rawInfo) {
+        var data = _.clone(selection.data);
+
+        Object.items(dataView.source.header.colsByName).map(function (item) {
+          if (item.value.choices) {
+            var choices = Object.invert(item.value.choices);
+            data[item.key] = data[item.key].map(function (dataValue) {
+              return choices[dataValue];
+            });
+          }
+        });
+
+        data.layer = self.title;
+        data.toString = function () {
+          return ObjectToTable(this);
+        };
+        cb(null, data);
+      } else if (selection && !selection.hasSelectionInfo()) {
+        var data = {
+          layer: self.title,
+          toString: function () {
+            return 'There are multiple vessels at this location. Zoom in to see individual points.';
+          }
+        };
+        cb(null, data);
+      } else {
+        if (type == 'selected' && selection && !selection.rawInfo) {
+          self.manager.showSelectionAnimations(self, selection);
+        }
+        dataView.selections.getSelectionInfo(type, function (err, data) {
+          var content;
+
+          if (data) {
+            // FIXME: Wait, what? What about ObjectToTable?!?!
+            data.toString = function () {
+              var content = ["<table class='table table-striped table-bordered'>"];
+              if (data.name) {
+                var name = data.name;
+                if (data.link) {
+                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
+                }
+                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
+              }
+
+              Object.keys(data).sort().map(function (key) {
+                if (key == 'toString' || key == 'name' || key == 'link') return;
+                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
+                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
+                } else {
+                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
+                }
+              });
+
+              content.push("</table>");
+
+              return content.join('\n');
+            };
+            cb(null, data);
+          } else {
+            cb(err, null);
+          }
+        });
+
       }
     },
 

@@ -727,7 +727,7 @@ function(Class,
       });
     },
 
-    handleInfo: function (animation, type, err, data, selectionData) {
+    handleInfo: function (animation, type, err, data) {
       var self = this;
       var dataView = animation.data_view;
  
@@ -748,6 +748,12 @@ function(Class,
           }
         }
       );
+
+      var selectionData = {};
+      var selectionDataTmp = dataView.selections.selections[type].data;
+      for (var key in selectionDataTmp) {
+        selectionData[key] = selectionDataTmp[key][0];
+      }
 
       if (type == 'info') {
         if (err) data = err;
@@ -793,18 +799,6 @@ function(Class,
       }
     },
 
-    handleSelectionInfo: function (animation, selectionEvent, err, data) {
-      var self = this;
-      var dataView = animation.data_view;
-      var type = selectionEvent.category;
-      var info = {};
-      var selectionData = dataView.selections.selections[type].data;
-      for (var key in selectionData) {
-        info[key] = selectionData[key][0];
-      }
-      self.handleInfo(animation, type, err, data, info);
-    },
-
     handleSelectionUpdate: function (animation, selectionEvent, type) {
       var self = this;
       var dataView = animation.data_view;
@@ -835,7 +829,7 @@ function(Class,
             && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
           var data = {};
           data.toString = function () { return ""; };
-          self.handleSelectionInfo(animation, selectionEvent, null, undefined);
+          self.handleInfo(animation, selectionEvent.category, null, undefined);
         }
       }
 
@@ -844,73 +838,15 @@ function(Class,
         return;
       }
 
-      if (selection.rawInfo) {
-        var data = _.clone(selection.data);
-
-        Object.items(dataView.source.header.colsByName).map(function (item) {
-          if (item.value.choices) {
-            var choices = Object.invert(item.value.choices);
-            data[item.key] = data[item.key].map(function (dataValue) {
-              return choices[dataValue];
-            });
-          }
-        });
-
-        data.layer = animation.title;
-        data.toString = function () {
-          return ObjectToTable(this);
-        };
-        self.handleSelectionInfo(animation, selectionEvent, null, data);
-      } else if (!selection.hasSelectionInfo()) {
-        var data = {
-          layer: animation.title,
-          toString: function () {
-            return 'There are multiple vessels at this location. Zoom in to see individual points.';
-          }
-        };
-        self.handleSelectionInfo(animation, selectionEvent, null, data);
-      } else {
-        if (type == 'selected' && !dataView.selections.selections[type].rawInfo) {
-          self.showSelectionAnimations(animation, selection);
+      animation.getSelectionInfo(type, function (err, data) {
+        if (err || data) {
+          self.handleInfo(animation, selectionEvent.category, err, data);
+        } else {
+          // We got an error call before, but now something has
+          // changed and we're retrying the load...
+          self.events.triggerEvent('info-loading', {});
         }
-        dataView.selections.getSelectionInfo(type, function (err, data) {
-          var content;
-
-          if (err) {
-            self.handleSelectionInfo(animation, selectionEvent, err, null);
-          } else if (data) {
-            data.toString = function () {
-              var content = ["<table class='table table-striped table-bordered'>"];
-              if (data.name) {
-                var name = data.name;
-                if (data.link) {
-                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                }
-                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
-              }
-
-              Object.keys(data).sort().map(function (key) {
-                if (key == 'toString' || key == 'name' || key == 'link') return;
-                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                } else {
-                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
-                }
-              });
-
-              content.push("</table>");
-
-              return content.join('\n');
-            };
-            self.handleSelectionInfo(animation, selectionEvent, null, data);
-          } else {
-            // We got an error call before, but now something has
-            // changed and we're retrying the load...
-            self.events.triggerEvent('info-loading', {});
-          }
-        });
-
-      }
+      });
     },
 
     addAnimation: function (animation, cb) {
