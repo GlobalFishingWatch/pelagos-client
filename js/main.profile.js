@@ -21,5 +21,6 @@ dojoConfig = {
           include: [ "app/main", "dojo/dojo", "dijit", "dojox" ],
           boot: true
      }
-  }
+  },
+  localeList: ["ab", "ab-cd-ef", "ar", "az", "bg", "bs", "ca", "cs", "da", "de", "el", "en", "en-au", "en-ca", "en-gb", "en-us-hawaii", "en-us-new_york-brooklyn", "en-us-surfer", "en-us-texas", "es", "eu", "fa", "fi", "fr", "fr-ch", "he", "hi", "hr", "hu", "id", "it", "ja", "kk", "ko", "mk", "nb", "nl", "pl", "pt", "pt-pt", "ro", "ru", "sk", "sl", "sr", "sv", "sw", "th", "tr", "uk", "yi", "zh", "zh-cn", "zh-hant", "zh-hk", "zh-tw"]
 };
