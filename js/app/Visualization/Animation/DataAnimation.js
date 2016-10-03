@@ -411,29 +411,8 @@ define([
           var content;
 
           if (data) {
-            // FIXME: Wait, what? What about ObjectToTable?!?!
             data.toString = function () {
-              var content = ["<table class='table table-striped table-bordered'>"];
-              if (data.name) {
-                var name = data.name;
-                if (data.link) {
-                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                }
-                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
-              }
-
-              Object.keys(data).sort().map(function (key) {
-                if (key == 'toString' || key == 'name' || key == 'link') return;
-                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                } else {
-                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
-                }
-              });
-
-              content.push("</table>");
-
-              return content.join('\n');
+              return ObjectToTable(this);
             };
             cb(null, data);
           } else {
