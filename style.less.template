@@ -1,0 +1,3 @@
+.main-timeline {
+  outline: 5px solid red;
+}
