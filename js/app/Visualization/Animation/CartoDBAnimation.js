@@ -1,22 +1,20 @@
 define([
   "require",
   "app/Class",
-  "app/Data/Ajax",
+  "app/UrlValues",
   "app/LoadingInfo",
   "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation",
-  "shims/async/main",
   "shims/cartodb/main"
 ], function(
   require,
   Class,
-  Ajax,
+  UrlValues,
   LoadingInfo,
   CartoDBInfoWindow,
   ObjectToTable,
   Animation,
-  async,
   cartodb
 ) {
   var CartoDBAnimation = Class(Animation, {
@@ -31,49 +29,62 @@ define([
     initGl: function(cb) {
       var self = this;
 
-      var cartoLayer = cartodb.createLayer(
-        self.manager.map, self.source.args.url, {infowindow: false}
-      ).addTo(
-        /* Note: This is does not support adding another layer before cb() is called
-         * Make sure to serialize this properly. */
-        self.manager.map, self.manager.map.overlayMapTypes.length
-      ).on('done', function(layer) {
-        self.layer = layer;
-      
-        if (self.layer.getSubLayers) {
-          self.layer.getSubLayers().map(function (subLayer) {
-            subLayer.setInteraction(true); // Interaction for that layer must be enabled
-            cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
-          });
-        }
+      self.source.args.url = UrlValues.realpath(self.manager.visualization.workspaceUrl, self.source.args.url);
 
-        if (self.layer.getTimeBounds) {
-          // This is a torque layer
+      // FIXME: Backwards compatibility, should really just assert this...
+      self.source.type = "CartoDBFormat";
 
-          self.manager.visualization.state.events.on({
-            time: self.timeChanged.bind(self),
-            timeExtent: self.timeChanged.bind(self)
-          });
+      self.data = self.manager.visualization.data.addSource(self.source);
 
-          self.layer.stop();
-        }
-          
-        self.layer.on('featureOver', self.handleMouseOver.bind(self));
-        self.layer.on('mouseout', self.handleMouseOut.bind(self));
+      var handleHeader = function () {
+        self.data.events.un({header: handleHeader});
 
-        self.setVisible(self.visible);
+        var cartoLayer = cartodb.createLayer(
+          self.manager.map, self.source.args.url, {infowindow: false}
+        ).addTo(
+          /* Note: This is does not support adding another layer before cb() is called
+           * Make sure to serialize this properly. */
+          self.manager.map, self.manager.map.overlayMapTypes.length
+        ).on('done', function(layer) {
+          self.layer = layer;
 
-        cb();
-      }).on("error", function (err) {
-        self.handleError(err);
-        self.manager.visualization.data.events.triggerEvent("error", {
-          url: self.source.args.url,
-          toString: function () {
-            return 'Unable to load CartoDB layer ' + this.url;
+          if (self.layer.getSubLayers) {
+            self.layer.getSubLayers().map(function (subLayer) {
+              subLayer.setInteraction(true); // Interaction for that layer must be enabled
+              cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
+            });
           }
+
+          if (self.layer.getTimeBounds) {
+            // This is a torque layer
+
+            self.manager.visualization.state.events.on({
+              time: self.timeChanged.bind(self),
+              timeExtent: self.timeChanged.bind(self)
+            });
+
+            self.layer.stop();
+          }
+
+          self.layer.on('featureOver', self.handleMouseOver.bind(self));
+          self.layer.on('mouseout', self.handleMouseOut.bind(self));
+
+          self.setVisible(self.visible);
+
+          cb();
+        }).on("error", function (err) {
+          self.handleError(err);
+          self.manager.visualization.data.events.triggerEvent("error", {
+            url: self.source.args.url,
+            toString: function () {
+              return 'Unable to load CartoDB layer ' + this.url;
+            }
+          });
+          cb(err);
         });
-        cb(err);
-      });
+      };
+      self.data.events.on({header: handleHeader});
+      self.data.load();
     },
 
     setTime: function (timestamp) {
@@ -167,41 +178,14 @@ define([
 
       if (type !== undefined) return cb("Not implemented", null);
 
-      var info;
-      var title;
-      async.series([
-        function (cb) {
-          Ajax.get(self.source.args.url, {}, function (err, data) {
-            if (err) return cb(err);
-            title = data.title;
-            info = data.description || "";
-            cb();
-          });
-        },
-        function (cb) {
-          try {
-            info = JSON.parse(info);
-            cb();
-          } catch (e) {
-            if (info.indexOf('://') != -1 && info.indexOf('<') == -1) {
-              Ajax.get(info, {}, function (err, data) {
-                if (err) return cb(err);
-                info = JSON.parse(data);
-                cb();
-              });
-            } else {
-              info = {'description': info};
-              cb();
-            }
-          }
-        }
-      ], function (err) {
-        if (err) return cb(err);
-        if (title) info.title = title;
-        info.toString = function () {
-          return ObjectToTable(this);
+      self.data.getSelectionInfo(undefined, function (err, data) {
+        if (data) {
+          data.layer = self.title;
+          data.toString = function () {
+            return ObjectToTable(this);
+          };
         };
-        cb(null, info);
+        cb(err, data);
       });
     }
   });

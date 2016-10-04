@@ -13,7 +13,8 @@ define([
   "app/Data/BinFormat",
   "app/Data/EmptyFormat",
   "app/Data/TiledEmptyFormat",
-  "app/Data/ClusterTestFormat"
+  "app/Data/ClusterTestFormat",
+  "app/Data/CartoDBFormat"
 ], function(
   Class,
   Bounds,

@@ -5,6 +5,7 @@ define([
   "shims/jQuery/main",
   "app/Visualization/KeyBindings",
   "app/Visualization/UI/LoaderIcon",
+  "app/Visualization/Animation/ObjectToTable",
   "dijit/form/Button"
 ], function(
   declare,
@@ -12,7 +13,8 @@ define([
   async,
   $,
   KeyBindings,
-  LoaderIcon
+  LoaderIcon,
+  ObjectToTable
 ){
   return declare("AnimationLibrary", [TemplatedDialog], {
     style: "width: 50%;",
@@ -92,6 +94,11 @@ define([
         entries,
         function (entry, cb) {
           self.visualization.data.getSourceInfo(entry.args.source, function (err, data) {
+            if (data) {
+              data.toString = function () {
+                return ObjectToTable(this);
+              };
+            }
             cb(null, {animation: entry, error: err, info: data});
           });
         },
