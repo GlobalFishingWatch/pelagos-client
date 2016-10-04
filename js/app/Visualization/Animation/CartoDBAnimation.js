@@ -174,7 +174,7 @@ define([
           Ajax.get(self.source.args.url, {}, function (err, data) {
             if (err) return cb(err);
             title = data.title;
-            info = data.description;
+            info = data.description || "";
             cb();
           });
         },
@@ -183,7 +183,7 @@ define([
             info = JSON.parse(info);
             cb();
           } catch (e) {
-            if (info.indexOf('://') != -1 && info.indexOf('<') != -1) {
+            if (info.indexOf('://') != -1 && info.indexOf('<') == -1) {
               Ajax.get(info, {}, function (err, data) {
                 if (err) return cb(err);
                 info = JSON.parse(data);
@@ -191,16 +191,16 @@ define([
               });
             } else {
               info = {'description': info};
-              info.toString = function () {
-                return ObjectToTable(this);
-              };
               cb();
             }
           }
         }
       ], function (err) {
         if (err) return cb(err);
-        info.title = title;
+        if (title) info.title = title;
+        info.toString = function () {
+          return ObjectToTable(this);
+        };
         cb(null, info);
       });
     }
