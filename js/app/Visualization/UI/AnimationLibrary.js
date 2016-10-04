@@ -79,17 +79,26 @@ define([
       );
     },
 
-    displaySearchResults: function (err, res) {
+    displaySearchResults: function (res) {
       var self = this;
       self.currentResults = res;
       TemplatedDialog.prototype.show.call(self);
       $(self.containerNode).find('.search-loading').hide();
       var results = $(self.containerNode).find('.results');
-      if (err) {
-        results.html('<div class="error">An error occured: ' + err.toString() + '<div>');
+
+      results.html("");
+
+      if (res.errors.length > 0) {
+        var errors = $('<div class="error"><div>An error occured:</div><div>');
+        res.errors.map(function (err) {
+          errors.append(err.toString());
+        });
+        results.append(errors);
       } else if (res.total == 0) {
-        results.html('<div class="no-results">No results found</div>');
-      } else {
+        results.append('<div class="no-results">No results found</div>');
+      }
+
+      if (res.total > 0) {
         if (res.offset > 0 || res.total > res.offset + res.entries.length) {
           $(self.containerNode).find('.paging').show();
 
@@ -111,7 +120,7 @@ define([
           $(self.containerNode).find('.paging').hide();
         }
 
-        results.html('<table class="table result-table">' +
+        results.append('<table class="table result-table">' +
                      '  <tr>' +
                      '    <th class="title">Title</th>' +
                      '    <th class="description">Description</th>' +

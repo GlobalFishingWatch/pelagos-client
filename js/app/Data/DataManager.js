@@ -285,25 +285,22 @@ define([
         "total": 0,
         "limit": limit,
         "offset": offset,
-        "nextOffset": offset + limit
+        "nextOffset": offset + limit,
+        "errors": []
       };
 
       async.each(self.directories, function (baseUrl, cb) {
         self.queryDirectory(baseUrl, query, offset, limit, function (err, data) {
           if (err) {
-            cb(err);
+            res.errors.push(err);
           } else {
             res.entries = res.entries.concat(data.entries);
             res.total += data.total;
-            cb();
           }
+          cb();
         });
       }, function (err) {
-        if (err) {
-          cb(err);
-        } else {
-          cb(null, res);
-        }
+        cb(res);
       });
     },
 
