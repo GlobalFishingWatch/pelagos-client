@@ -273,6 +273,25 @@ define([
       self.events.triggerEvent("update", update);
     },
 
+    getSourceInfo: function (sourceSpec, cb) {
+      var self = this;
+      var formatClass = Format.formatClasses[sourceSpec.type];
+
+      var source = new formatClass(sourceSpec.args);
+      source.setHeaders(self.headers);
+      source.events.on({
+        error: function (err) {
+          cb(err);
+        },
+        header: function () {
+          source.getSelectionInfo(undefined, function (err, data) {
+            cb(err, data);
+          });
+        }
+      });
+      source.load();
+    },
+
     queryDirectories: function (query, offset, limit, cb) {
       var self = this;
 

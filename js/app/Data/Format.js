@@ -135,6 +135,14 @@ define([
       return compareTilesByCol(0);
     },
 
+    search: function(query, offset, limit, cb) {
+      cb("No search results available");
+    },
+
+    getSelectionInfo: function(selection, cb) {
+      cb("No information available");
+    },
+
     /**
      * Prints a summary of the loaded data.
      */
