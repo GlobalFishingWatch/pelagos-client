@@ -284,7 +284,8 @@ define([
             spec: event.data.report,
             data: event.data.polygonData,
             state: self.visualization.state,
-            animations: self.visualization.animations
+            animations: self.visualization.animations,
+            datamanager: self.visualization.data
           };
 
           new GenerateReportDialog(report).show();
