@@ -244,6 +244,10 @@ define([
 
       async.series([
         function (cb) {
+          if (!data.ui || !self.ui) return cb();
+          self.ui.load(data.ui, cb);
+        },
+        function (cb) {
           if (!data.state) return cb();
           for (var name in data.state) {
             self.state.setValue(name, data.state[name]);
@@ -257,10 +261,6 @@ define([
         function (cb) {
           if (!data.data) return cb();
           self.data.load(data.data, cb);
-        },
-        function (cb) {
-          if (!data.ui || !self.ui) return cb();
-          self.ui.load(data.ui, cb);
         }
       ], cb);
     },
