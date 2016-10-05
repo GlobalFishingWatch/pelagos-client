@@ -1,3 +1,49 @@
+/* hide Google, CartoDB logos */
+
+.cartodb-logo, #cartodb-gmaps-attribution, .gmnoprint a, .gmnoprint span  {
+  visibility: hidden;
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+a[href^="http://maps.google.com/maps"]{display:none !important;}
+a[href^="https://maps.google.com/maps"]{display:none !important;}
+
+.gm-style .gmnoprint .gm-style-cc div,
+.gm-style .gm-style-cc div {
+  display: none;
+}
+
 .main-timeline {
-  outline: 5px solid red;
+  bottom: 5pt;
+  height: 75pt;
+}
+
+.MouseLatLon {
+  bottom: 5pt;
+}
+.control_box {
+  bottom: 5pt;
+  .btn-lg.play {
+    height: 75pt;
+  }
+}
+
+
+@media screen and (max-height: 400px) { 
+  #w {
+    padding-bottom: 60pt;
+  }
+  .Timeline .line-visibility .line .tickmarks-container {
+    height: 69%;
+  }
+  .main-timeline {
+    bottom: 5pt;
+    height: 55pt;
+  }
+  .control_box .btn-lg.play {
+    height: 55pt;
+  }
+
 }
