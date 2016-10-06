@@ -80,7 +80,7 @@ define([
 
     setSeen: function (seen) {
       var self = this;
-      cookie("welcomeMessagesSeen", btoa(JSON.stringify(seen)), {});
+      cookie("welcomeMessagesSeen", btoa(JSON.stringify(seen)), {expires: 3650});
     },
 
     onHide: function () {
