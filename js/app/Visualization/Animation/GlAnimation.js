@@ -167,7 +167,7 @@ define([
 
       program.gl.uniform1f(
         program.uniforms.animationidx,
-        self.manager.animations.indexOf(self));
+        self.manager.getRenderers().indexOf(self));
       program.gl.uniform1f(program.uniforms.canvasIndex, idx);
       program.gl.uniformMatrix4fv(
         program.uniforms.googleMercator2webglMatrix,

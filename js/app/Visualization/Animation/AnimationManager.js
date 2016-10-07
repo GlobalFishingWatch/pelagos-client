@@ -18,6 +18,7 @@ define([
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
+  "app/Visualization/Animation/BboxSelection",
   "app/Visualization/Animation/PointAnimation",
   "app/Visualization/Animation/LineAnimation",
   "app/Visualization/Animation/LineStripAnimation",
@@ -28,8 +29,8 @@ define([
   "app/Visualization/Animation/CartoDBAnimation",
   "app/Visualization/Animation/VesselTrackAnimation",
   "app/Visualization/Animation/ArrowAnimation",
-  "app/Visualization/Animation/SatelliteAnimation"],
-function(Class,
+  "app/Visualization/Animation/SatelliteAnimation"
+], function(Class,
   Events,
   Bounds,
   Timerange,
@@ -47,7 +48,8 @@ function(Class,
   Stats,
   ObjectToTable,
   Rowidx,
-  Animation
+  Animation,
+  BboxSelection
 ) {
   var AnimationManager = Class({
     name: "AnimationManager",
@@ -84,6 +86,7 @@ function(Class,
     init: function (cb) {
       var self = this;
 
+      self.overlays = [];
       self.animations = [];
       self.updateNeeded = false;
       self.mouseoverUpdateNeeded = false;
@@ -101,6 +104,7 @@ function(Class,
         self.initStats.bind(self),
         self.initMouse.bind(self),
         self.initUpdates.bind(self),
+        self.initOverlays.bind(self),
         function (cb) {
           self.initialized = true;
           cb();
@@ -320,6 +324,11 @@ function(Class,
       height: 100
     },
 
+    getRenderers: function () {
+      var self = this;
+      return self.animations.concat(self.overlays);
+    },
+
     readMouseoverPixels: function(x, y) {
       var self = this;
 
@@ -348,7 +357,7 @@ function(Class,
           gl.scissor(gridX_global, gridY_global, self.mouseoverCacheCellSize.width, self.mouseoverCacheCellSize.height);
           gl.clear(gl.COLOR_BUFFER_BIT);
 
-          self.animations.map(function (animation) {
+          self.getRenderers().map(function (animation) {
             animation.draw(gl);
           });
 
@@ -442,7 +451,7 @@ function(Class,
       }
 
       if (rowidx) {
-        var animation = self.animations[rowidx[0]];
+        var animation = self.getRenderers()[rowidx[0]];
 
         if (animation) {
           if (animation.data_view) {
@@ -456,7 +465,7 @@ function(Class,
           }
         }
       } else {
-        self.animations.map(function (animation) {
+        self.getRenderers().map(function (animation) {
           animation.select(undefined, type, true, e);
         });
       }
@@ -706,8 +715,20 @@ function(Class,
       cb();
     },
 
-    addAnimationInstance: function (animationInstance, cb) {
+    initOverlays:function (cb) {
       var self = this;
+
+      async.series([
+        function (cb) {
+          self.addAnimationInstance(new BboxSelection(self, {}), cb, "overlays");
+        }
+      ], cb);
+    },
+
+    addAnimationInstance: function (animationInstance, cb, collection) {
+      var self = this;
+
+      if (collection == undefined) collection = "animations";
 
       animationInstance.id = self.animationIdCounter++;
       animationInstance.addingToManager = true;
@@ -715,7 +736,7 @@ function(Class,
         animationInstance.initUpdates(function () {
           if (animationInstance.addingToManager) {
             animationInstance.addingToManager = false;
-            self.animations.push(animationInstance);
+            self[collection].push(animationInstance);
             self.triggerUpdate();
             if (animationInstance.data_view) {
               animationInstance.data_view.selections.events.on({
@@ -734,8 +755,8 @@ function(Class,
     closeInfoPopup: function () {
       var self = this;
       self.infoPopup.close();
-      self.animations.map(function (animation) {
-          animation.select(undefined, "info", true, {});
+      self.getRenderers().map(function (animation) {
+        animation.select(undefined, "info", true, {});
       });
     },
 
@@ -925,23 +946,27 @@ function(Class,
       }
     },
 
-    addAnimation: function (animation, cb) {
+    addAnimation: function (animation, cb, collection) {
       var self = this;
       self.addAnimationInstance(
         new Animation.animationClasses[animation.type](
           self, animation.args
         ),
-        cb
+        cb,
+        collection
       );
     },
 
-    removeAnimation: function (animation) {
+    removeAnimation: function (animation, collection) {
       var self = this;
+
+      if (collection == undefined) collection = "animations";
+
       if (animation.addingToManager) {
         animation.addingToManager = false;
       } else {
-        self.animations = self.animations.filter(function (a) { return a !== animation; });
-        self.events.triggerEvent("remove", {animation: animation});
+        self[collection] = self[collection].filter(function (a) { return a !== animation; });
+        self.events.triggerEvent("remove", {animation: animation, collection: collection});
         animation.destroy();
         self.triggerUpdate();
       }
@@ -1117,7 +1142,7 @@ function(Class,
         time: time
       });
 
-      self.animations.map(function (animation) {
+      self.getRenderers().map(function (animation) {
         animation.draw(self.gl);
       });
 
