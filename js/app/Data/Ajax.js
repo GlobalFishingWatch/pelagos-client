@@ -43,7 +43,7 @@ define([
     };
   };
 
-  Ajax.makeRequest = function (verb, url, headers, cb) {
+  Ajax.makeRequest = function (verb, url, headers, data, cb) {
     /* Handle file:// urls as well as CORS correctly, as well as the
      * combinations of CORS and credentials and CORS, credentials and CDNs
      * that set the CORS domain to *. */
@@ -68,18 +68,17 @@ define([
           }
         }
       };
-      request.send(null);
+      request.send(data);
     };
     doLoad(true);
   };
 
-  /* TODO: Implement proper body parsing and sending */
-  Ajax.post = function (url, headers, cb) {
-    Ajax.makeRequest('POST', url, headers, cb);
+  Ajax.post = function (url, headers, data, cb) {
+    Ajax.makeRequest('POST', url, headers, data, cb);
   };
 
   Ajax.get = function (url, headers, cb) {
-    Ajax.makeRequest('GET', url, headers, cb);
+    Ajax.makeRequest('GET', url, headers, null, cb);
   };
 
   return Ajax;
