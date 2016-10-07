@@ -140,7 +140,9 @@ define([
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
 
-    gl.bindAttribLocation(program, 0, attr0);
+    if (attr0 != undefined) {
+      gl.bindAttribLocation(program, 0, attr0);
+    }
 
     gl.linkProgram(program);
 
