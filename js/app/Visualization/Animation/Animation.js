@@ -63,7 +63,7 @@ define([
       var self = this;
     },
 
-    draw: function () {
+    draw: function (gl) {
       var self = this;
     },
 
@@ -79,7 +79,7 @@ define([
 
     toString: function () {
       var self = this;
-      if (self.source.args.url) {
+      if (self.source && self.source.args && self.source.args.url) {
         return self.name + ": " + self.source.args.url;
       } else {
         return self.name;
@@ -94,7 +94,7 @@ define([
       args.source = self.source;
       args.color = self.color;
       return {
-        args: _.extend({}, self.args, args),
+        args: _.extend({}, self.args || {}, args),
         "type": self.name
       };
     }
