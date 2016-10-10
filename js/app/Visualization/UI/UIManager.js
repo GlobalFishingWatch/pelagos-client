@@ -14,6 +14,7 @@ define([
   "app/Visualization/UI/SaveWorkspaceDialog",
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
+  "app/Visualization/UI/WelcomeMessageDialog",    
   "app/Visualization/UI/ZoomButtons",
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
@@ -40,6 +41,7 @@ define([
   SaveWorkspaceDialog,
   Help,
   SimpleMessageDialog,
+  WelcomeMessageDialog,
   ZoomButtons,
   ObjectTemplate,
   BorderContainer,
@@ -80,6 +82,7 @@ define([
         self.initTimeline.bind(self),
         self.initLoopButton.bind(self),
         self.initSidePanels.bind(self),
+        self.initDialogs.bind(self),
         self.initPopups.bind(self),
         self.initSaveButton.bind(self)
       ], function () {
@@ -487,6 +490,14 @@ define([
       cb();
     },
 
+    initDialogs: function (cb) {
+      var self = this;
+
+      self.welcomeMessageDialog = new WelcomeMessageDialog();
+      self.welcomeMessageDialog.startup();
+      cb();
+    },
+
     setAdvancedSimpleMode: function () {
       var self = this;
       var advanced = !!self.visualization.state.getValue('advanced');
@@ -527,32 +538,45 @@ define([
 
     load: function (config, cb) {
       var self = this;
-
       self.config = config;
-      data = new ObjectTemplate(self.config).eval(Paths);
 
-      if (data.logo) {
-        self.logoNode.show();
-        if (typeof(data.logo) == "string") {
-          self.logoNode.append(data.logo);
-        } else {
-          var logo = $("<img>");
-          logo.attr(data.logo.attr);
-          logo.css(data.logo.css);
-          self.logoNode.append(logo);
+      var data = new ObjectTemplate(self.config).eval(Paths);
+
+      async.series([
+        function (cb) {
+          if (data.logo) {
+            self.logoNode.show();
+            if (typeof(data.logo) == "string") {
+              self.logoNode.append(data.logo);
+            } else {
+              var logo = $("<img>");
+              logo.attr(data.logo.attr);
+              logo.css(data.logo.css);
+              self.logoNode.append(logo);
+            }
+          } else {
+            self.logoNode.hide();
+          }
+          cb();
+        },
+        function (cb) {
+          if (data.welcomeMessage && data.welcomeMessage.url) {
+            self.welcomeMessageDialog.set("url", data.welcomeMessage.url);
+            self.welcomeMessageDialog.show();
+          }
+          cb();
+        },
+        function (cb) {
+          KeyBindings.show();
+          if (config.hideKeys) {
+            config.hideKeys.map(function (key) {
+              KeyBindings.hide(key.keys, key.context);
+            });
+          }
+
+          self.sideBar.load(config.sideBar, cb);
         }
-      } else {
-        self.logoNode.hide();
-      }
-
-      KeyBindings.show();
-      if (config.hideKeys) {
-        config.hideKeys.map(function (key) {
-          KeyBindings.hide(key.keys, key.context);
-        });
-      }
-
-      self.sideBar.load(config.sideBar, cb);
+      ], cb);
     }
   });
 });

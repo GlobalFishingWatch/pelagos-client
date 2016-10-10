@@ -305,7 +305,6 @@ define([
 
     zoomTo: function (bounds) {
       var self = this;
-        console.log("ZOOM", bounds.toString());
 
       if (self.error) {
         /* Retrow error, to not confuse code that expects either an

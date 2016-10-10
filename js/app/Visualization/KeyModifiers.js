@@ -27,13 +27,11 @@ define([
 
   KeyModifiers.keyUp = function (e) {
     var name = KeyModifiers.nameById[e.keyCode];
-    console.log("KeyUp", e.keyCode, name);
     delete KeyModifiers.active[name];
     KeyModifiers.events.triggerEvent("keyUp", {name: name, active: KeyModifiers.active});
   }
   KeyModifiers.keyDown = function (e) {
     var name = KeyModifiers.nameById[e.keyCode];
-      console.log("KeyDown", e.keyCode, name);
     if (name == undefined) {
       console.log("Unknown key pressed", e.keyCode);
     }
@@ -41,7 +39,6 @@ define([
     KeyModifiers.events.triggerEvent("keyDown", {name: name, active: KeyModifiers.active});
   }
   KeyModifiers.clear = function () {
-    console.log("KeyClear");
     for (var name in KeyModifiers.active) {
       delete KeyModifiers.active[name];
       KeyModifiers.events.triggerEvent("keyUp", {name: name, active: KeyModifiers.active});

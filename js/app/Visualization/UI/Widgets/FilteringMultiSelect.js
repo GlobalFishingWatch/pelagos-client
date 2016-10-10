@@ -69,6 +69,13 @@ define([
       self.inherited(arguments);
     },
 
+    _onFocus: function(by) {
+      var self = this;
+
+      self._select.focus();
+      self.inherited(arguments);
+    },
+
     postCreate: function(){
       this._set('value', this.get('value'));
       this.inherited(arguments);
