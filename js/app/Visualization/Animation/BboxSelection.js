@@ -5,6 +5,7 @@ define([
   "app/Visualization/Animation/GlAnimation",
   "app/Visualization/KeyModifiers",
   "app/Visualization/KeyBindings",
+  "app/Events",
   "app/Bounds"
 ], function(
   require,
@@ -13,6 +14,7 @@ define([
   GlAnimation,
   KeyModifiers,
   KeyBindings,
+  Events,
   Bounds
 ) {
   return Class(GlAnimation, {
@@ -34,6 +36,15 @@ define([
     getKeyPath: function () {
       var self = this;
       return KeyBindings.keysToKeyPath(self.keys);
+    },
+
+
+    initialize: function(manager, args) {
+      var self = this;
+
+      self.events = new Events("BboxSelection");
+
+      GlAnimation.prototype.initialize.call(self, manager, args);
     },
 
     initGl: function(cb) {
@@ -97,8 +108,40 @@ define([
       var self = this;
       if (!self.bounds) return;
 
+      var topLeft = self.latLng2Point(new google.maps.LatLng(self.bounds.top, self.bounds.left));
+      var bottomRight = self.latLng2Point(new google.maps.LatLng(self.bounds.bottom, self.bounds.right));
 
-      console.log("SELECTED AREA", self.bounds.toString());
+      var rowidxs = [];
+      for (var x = topLeft.x; x < bottomRight.x; x++) {
+        for (var y = topLeft.y; y < bottomRight.y; y++) {
+          var rowidx = self.manager.getRowidxAtPos(x, y);
+          if (rowidx) {
+            if (rowidxs.indexOf(rowidx) == -1) rowidxs.push(rowidx);
+          }
+        }
+      }
+
+      var animations = [];
+      self.manager.getRenderers().map(function (animation) {
+        animation.select([undefined, undefined], "bbox", true, e);
+      });
+
+      rowidxs.map(function (rowidx) {
+        var animation = self.manager.getRenderers()[rowidx[0]];
+        if (animation.select([rowidx[1], rowidx[2]], "bbox", false, e)) {
+          if (animations.indexOf(animation) == -1) {
+            animations.push(animation);
+          }
+        }
+      });
+
+      self.events.triggerEvent("selection", {bounds: self.bounds, selection: "bbox", animations: animations});
+
+      console.log("SELECTED AREA", self.bounds.toString(), animations.map(function (animation) {
+          var dataView = animation.data_view;
+          var selection = dataView.selections.selections.bbox;
+          return selection.data;
+        }));
       self.bounds = undefined;
     },
 
@@ -116,6 +159,17 @@ define([
       var top = Math.max(startLat, currentLat);
 
       self.bounds = new Bounds([left,bottom,right,top]);
+    },
+
+    latLng2Point: function(latLng) {
+      var self = this;
+      var map = self.manager.map;
+
+      var topRight = map.getProjection().fromLatLngToPoint(map.getBounds().getNorthEast());
+      var bottomLeft = map.getProjection().fromLatLngToPoint(map.getBounds().getSouthWest());
+      var scale = Math.pow(2, map.getZoom());
+      var worldPoint = map.getProjection().fromLatLngToPoint(latLng);
+      return new google.maps.Point((worldPoint.x - bottomLeft.x) * scale, (worldPoint.y - topRight.y) * scale);
     },
 
     point2LatLng: function(point) {

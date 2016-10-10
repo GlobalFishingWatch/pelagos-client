@@ -29,6 +29,7 @@ define([
       selected: null,
       info: null,
       hover: null,
+      bbox: {sortcols: ["seriesgroup"]},
       timerange: {sortcols: ["datetime"]}
     },
 

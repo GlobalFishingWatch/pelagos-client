@@ -720,7 +720,8 @@ define([
 
       async.series([
         function (cb) {
-          self.addAnimationInstance(new BboxSelection(self, {}), cb, "overlays");
+          self.bboxSelection = new BboxSelection(self, {});
+          self.addAnimationInstance(self.bboxSelection, cb, "overlays");
         }
       ], cb);
     },
@@ -860,7 +861,7 @@ define([
 
       if (type == 'selected') {
         self.events.triggerEvent('info-loading', {});
-        if (dataView.source.header.seriesTilesets && !dataView.selections.selections[type].rawInfo) {
+        if (dataView.source.header.seriesTilesets && !selection.rawInfo) {
           self.hideAllSelectionAnimations();
         }
 
@@ -903,7 +904,7 @@ define([
         };
         self.handleSelectionInfo(animation, selectionEvent, null, data);
       } else {
-        if (type == 'selected' && !dataView.selections.selections[type].rawInfo) {
+        if (type == 'selected' && !selection.rawInfo) {
           self.showSelectionAnimations(animation, selection);
         }
         dataView.selections.getSelectionInfo(type, function (err, data) {
