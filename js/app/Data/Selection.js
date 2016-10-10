@@ -37,53 +37,46 @@ define([
 
     addRange: function(source, startidx, endidx, replace, silent) {
       var self = this;
-      var updated = false;
-      if (replace && self.header.length != 0) {
-        updated = true;
-        self._clearRanges();
-      }
-      if (startidx != undefined && endidx != undefined) {
+      var startData, endData;
 
+      if (startidx != undefined && endidx != undefined) {
         var startTile = source.getContent()[startidx[0]];
         var endTile = source.getContent()[endidx[0]];
 
         if (startTile && endTile) {
-          updated = true;
+
+          startData = {
+            source: source.toString(),
+            tile: startTile.printTree({})
+          };
+          endData = {
+            source: source.toString(),
+            tile: endTile.printTree({})
+          };
 
           var cols = $.extend({}, startTile.content.data, endTile.content.data);
           self.sortcols.map(function (col) { cols[col] = true; });
           cols = Object.keys(cols);
 
-          if (self.data.source == undefined) self.data.source = [];
-          self.data.source.push(source.toString());
-          self.data.source.push(source.toString());
-
-          if (self.data.tile == undefined) self.data.tile = [];
-          self.data.tile.push(startTile.printTree({}));
-          self.data.tile.push(startTile.printTree({}));
-
           cols.map(function (col) {
-            if (self.data[col] == undefined) self.data[col] = [];
             if (startTile.content.data[col] != undefined) {
-              self.data[col].push(startTile.content.data[col][startidx[1]]);
+              startData[col] = startTile.content.data[col][startidx[1]];
             } else {
-              self.data[col].push(undefined);
+              startData[col] = undefined;
             }
             if (endTile.content.data[col] != undefined) {
-              self.data[col].push(endTile.content.data[col][endidx[1]]);
+              endData[col] = endTile.content.data[col][endidx[1]];
             } else {
-              self.data[col].push(undefined);
+              endData[col] = undefined;
             }
           });
-          self.header.length++;
         }
       }
-      if (updated && !silent) {
-        self.events.triggerEvent("update", {update: "add", source:source, startidx:startidx, endidx:endidx});
-      }
+
+      self.addDataRange(startData, endData, replace, silent, {source:source, startidx:startidx, endidx:endidx});
     },
 
-    addDataRange: function(startData, endData, replace, silent) {
+    addDataRange: function(startData, endData, replace, silent, args) {
       var self = this;
       var updated = false;
       if (replace && self.header.length != 0) {
@@ -105,7 +98,12 @@ define([
         self.header.length++;
       }
       if (updated && !silent) {
-        self.events.triggerEvent("update", {update: "add", startData:startData, endData:endData});
+        args = _.extend({
+          update: "add",
+          startData:startData,
+          endData:endData
+        }, args);
+        self.events.triggerEvent("update", args);
       }
     },
 
