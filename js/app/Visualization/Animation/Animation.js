@@ -81,6 +81,20 @@ define([
       cb("No selection info available", null);
     },
 
+    setTitleFromInfo: function (prefix, suffix, cb) {
+      var self = this;
+
+      self.getSelectionInfo(undefined, function (err, info) {
+        prefix = prefix || "";
+        suffix = suffix || "";
+        if (info.title || info.vesselname) {
+          self.title = prefix + (info.title || info.vesselname) + suffix;
+          self.events.triggerEvent("updated", {});
+        }
+        if (cb) cb(err, info);
+      });
+    },
+
     toString: function () {
       var self = this;
       if (self.source && self.source.args && self.source.args.url) {

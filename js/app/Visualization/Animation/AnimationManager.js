@@ -516,7 +516,7 @@ define([
       animation.selectionAnimationFor = undefined;
     },
 
-    showSelectionAnimations: function (baseAnimation, selectionIter, autoSave) {
+    showSelectionAnimations: function (baseAnimation, selectionIter, autoSave, cb) {
       var self = this;
       var baseHeader = baseAnimation.data_view.source.header;
 
@@ -616,7 +616,8 @@ define([
               east:bounds.right
             });
             delete selection.data.zoomToSelectionAnimations;
-          }            
+          }
+          if (cb) cb(seriesAnimations);
         });
       }
     },

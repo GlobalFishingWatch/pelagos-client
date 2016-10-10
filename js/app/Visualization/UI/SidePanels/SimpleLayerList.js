@@ -207,6 +207,7 @@ define([
       var self = this;
 
       self.visualization.animations.saveSelectionAnimation(self.animation);
+      self.animation.setTitleFromInfo();
       self.updatedHandler();
     },
 

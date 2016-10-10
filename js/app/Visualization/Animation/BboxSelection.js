@@ -5,6 +5,7 @@ define([
   "app/Visualization/Animation/GlAnimation",
   "app/Visualization/KeyModifiers",
   "app/Visualization/KeyBindings",
+  "shims/async/main",
   "app/Events",
   "app/Bounds"
 ], function(
@@ -14,6 +15,7 @@ define([
   GlAnimation,
   KeyModifiers,
   KeyBindings,
+  async,
   Events,
   Bounds
 ) {
@@ -146,7 +148,11 @@ define([
 
         try {
           while (true) {
-            self.manager.showSelectionAnimations(animation, iter, true);
+            self.manager.showSelectionAnimations(animation, iter, true, function (selectionAnimations) {
+              selectionAnimations.map(function (selectionAnimation) {
+                selectionAnimation.setTitleFromInfo();
+              });
+            });
           }
         } catch (e) {
           if (e.type != "StopIteration") throw(e);
