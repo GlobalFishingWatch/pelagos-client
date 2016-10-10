@@ -4,7 +4,6 @@ define([
   "app/UrlValues",
   "app/LoadingInfo",
   "app/Data/CartoDBInfoWindow",
-  "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation",
   "shims/cartodb/main"
 ], function(
@@ -13,7 +12,6 @@ define([
   UrlValues,
   LoadingInfo,
   CartoDBInfoWindow,
-  ObjectToTable,
   Animation,
   cartodb
 ) {
