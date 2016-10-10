@@ -84,18 +84,31 @@ define([
         self._clearRanges();
       }
       if (startData != undefined && endData != undefined) {
-        updated = true;
+        var overlapIdx = self.checkRangeOverlap(startData, endData);
+        if (overlapIdx !== undefined) {
+          self.sortcols.map(function (col) {
+            if (startData[col] < self.data[col][overlapIdx * 2]) {
+              updated = true;
+              self.data[col][overlapIdx * 2] = startData[col];
+            }
+            if (endData[col] > self.data[col][overlapIdx * 2 + 1]) {
+              updated = true;
+              self.data[col][overlapIdx * 2 + 1] = endData[col];
+            }
+          });
+        } else {
+          updated = true;
+          var cols = $.extend({}, startData, endData);
+          self.sortcols.map(function (col) { cols[col] = true; });
+          cols = Object.keys(cols);
 
-        var cols = $.extend({}, startData, endData);
-        self.sortcols.map(function (col) { cols[col] = true; });
-        cols = Object.keys(cols);
-
-        cols.map(function (col) {
-          if (self.data[col] == undefined) self.data[col] = [];
-          self.data[col].push(startData[col]);
-          self.data[col].push(endData[col]);
-        });
-        self.header.length++;
+          cols.map(function (col) {
+            if (self.data[col] == undefined) self.data[col] = [];
+            self.data[col].push(startData[col]);
+            self.data[col].push(endData[col]);
+          });
+          self.header.length++;
+        }
       }
       if (updated && !silent) {
         args = _.extend({
@@ -105,6 +118,41 @@ define([
         }, args);
         self.events.triggerEvent("update", args);
       }
+    },
+
+    checkRangeOverlap: function (startData, endData) {
+      // Return idx of range that overlaps
+      var self = this;
+
+      for (var rowidx = 0; rowidx < self.header.length; rowidx++) {
+        var in_range = true;
+        for (var colidx = 0; colidx < self.sortcols.length; colidx++) {
+          var col = self.sortcols[colidx];
+          in_range = (   in_range
+                      && (   (   self.data[col][rowidx * 2] <= startData[col]
+                              && self.data[col][rowidx * 2 + 1] >= startData[col])
+                          || (   self.data[col][rowidx * 2] <= endData[col]
+                              && self.data[col][rowidx * 2 + 1] >= endData[col])));
+        }
+        if (in_range) {
+          return rowidx;
+        }
+      }
+      return undefined;
+    },
+
+
+    checkRow: function (source, rowidx) {
+      var self = this;
+      for (var i = 0; i < self.header.length; i++) {
+        var startcmp = source.compareRows(rowidx, self, i*2);
+        var endcmp = source.compareRows(rowidx, self, i*2 + 1);
+
+        if (startcmp >= 0 && endcmp <= 0) {
+          return true;
+        }
+      }
+      return false;
     },
 
     clearRanges: function () {
@@ -125,19 +173,6 @@ define([
         }
         self.events.triggerEvent("update", {update: "add", startData:startData, endData:endData});
       }
-    },
-
-    checkRow: function (source, rowidx) {
-      var self = this;
-      for (var i = 0; i < self.header.length; i++) {
-        var startcmp = source.compareRows(rowidx, self, i*2);
-        var endcmp = source.compareRows(rowidx, self, i*2 + 1);
-
-        if (startcmp >= 0 && endcmp <= 0) {
-          return true;
-        }
-      }
-      return false;
     },
 
     hasSelectionInfo: function () {
