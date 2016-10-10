@@ -88,6 +88,7 @@ define([
       var self = this;
       if (KeyBindings.keysToKeyPath(Object.keys(KeyModifiers.active)) != self.getKeyPath()) return;
 
+      self.manager.disableMouseHandling();
       self.startLatLng = self.currentLatLng = self.point2LatLng(new google.maps.Point(e.pageX, e.pageY));
       self.updateBounds();
       self.updateSelection();
@@ -108,6 +109,7 @@ define([
       var self = this;
       if (!self.bounds) return;
 
+      self.manager.enableMouseHandling();
       var topLeft = self.latLng2Point(new google.maps.LatLng(self.bounds.top, self.bounds.left));
       var bottomRight = self.latLng2Point(new google.maps.LatLng(self.bounds.bottom, self.bounds.right));
 
@@ -222,6 +224,7 @@ program.arrayBuffers
           Shader.programLoadArray(program.gl, program.arrayBuffers.main.worldCoords, self.rawLatLonData, program);
         });
       });
+      self.manager.triggerUpdate();
     },
 
     drawProgram: function (program) {

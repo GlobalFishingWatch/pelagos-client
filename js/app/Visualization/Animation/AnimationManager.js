@@ -413,8 +413,17 @@ define([
      return _.find(self.animations, predicate);
     },
 
+    mouseHandlingDisabled: 0,
+    disableMouseHandling: function () { this.mouseHandlingDisabled++; },
+    enableMouseHandling: function () {
+      this.mouseHandlingDisabled--;
+      if (this.mouseHandlingDisabled < 0) this.mouseHandlingDisabled = 0;
+    },
+
     handleMouse: function (e, type) {
       var self = this;
+
+      if (self.mouseHandlingDisabled > 0) return;
 
       var x, y;
 
