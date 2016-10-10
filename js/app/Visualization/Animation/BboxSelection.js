@@ -220,7 +220,6 @@ define([
       Object.values(self.programs).map(function (programs) {
         programs.map(function (program) {
           program.gl.useProgram(program);
-program.arrayBuffers
           Shader.programLoadArray(program.gl, program.arrayBuffers.main.worldCoords, self.rawLatLonData, program);
         });
       });
