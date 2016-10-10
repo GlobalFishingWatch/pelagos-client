@@ -1,16 +1,20 @@
 define([
   "dojo/_base/declare",
   "./Widgets/TemplatedDialog",
+  "shims/async/main",
   "shims/jQuery/main",
   "app/Visualization/KeyBindings",
   "app/Visualization/UI/LoaderIcon",
+  "app/Visualization/Animation/ObjectToTable",
   "dijit/form/Button"
 ], function(
   declare,
   TemplatedDialog,
+  async,
   $,
   KeyBindings,
-  LoaderIcon
+  LoaderIcon,
+  ObjectToTable
 ){
   return declare("AnimationLibrary", [TemplatedDialog], {
     style: "width: 50%;",
@@ -75,21 +79,55 @@ define([
 
       self.visualization.data.queryDirectories(
         query, offset, limit,
-        self.displaySearchResults.bind(self)
+        function (res) {
+          self.loadSourceInfos(res.entries, function (entries) {
+            res.entries = entries;
+            self.displaySearchResults(res);
+          });
+        }
       );
     },
 
-    displaySearchResults: function (err, res) {
+    loadSourceInfos: function (entries, cb) {
+      var self = this;
+      async.map(
+        entries,
+        function (entry, cb) {
+          self.visualization.data.getSourceInfo(entry.args.source, function (err, data) {
+            if (data) {
+              data.toString = function () {
+                return ObjectToTable(this);
+              };
+            }
+            cb(null, {animation: entry, error: err, info: data});
+          });
+        },
+        function (err, entries) {
+          cb(entries);
+        }
+      );
+    },
+
+    displaySearchResults: function (res) {
       var self = this;
       self.currentResults = res;
       TemplatedDialog.prototype.show.call(self);
       $(self.containerNode).find('.search-loading').hide();
       var results = $(self.containerNode).find('.results');
-      if (err) {
-        results.html('<div class="error">An error occured: ' + err.toString() + '<div>');
+
+      results.html("");
+
+      if (res.errors.length > 0) {
+        var errors = $('<div class="error"><div>An error occured:</div><div>');
+        res.errors.map(function (err) {
+          errors.append(err.toString());
+        });
+        results.append(errors);
       } else if (res.total == 0) {
-        results.html('<div class="no-results">No results found</div>');
-      } else {
+        results.append('<div class="no-results">No results found</div>');
+      }
+
+      if (res.total > 0) {
         if (res.offset > 0 || res.total > res.offset + res.entries.length) {
           $(self.containerNode).find('.paging').show();
 
@@ -111,18 +149,26 @@ define([
           $(self.containerNode).find('.paging').hide();
         }
 
-        results.html('<table class="table result-table">' +
+        results.append('<table class="table result-table">' +
                      '  <tr>' +
                      '    <th class="title">Title</th>' +
                      '    <th class="description">Description</th>' +
                      '  </tr>' +
                      '</table>');
-        res.entries.map(function (animation) {
+        res.entries.map(function (entry) {
           var row = $('<tr><td><a class="title"></a></td><td><a class="description"></a></td>');
-          row.find(".title").html(animation.args.title);
-          row.find(".description").html(animation.args.description);
+          row.find(".title").html(entry.animation.args.title);
+
+          if (entry.error) {
+            var err = $("<div class='error'></div>");
+            err.html(entry.error.toString());
+            row.find(".description").html(err);
+          } else {
+            row.find(".description").html(entry.info.toString());
+          }
+
           row.find('a').click(function () {
-            self.visualization.animations.addAnimation(animation, function () {});
+            self.visualization.animations.addAnimation(entry.animation, function () {});
             self.hide();
           });
 

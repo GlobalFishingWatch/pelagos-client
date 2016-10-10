@@ -6,8 +6,10 @@ define([
   "app/Visualization/Animation/Animation",
   "app/Visualization/Animation/GlAnimation",
   "app/Visualization/Animation/Shader",
+  "app/Visualization/Animation/ObjectToTable",
   "app/Data/GeoProjection",
   "app/Data/DataView",
+  "shims/lodash/main",
   "shims/jQuery/main"
 ], function(
   Class,
@@ -17,8 +19,10 @@ define([
   Animation,
   GlAnimation,
   Shader,
+  ObjectToTable,
   GeoProjection,
   DataView,
+  _,
   $
 ) {
   var DataAnimation = Class(GlAnimation, {
@@ -245,6 +249,57 @@ define([
         });
       } else {
         cb(null, null);
+      }
+    },
+
+    getSelectionInfo: function (type, cb) {
+      var self = this;
+      var dataView = self.data_view;
+      var selection;
+      if (type !== undefined) selection = dataView.selections.selections[type];
+
+      if (selection && selection.rawInfo) {
+        var data = _.clone(selection.data);
+
+        Object.items(dataView.source.header.colsByName).map(function (item) {
+          if (item.value.choices) {
+            var choices = Object.invert(item.value.choices);
+            data[item.key] = data[item.key].map(function (dataValue) {
+              return choices[dataValue];
+            });
+          }
+        });
+
+        data.layer = self.title;
+        data.toString = function () {
+          return ObjectToTable(this);
+        };
+        cb(null, data);
+      } else if (selection && !selection.hasSelectionInfo()) {
+        var data = {
+          layer: self.title,
+          toString: function () {
+            return 'There are multiple vessels at this location. Zoom in to see individual points.';
+          }
+        };
+        cb(null, data);
+      } else {
+        if (type == 'selected' && selection && !selection.rawInfo) {
+          self.manager.showSelectionAnimations(self, selection);
+        }
+        dataView.selections.getSelectionInfo(type, function (err, data) {
+          var content;
+
+          if (data) {
+            data.toString = function () {
+              return ObjectToTable(this);
+            };
+            cb(null, data);
+          } else {
+            cb(err, null);
+          }
+        });
+
       }
     },
 

@@ -196,6 +196,9 @@ define([
       var self = this;
 
       var baseUrl = self.getUrl("selection-info", query, fallbackLevel);
+
+      if (query === undefined) return baseUrl;
+
       if (baseUrl.indexOf("/sub/") != -1) {
         baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
       } else {
@@ -208,7 +211,10 @@ define([
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
-      var query = self.getSelectionQuery(selection);
+      var query;
+      if (selection !== undefined) {
+       query = self.getSelectionQuery(selection); 
+      }
 
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
         var url = self.getQueryUrl(query, fallbackLevel) + "/info";

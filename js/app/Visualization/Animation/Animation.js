@@ -77,6 +77,10 @@ define([
       cb(null, null);
     },
 
+    getSelectionInfo: function (type, cb) {
+      cb("No selection info available", null);
+    },
+
     toString: function () {
       var self = this;
       if (self.source && self.source.args && self.source.args.url) {
