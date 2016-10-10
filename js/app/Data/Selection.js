@@ -155,6 +155,74 @@ define([
       return false;
     },
 
+    iterate: function () {
+      /* Returns an iterator function. The iterator function returns
+       *   [
+       *     {name:colname, value:colvalue},
+       *     {name:colname, value:colvalue},
+       *     ...]
+       * It throws an exception {type: "StopIteration"} when there are
+       * no more values to iterate over.
+       */
+
+      var self = this;
+
+      var context = {selection: self};
+      var res = function () {
+        var res = context.selection.getValuesFromIdx(context.idx);
+        if (!res) {
+          throw {type: "StopIteration"};
+        }
+        context.idx = res.idx;
+        return res.cols;
+      }
+      res.context = context;
+
+      return res;
+    },
+
+    getValuesFromIdx: function (idx) {
+      var self = this;
+      /* Set idx to undefined to start the iteration.
+       * Returns undefined (at end of sequence) or:
+       *   {cols: [
+       *     {name:colname, value:colvalue},
+       *     {name:colname, value:colvalue},
+       *     ...],
+       *    idx: next_idx}
+       *
+       * Note: Idx is an opaque data structure that can be safely JSON encoded.
+       */
+
+      idx = _.extend({rowidx: 0, offset: 0}, idx);
+      var lastname = self.sortcols.slice(-1)[0];
+
+      while (idx.rowidx < self.header.length) {
+        var minval = self.data[lastname][idx.rowidx * 2]
+        var maxval = self.data[lastname][idx.rowidx * 2 + 1]
+        var lastval = minval + idx.offset;
+
+        if (lastval > maxval) {
+          idx.rowidx++;
+          idx.offset = 0;
+          continue;
+        }
+
+        idx.offset++;
+
+        return {
+          cols: self.sortcols.slice(0, -1).map(function (name) {
+                  return {name: name, value: self.data[name][idx.rowidx * 2]};
+                }).concat([
+                  {name: lastname, value: lastval}
+                ]),
+          idx: idx
+        };
+      }
+
+      return undefined;
+    },
+
     clearRanges: function () {
       var self = this;
       if (self.header.length == 0) return;

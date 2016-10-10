@@ -137,6 +137,20 @@ define([
 
       self.events.triggerEvent("selection", {bounds: self.bounds, selection: "bbox", animations: animations});
 
+      animations.map(function (animation) {
+        var dataView = animation.data_view;
+        var selection = dataView.selections.selections.bbox;
+        var iter = selection.iterate();
+
+        try {
+          while (true) {
+            self.manager.showSelectionAnimations(animation, iter, true);
+          }
+        } catch (e) {
+          if (e.type != "StopIteration") throw(e);
+        }
+      });
+
       console.log("SELECTED AREA", self.bounds.toString(), animations.map(function (animation) {
           var dataView = animation.data_view;
           var selection = dataView.selections.selections.bbox;

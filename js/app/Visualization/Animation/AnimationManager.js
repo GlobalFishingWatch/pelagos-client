@@ -507,15 +507,18 @@ define([
       animation.selectionAnimationFor = undefined;
     },
 
-    showSelectionAnimations: function (baseAnimation, selection) {
+    showSelectionAnimations: function (baseAnimation, selectionIter, autoSave) {
       var self = this;
       var baseHeader = baseAnimation.data_view.source.header;
 
       if (!baseHeader.seriesTilesets) return;
 
-      self.hideSelectionAnimations(baseAnimation);
+      if (!autoSave) {
+        self.hideSelectionAnimations(baseAnimation);
+      }
 
-      if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
+      var query = baseAnimation.data_view.source.getSelectionQuery(selectionIter);
+      if (query.length > 0) {
         var seriesTilesets = baseAnimation.args.seriesTilesets;
 
         if (!seriesTilesets) {
@@ -543,9 +546,9 @@ define([
 
         baseAnimation.args.seriesTilesets = seriesTilesets;
 
-        var query = baseAnimation.data_view.source.getSelectionQuery(selection);
-
-        self.hideSelectionAnimations(baseAnimation);
+        if (!autoSave) {
+          self.hideSelectionAnimations(baseAnimation);
+        }
 
         var seriesAnimations = [];
         async.each(seriesTilesets, function (seriesTilesetTemplate, cb) {
@@ -553,10 +556,10 @@ define([
           seriesTileset = new ObjectTemplate(seriesTilesetTemplate).eval({
             url: baseAnimation.data_view.source.url,
             versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
-            query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
+            query_url: baseAnimation.data_view.source.getQueryUrl(query, -1),
             query: query,
             header: baseAnimation.data_view.source.header,
-            selection: selection
+            selection: selectionIter
           });
 
           self.addAnimation(
@@ -565,20 +568,22 @@ define([
               if (err) {
                 self.removeAnimation(animation);
               } else {
-                animation.selectionAnimationUpdate = self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset);
-                animation.events.on({updated: animation.selectionAnimationUpdate});
-                if (animation.data_view) {
-                  animation.data_view.events.on({update: animation.selectionAnimationUpdate});
+                if (!autoSave) {
+                  animation.selectionAnimationUpdate = self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset);
+                  animation.events.on({updated: animation.selectionAnimationUpdate});
+                  if (animation.data_view) {
+                    animation.data_view.events.on({update: animation.selectionAnimationUpdate});
+                  }
+                  animation.selectionAnimationFor = baseAnimation;
+                  baseAnimation.selectionAnimations.push(animation);
                 }
-
-                animation.selectionAnimationFor = baseAnimation;
-                baseAnimation.selectionAnimations.push(animation);
                 seriesAnimations.push(animation);
               }
               cb();
             }
           );
         }, function (err) {
+          var selection = selectionIter.context ? selectionIter.context.selection : selectionIter;
           if (selection.data.zoomToSelectionAnimations != undefined) {
             var bounds = new SpaceTime();
             seriesAnimations.map(function (animation) {
@@ -847,12 +852,19 @@ define([
 
       if (type != 'selected' && type != 'info') return;
 
+      var query = "";
+      try {
+        query = animation.data_view.source.getSelectionQuery(selection);
+      } catch (e) {
+        if (e.type != "StopIteration") throw(e);
+      }
+
       Logging.main.log(
         "Visualization.Animation.AnimationManager.handleSelectionUpdate",
         {
           layer: animation.title,
           category: type,
-          query: animation.data_view.source.getSelectionQuery(selection),
+          query: query,
           toString: function () {
             return this.layer + "/" + this.category + ": " + this.query;
           }
