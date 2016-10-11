@@ -30,14 +30,6 @@ define([
       }
     },
 
-    updatedHandler: function () {
-      var self = this;
-      self.inherited(arguments);
-      if (self.category === undefined) {
-        self.updateCategoryWidgets();
-      }
-    },
-
     removeHandler: function(event) {
       var self = this;
       self.inherited(arguments);
@@ -91,6 +83,17 @@ define([
 
         self.visualization.ui.sideBar.setTabs();
       }
-    }
+    },
+
+    AnimationWidget: declare("AnimationWidget", SimpleLayerList.prototype.AnimationWidget, {
+      updatedHandler: function () {
+        var self = this;
+        self.inherited(arguments);
+
+        if (self.animationList.category === undefined) {
+          self.animationList.updateCategoryWidgets();
+        }
+      }
+    })
   });
 });

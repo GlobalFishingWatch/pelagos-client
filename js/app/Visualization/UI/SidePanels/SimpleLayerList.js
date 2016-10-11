@@ -111,7 +111,7 @@ define([
       self.visualization.state.setValue('title', self.titleInput.get("value"));
     },
 
-    AnimationWidget: declare("AnimationWidget", [AnimationListBase.prototype.AnimationWidget], {
+    AnimationWidget: declare("AnimationWidget", AnimationListBase.prototype.AnimationWidget, {
       baseClass: 'SimpleLayerList-AnimationWidget',
 
       idCounter: 0,

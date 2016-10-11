@@ -43,6 +43,7 @@ define([
 
       if (self.animationFilter(animation)) {
         self.animationList[animation.id] = new self.AnimationWidget({
+          animationList: self,
           visualization: self.visualization,
           animation: animation
         });
@@ -98,6 +99,7 @@ define([
         '  <h2 data-dojo-attach-point="titleNode">${animation.title}</h2>' +
         '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode" style="width: 100%;"></table>' +
         '</div>',
+      animationList: null,
       visualization: null,
       animation: null,
 
