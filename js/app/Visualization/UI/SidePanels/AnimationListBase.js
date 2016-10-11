@@ -42,7 +42,7 @@ define([
       var animation = event.animation;
 
       if (self.animationFilter(animation)) {
-        self.animationList[animation.id] = new self.constructor.AnimationWidget({
+        self.animationList[animation.id] = new self.AnimationWidget({
           visualization: self.visualization,
           animation: animation
         });
@@ -89,38 +89,38 @@ define([
         '  <em>No animations available<em>' +
         '</div>',
       visualization: null
+    }),
+
+    AnimationWidget: declare("AnimationWidget", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
+      baseClass: 'AnimationListBase-AnimationWidget',
+      templateString: '' +
+        '<div class="${baseClass}">' +
+        '  <h2 data-dojo-attach-point="titleNode">${animation.title}</h2>' +
+        '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode" style="width: 100%;"></table>' +
+        '</div>',
+      visualization: null,
+      animation: null,
+
+      startup: function () {
+        var self = this;
+        self.inherited(arguments)
+
+        self.animation.events.on({
+          updated: self.updatedHandler.bind(self)
+        });
+      },
+
+      updatedHandler: function () {
+        var self = this;
+        html.set(self.titleNode, self.animation.title);
+      },
+
+      remove: function () {
+        var self = this;
+
+        self.visualization.animations.removeAnimation(self.animation);
+      }
     })
-  });
-
-  AnimationListBase.AnimationWidget = declare("AnimationWidget", [_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, _Container], {
-    baseClass: 'AnimationListBase-AnimationWidget',
-    templateString: '' +
-      '<div class="${baseClass}">' +
-      '  <h2 data-dojo-attach-point="titleNode">${animation.title}</h2>' +
-      '  <table class="${baseClass}Container" data-dojo-attach-point="containerNode" style="width: 100%;"></table>' +
-      '</div>',
-    visualization: null,
-    animation: null,
-
-    startup: function () {
-      var self = this;
-      self.inherited(arguments)
-
-      self.animation.events.on({
-        updated: self.updatedHandler.bind(self)
-      });
-    },
-
-    updatedHandler: function () {
-      var self = this;
-      html.set(self.titleNode, self.animation.title);
-    },
-
-    remove: function () {
-      var self = this;
-
-      self.visualization.animations.removeAnimation(self.animation);
-    }
   });
 
   return AnimationListBase;
