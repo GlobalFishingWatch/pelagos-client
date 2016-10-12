@@ -14,11 +14,16 @@ define([
       if (self.category) {
         self.title = self.category;
       }
+      if (!self.categoryManager) {
+        self.categoryManager = self;
+      }
       self.inherited(arguments);
     },
 
     animationFilter: function (animation) {
       var self = this;
+      // Treat empty string as undefined
+      if (!animation.args.category && !self.category) return true;
       return animation.args.category === self.category;
     },
 
@@ -42,7 +47,7 @@ define([
       var self = this;
       var categories = {};
       self.visualization.animations.animations.map(function (animation) {
-        if (animation.args.category !== undefined) {
+        if (animation.args.category) {
           categories[animation.args.category] = true;
         }
       });
@@ -59,6 +64,7 @@ define([
         if (!self.categoryWidgets[category]) {
           self.categoryWidgets[category] = new (self.constructor)({
             visualization: self.visualization,
+            categoryManager: self,
             category: category
           });
           self.categoryWidgets[category].startup();
@@ -90,9 +96,7 @@ define([
         var self = this;
         self.inherited(arguments);
 
-        if (self.animationList.category === undefined) {
-          self.animationList.updateCategoryWidgets();
-        }
+        self.animationList.categoryManager.updateCategoryWidgets();
       }
     })
   });
