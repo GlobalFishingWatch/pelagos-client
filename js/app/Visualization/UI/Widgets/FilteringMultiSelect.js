@@ -1,11 +1,13 @@
 define([
   "shims/jQuery/main",
   "dojo/store/Memory",
+  "./MultiSelect",
   "dijit/form/FilteringSelect",
   "dojo/_base/array",
   "dojo/_base/declare",
   "dojo/dom-geometry",
   "dojo/sniff",
+  "dojo/has",
   "dojo/query",
   "dijit/form/_FormValueWidget",
   "dijit/_Widget",
@@ -14,10 +16,12 @@ define([
 ], function(
   $,
   Memory,
+  MultiSelect,
   FilteringSelect,
   array,
   declare,
   domGeometry,
+  sniff,
   has,
   query,
   _FormValueWidget,
@@ -36,35 +40,43 @@ define([
     startup: function(){
       var self = this;
 
-      var selectProps = {
-        id: self.get("id") + "_select",
-        required: false,
-        onInput: function(event) {
-          if (event.key == "Backspace" && $(this.textbox).val() == "") {
-            self.set("value", self.get("value").slice(0, -1));
+      if (has("ios") || has("android")) {
+        self._select = new MultiSelect({
+          onChange: function(value) {
+            self.set("value", value);
           }
-        },
-        onChange: function(state) {
-          if (this.item) {
-            self.set("value", self.get("value").concat([this.item.id]));
-            self._select.set("value", null);
+        });
+      } else {
+        var selectProps = {
+          id: self.get("id") + "_select",
+          required: false,
+          onInput: function(event) {
+            if (event.key == "Backspace" && $(this.textbox).val() == "") {
+              self.set("value", self.get("value").slice(0, -1));
+            }
+          },
+          onChange: function(state) {
+            if (this.item) {
+              self.set("value", self.get("value").concat([this.item.id]));
+              self._select.set("value", null);
+            }
           }
-        }
-      };
-      self.proxyAttrs.map(function (attr) {
-        var value = self.get(attr);
-        if (value != undefined) {
-          selectProps[attr] = value;
-        }
-      });
+        };
+        self.proxyAttrs.map(function (attr) {
+          var value = self.get(attr);
+          if (value != undefined) {
+            selectProps[attr] = value;
+          }
+        });
 
-      self._select = new FilteringSelect(selectProps);
+        self._select = new FilteringSelect(selectProps);
 
+        self.selectedItemsNode = $(self._select.domNode).find(".dijitInputContainer");
+      }
       self.focusNode = self._select.focusNode;
       $(self.domNode).append(self._select.domNode);
-      self.selectedItemsNode = $(self.domNode).find(".dijitInputContainer");
- 
       self._select.startup();
+
       self.set("value", self.get("value"));
       self.inherited(arguments);
     },
@@ -124,6 +136,8 @@ define([
             $(self.selectedItemsNode).prepend(child.domNode);
           }
         });
+      } else if (self._select && self._select.constructor === MultiSelect) {
+        self._select.set("value", values);
       }
       this.inherited(arguments);
     }
