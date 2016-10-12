@@ -18,6 +18,16 @@ define([
   var CartoDBFormat = Class(EmptyFormat, {
     name: "CartoDBFormat",
 
+    _load: function () {
+      var self = this;
+
+      self.getMetadata(function (err, metadata) {
+        if (metadata.header) self.header = metadata.header;
+        if (metadata.info) self.info = metadata.info;
+        self.headerLoaded();
+      });
+    },
+
     getMetadata: function(cb) {
       var self = this;
 
@@ -41,7 +51,7 @@ define([
               cb();
             });
           } else {
-              metadata = {info: {'description': metadata}};
+            metadata = {info: {'description': metadata}};
             cb();
           }
         }
@@ -56,19 +66,7 @@ define([
       var self = this;
 
       if (selection !== undefined) return cb("Not implemented", null);
-      self.getMetadata(function (err, metadata) {
-        if (err) return cb(err);
-        cb(null, metadata.info);
-      });
-    },
-
-    getHeader: function(cb) {
-      var self = this;
-
-      self.getMetadata(function (err, metadata) {
-        if (err) return cb(err);
-        cb(null, metadata.header);
-      });
+      cb(null, self.info);
     },
 
     toString: function () {
