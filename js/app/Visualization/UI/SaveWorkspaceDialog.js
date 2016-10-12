@@ -7,7 +7,8 @@ define([
   "shims/async/main",
   "shims/jQuery/main",
   "shims/clipboard/main",
-  "app/Visualization/KeyBindings"
+  "app/Visualization/KeyBindings",
+  "app/Visualization/UI/LoaderIcon"
 ], function(
   declare,
   Dialog,
@@ -17,7 +18,8 @@ define([
   async,
   $,
   clipboard,
-  KeyBindings
+  KeyBindings,
+  LoaderIcon
 ){
   return declare("SaveWorkspaceDialog", [Dialog], {
     'class': 'saveWorkspaceDialog',
@@ -30,7 +32,10 @@ define([
       '    Share this link:' +
       '  </div>' +
       '  <div class="link">' +
-      '    <input data-dojo-type="dijit/form/TextBox" type="text" class="link dijit dijitReset dijitInline dijitLeft" style="width: 382pt" data-dojo-attach-point="link">' +
+      '    <input data-dojo-type="dijit/form/TextBox" data-dojo-props="readOnly: true" type="text" class="link dijit dijitReset dijitInline dijitLeft" style="width: 382pt" data-dojo-attach-point="link">' +
+          '<div class="save-loading">' +
+          '  <img style="width: 20px;" src="' + LoaderIcon + '">' +
+          '</div>' +
           '<div data-dojo-type="dijit/form/Button" class="copyButton dijit dijitReset dijitInline dijitLeft" data-dojo-attach-event="click:copyLink"><i class="fa fa-copy" aria-hidden="true"></i> COPY</div>' +
       '  </div>' +
       '</div>',
@@ -59,9 +64,14 @@ define([
 
     saveWorkspace: function () {
       var self = this;
+
+      self.link.set("value", "");
+      $(self.containerNode).find('.save-loading').show();
+      self.show();
+
       self.visualization.save(function (url) {
         self.link.set("value", url);
-        self.show();
+        $(self.containerNode).find('.save-loading').hide();
       });
     },
 

@@ -8,6 +8,9 @@
         "<a href='http://oceana.org' target='_blank'><img src='%(img)s/gfw/oceana_logo.png' style='padding-right: 7%; vertical-align: middle; width: 32%;'></a>",
         "<a href='http://google.com' target='_blank'><img src='%(img)s/gfw/google_logo.png' style='padding-right: 7%; vertical-align: middle; width: 26%;'></a>"
       ]
+    },
+    "welcomeMessage": {
+      "url": "%(root)s/message-version-1.2.3.html"
     }
   }
 }

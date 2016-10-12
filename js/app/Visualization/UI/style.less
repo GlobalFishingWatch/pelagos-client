@@ -246,6 +246,12 @@ body {
             border-top: 1px solid #d3d3d3;
             padding: 3px 5px 2px 7px;
             text-align: right;
+            display: table;
+            width: 100%;
+            .left {
+              display: table-cell;
+              text-align: left;
+            }
         }
 
         .dijitDialogCloseIcon {
@@ -483,7 +489,11 @@ content: "\f067";
       margin-bottom: 10px;
     }
     .link {
+      display: table-row;
+
       .link.dijitTextBox {
+        display: table-cell;
+        width: 100%;
         -webkit-border-top-right-radius: 0px;
         -webkit-border-bottom-right-radius: 0px;
         -moz-border-radius-topright: 0px;
@@ -491,7 +501,18 @@ content: "\f067";
         border-top-right-radius: 0px;
         border-bottom-right-radius: 0px;
       }
+      .save-loading {
+        display: table-cell;
+        img {
+          position: relative;
+          top: 6px;
+          margin-right: -20px;
+          right: 23px;
+          display: inline-block;
+        }
+      }
       .copyButton {
+        display: table-cell;
         margin: 0;
         .dijitButtonNode {
           border-left: none;
@@ -976,6 +997,10 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
             .animation-editor {
               font-size: 9pt;
 
+              .source {
+                word-break: break-all;
+              }
+
               .SimpleAnimationEditor {
                 > * {
                   margin-bottom: 10px;
@@ -1274,5 +1299,44 @@ div.cartodb-legend-stack {
 @media screen and (max-width: 600px) and (max-height: 400px) { 
   .lengthLabel {
     display: none;
+  }
+}
+
+@media screen and (max-height: 300px) {
+  .claro {
+    .dijitDialog {
+      left: 0 !important;
+      right: 0 !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      width: auto !important;
+      height: auto !important;
+      background: #fff !important;
+      .dijitDialogTitleBar, .dijitDialogPaneContent, .dijitDialogPaneActionBar {
+        width: 100% !important;
+        border-radius: 0 !important;
+      }
+      .dijitDialogPaneContent {
+        height: auto !important;
+        bottom: 41px !important;
+      }
+      .dijitDialogPaneActionBar {
+        top: auto !important;
+        bottom: 0;
+      }
+    }
+
+    .dijitPopup {
+      right: 0 !important;
+      left: 0 !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      height: auto !important;
+      width: auto !important;
+      overflow-y: auto !important;
+      > * {
+        width: 100% !important;
+      } 
+    }
   }
 }

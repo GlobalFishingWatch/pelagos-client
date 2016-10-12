@@ -23,7 +23,7 @@ define([
     templateString: '' +
       '<div class="${baseClass}">' +
       '  <div data-dojo-attach-point="containerNode">' +
-      '    <div>Source: ${animation.args.source.type}:${animation.args.source.args.url}</div>' +
+      '    <div class="source">Source: ${animation.args.source.type}:${animation.args.source.args.url}</div>' +
       '  </div>' +
       '</div>',
 
