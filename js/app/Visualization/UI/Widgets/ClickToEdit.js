@@ -67,7 +67,7 @@ define([
       var self = this;
       if (!self.domNode || !self.editor.domNode) return;
       if (self.editor.isValid && !self.editor.isValid()) return;
-      $(self.labelNode).text(self.editor.get("value").toString());
+      $(self.labelNode).text(self.editor.get("value").toString() || "[empty]");
       self.endEdit();
     }
   });
