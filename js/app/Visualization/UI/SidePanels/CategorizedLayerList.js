@@ -43,7 +43,7 @@ define([
       }
     },
 
-    updateCategoryWidgets: function () {
+    updateCategoryWidgets: function (dontAdd) {
       var self = this;
       var categories = {};
       self.visualization.animations.animations.map(function (animation) {
@@ -52,10 +52,11 @@ define([
         }
       });
 
+      var toDelete = [];
       var updated = false;
       for (var category in self.categoryWidgets) {
         if (!categories[category]) {
-          self.categoryWidgets[category].destroyRecursive();
+          toDelete.push(self.categoryWidgets[category]);
           delete self.categoryWidgets[category];
           updated = true;
         }
@@ -68,6 +69,11 @@ define([
             category: category
           });
           self.categoryWidgets[category].startup();
+          if (!dontAdd) {
+            self.visualization.animations.animations.map(function (animation) {
+              self.categoryWidgets[category].addHandler({animation: animation});
+            });
+          }
           updated = true;
         }
       }
@@ -88,6 +94,10 @@ define([
         );
 
         self.visualization.ui.sideBar.setTabs();
+
+        toDelete.map(function (widget) {
+          widget.destroyRecursive();
+        });
       }
     },
 
@@ -96,7 +106,24 @@ define([
         var self = this;
         self.inherited(arguments);
 
-        self.animationList.categoryManager.updateCategoryWidgets();
+        /* Warning: Infinite recursion will happen if this check
+         * doesn't match the filtering in
+         * CategorizedLayerList.animationFilter(). */
+        if (   self.animation.args.category != self.animationList.category
+            && (self.animation.args.category || self.animationList.category)) {
+            console.log("MOVING", {anim: self.animation.toString(), from:self.animationList.category, to:self.animation.args.category});
+
+          var categoryManager = self.animationList.categoryManager;
+          var animation = self.animation;
+
+          self.animationList.removeHandler({animation: animation});
+          self.animationList.categoryManager.updateCategoryWidgets(true);
+          var newList = categoryManager;
+          if (animation.args.category) {
+            newList = categoryManager.categoryWidgets[animation.args.category];
+          }
+          newList.addHandler({animation: animation});
+        }
       }
     })
   });

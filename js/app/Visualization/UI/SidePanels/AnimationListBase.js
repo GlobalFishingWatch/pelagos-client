@@ -31,10 +31,23 @@ define([
       self.addChild(self.emptyWidget);
 
       self.animationList = {};
+      self._addHandler = self.addHandler.bind(self);
+      self._removeHandler = self.removeHandler.bind(self);
+
       self.visualization.animations.events.on({
-        'add': self.addHandler.bind(self),
-        'remove': self.removeHandler.bind(self)
+        'add': self._addHandler,
+        'remove': self._removeHandler
       });
+    },
+
+    destroy: function () {
+      var self = this;
+
+      self.visualization.animations.events.un({
+        'add': self._addHandler,
+        'remove': self._removeHandler
+      });
+      self.inherited(arguments);
     },
 
     addHandler: function (event) {
@@ -71,6 +84,7 @@ define([
 
       if (self.animationList[animation.id]) {
         self.removeChild(self.animationList[animation.id]);
+        self.animationList[animation.id].destroyRecursive();
         delete self.animationList[animation.id];
         self.count--;
         if (self.count == 0) {
@@ -107,9 +121,15 @@ define([
         var self = this;
         self.inherited(arguments)
 
-        self.animation.events.on({
-          updated: self.updatedHandler.bind(self)
-        });
+        self._updatedHandler = self.updatedHandler.bind(self)
+        self.animation.events.on({updated: self._updatedHandler});
+      },
+
+      destroy: function () {
+        var self = this;
+
+        self.animation.events.un({updated: self._updatedHandler});
+        self.inherited(arguments);
       },
 
       updatedHandler: function () {

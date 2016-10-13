@@ -81,11 +81,22 @@ define([
         self.toggleEditingMode.bind(self)
       );
 
+      self._updatedHandler = self.updatedHandler.bind(self);
       self.visualization.state.events.on({
-        "editing": self.updatedHandler.bind(self),
-        "title": self.updatedHandler.bind(self)
+        "editing": self._updatedHandler,
+        "title": self._updatedHandler
       });
       self.updatedHandler();
+    },
+
+    destroy: function () {
+      var self = this;
+
+      self.visualization.state.events.un({
+        "editing": self._updatedHandler,
+        "title": self._updatedHandler
+      });
+      self.inherited(arguments);
     },
 
     updatedHandler: function () {
@@ -167,7 +178,6 @@ define([
         self.animationEditor = new AnimationEditor({animation: self.animation});
         self.animationEditor.placeAt(self.animationEditorNode);
 
-        self.animation.events.on({updated: self.updatedHandler.bind(self)});
         self.updatedHandler();
       },
 
