@@ -44,7 +44,7 @@ define([
         '    <a href="javascript:undefined" class="editing-mode-toggle" data-dojo-attach-event="click:toggleEditingMode"><i class="fa fa-cogs"></i></a>' +
         '  </div>' +
         '  <div class="contentWrapper">' +
-        '    <div class="editing-mode-only advanced-mode-only workspaceTitle" data-dojo-type="app/Visualization/UI/Widgets/ClickToEdit">' +
+        '    <div class="editing-mode-only advanced-mode-only workspaceTitle" data-dojo-type="app/Visualization/UI/Widgets/ClickToEdit" data-dojo-attach-point="titleEditor">' +
         '      <input' +
         '       data-dojo-type="dijit/form/ValidationTextBox"' +
         '       data-dojo-attach-point="titleInput"' +
@@ -53,7 +53,7 @@ define([
         '    </div>' +
         '    <div id="layers">' +
         '      <form class="animation-list" data-dojo-attach-point="containerNode">'+
-        '        <div class="animation-row editing-mode-only">' +
+        '        <div class="animation-row editing-mode-only" data-dojo-attach-point="addLayerRow">' +
         '          <div class="left-buttons">' +
         '            <label class="add-layer">' +
         '              <a href="javascript:undefined" data-dojo-attach-event="click:add"><i class="fa fa-plus-square"></i></a>' +

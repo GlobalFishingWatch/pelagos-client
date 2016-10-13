@@ -1,9 +1,11 @@
 define([
   "dojo/_base/declare",
-  "app/Visualization/UI/SidePanels/SimpleLayerList"
+  "app/Visualization/UI/SidePanels/SimpleLayerList",
+  "shims/jQuery/main"
 ], function(
   declare,
-  SimpleLayerList
+  SimpleLayerList,
+  $
 ){
   return declare("CategorizedLayerList", [SimpleLayerList], {
     category: undefined,
@@ -18,6 +20,11 @@ define([
         self.categoryManager = self;
       }
       self.inherited(arguments);
+
+      if (self.category) {
+        $(self.titleEditor.domNode).hide();
+        $(self.addLayerRow).hide();
+      }
     },
 
     animationFilter: function (animation) {
