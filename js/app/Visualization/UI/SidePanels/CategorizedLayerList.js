@@ -45,7 +45,7 @@ define([
     removeHandler: function(event) {
       var self = this;
       self.inherited(arguments);
-      if (self.category === undefined) {
+      if (self.category === undefined && !event.dontUpdate) {
         self.updateCategoryWidgets();
       }
     },
@@ -118,12 +118,11 @@ define([
          * CategorizedLayerList.animationFilter(). */
         if (   self.animation.args.category != self.animationList.category
             && (self.animation.args.category || self.animationList.category)) {
-            console.log("MOVING", {anim: self.animation.toString(), from:self.animationList.category, to:self.animation.args.category});
 
           var categoryManager = self.animationList.categoryManager;
           var animation = self.animation;
 
-          self.animationList.removeHandler({animation: animation});
+          self.animationList.removeHandler({animation: animation, dontUpdate: true});
           self.animationList.categoryManager.updateCategoryWidgets(true);
           var newList = categoryManager;
           if (animation.args.category) {
