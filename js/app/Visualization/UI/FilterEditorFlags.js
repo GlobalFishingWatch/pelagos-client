@@ -2,8 +2,8 @@ define([
   "dojo/_base/declare",
   "app/CountryCodes",
   "app/Visualization/UI/FilterEditorText",
-    "dojo/store/Memory",
-  "app/Visualization/UI/Paths"
+  "dojo/store/Memory",
+  "app/Paths"
 ], function(
   declare,
   CountryCodes,

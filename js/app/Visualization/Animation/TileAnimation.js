@@ -86,16 +86,14 @@ define([
       DataAnimation.prototype.updateData.call(self);
     },
 
-    drawProgram: function (program) {
+    drawProgram: function (program, idx) {
       var self = this;
 
       program.gl.useProgram(program);
-      Shader.programBindArray(program.gl, program.pointArrayBuffer, program, "worldCoord", 2, program.gl.FLOAT);
-      program.gl.uniformMatrix4fv(program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
 
-      program.gl.uniform1f(
-        program.uniforms.animationidx,
-        self.manager.animations.indexOf(self));
+      self.setGeneralUniforms(program, idx);
+
+      Shader.programBindArray(program.gl, program.pointArrayBuffer, program, "worldCoord", 2, program.gl.FLOAT);
 
       for (var i = 0; i < self.tilecount; i++) {
 
@@ -114,6 +112,13 @@ define([
 
         program.gl.drawArrays(program.gl.LINE_STRIP, i*5, 5);
       }
+    },
+
+    setGeneralUniforms: function (program, idx) {
+      var self = this;
+
+      // Do not inherit from DataAnimation...
+      Animation.prototype.setGeneralUniforms.apply(self, arguments);
     },
 
     select: function (rowidx, type, replace, event) {

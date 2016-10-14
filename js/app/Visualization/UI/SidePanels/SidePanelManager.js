@@ -8,7 +8,7 @@ define([
   "app/Visualization/UI/SidePanels/LoggingUI",
   "app/Visualization/UI/SidePanels/SimpleSettings",
   "app/Visualization/UI/SidePanels/DataUI",
-  "app/Visualization/UI/Paths"
+  "app/Paths"
 ], function(
   Class ,
   AccordionContainer,

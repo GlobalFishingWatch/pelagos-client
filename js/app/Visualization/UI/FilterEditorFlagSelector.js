@@ -3,7 +3,7 @@ define([
   "app/CountryCodes",
   "app/Visualization/UI/FilterEditorBase",
   "app/Visualization/UI/Widgets/FlagSelector",
-  "app/Visualization/UI/Paths"
+  "app/Paths"
 ], function(
   declare,
   CountryCodes,

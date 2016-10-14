@@ -5,7 +5,7 @@ define([
   "dijit/_TemplatedMixin",
   "dijit/form/_FormValueMixin",
   "shims/jQuery/main",
-  "app/Visualization/UI/Paths"
+  "app/Paths"
 ], function(
   declare,
   CountryCodes,

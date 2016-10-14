@@ -61,7 +61,7 @@ define([
     getSelectionInfo: function (name, cb) {
       var self = this;
       if (self.source.getSelectionInfo) {
-        self.source.getSelectionInfo(self.selections[name], cb);
+        self.source.getSelectionInfo(name !== undefined ? self.selections[name] : undefined, cb);
       } else {
         cb("No selection information available for " + self.source.toString());
       }
