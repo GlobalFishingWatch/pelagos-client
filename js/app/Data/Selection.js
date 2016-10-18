@@ -168,16 +168,17 @@ define([
       var self = this;
 
       var context = {selection: self};
-      var res = function () {
+      var res = function (peek) {
         var res = context.selection.getValuesFromIdx(context.idx);
         if (!res) {
           throw {type: "StopIteration"};
         }
-        context.idx = res.idx;
+        if (!peek) {
+          context.idx = res.idx;
+        }
         return res.cols;
       }
       res.context = context;
-
       return res;
     },
 

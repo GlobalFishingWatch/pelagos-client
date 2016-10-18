@@ -526,6 +526,14 @@ define([
         self.hideSelectionAnimations(baseAnimation);
       }
 
+      if (selectionIter.iterate !== undefined) {
+        selectionIter = selectionIter.iterate();
+      }
+
+      var queryValues = selectionIter(true).map(function (item) {
+        return item.value.toString();
+      }).join(",");
+
       var query = baseAnimation.data_view.source.getSelectionQuery(selectionIter);
       if (query.length > 0) {
         var seriesTilesets = baseAnimation.args.seriesTilesets;
@@ -539,7 +547,7 @@ define([
             {
               "type": "VesselTrackAnimation",
               "args": {
-                "title": "Vessel Track",
+                "title": "Vessel Track (%(queryValues)s)",
                 "color": "grey",
                 "visible": true,
                 "source": {
@@ -567,6 +575,7 @@ define([
             versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
             query_url: baseAnimation.data_view.source.getQueryUrl(query, -1),
             query: query,
+            queryValues: queryValues,
             header: baseAnimation.data_view.source.header,
             selection: selectionIter
           });
