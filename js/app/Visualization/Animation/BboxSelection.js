@@ -232,6 +232,13 @@ define([
       self.manager.triggerUpdate();
     },
 
+    setBlendFunc: function(program) {
+      var self = this;
+      var gl = program.gl;
+
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    },
+
     drawProgram: function (program) {
       var self = this;
 
