@@ -144,7 +144,7 @@ define([
       '        <span class="display-mode-only" data-dojo-attach-point="titleNode"></span>' +
       '      </span>' +
       '      <div class="animation-buttons">' +
-      '        <a data-dojo-attach-point="saveNode" data-dojo-attach-event="click:saveLayer"><i class="fa fa-save"></i></a>' +
+      '        <a data-dojo-attach-point="saveNode" data-dojo-attach-event="click:saveLayer"><i class="fa fa-thumb-tack"></i></a>' +
       '        <a target="_blank" data-dojo-attach-point="infoNode" data-dojo-attach-event="click:infoClick" class="display-mode-only"><i class="fa fa-info"></i></a>' +
       '        <a class="expander advanced-mode-only editing-mode-only" data-dojo-attach-point="expanderNode" data-dojo-attach-event="click:toggleExpanded">' +
                 '<i class="fa fa-chevron-right"></i>' +
