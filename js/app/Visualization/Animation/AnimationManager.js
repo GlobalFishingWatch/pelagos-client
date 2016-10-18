@@ -483,6 +483,21 @@ function(Class,
       baseAnimation.selectionAnimations = [];
     },
 
+    saveSelectionAnimation: function (animation) {
+      var self = this;
+
+      animation.events.un({updated: animation.selectionAnimationUpdate});
+      if (animation.data_view) {
+        animation.data_view.events.un({update: animation.selectionAnimationUpdate});
+      }
+      animation.selectionAnimationFor.selectionAnimations = animation.selectionAnimationFor.selectionAnimations.filter(
+        function (a) {
+          return a !== animation;
+        }
+      );
+      animation.selectionAnimationFor = undefined;
+    },
+
     showSelectionAnimations: function (baseAnimation, selection) {
       var self = this;
       var baseHeader = baseAnimation.data_view.source.header;
@@ -541,13 +556,10 @@ function(Class,
               if (err) {
                 self.removeAnimation(animation);
               } else {
-                animation.events.on({
-                  updated: self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset)
-                });
+                animation.selectionAnimationUpdate = self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset);
+                animation.events.on({updated: animation.selectionAnimationUpdate});
                 if (animation.data_view) {
-                  animation.data_view.events.on({
-                    update: self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset)
-                  });
+                  animation.data_view.events.on({update: animation.selectionAnimationUpdate});
                 }
 
                 animation.selectionAnimationFor = baseAnimation;
