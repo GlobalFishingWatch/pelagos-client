@@ -674,7 +674,7 @@ define([
         }
       };
 
-      applyDiff(specTemplate, doDiff(spec, newSpec));
+      applyDiff(specTemplate, _.cloneDeep(doDiff(spec, newSpec)));
     },
 
     initMouse: function(cb) {
