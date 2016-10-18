@@ -144,7 +144,7 @@ define([
       animations.map(function (animation) {
         var dataView = animation.data_view;
         var selection = dataView.selections.selections.bbox;
-        var iter = selection.iterate();
+        var iter = selection.iterate(true);
 
         try {
           while (true) {
