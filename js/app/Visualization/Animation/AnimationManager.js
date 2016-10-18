@@ -18,6 +18,7 @@ define([
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
+  "app/Visualization/Animation/BboxSelection",
   "app/Visualization/Animation/PointAnimation",
   "app/Visualization/Animation/LineAnimation",
   "app/Visualization/Animation/LineStripAnimation",
@@ -28,8 +29,8 @@ define([
   "app/Visualization/Animation/CartoDBAnimation",
   "app/Visualization/Animation/VesselTrackAnimation",
   "app/Visualization/Animation/ArrowAnimation",
-  "app/Visualization/Animation/SatelliteAnimation"],
-function(Class,
+  "app/Visualization/Animation/SatelliteAnimation"
+], function(Class,
   Events,
   Bounds,
   Timerange,
@@ -47,7 +48,8 @@ function(Class,
   Stats,
   ObjectToTable,
   Rowidx,
-  Animation
+  Animation,
+  BboxSelection
 ) {
   var AnimationManager = Class({
     name: "AnimationManager",
@@ -84,6 +86,7 @@ function(Class,
     init: function (cb) {
       var self = this;
 
+      self.overlays = [];
       self.animations = [];
       self.updateNeeded = false;
       self.mouseoverUpdateNeeded = false;
@@ -101,6 +104,7 @@ function(Class,
         self.initStats.bind(self),
         self.initMouse.bind(self),
         self.initUpdates.bind(self),
+        self.initOverlays.bind(self),
         function (cb) {
           self.initialized = true;
           cb();
@@ -320,6 +324,11 @@ function(Class,
       height: 100
     },
 
+    getRenderers: function () {
+      var self = this;
+      return self.animations.concat(self.overlays);
+    },
+
     readMouseoverPixels: function(x, y) {
       var self = this;
 
@@ -348,7 +357,7 @@ function(Class,
           gl.scissor(gridX_global, gridY_global, self.mouseoverCacheCellSize.width, self.mouseoverCacheCellSize.height);
           gl.clear(gl.COLOR_BUFFER_BIT);
 
-          self.animations.map(function (animation) {
+          self.getRenderers().map(function (animation) {
             animation.draw(gl);
           });
 
@@ -404,8 +413,17 @@ function(Class,
      return _.find(self.animations, predicate);
     },
 
+    mouseHandlingDisabled: 0,
+    disableMouseHandling: function () { this.mouseHandlingDisabled++; },
+    enableMouseHandling: function () {
+      this.mouseHandlingDisabled--;
+      if (this.mouseHandlingDisabled < 0) this.mouseHandlingDisabled = 0;
+    },
+
     handleMouse: function (e, type) {
       var self = this;
+
+      if (self.mouseHandlingDisabled > 0) return;
 
       var x, y;
 
@@ -442,7 +460,7 @@ function(Class,
       }
 
       if (rowidx) {
-        var animation = self.animations[rowidx[0]];
+        var animation = self.getRenderers()[rowidx[0]];
 
         if (animation) {
           if (animation.data_view) {
@@ -456,7 +474,7 @@ function(Class,
           }
         }
       } else {
-        self.animations.map(function (animation) {
+        self.getRenderers().map(function (animation) {
           animation.select(undefined, type, true, e);
         });
       }
@@ -498,15 +516,18 @@ function(Class,
       animation.selectionAnimationFor = undefined;
     },
 
-    showSelectionAnimations: function (baseAnimation, selection) {
+    showSelectionAnimations: function (baseAnimation, selectionIter, autoSave, cb) {
       var self = this;
       var baseHeader = baseAnimation.data_view.source.header;
 
       if (!baseHeader.seriesTilesets) return;
 
-      self.hideSelectionAnimations(baseAnimation);
+      if (!autoSave) {
+        self.hideSelectionAnimations(baseAnimation);
+      }
 
-      if (selection.data.series != undefined || selection.data.seriesgroup != undefined) {
+      var query = baseAnimation.data_view.source.getSelectionQuery(selectionIter);
+      if (query.length > 0) {
         var seriesTilesets = baseAnimation.args.seriesTilesets;
 
         if (!seriesTilesets) {
@@ -534,9 +555,9 @@ function(Class,
 
         baseAnimation.args.seriesTilesets = seriesTilesets;
 
-        var query = baseAnimation.data_view.source.getSelectionQuery(selection);
-
-        self.hideSelectionAnimations(baseAnimation);
+        if (!autoSave) {
+          self.hideSelectionAnimations(baseAnimation);
+        }
 
         var seriesAnimations = [];
         async.each(seriesTilesets, function (seriesTilesetTemplate, cb) {
@@ -544,10 +565,10 @@ function(Class,
           seriesTileset = new ObjectTemplate(seriesTilesetTemplate).eval({
             url: baseAnimation.data_view.source.url,
             versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
-            query_url: baseAnimation.data_view.source.getSelectionUrl(selection, -1),
+            query_url: baseAnimation.data_view.source.getQueryUrl(query, -1),
             query: query,
             header: baseAnimation.data_view.source.header,
-            selection: selection
+            selection: selectionIter
           });
 
           self.addAnimation(
@@ -556,20 +577,22 @@ function(Class,
               if (err) {
                 self.removeAnimation(animation);
               } else {
-                animation.selectionAnimationUpdate = self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset);
-                animation.events.on({updated: animation.selectionAnimationUpdate});
-                if (animation.data_view) {
-                  animation.data_view.events.on({update: animation.selectionAnimationUpdate});
+                if (!autoSave) {
+                  animation.selectionAnimationUpdate = self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset);
+                  animation.events.on({updated: animation.selectionAnimationUpdate});
+                  if (animation.data_view) {
+                    animation.data_view.events.on({update: animation.selectionAnimationUpdate});
+                  }
+                  animation.selectionAnimationFor = baseAnimation;
+                  baseAnimation.selectionAnimations.push(animation);
                 }
-
-                animation.selectionAnimationFor = baseAnimation;
-                baseAnimation.selectionAnimations.push(animation);
                 seriesAnimations.push(animation);
               }
               cb();
             }
           );
         }, function (err) {
+          var selection = selectionIter.context ? selectionIter.context.selection : selectionIter;
           if (selection.data.zoomToSelectionAnimations != undefined) {
             var bounds = new SpaceTime();
             seriesAnimations.map(function (animation) {
@@ -593,7 +616,8 @@ function(Class,
               east:bounds.right
             });
             delete selection.data.zoomToSelectionAnimations;
-          }            
+          }
+          if (cb) cb(seriesAnimations);
         });
       }
     },
@@ -706,8 +730,21 @@ function(Class,
       cb();
     },
 
-    addAnimationInstance: function (animationInstance, cb) {
+    initOverlays:function (cb) {
       var self = this;
+
+      async.series([
+        function (cb) {
+          self.bboxSelection = new BboxSelection(self, {});
+          self.addAnimationInstance(self.bboxSelection, cb, "overlays");
+        }
+      ], cb);
+    },
+
+    addAnimationInstance: function (animationInstance, cb, collection) {
+      var self = this;
+
+      if (collection == undefined) collection = "animations";
 
       animationInstance.id = self.animationIdCounter++;
       animationInstance.addingToManager = true;
@@ -715,7 +752,7 @@ function(Class,
         animationInstance.initUpdates(function () {
           if (animationInstance.addingToManager) {
             animationInstance.addingToManager = false;
-            self.animations.push(animationInstance);
+            self[collection].push(animationInstance);
             self.triggerUpdate();
             if (animationInstance.data_view) {
               animationInstance.data_view.selections.events.on({
@@ -734,12 +771,12 @@ function(Class,
     closeInfoPopup: function () {
       var self = this;
       self.infoPopup.close();
-      self.animations.map(function (animation) {
-          animation.select(undefined, "info", true, {});
+      self.getRenderers().map(function (animation) {
+        animation.select(undefined, "info", true, {});
       });
     },
 
-    handleInfo: function (animation, type, err, data, selectionData) {
+    handleInfo: function (animation, type, err, data) {
       var self = this;
       var dataView = animation.data_view;
  
@@ -760,6 +797,12 @@ function(Class,
           }
         }
       );
+
+      var selectionData = {};
+      var selectionDataTmp = dataView.selections.selections[type].data;
+      for (var key in selectionDataTmp) {
+        selectionData[key] = selectionDataTmp[key][0];
+      }
 
       if (type == 'info') {
         if (err) data = err;
@@ -805,18 +848,6 @@ function(Class,
       }
     },
 
-    handleSelectionInfo: function (animation, selectionEvent, err, data) {
-      var self = this;
-      var dataView = animation.data_view;
-      var type = selectionEvent.category;
-      var info = {};
-      var selectionData = dataView.selections.selections[type].data;
-      for (var key in selectionData) {
-        info[key] = selectionData[key][0];
-      }
-      self.handleInfo(animation, type, err, data, info);
-    },
-
     handleSelectionUpdate: function (animation, selectionEvent, type) {
       var self = this;
       var dataView = animation.data_view;
@@ -825,12 +856,19 @@ function(Class,
 
       if (type != 'selected' && type != 'info') return;
 
+      var query = "";
+      try {
+        query = animation.data_view.source.getSelectionQuery(selection);
+      } catch (e) {
+        if (e.type != "StopIteration") throw(e);
+      }
+
       Logging.main.log(
         "Visualization.Animation.AnimationManager.handleSelectionUpdate",
         {
           layer: animation.title,
           category: type,
-          query: animation.data_view.source.getSelectionQuery(selection),
+          query: query,
           toString: function () {
             return this.layer + "/" + this.category + ": " + this.query;
           }
@@ -839,7 +877,7 @@ function(Class,
 
       if (type == 'selected') {
         self.events.triggerEvent('info-loading', {});
-        if (dataView.source.header.seriesTilesets && !dataView.selections.selections[type].rawInfo) {
+        if (dataView.source.header.seriesTilesets && !selection.rawInfo) {
           self.hideAllSelectionAnimations();
         }
 
@@ -847,7 +885,7 @@ function(Class,
             && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
           var data = {};
           data.toString = function () { return ""; };
-          self.handleSelectionInfo(animation, selectionEvent, null, undefined);
+          self.handleInfo(animation, selectionEvent.category, null, undefined);
         }
       }
 
@@ -856,92 +894,38 @@ function(Class,
         return;
       }
 
-      if (selection.rawInfo) {
-        var data = _.clone(selection.data);
-
-        Object.items(dataView.source.header.colsByName).map(function (item) {
-          if (item.value.choices) {
-            var choices = Object.invert(item.value.choices);
-            data[item.key] = data[item.key].map(function (dataValue) {
-              return choices[dataValue];
-            });
-          }
-        });
-
-        data.layer = animation.title;
-        data.toString = function () {
-          return ObjectToTable(this);
-        };
-        self.handleSelectionInfo(animation, selectionEvent, null, data);
-      } else if (!selection.hasSelectionInfo()) {
-        var data = {
-          layer: animation.title,
-          toString: function () {
-            return 'There are multiple vessels at this location. Zoom in to see individual points.';
-          }
-        };
-        self.handleSelectionInfo(animation, selectionEvent, null, data);
-      } else {
-        if (type == 'selected' && !dataView.selections.selections[type].rawInfo) {
-          self.showSelectionAnimations(animation, selection);
+      animation.getSelectionInfo(type, function (err, data) {
+        if (err || data) {
+          self.handleInfo(animation, selectionEvent.category, err, data);
+        } else {
+          // We got an error call before, but now something has
+          // changed and we're retrying the load...
+          self.events.triggerEvent('info-loading', {});
         }
-        dataView.selections.getSelectionInfo(type, function (err, data) {
-          var content;
-
-          if (err) {
-            self.handleSelectionInfo(animation, selectionEvent, err, null);
-          } else if (data) {
-            data.toString = function () {
-              var content = ["<table class='table table-striped table-bordered'>"];
-              if (data.name) {
-                var name = data.name;
-                if (data.link) {
-                  name = "<a target='_new' href='" + data.link + "'>" + name + "</a>";
-                }
-                content.push("<tr><th colspan='2'>" + name + "</th><tr>");
-              }
-
-              Object.keys(data).sort().map(function (key) {
-                if (key == 'toString' || key == 'name' || key == 'link') return;
-                if (typeof(data[key])=="string" && data[key].indexOf("://") != -1) {
-                  content.push("<tr><th colspan='2'><a target='_new' href='" + data[key] +  "'>" + key + "</a></th></tr>");
-                } else {
-                  content.push("<tr><th>" + key + "</th><td>" + data[key] + "</td></tr>");
-                }
-              });
-
-              content.push("</table>");
-
-              return content.join('\n');
-            };
-            self.handleSelectionInfo(animation, selectionEvent, null, data);
-          } else {
-            // We got an error call before, but now something has
-            // changed and we're retrying the load...
-            self.events.triggerEvent('info-loading', {});
-          }
-        });
-
-      }
+      });
     },
 
-    addAnimation: function (animation, cb) {
+    addAnimation: function (animation, cb, collection) {
       var self = this;
       self.addAnimationInstance(
         new Animation.animationClasses[animation.type](
           self, animation.args
         ),
-        cb
+        cb,
+        collection
       );
     },
 
-    removeAnimation: function (animation) {
+    removeAnimation: function (animation, collection) {
       var self = this;
+
+      if (collection == undefined) collection = "animations";
+
       if (animation.addingToManager) {
         animation.addingToManager = false;
       } else {
-        self.animations = self.animations.filter(function (a) { return a !== animation; });
-        self.events.triggerEvent("remove", {animation: animation});
+        self[collection] = self[collection].filter(function (a) { return a !== animation; });
+        self.events.triggerEvent("remove", {animation: animation, collection: collection});
         animation.destroy();
         self.triggerUpdate();
       }
@@ -1117,7 +1101,7 @@ function(Class,
         time: time
       });
 
-      self.animations.map(function (animation) {
+      self.getRenderers().map(function (animation) {
         animation.draw(self.gl);
       });
 

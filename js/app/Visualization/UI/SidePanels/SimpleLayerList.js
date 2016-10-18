@@ -199,12 +199,6 @@ define([
           $(self.inputNode).removeAttr('checked');
         }
 
-        var descriptionUrl = self.animation.descriptionUrl;
-        if (descriptionUrl) {
-          $(self.infoNode).attr("href", descriptionUrl);
-        }
-        $(self.infoNode).toggle(!!descriptionUrl || !!self.animation.description);
-
         var expand = !!self.animation.args.editorExpanded;
         var expander = $(self.expanderNode);
         if (expand) {
@@ -223,6 +217,7 @@ define([
         var self = this;
 
         self.visualization.animations.saveSelectionAnimation(self.animation);
+        self.animation.setTitleFromInfo();
         self.updatedHandler();
       },
 
@@ -235,9 +230,13 @@ define([
 
       infoClick: function () {
         var self = this;
-        if (self.animation.description) {
-          SimpleMessageDialog.show("About " + self.animation.title, self.animation.description);
-        }
+        self.animation.getSelectionInfo(undefined, function (err, data) {
+          if (err) {
+            SimpleMessageDialog.show("Error fetching information", err.toString());
+          } else {
+            SimpleMessageDialog.show("About " + self.animation.title, data.toString());
+          }
+        });
       },
 
       toggleVisible: function () {
