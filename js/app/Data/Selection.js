@@ -155,7 +155,7 @@ define([
       return false;
     },
 
-    iterate: function () {
+    iterate: function (onlyWithInfo) {
       /* Returns an iterator function. The iterator function returns
        *   [
        *     {name:colname, value:colvalue},
@@ -169,13 +169,19 @@ define([
 
       var context = {selection: self};
       var res = function (peek) {
-        var res = context.selection.getValuesFromIdx(context.idx);
-        if (!res) {
-          throw {type: "StopIteration"};
-        }
+        var idx = context.idx;
+
+        do {
+          var res = context.selection.getValuesFromIdx(idx);
+          if (!res) {
+            throw {type: "StopIteration"};
+          }
+        } while (onlyWithInfo && !self.colsHaveSelectionInfo(res.cols))
+
         if (!peek) {
-          context.idx = res.idx;
+          context.idx = idx;
         }
+
         return res.cols;
       }
       res.context = context;
@@ -242,6 +248,23 @@ define([
         }
         self.events.triggerEvent("update", {update: "add", startData:startData, endData:endData});
       }
+    },
+
+    colsHaveSelectionInfo: function (cols) {
+      var self = this;
+
+      /* If any of the sortcols contains only negative values, there
+       * is no selection info on the server to be fetched. this is
+       * meant to be run on the return value of getValuesFromIdx() or
+       * an iterator.
+       */
+
+      return _.all(cols, function(col) {
+        return (
+          col !== undefined 
+          && col.value >= 0
+        );
+      });
     },
 
     hasSelectionInfo: function () {
