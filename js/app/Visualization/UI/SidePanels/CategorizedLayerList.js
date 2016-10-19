@@ -44,6 +44,13 @@ define([
 
     removeHandler: function(event) {
       var self = this;
+
+      /* An earlier handler for the remove event can have caused this
+       * widget to be destroyed. Unfourtunately, even when though the
+       * destructor unregisters the event, the handler will still be
+       * called, since the event is already underway. */
+
+      if (!self.domNode) return;
       self.inherited(arguments);
       if (self.category === undefined && !event.dontUpdate) {
         self.updateCategoryWidgets();

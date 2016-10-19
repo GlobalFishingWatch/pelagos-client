@@ -178,9 +178,6 @@ define([
 
         self.animationEditor = new AnimationEditor({animation: self.animation});
         self.animationEditor.placeAt(self.animationEditorNode);
-
-        self.animation.events.on({updated: self.updatedHandler.bind(self)});
-        self.updatedHandler();
       },
 
       updatedHandler: function () {
