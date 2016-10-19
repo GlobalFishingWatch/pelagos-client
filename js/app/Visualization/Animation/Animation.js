@@ -6,6 +6,7 @@ define([
   "app/Visualization/Animation/Shader",
   "app/Data/GeoProjection",
   "app/Data/DataView",
+  "app/Visualization/Animation/ObjectToTable",
   "shims/jQuery/main"
 ], function(
   Class,
@@ -15,6 +16,7 @@ define([
   Shader,
   GeoProjection,
   DataView,
+  ObjectToTable,
   $
 ) {
   var Animation = Class({
@@ -78,7 +80,16 @@ define([
     },
 
     getSelectionInfo: function (type, cb) {
-      cb("No selection info available", null);
+      var self = this;
+
+      if (type !== undefined) return cb("Not implemented", null);
+
+      cb(null,
+         {title: self.title,
+          description: self.args.description,
+          toString: function () {
+            return ObjectToTable(this);
+          }});
     },
 
     setTitleFromInfo: function (prefix, suffix, cb) {
