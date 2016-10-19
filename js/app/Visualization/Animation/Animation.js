@@ -87,7 +87,7 @@ define([
       self.getSelectionInfo(undefined, function (err, info) {
         prefix = prefix || "";
         suffix = suffix || "";
-        if (info.title || info.vesselname) {
+        if (info && (info.title || info.vesselname)) {
           self.title = prefix + (info.title || info.vesselname) + suffix;
           self.events.triggerEvent("updated", {});
         }
