@@ -103,25 +103,23 @@ define([
     getReportUrl: function() {
       var self = this;
 
-      // We have to translate datetimes from the template context into postable
-      // timestamps, and uri-encode the rest of the properties
-      var urlize = function(result, value, key) {
-        if (key == "beginTime" || key == "endTime") {
-          result[key] = value.getTime();
-        } else {
-          result[key] = encodeURIComponent(value);
-        }
-      };
-
-      var urlContext =
-        _(self.templates.context)
-        .transform(urlize, {})
-        .value();
-
       var animation = self.report.animations.getReportableAnimation();
       return "" +
         animation.args.source.args.url +
-        self.templates.url.eval(urlContext);
+        self.templates.url.eval(self.templates.context);
+    },
+
+    getReportData: function() {
+      var self = this;
+
+      return {
+        from: self.templates.context.from.toISOString(),
+        to: self.templates.context.to.toISOString(),
+        regions: [{
+          name: self.report.spec.regionName,
+          value: self.templates.context[self.report.spec.regionValueField]
+        }]
+      };
     },
 
     _getPolygonFieldKeys: function() {
@@ -137,8 +135,8 @@ define([
       var time = self.report.state.getValue("time");
       var extent = self.report.state.getValue("timeExtent");
       var result = {
-        beginTime: new Date(time.getTime() - extent),
-        endTime: time
+        from: new Date(time.getTime() - extent),
+        to: time
       };
 
       return _.assign(result, self.report.data);
@@ -188,7 +186,11 @@ define([
 
     handleAccept: function() {
       var url = this.reportDialog.getReportUrl();
-      Ajax.post(url, {}, function(err, result) {
+      var contentTypeHeaders = { "Content-Type": "application/json;charset=UTF-8" };
+      var additionalHeaders = this.report.datamanager.headers;
+      var headers = _.extend(contentTypeHeaders, additionalHeaders);
+      var body = JSON.stringify(this.reportDialog.getReportData());
+      Ajax.post(url, headers, body, function(err, result) {
         SimpleMessageDialog.show("Report generation", result.message);
       });
       this.hide();

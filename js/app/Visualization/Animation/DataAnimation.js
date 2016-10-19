@@ -4,6 +4,7 @@ define([
   "shims/async/main",
   "app/UrlValues",
   "app/Visualization/Animation/Animation",
+  "app/Visualization/Animation/GlAnimation",
   "app/Visualization/Animation/Shader",
   "app/Visualization/Animation/ObjectToTable",
   "app/Data/GeoProjection",
@@ -16,6 +17,7 @@ define([
   async,
   UrlValues,
   Animation,
+  GlAnimation,
   Shader,
   ObjectToTable,
   GeoProjection,
@@ -23,7 +25,7 @@ define([
   _,
   $
 ) {
-  var DataAnimation = Class(Animation, {
+  var DataAnimation = Class(GlAnimation, {
     name: "DataAnimation",
     columns: {},
     uniforms: {},
@@ -31,6 +33,7 @@ define([
       selected: null,
       info: null,
       hover: null,
+      bbox: {sortcols: ["seriesgroup"]},
       timerange: {sortcols: ["datetime"]}
     },
 
@@ -60,32 +63,10 @@ define([
       Animation.prototype.initialize.call(self, manager, args);
     },
 
-    setVisible: function (visible) {
-      var self = this;
-      Animation.prototype.setVisible.call(self, visible);
-      self.manager.triggerUpdate();
-    },
-
     destroy: function () {
       var self = this;
-      // Destroy all we can explicitly, waiting for GC can take
-      // forever, and until then other animations might not get
-      // GL resources...
-      for (var programname in self.programs) {
-        var programs = self.programs[programname];
-        for (var i = 0; i < programs.length; i++) {
-          var program = programs[i];
-          for (var sourcename in program.dataViewArrayBuffers) {
-            var source = program.dataViewArrayBuffers[sourcename];
-            for (var buffername in source) {
-              var buffer = source[buffername];
-              program.gl.deleteBuffer(buffer);
-            }
-          }
-          program.gl.deleteProgram(program);
-        }
-      }
-      self.programs = {};
+
+      GlAnimation.prototype.destroy.apply(self, arguments);
 
       if (self.data_view) {
         self.manager.visualization.data.destroyView(self.data_view, self.source);
@@ -133,43 +114,12 @@ define([
       });
     },
 
-    initGlPrograms: function(cb) {
+    getProgramContext: function (programName, programSpec) {
       var self = this;
-
-      self.programs = {};
-      async.map(Object.items(self.programSpecs), function (item, cb) {
-        var programName = item.key;
-        var programSpec = item.value;
-
-        var gls = self.manager[programSpec.context];
-        if (!gls.length) gls = [gls];
-
-        async.map(
-          gls,
-          function (gl, cb) {
-            Shader.createShaderProgramFromUrl(
-              gl,
-              require.toUrl(programSpec.vertex),
-              require.toUrl(programSpec.fragment),
-              {
-                attr0: Object.keys(self.data_view.source.header.colsByName)[0],
-                attrmapper: Shader.compileMapping(self.data_view)
-              },
-              function (program) {
-                program.name = programName;
-                program.dataViewArrayBuffers = {};
-                cb(null, program);
-              }
-            );
-          },
-          function (err, programs) {
-            if (!err) {
-              self.programs[programName] = programs;
-            }
-            cb(err);
-          }
-        );
-      }, cb);
+      return {
+        attr0: Object.keys(self.data_view.source.header.colsByName)[0],
+        attrmapper: Shader.compileMapping(self.data_view)
+      };
     },
 
     initUpdates: function(cb) {
@@ -187,58 +137,10 @@ define([
       cb();
     },
 
-    triggerDataUpdate: function () {
-      var self = this;
-      if (self.dataUpdateTimeout) return;
-      self.dataUpdateTimeout = setTimeout(self.updateData.bind(self), 250);
-    },
-
-    updateData: function() {
-      var self = this;
-
-      self.dataUpdateTimeout = undefined;
-      self.dataUpdates++;
-
-      Object.values(self.programs).map(function (programs) {
-        programs.map(self.updateDataProgram.bind(self));
-      });
-
-      self.manager.triggerUpdate();
-    },
-
     updateDataProgram: function (program) {
       var self = this;
 
       self.loadDataViewArrayBuffers(program);
-    },
-
-    draw: function (gl) {
-      /* If gl is given, only draw on gl, else on all canvases */
-
-      var self = this;
-      if (!self.visible) return;
-
-      Object.values(self.programs).map(function (programs) {
-        programs.map(function (program, idx) {
-          if (gl !== undefined && gl !== program.gl) return;
-          self.drawProgram(program, idx);
-        });
-      });
-    },
-
-    setBlendFunc: function(program) {
-      var self = this;
-      var gl = program.gl;
-      var blend = self.programSpecs[program.name].blend;
-
-      if (!blend) {
-        if (program.name == "rowidxProgram") {
-          blend = {src:"SRC_ALPHA", dst:"ONE_MINUS_SRC_ALPHA"};
-        } else {
-          blend = {src:"SRC_ALPHA", dst:"ONE"};
-        }
-      }
-      gl.blendFunc(gl[blend.src], gl[blend.dst]);
     },
 
     drawProgram: function (program, idx) {
@@ -247,17 +149,9 @@ define([
       if (program.name == "rowidxProgram" && (self.manager.indrag || !self.manager.isPaused()))
         return;
 
-      program.gl.useProgram(program);
-      self.setBlendFunc(program);
-
-      self.setGeneralUniforms(program);
-
+      GlAnimation.prototype.drawProgram.apply(self, arguments);
       var mode = self.getDrawMode(program);
 
-      program.gl.uniform1f(
-        program.uniforms.animationidx,
-        self.manager.animations.indexOf(self));
-      program.gl.uniform1f(program.uniforms.canvasIndex, idx);
       var tileidx = 0;
       self.data_view.source.getContent().map(function (tile) {
         program.gl.uniform1f(program.uniforms.tileidx, tileidx);
@@ -289,18 +183,18 @@ define([
 
       program.gl.useProgram(program);
 
-      var dataViewArrayBuffers = program.dataViewArrayBuffers;
-      program.dataViewArrayBuffers = {};
+      var dataViewArrayBuffers = program.arrayBuffers;
+      program.arrayBuffers = {};
 
       self.data_view.source.getContent().map(function (tile) {
         if (dataViewArrayBuffers[tile.content.url]) {
-          program.dataViewArrayBuffers[tile.content.url] = dataViewArrayBuffers[tile.content.url];
+          program.arrayBuffers[tile.content.url] = dataViewArrayBuffers[tile.content.url];
         } else {
-          program.dataViewArrayBuffers[tile.content.url] = {};
+          program.arrayBuffers[tile.content.url] = {};
 
           Object.keys(tile.content.header.colsByName).map(function (name) {
-            program.dataViewArrayBuffers[tile.content.url][name] = program.gl.createBuffer();
-            Shader.programLoadArray(program.gl, program.dataViewArrayBuffers[tile.content.url][name], tile.content.data[name], program);
+            program.arrayBuffers[tile.content.url][name] = program.gl.createBuffer();
+            Shader.programLoadArray(program.gl, program.arrayBuffers[tile.content.url][name], tile.content.data[name], program);
           });
         }
       });
@@ -308,39 +202,25 @@ define([
 
     bindDataViewArrayBuffers: function(program, tile) {
       var self = this;
-      if (!program.dataViewArrayBuffers[tile.url]) return false;
+      if (!program.arrayBuffers[tile.url]) return false;
       program.gl.useProgram(program);
       for (var name in program.attributes) {
-        Shader.programBindArray(program.gl, program.dataViewArrayBuffers[tile.url][name], program, name, 1, program.gl.FLOAT);
+        Shader.programBindArray(program.gl, program.arrayBuffers[tile.url][name], program, name, 1, program.gl.FLOAT);
       };
       return true;
     },
 
-    setGeneralUniforms: function (program) {
+    setGeneralUniforms: function (program, idx) {
       var self = this;
+
+      GlAnimation.prototype.setGeneralUniforms.apply(self, arguments);
+
       var time = self.manager.visualization.state.getValue("time");
-      var timeExtent = self.manager.visualization.state.getValue("timeExtent");
-      var timeFocus = self.manager.visualization.state.getValue("timeFocus");
 
       if (time == undefined) return;
       time = time.getTime();
-
+      var timeExtent = self.manager.visualization.state.getValue("timeExtent");
       self.data_view.selections.selections.timerange.addDataRange({datetime:time - timeExtent}, {datetime:time}, true, true);
-      program.gl.uniform1f(program.uniforms.timefocus, timeFocus);
-      program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
-      program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
-      program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
-
-      // pointSize range [5,20], 21 zoom levels
-      var pointSize = Math.max(
-        Math.floor( ((20-5) * (self.manager.map.zoom - 0) / (21 - 0)) + 5 ),
-        ((self.manager.visualization.state.getValue("resolution") || 1000)
-         / GeoProjection.metersPerGoogleMercatorAtLatitude(
-             self.manager.map.getCenter().lat(),
-             self.manager.map.zoom)));
-
-      program.gl.uniform1f(program.uniforms.pointSize, pointSize*1.0);
-      program.gl.uniformMatrix4fv(program.uniforms.googleMercator2webglMatrix, false, self.manager.googleMercator2webglMatrix);
 
       Shader.setMappingUniforms(program, self.data_view);
     },
@@ -436,5 +316,6 @@ define([
     }
   });
   DataAnimation.animationClasses = Animation.animationClasses;
+
   return DataAnimation;
 });

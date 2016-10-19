@@ -187,17 +187,17 @@ body {
 .MouseLatLon {
   position: absolute;
   right: 8px;
-  bottom: 5pt;
+  bottom: 26px;
   z-index: 2;
   color: #ffffff;
 }
 
 .main-timeline {
   position: absolute;
-  left: 8px;
+  left: 58px;
   right: 8px;
-  bottom: 5pt;
-  height: 75pt;
+  bottom: 26px;
+  height: 100px;
 }
 
 .AnimationUI {
@@ -246,6 +246,12 @@ body {
             border-top: 1px solid #d3d3d3;
             padding: 3px 5px 2px 7px;
             text-align: right;
+            display: table;
+            width: 100%;
+            .left {
+              display: table-cell;
+              text-align: left;
+            }
         }
 
         .dijitDialogCloseIcon {
@@ -556,18 +562,18 @@ content: "\f067";
 .control_box {
   text-align: center;
   position: absolute;
-  bottom: 8px;
+  bottom: 26px;
   left: 8px;
   z-index: 5;
 
   .btn-lg.play {
     background-color: #011137;
     opacity: .95;
-    height: 99px;
+    height: 100px;
     width: 50px;
   }
 
-    .btn-lg.share {
+  .btn-lg.share {
     background-color: #011137;
     height: 50px;
     width: 50px;
@@ -652,24 +658,6 @@ content: "\f067";
   }
 
 }
-
-/* hide Google, CartoDB logos */
-
-.cartodb-logo, #cartodb-gmaps-attribution, .gmnoprint a, .gmnoprint span  {
-    visibility: hidden;
-    display: none;
-    width: 0;
-    height: 0;
-}
-
-a[href^="http://maps.google.com/maps"]{display:none !important;}
-a[href^="https://maps.google.com/maps"]{display:none !important;}
-
-.gm-style .gmnoprint .gm-style-cc div,
-.gm-style .gm-style-cc div {
-    display: none;
-}
-
 
 .DataViewUI .value {
   width: 3em;
@@ -760,7 +748,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   height: 100%;
   padding-bottom: 135pt;
   z-index: 1;
-  margin-right: 10px;
+  margin-right: 8px;
 
   &.expanded {
     left: auto;
@@ -1263,8 +1251,11 @@ div.cartodb-legend-stack {
 }
 
 @media screen and (max-width: 600px) { 
-  .main-timeline {
+  .control_box {
     left: 0;
+  }
+  .main-timeline {
+    left: 50px;
     right: 0;
   }
   #w {
@@ -1274,18 +1265,16 @@ div.cartodb-legend-stack {
 
 @media screen and (max-height: 400px) { 
   #w {
-    padding-bottom: 60pt;
-    margin-right: 8px;
+    padding-bottom: 96px;
   }
   .Timeline .line-visibility .line .tickmarks-container {
     height: 69%;
   }
   .main-timeline {
-    bottom: 5pt;
-    height: 55pt;
+    height: 70px;
   }
   .control_box .btn-lg.play {
-    height: 54pt;
+    height: 70px;
   }
 
 }

@@ -16,6 +16,7 @@ define([
   "app/Visualization/UI/SimpleMessageDialog",
   "app/Visualization/UI/WelcomeMessageDialog",    
   "app/Visualization/UI/ZoomButtons",
+  "app/Visualization/UI/LoaderIcon",
   "app/ObjectTemplate",
   "dijit/layout/BorderContainer",
   "dijit/layout/ContentPane",
@@ -24,7 +25,7 @@ define([
   "shims/less/main",
   "shims/Styles",
   "shims/clipboard/main",
-  "app/Visualization/UI/Paths"
+  "app/Paths"
 ], function (
   Class,
   Dialog,
@@ -43,6 +44,7 @@ define([
   SimpleMessageDialog,
   WelcomeMessageDialog,
   ZoomButtons,
+  LoaderIcon,
   ObjectTemplate,
   BorderContainer,
   ContentPane,
@@ -62,7 +64,8 @@ define([
       "libs/dojox/layout/resources/FloatingPane.css",
       "libs/dojox/layout/resources/ResizeHandle.css",
       "libs/dojox/widget/ColorPicker/ColorPicker.css",
-      {url: "app/Visualization/UI/style.less", rel:"stylesheet/less"}
+      {url: "app/Visualization/UI/style.less", rel:"stylesheet/less"},
+      {url: "%(root)s/style.less", rel:"stylesheet/less"}
     ],
 
     initialize: function (visualization) {
@@ -94,7 +97,7 @@ define([
     initStyles: function (cb) {
       var self = this;
 
-      self.stylesheets.map(Styles.add);
+      new ObjectTemplate(self.stylesheets).eval(Paths).map(Styles.add);
       less.registerStylesheets($("link[rel='stylesheet/less']"));
       less.refresh().done(function () { cb(); });
     },
@@ -188,7 +191,7 @@ define([
         setTimeout(setActiveHandler, 100);
       };
 
-      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + Paths.LoaderIcon + '"></div>');
+      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + LoaderIcon + '"></div>');
       self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
 
       self.loadingNode.hide();

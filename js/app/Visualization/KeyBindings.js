@@ -88,7 +88,6 @@ define([
   KeyModifiers.events.on({
     keyDown: function (data) {
       var keyPath = KeyBindings.keysToKeyPath(Object.keys(data.active));
-        console.log(keyPath);
       var registration = KeyBindings.byKeys[keyPath];
       if (registration && registration.cb) {
         registration.cb(registration, data);

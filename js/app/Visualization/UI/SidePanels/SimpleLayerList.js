@@ -144,6 +144,7 @@ define([
       '        <span class="display-mode-only" data-dojo-attach-point="titleNode"></span>' +
       '      </span>' +
       '      <div class="animation-buttons">' +
+      '        <a data-dojo-attach-point="saveNode" data-dojo-attach-event="click:saveLayer"><i class="fa fa-save"></i></a>' +
       '        <a target="_blank" data-dojo-attach-point="infoNode" data-dojo-attach-event="click:infoClick" class="display-mode-only"><i class="fa fa-info"></i></a>' +
       '        <a class="expander advanced-mode-only editing-mode-only" data-dojo-attach-point="expanderNode" data-dojo-attach-event="click:toggleExpanded">' +
                 '<i class="fa fa-chevron-right"></i>' +
@@ -176,6 +177,8 @@ define([
       var self = this;
       self.inherited(arguments);
 
+      $(self.saveNode).toggle(!!self.animation.selectionAnimationFor);
+
       var color = self.animation.color;
       if (!color) color = 'orange';
         $(self.domNode).find(".switch-line").css({'border-color': color});
@@ -198,6 +201,14 @@ define([
       $(self.domNode).toggleClass('animation-editor-collapsed', !expand);
 
       self.titleInput.set("value", self.animation.title);
+    },
+
+    saveLayer: function () {
+      var self = this;
+
+      self.visualization.animations.saveSelectionAnimation(self.animation);
+      self.animation.setTitleFromInfo();
+      self.updatedHandler();
     },
 
     titleChange: function () {

@@ -167,25 +167,27 @@ define([
       return urls[idx];
     },
 
-    getSelectionQuery: function(selection, cols) {
+    getSelectionQuery: function(selection) {
+      /* Selection can either be a selection object, or a selection iterator function. */
       var self = this;
 
       var url = "";
-      if (cols === undefined) {
-        cols = selection.sortcols;
+
+      if (selection.iterate !== undefined) {
+        selection = selection.iterate();
       }
-      res = [];
-      cols.map(function (col) {
-        if (selection.data[col][0] == undefined) return;
-        res.push(encodeURIComponent(col) + "=" + encodeURIComponent(selection.data[col][0].toString()));
-      });
-      return res.join(',');
+
+      return selection().filter(function (item) {
+        return item.value !== undefined;
+      }).map(function (item) {
+        return encodeURIComponent(item.name) + "=" + encodeURIComponent(item.value.toString());
+      }).join(',');
     },
 
     getSelectionUrl: function(selection, fallbackLevel) {
       var self = this;
 
-      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+      var query = self.getSelectionQuery(selection);
 
       return self.getQueryUrl(query, fallbackLevel);
     },
@@ -209,13 +211,9 @@ define([
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
-      /* FIXME: self.header.infoUsesSelection is a workaround for
-         current info database that doesn't contain seriesgroup
-         values. This should be removed in the future. */
-
       var query;
       if (selection !== undefined) {
-        query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
+       query = self.getSelectionQuery(selection); 
       }
 
       var getSelectionInfo = function (fallbackLevel, withCredentials) {
@@ -313,7 +311,6 @@ define([
 
     zoomTo: function (bounds) {
       var self = this;
-        console.log("ZOOM", bounds.toString());
 
       if (self.error) {
         /* Retrow error, to not confuse code that expects either an

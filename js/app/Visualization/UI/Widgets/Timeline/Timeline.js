@@ -10,7 +10,7 @@ define([
   "../DateTimeDropdown",
   "shims/jQuery/main",
   "shims/less/main",
-  "app/Visualization/UI/Paths"
+  "app/Paths"
 ], function (
   require,
   declare,

@@ -2,13 +2,11 @@ define([
   "require",
   "app/Class",
   "app/LoadingInfo",
-  "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation"
 ], function(
   require,
   Class,
   LoadingInfo,
-  ObjectToTable,
   Animation
 ) {
   var SatelliteAnimation = Class(Animation, {
