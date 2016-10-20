@@ -176,6 +176,7 @@ define([
           if (!res) {
             throw {type: "StopIteration"};
           }
+          idx = res.idx;
         } while (onlyWithInfo && !self.colsHaveSelectionInfo(res.cols))
 
         if (!peek) {
