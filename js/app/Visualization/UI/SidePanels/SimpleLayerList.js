@@ -6,6 +6,7 @@ define([
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
   "app/Visualization/KeyBindings",
+  "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/AnimationEditor",
@@ -23,6 +24,7 @@ define([
   _WidgetsInTemplateMixin,
   _Container,
   KeyBindings,
+  ObjectToTable,
   AnimationListBase,
   SimpleAnimationEditor,
   AnimationEditor,
@@ -224,7 +226,7 @@ define([
         if (err) {
           SimpleMessageDialog.show("Error fetching information", err.toString());
         } else {
-          SimpleMessageDialog.show("About " + self.animation.title, data.toString());
+          SimpleMessageDialog.show(data.title || self.animation.title, ObjectToTable(data, {render_title: false}));
         }
       });
     },
