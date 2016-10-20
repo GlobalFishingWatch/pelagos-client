@@ -47,30 +47,21 @@ define([
     /* Handle file:// urls as well as CORS correctly, as well as the
      * combinations of CORS and credentials and CORS, credentials and CDNs
      * that set the CORS domain to *. */
-
-    var doLoad = function (withCredentials) {
-      var request = new XMLHttpRequest();
-      request.open(verb, url, true);
-      request.withCredentials = withCredentials;
-      Ajax.setHeaders(request, headers);
-      LoadingInfo.main.add(url, {request: request});
-      request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-          LoadingInfo.main.remove(url);
-          if (Ajax.isSuccess(request, url)) {
-            cb(null, JSON.parse(request.responseText));
-          } else {
-            if (withCredentials) {
-              doLoad(false);
-            } else {
-              cb(Ajax.makeError(request, url));
-            }
-          }
+    var request = new XMLHttpRequest();
+    request.open(verb, url, true);
+    Ajax.setHeaders(request, headers);
+    LoadingInfo.main.add(url, {request: request});
+    request.onreadystatechange = function() {
+      if (request.readyState === 4) {
+        LoadingInfo.main.remove(url);
+        if (Ajax.isSuccess(request, url)) {
+          cb(null, JSON.parse(request.responseText));
+        } else {
+          cb(Ajax.makeError(request, url));
         }
-      };
-      request.send(data);
+      }
     };
-    doLoad(true);
+    request.send(data);
   };
 
   Ajax.post = function (url, headers, data, cb) {

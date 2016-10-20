@@ -216,11 +216,10 @@ define([
        query = self.getSelectionQuery(selection); 
       }
 
-      var getSelectionInfo = function (fallbackLevel, withCredentials) {
+      var getSelectionInfo = function (fallbackLevel) {
         var url = self.getQueryUrl(query, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
-        request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
         LoadingInfo.main.add(url, {request:request});
         request.onreadystatechange = function() {
@@ -243,15 +242,13 @@ define([
                     new PopupAuth(data.auth_location, function (success) {
                       if (success) {
                         cb(null, null);
-                        getSelectionInfo(fallbackLevel, withCredentials);
+                        getSelectionInfo(fallbackLevel);
                       }
                     });
                   });
                   return res;
                 };
                 cb(data, null);
-              } else if (request.status == 0 && withCredentials) {
-                getSelectionInfo(fallbackLevel, false);
               } else if (fallbackLevel + 1 < self.getUrlFallbackLevels("selection-info")) {
                 getSelectionInfo(fallbackLevel + 1, true);
               } else {
