@@ -144,7 +144,7 @@ define([
       animations.map(function (animation) {
         var dataView = animation.data_view;
         var selection = dataView.selections.selections.bbox;
-        var iter = selection.iterate();
+        var iter = selection.iterate(true);
 
         try {
           while (true) {
@@ -230,6 +230,13 @@ define([
         });
       });
       self.manager.triggerUpdate();
+    },
+
+    setBlendFunc: function(program) {
+      var self = this;
+      var gl = program.gl;
+
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     },
 
     drawProgram: function (program) {

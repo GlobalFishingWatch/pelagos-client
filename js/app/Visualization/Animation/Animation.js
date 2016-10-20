@@ -98,7 +98,7 @@ define([
       self.getSelectionInfo(undefined, function (err, info) {
         prefix = prefix || "";
         suffix = suffix || "";
-        if (info.title) {
+        if (info && info.title) {
           self.title = prefix + info.title + suffix;
           self.events.triggerEvent("updated", {});
         }

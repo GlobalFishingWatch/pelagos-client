@@ -503,17 +503,20 @@ define([
 
     saveSelectionAnimation: function (animation) {
       var self = this;
+      var baseAnimation = animation.selectionAnimationFor;
+
+      animation.selectionAnimationFor = undefined;
 
       animation.events.un({updated: animation.selectionAnimationUpdate});
       if (animation.data_view) {
         animation.data_view.events.un({update: animation.selectionAnimationUpdate});
       }
-      animation.selectionAnimationFor.selectionAnimations = animation.selectionAnimationFor.selectionAnimations.filter(
+      baseAnimation.selectionAnimations = baseAnimation.selectionAnimations.filter(
         function (a) {
           return a !== animation;
         }
       );
-      animation.selectionAnimationFor = undefined;
+      baseAnimation.select(undefined, "selected", true);
     },
 
     showSelectionAnimations: function (baseAnimation, selectionIter, autoSave, cb) {
@@ -525,6 +528,14 @@ define([
       if (!autoSave) {
         self.hideSelectionAnimations(baseAnimation);
       }
+
+      if (selectionIter.iterate !== undefined) {
+        selectionIter = selectionIter.iterate();
+      }
+
+      var queryValues = selectionIter(true).map(function (item) {
+        return item.value.toString();
+      }).join(",");
 
       var query = baseAnimation.data_view.source.getSelectionQuery(selectionIter);
       if (query.length > 0) {
@@ -539,7 +550,7 @@ define([
             {
               "type": "VesselTrackAnimation",
               "args": {
-                "title": "Vessel Track",
+                "title": "Vessel Track (%(queryValues)s)",
                 "color": "grey",
                 "visible": true,
                 "source": {
@@ -567,6 +578,7 @@ define([
             versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
             query_url: baseAnimation.data_view.source.getQueryUrl(query, -1),
             query: query,
+            queryValues: queryValues,
             header: baseAnimation.data_view.source.header,
             selection: selectionIter
           });
@@ -665,7 +677,7 @@ define([
         }
       };
 
-      applyDiff(specTemplate, doDiff(spec, newSpec));
+      applyDiff(specTemplate, _.cloneDeep(doDiff(spec, newSpec)));
     },
 
     initMouse: function(cb) {

@@ -104,12 +104,14 @@ define([
       $(self.loadingNode).hide();
       $(self.containerNode).show();
 
-      var ancestor = self;
-      while (ancestor = ancestor.getParent()) {
-        if (ancestor.selectChild) {
-          ancestor.resize();
-          ancestor.selectChild(self, true);
-          break;
+      if (event.data) {
+        var ancestor = self;
+        while (ancestor = ancestor.getParent()) {
+          if (ancestor.selectChild) {
+            ancestor.resize();
+            ancestor.selectChild(self, true);
+            break;
+          }
         }
       }
     },

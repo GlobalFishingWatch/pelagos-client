@@ -4,7 +4,7 @@ define([
   "shims/jQuery/main",
   "app/ObjectTemplate",
   "app/Visualization/UI/SidePanels/InfoUI",
-  "app/Visualization/UI/SidePanels/SimpleLayerList",
+  "app/Visualization/UI/SidePanels/CategorizedLayerList",
   "app/Visualization/UI/SidePanels/LoggingUI",
   "app/Visualization/UI/SidePanels/SimpleSettings",
   "app/Visualization/UI/SidePanels/DataUI",
@@ -15,7 +15,7 @@ define([
   $,
   ObjectTemplate,
   InfoUI,
-  SimpleLayerList,
+  CategorizedLayerList,
   LoggingUI,
   SimpleSettings,
   DataUI,
@@ -99,7 +99,7 @@ define([
 
     tabClasses: [
       InfoUI,
-      SimpleLayerList,
+      CategorizedLayerList,
       LoggingUI,
       SimpleSettings,
       DataUI
