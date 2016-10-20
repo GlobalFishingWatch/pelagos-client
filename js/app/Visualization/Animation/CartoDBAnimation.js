@@ -5,7 +5,6 @@ define([
   "app/LoadingInfo",
   "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/Animation",
-  "app/Visualization/Animation/ObjectToTable",
   "shims/cartodb/main"
 ], function(
   require,
@@ -14,7 +13,6 @@ define([
   LoadingInfo,
   CartoDBInfoWindow,
   Animation,
-  ObjectToTable,
   cartodb
 ) {
   var CartoDBAnimation = Class(Animation, {
@@ -181,9 +179,6 @@ define([
       self.data.getSelectionInfo(undefined, function (err, data) {
         if (data) {
           data.layer = self.title;
-          data.toString = function () {
-            return ObjectToTable(this);
-          };
         };
         cb(err, data);
       });
