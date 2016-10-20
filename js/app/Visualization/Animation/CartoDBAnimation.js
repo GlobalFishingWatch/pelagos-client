@@ -5,7 +5,6 @@ define([
   "app/LoadingInfo",
   "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/Animation",
-  "app/Visualization/Animation/ObjectToTable",
   "shims/cartodb/main"
 ], function(
   require,
@@ -14,7 +13,6 @@ define([
   LoadingInfo,
   CartoDBInfoWindow,
   Animation,
-  ObjectToTable,
   cartodb
 ) {
   var CartoDBAnimation = Class(Animation, {
@@ -165,7 +163,7 @@ define([
 
       if (type != 'selected' && type != 'info') return;
 
-      if (self.mouseOver) {
+      if (self.mouseOver && event && event.latLng) {
         self.handleClick.apply(self, [type].concat(Array.prototype.slice.call(self.mouseOver)));
       } else if (type == "selected" && self.selected) {
         self.selected = false;
@@ -181,9 +179,6 @@ define([
       self.data.getSelectionInfo(undefined, function (err, data) {
         if (data) {
           data.layer = self.title;
-          data.toString = function () {
-            return ObjectToTable(this);
-          };
         };
         cb(err, data);
       });

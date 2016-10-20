@@ -1,7 +1,7 @@
 define([
   "dojo/_base/declare",
   "dojo/dom-style",
-  "app/Visualization/Animation/VesselInfoToTable",
+  "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/UI/GenerateReportDialog",
   "app/Visualization/UI/SidePanels/SidePanelBase",
   "app/Visualization/UI/LoaderIcon",
@@ -9,7 +9,7 @@ define([
 ], function(
   declare,
   domStyle,
-  VesselInfoToTable,
+  ObjectToTable,
   GenerateReportDialog,
   SidePanelBase,
   LoaderIcon,
@@ -66,7 +66,7 @@ define([
       var self = this;
 
       self.setDefaultTitle();
-      $(self.containerNode).html(VesselInfoToTable()); // FIXME: Hackety hack...
+      $(self.containerNode).html('<em>Nothing selected</em>');
       $(self.loadingNode).hide();
       $(self.containerNode).show();
     },
@@ -119,34 +119,8 @@ define([
     _updateContainerNode: function(event) {
       var self = this;
 
-      var onlyHasToString =
-        Object
-        .keys(event.data)
-        .filter(function (name) { return name != 'toString'; })
-        .length == 0;
-
-      var hasVesselInfo =
-        event.data.vesselname || event.data.mmsi || event.data.imo || event.data.callsign;
-
-      if (onlyHasToString || hasVesselInfo) {
-        self._updateContainerWithVesselInfo(event.data);
-      } else {
-        self._updateContainerWithCustomInfo(event);
-      }
-    },
-
-    _updateContainerWithVesselInfo: function(data) {
-      var self = this;
-
-      self.setDefaultTitle();
-      $(self.containerNode).html(VesselInfoToTable(data)); // FIXME: Hackety hack...
-    },
-
-    _updateContainerWithCustomInfo: function(event) {
-      var self = this;
-
-      $(self.titleNode).html(event.layer);
-      $(self.containerNode).html(event.data.toString());
+      $(self.titleNode).html(event.data.title || event.layer);
+      $(self.containerNode).html(ObjectToTable(event.data, {render_title: false}));
     },
 
     _setupDownloadLink: function(event) {

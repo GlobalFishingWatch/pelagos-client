@@ -6,6 +6,7 @@ define([
   "dijit/_WidgetsInTemplateMixin",
   "dijit/_Container",
   "app/Visualization/KeyBindings",
+  "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/UI/SidePanels/AnimationListBase",
   "app/Visualization/UI/SimpleAnimationEditor",
   "app/Visualization/UI/AnimationEditor",
@@ -23,6 +24,7 @@ define([
   _WidgetsInTemplateMixin,
   _Container,
   KeyBindings,
+  ObjectToTable,
   AnimationListBase,
   SimpleAnimationEditor,
   AnimationEditor,
@@ -197,6 +199,7 @@ define([
           $(self.inputNode).attr('checked','checked');
         } else {
           $(self.inputNode).removeAttr('checked');
+          SimpleMessageDialog.show(data.title || self.animation.title, ObjectToTable(data, {render_title: false}));
         }
 
         var expand = !!self.animation.args.editorExpanded;

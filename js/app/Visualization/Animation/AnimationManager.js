@@ -813,7 +813,7 @@ define([
         if (err) data = err;
         if (!data) return;
 
-        var content = data.toString();
+        var content = ObjectToTable(data);
         if (typeof(content) != "string") content = content.html();
 
         self.infoPopup.setOptions({
