@@ -163,7 +163,7 @@ define([
 
       if (type != 'selected' && type != 'info') return;
 
-      if (self.mouseOver) {
+      if (self.mouseOver && event && event.latLng) {
         self.handleClick.apply(self, [type].concat(Array.prototype.slice.call(self.mouseOver)));
       } else if (type == "selected" && self.selected) {
         self.selected = false;
