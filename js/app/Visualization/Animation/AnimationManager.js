@@ -503,17 +503,20 @@ define([
 
     saveSelectionAnimation: function (animation) {
       var self = this;
+      var baseAnimation = animation.selectionAnimationFor;
+
+      animation.selectionAnimationFor = undefined;
 
       animation.events.un({updated: animation.selectionAnimationUpdate});
       if (animation.data_view) {
         animation.data_view.events.un({update: animation.selectionAnimationUpdate});
       }
-      animation.selectionAnimationFor.selectionAnimations = animation.selectionAnimationFor.selectionAnimations.filter(
+      baseAnimation.selectionAnimations = baseAnimation.selectionAnimations.filter(
         function (a) {
           return a !== animation;
         }
       );
-      animation.selectionAnimationFor = undefined;
+      baseAnimation.select(undefined, "selected", true);
     },
 
     showSelectionAnimations: function (baseAnimation, selectionIter, autoSave, cb) {
