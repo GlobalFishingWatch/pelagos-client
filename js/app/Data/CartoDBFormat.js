@@ -31,35 +31,32 @@ define([
     getMetadata: function(cb) {
       var self = this;
 
-      var metadata;
-      var title;
-      async.series([
-        function (cb) {
-          Ajax.get(self.url, {}, function (err, data) {
-            if (err) return cb(err);
-            title = data.title;
-            metadata = data.description || "";
-            cb();
-          });
+      function toPelagosMetadata(data) {
+        return {
+          info: {
+            description: data.description,
+            title: data.title,
+          },
+        };
+      };
+
+      async.waterfall([
+        function(cb) {
+          Ajax.get(self.url, {}, cb);
         },
-        function (cb) {
-          info_link = $(metadata).find("a:contains('info')");
-          if (info_link.length > 0) {
-            Ajax.get(info_link.attr("href"), {}, function (err, data) {
-              if (err) return cb(err);
-              metadata = data;
-              cb();
-            });
+
+        function(data, cb) {
+          var metadataLink = $(data.description).find("a:contains('Metadata')");
+          if (metadataLink.length > 0) {
+            Ajax.get(metadataLink.attr('href'), {}, cb);
           } else {
-            metadata = {info: {'description': metadata}};
-            cb();
+            async.nextTick(function() {
+              cb(null, toPelagosMetadata(data));
+            });
           }
-        }
-      ], function (err) {
-        if (err) return cb(err);
-        if (title) metadata.info.title = title;
-        cb(null, metadata);
-      });
+        },
+
+      ], cb);
     },
 
     getSelectionInfo: function(selection, cb) {

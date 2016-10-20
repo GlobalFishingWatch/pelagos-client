@@ -28,7 +28,7 @@ define([
         var previous = self.previousMapType != undefined && self.previousMapType != google.maps.MapTypeId.HYBRID;
         self.manager.map.setMapTypeId(previous ? self.previousMapType : google.maps.MapTypeId.ROADMAP);
       }
-    }
+    },
   });
   Animation.animationClasses.SatelliteAnimation = SatelliteAnimation;
 

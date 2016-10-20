@@ -397,17 +397,10 @@ define([
       var self = this;
 
       var predicate = function(animation) {
-        var hasSourceUrl =
-          animation.args &&
-          animation.args.source &&
-          animation.args.source.args &&
-          animation.args.source.args.url;
-
-        var isReportable =
-          animation.args &&
-          animation.args.reportable
-
-        return hasSourceUrl && isReportable;
+        return animation.data_view &&
+          animation.data_view.source &&
+          animation.data_view.source.header &&
+          animation.data_view.source.header.reports;
       };
 
      return _.find(self.animations, predicate);
