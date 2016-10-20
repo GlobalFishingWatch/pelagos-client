@@ -6,7 +6,6 @@ define([
   "app/Visualization/Animation/Animation",
   "app/Visualization/Animation/GlAnimation",
   "app/Visualization/Animation/Shader",
-  "app/Visualization/Animation/ObjectToTable",
   "app/Data/GeoProjection",
   "app/Data/DataView",
   "shims/lodash/main",
@@ -19,7 +18,6 @@ define([
   Animation,
   GlAnimation,
   Shader,
-  ObjectToTable,
   GeoProjection,
   DataView,
   _,
@@ -271,9 +269,6 @@ define([
         });
 
         data.layer = self.title;
-        data.toString = function () {
-          return ObjectToTable(this);
-        };
         cb(null, data);
       } else if (selection && !selection.hasSelectionInfo()) {
         var data = {
@@ -287,19 +282,7 @@ define([
         if (type == 'selected' && selection && !selection.rawInfo) {
           self.manager.showSelectionAnimations(self, selection);
         }
-        dataView.selections.getSelectionInfo(type, function (err, data) {
-          var content;
-
-          if (data) {
-            data.toString = function () {
-              return ObjectToTable(this);
-            };
-            cb(null, data);
-          } else {
-            cb(err, null);
-          }
-        });
-
+        dataView.selections.getSelectionInfo(type, cb);
       }
     },
 

@@ -98,8 +98,8 @@ define([
       self.getSelectionInfo(undefined, function (err, info) {
         prefix = prefix || "";
         suffix = suffix || "";
-        if (info.title || info.vesselname) {
-          self.title = prefix + (info.title || info.vesselname) + suffix;
+        if (info.title) {
+          self.title = prefix + info.title + suffix;
           self.events.triggerEvent("updated", {});
         }
         if (cb) cb(err, info);

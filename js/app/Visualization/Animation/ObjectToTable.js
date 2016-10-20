@@ -30,9 +30,15 @@ define(["app/Class"], function(Class) {
     }
   };
 
-  var ObjectToTable = function (data) {
+  var ObjectToTable = function (data, args) {
+    if (!args) args = {};
+
+    if (data.constructor !== Object || data.hasOwnProperty("toString")) {
+      return data.toString();
+    }
+
     var content = [];
-    if (data.title) {
+    if (data.title && args.render_title !== false) {
       content.push("<h1>");
         content.push(valueToString(data.title, "title"));
       content.push("</h1>");
