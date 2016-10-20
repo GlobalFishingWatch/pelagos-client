@@ -123,16 +123,19 @@ define([
       $(self.containerNode).html(ObjectToTable(event.data, {render_title: false}));
     },
 
-    _setupDownloadLink: function(event) {
-      $(self.downloadNode).hide();
-
-      if (
-        event.layerInstance &&
+    _hasDownloadEnabled: function(event) {
+      return event.layerInstance &&
         event.layerInstance.data_view &&
         event.layerInstance.data_view.source &&
         event.layerInstance.data_view.source.header &&
-        event.layerInstance.data_view.source.header.kml) {
+        event.layerInstance.data_view.source.header.kml;
+    },
 
+    _setupDownloadLink: function(event) {
+      var self = this;
+
+      $(self.downloadNode).hide();
+      if (self._hasDownloadEnabled(event)) {
         var query = event.layerInstance.data_view.source.getSelectionQuery(
           event.layerInstance.data_view.selections.selections[event.category]);
 
@@ -147,29 +150,36 @@ define([
       }
     },
 
+    _hasReportEnabled: function(event) {
+      return event.data && 
+        event.data.report &&
+        event.layerInstance &&
+        event.layerInstance.data &&
+        event.layerInstance.data.header &&
+        event.layerInstance.data.header.reports;
+    },
+
     _setupReportLink: function(event) {
       var self = this;
 
       $(self.reportNode).hide();
       $(self.reportNode).off("click");
 
-      if (
-        event.data &&
-        event.data.report &&
-        self.visualization.animations.getReportableAnimation()) {
+      var reportableAnimation = self.visualization.animations.getReportableAnimation();
+
+      if (reportableAnimation && self._hasReportEnabled(event)) {
+        $(self.reportNode).show();
         $(self.reportNode).on("click", function() {
           var report = {
-            spec: event.data.report,
+            spec: event.layerInstance.data.header.reports,
             data: event.data.polygonData,
             state: self.visualization.state,
-            animations: self.visualization.animations,
-            datamanager: self.visualization.data
+            datamanager: self.visualization.data,
+            animation: event.layerInstance.title,
+            reportableAnimation: reportableAnimation,
           };
-
           new GenerateReportDialog(report).show();
         });
-
-        $(self.reportNode).show();
       }
     }
   });
