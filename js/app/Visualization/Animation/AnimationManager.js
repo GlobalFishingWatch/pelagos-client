@@ -788,9 +788,8 @@ define([
       });
     },
 
-    handleInfo: function (animation, type, err, data) {
+    handleInfo: function (animation, type, err, data, selectionData) {
       var self = this;
-      var dataView = animation.data_view;
  
       Logging.main.log(
         "Visualization.Animation.AnimationManager.handleInfo",
@@ -809,12 +808,6 @@ define([
           }
         }
       );
-
-      var selectionData = {};
-      var selectionDataTmp = dataView.selections.selections[type].data;
-      for (var key in selectionDataTmp) {
-        selectionData[key] = selectionDataTmp[key][0];
-      }
 
       if (type == 'info') {
         if (err) data = err;
@@ -868,6 +861,11 @@ define([
 
       if (type != 'selected' && type != 'info') return;
 
+      var selectionData = {};
+      for (var key in selection.data) {
+        selectionData[key] = selection.data[key][0];
+      }
+
       var query = "";
       try {
         query = animation.data_view.source.getSelectionQuery(selection);
@@ -897,7 +895,7 @@ define([
             && (selectionEvent.startData == undefined || selectionEvent.endData == undefined)) {
           var data = {};
           data.toString = function () { return ""; };
-          self.handleInfo(animation, selectionEvent.category, null, undefined);
+          self.handleInfo(animation, selectionEvent.category, null, undefined, selectionData);
         }
       }
 
@@ -908,7 +906,7 @@ define([
 
       animation.getSelectionInfo(type, function (err, data) {
         if (err || data) {
-          self.handleInfo(animation, selectionEvent.category, err, data);
+          self.handleInfo(animation, selectionEvent.category, err, data, selectionData);
         } else {
           // We got an error call before, but now something has
           // changed and we're retrying the load...

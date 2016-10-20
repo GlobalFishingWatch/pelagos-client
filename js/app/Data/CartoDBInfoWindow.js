@@ -47,6 +47,14 @@ define([
       }
 
       self.layer.fetchAttributes(0, self.id, infoWindowData.fields, function(attributes) {
+        if (!attributes) {
+          var err = "No attribute data for ID " + self.id.toString();
+          return cb({
+            html: err,
+            data: {error: err}
+          });
+        }
+
         var model = new cdb.geo.ui.InfowindowModel(infoWindowData);
         model.updateContent(attributes);
 

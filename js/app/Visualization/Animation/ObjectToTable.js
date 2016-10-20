@@ -1,9 +1,9 @@
 define(["app/Class"], function(Class) {
-  var valueToString = function (value) {
+  var valueToString = function (value, key) {
     if (typeof(value) == "object" && value !== null && value !== undefined && value.length != undefined) {
       value = value[0];
     }
-    if (key.indexOf('time') != -1 || key.indexOf('date') != -1) {
+    if (key && (key.indexOf('time') != -1 || key.indexOf('date') != -1)) {
       try {
         value = new Date(value).toISOString().replace("T", " ").split("Z")[0];
       } catch (e) { }
@@ -34,20 +34,20 @@ define(["app/Class"], function(Class) {
     var content = [];
     if (data.title) {
       content.push("<h1>");
-      content.push(valueToString(data.title));
+        content.push(valueToString(data.title, "title"));
       content.push("</h1>");
     }
     if (data.description) {
-      content.push(valueToString(data.description));
+      content.push(valueToString(data.description, "description"));
     }
     content.push(["<table class='table table-striped table-bordered'>"]);
     Object.keys(data).sort().map(function (key) {
       if (['toString', 'title', 'description', 'footer'].indexOf(key) != -1) return;
-      content.push("<tr><th>" + key + "</th><td>" + valueToString(data[key]) + "</td></tr>");
+      content.push("<tr><th>" + key + "</th><td>" + valueToString(data[key], key) + "</td></tr>");
     });
     content.push("</table>");
     if (data.footer) {
-      content.push(valueToString(data.footer));
+      content.push(valueToString(data.footer, "footer"));
     }
 
     return content.join('\n');

@@ -5,6 +5,7 @@ define([
   "app/LoadingInfo",
   "app/Data/CartoDBInfoWindow",
   "app/Visualization/Animation/Animation",
+  "app/Visualization/Animation/ObjectToTable",
   "shims/cartodb/main"
 ], function(
   require,
@@ -13,6 +14,7 @@ define([
   LoadingInfo,
   CartoDBInfoWindow,
   Animation,
+  ObjectToTable,
   cartodb
 ) {
   var CartoDBAnimation = Class(Animation, {
