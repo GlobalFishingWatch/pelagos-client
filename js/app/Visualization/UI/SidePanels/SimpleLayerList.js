@@ -199,7 +199,6 @@ define([
           $(self.inputNode).attr('checked','checked');
         } else {
           $(self.inputNode).removeAttr('checked');
-          SimpleMessageDialog.show(data.title || self.animation.title, ObjectToTable(data, {render_title: false}));
         }
 
         var expand = !!self.animation.args.editorExpanded;
@@ -237,7 +236,7 @@ define([
           if (err) {
             SimpleMessageDialog.show("Error fetching information", err.toString());
           } else {
-            SimpleMessageDialog.show("About " + self.animation.title, data.toString());
+          SimpleMessageDialog.show(data.title || self.animation.title, ObjectToTable(data, {render_title: false}));
           }
         });
       },
