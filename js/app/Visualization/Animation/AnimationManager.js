@@ -514,6 +514,9 @@ define([
 
     showSelectionAnimations: function (baseAnimation, selectionIter, autoSave, cb) {
       var self = this;
+
+      if (!cb) cb = function () {};
+
       var baseHeader = baseAnimation.data_view.source.header;
 
       if (!baseHeader.seriesTilesets) return;
@@ -526,11 +529,20 @@ define([
         selectionIter = selectionIter.iterate();
       }
 
-      var queryValues = selectionIter(true).map(function (item) {
-        return item.value.toString();
-      }).join(",");
+      var query = undefined;
+      var queryValues;
+      try {
+        while (!query) {
+          queryValues = selectionIter(true).map(function (item) {
+            return item.value.toString();
+          }).join(",");
 
-      var query = baseAnimation.data_view.source.getSelectionQuery(selectionIter);
+          query = baseAnimation.data_view.source.getSelectionQuery(selectionIter);
+        }
+      } catch (e) {
+        return cb(e);
+      }
+
       if (query.length > 0) {
         var seriesTilesets = baseAnimation.args.seriesTilesets;
 
@@ -622,7 +634,7 @@ define([
             });
             delete selection.data.zoomToSelectionAnimations;
           }
-          if (cb) cb(seriesAnimations);
+          cb(null, seriesAnimations);
         });
       }
     },
