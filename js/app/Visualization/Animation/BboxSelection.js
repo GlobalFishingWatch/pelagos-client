@@ -5,6 +5,7 @@ define([
   "app/Visualization/Animation/GlAnimation",
   "app/Visualization/KeyModifiers",
   "app/Visualization/KeyBindings",
+  "app/Logging",
   "shims/async/main",
   "app/Events",
   "app/Bounds"
@@ -15,6 +16,7 @@ define([
   GlAnimation,
   KeyModifiers,
   KeyBindings,
+  Logging,
   async,
   Events,
   Bounds
@@ -132,7 +134,8 @@ define([
 
       rowidxs.map(function (rowidx) {
         var animation = self.manager.getRenderers()[rowidx[0]];
-        if (animation.select([rowidx[1], rowidx[2]], "bbox", false, e)) {
+        // FIXME: Why does rowidx[0] sometimes give 255 as value here?
+        if (animation && animation.select([rowidx[1], rowidx[2]], "bbox", false, e)) {
           if (animations.indexOf(animation) == -1) {
             animations.push(animation);
           }
@@ -146,24 +149,35 @@ define([
         var selection = dataView.selections.selections.bbox;
         var iter = selection.iterate(true);
 
-        try {
-          while (true) {
-            self.manager.showSelectionAnimations(animation, iter, true, function (selectionAnimations) {
+        var showSelectionAnimations = function() {
+          self.manager.showSelectionAnimations(animation, iter, true, function (err, selectionAnimations) {
+            if (err) {
+              if (err.type != "StopIteration") throw(e);
+            } else {
               selectionAnimations.map(function (selectionAnimation) {
                 selectionAnimation.setTitleFromInfo();
               });
-            });
-          }
-        } catch (e) {
-          if (e.type != "StopIteration") throw(e);
-        }
+              showSelectionAnimations();
+            }
+          });
+        };
+        showSelectionAnimations();
       });
 
-      console.log("SELECTED AREA", self.bounds.toString(), animations.map(function (animation) {
-          var dataView = animation.data_view;
-          var selection = dataView.selections.selections.bbox;
-          return selection.data;
-        }));
+      Logging.main.log(
+        "Visualization.Animation.BboxSelection.selection",
+        {
+          bounds: self.bounds,
+          selections: animations.map(function (animation) {
+            var dataView = animation.data_view;
+            var selection = dataView.selections.selections.bbox;
+            return selection.data;
+          }),
+          toString: function () {
+            return this.bounds.toString() + ": " + JSON.stringify(this.selections);
+          }
+        }
+      );
       self.bounds = undefined;
     },
 

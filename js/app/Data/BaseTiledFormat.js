@@ -171,13 +171,23 @@ define([
       /* Selection can either be a selection object, or a selection iterator function. */
       var self = this;
 
-      var url = "";
+      var baseSelectionRow = self.getQuerySelection(self.getUrlQuery()) || [];
+      var baseSelection = {};
+      baseSelectionRow.map(function (item) {
+        baseSelection[item.name] = item.value;
+      });
 
       if (selection.iterate !== undefined) {
         selection = selection.iterate();
       }
+      var selectionRow = selection();
 
-      return selection().filter(function (item) {
+      var newSelectionRow = selectionRow.filter(function (item) {
+        return baseSelection[item.name] == undefined;
+      });
+      if (newSelectionRow.length == 0) return;
+
+      return baseSelectionRow.concat(newSelectionRow).filter(function (item) {
         return item.value !== undefined;
       }).map(function (item) {
         return encodeURIComponent(item.name) + "=" + encodeURIComponent(item.value.toString());
@@ -188,8 +198,27 @@ define([
       var self = this;
 
       var query = self.getSelectionQuery(selection);
-
+      if (!query) return;
       return self.getQueryUrl(query, fallbackLevel);
+    },
+
+    getQuerySelection: function(query) {
+      var self = this;
+
+      if (!query) return;
+      return query.split(",").map(function (item) {
+        item = item.split("=").map(decodeURIComponent);
+        return {name: item[0], value: parseFloat(item[1])};
+      });
+    },
+
+    getUrlQuery: function(url) {
+      /* Returns the query part of a url */
+      var self = this;
+      if (!url) url = self.url;
+
+      if (url.indexOf("/sub/") == -1) return;
+      return url.replace(new RegExp(".*/sub/\([^/]*\)\(/.*\)?"), "$1");
     },
 
     getQueryUrl: function(query, fallbackLevel) {
@@ -200,7 +229,7 @@ define([
       if (query === undefined) return baseUrl;
 
       if (baseUrl.indexOf("/sub/") != -1) {
-        baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
+        baseUrl = baseUrl.replace(new RegExp("/sub/.*"), "/sub/");
       } else {
         baseUrl = baseUrl + "/sub/";
       }
