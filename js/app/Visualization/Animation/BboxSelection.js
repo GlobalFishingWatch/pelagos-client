@@ -246,6 +246,7 @@ define([
       if (program.name == "rowidxProgram" && (self.manager.indrag || !self.manager.isPaused()))
         return;
 
+      program.gl.lineWidth(2.);
       GlAnimation.prototype.drawProgram.apply(self, arguments);
       Shader.programBindArray(program.gl, program.arrayBuffers.main.worldCoords, program, "worldCoord", 2, program.gl.FLOAT);
       program.gl.drawArrays(program.gl.LINE_STRIP, 0, 5);
