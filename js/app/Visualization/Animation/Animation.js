@@ -87,9 +87,7 @@ define([
       cb(null,
          {title: self.title,
           description: self.args.description,
-          toString: function () {
-            return ObjectToTable(this);
-          }});
+          });
     },
 
     setTitleFromInfo: function (prefix, suffix, cb) {
