@@ -288,14 +288,9 @@ define([
 
     toJSON: function () {
       var self = this;
-      var args = self.data_view.toJSON();
-      args.title = self.title;
-      args.visible = self.visible;
-      args.source = self.source;
-      return {
-        args: _.extend({}, self.args, args),
-        "type": self.name
-      };
+      res = Animation.prototype.toJSON.call(self);
+      res.args = _.extend(res.args, self.data_view.toJSON());
+      return res;
     }
   });
   DataAnimation.animationClasses = Animation.animationClasses;
