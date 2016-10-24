@@ -176,12 +176,7 @@ define([
 
       if (type !== undefined) return cb("Not implemented", null);
 
-      self.data.getSelectionInfo(undefined, function (err, data) {
-        if (data) {
-          data.layer = self.title;
-        };
-        cb(err, data);
-      });
+      self.data.getSelectionInfo(undefined, cb);
     }
   });
   CartoDBAnimation.layerIndex = 0;

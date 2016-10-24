@@ -268,11 +268,11 @@ define([
           }
         });
 
-        data.layer = self.title;
+        data.title = self.title;
         cb(null, data);
       } else if (selection && !selection.hasSelectionInfo()) {
         var data = {
-          layer: self.title,
+          title: self.title,
           toString: function () {
             return 'There are multiple vessels at this location. Zoom in to see individual points.';
           }
