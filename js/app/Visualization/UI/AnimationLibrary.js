@@ -94,11 +94,6 @@ define([
         entries,
         function (entry, cb) {
           self.visualization.data.getSourceInfo(entry.args.source, function (err, data) {
-            if (data) {
-              data.toString = function () {
-                return ObjectToTable(this);
-              };
-            }
             cb(null, {animation: entry, error: err, info: data});
           });
         },
@@ -159,12 +154,19 @@ define([
           var row = $('<tr><td><a class="title"></a></td><td><a class="description"></a></td>');
           row.find(".title").html(entry.animation.args.title);
 
+
+
           if (entry.error) {
-            var err = $("<div class='error'></div>");
-            err.html(entry.error.toString());
-            row.find(".description").html(err);
+            if (entry.animation && entry.animation.args && entry.animation.args.description) {
+              row.find(".description").html(entry.animation.args.description);
+            } else {
+              var err = $("<div class='error'></div>");
+              err.html(entry.error.toString());
+              row.find(".description").html(err);
+            }
           } else {
-            row.find(".description").html(entry.info.toString());
+            var infoHtml = ObjectToTable(entry.info, { render_title: false });
+            row.find(".description").html(infoHtml);
           }
 
           row.find('a').click(function () {
