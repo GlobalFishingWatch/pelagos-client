@@ -519,7 +519,7 @@ define([
 
       var baseHeader = baseAnimation.data_view.source.header;
 
-      if (!baseHeader.seriesTilesets) return;
+      if (!baseHeader.seriesTilesets) return cb(null, []);
 
       if (!autoSave) {
         self.hideSelectionAnimations(baseAnimation);
@@ -543,100 +543,107 @@ define([
         return cb(e);
       }
 
-      if (query.length > 0) {
-        var seriesTilesets = baseAnimation.args.seriesTilesets;
+      if (query.length == 0) return cb(null, []);
 
-        if (!seriesTilesets) {
-          seriesTilesets = baseHeader.seriesTilesets;
-        }
+      var query_url = baseAnimation.data_view.source.getQueryUrl(query, -1);
+      var existing = self.animations.filter(function (animation) {
+        return animation.args.source.args.url == query_url;
+      });
 
-        if (seriesTilesets === true) {
-          seriesTilesets = [
-            {
-              "type": "VesselTrackAnimation",
-              "args": {
-                "title": "Vessel Track (%(queryValues)s)",
-                "color": "grey",
-                "visible": true,
-                "source": {
-                  "type": "TiledBinFormat",
-                  "args": {
-                    "url": "%(query_url)s"
-                  }
+      if (existing.length > 0) return cb(null, []);
+
+      var args = {
+        url: baseAnimation.data_view.source.url,
+        versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
+        query_url: query_url,
+        query: query,
+        queryValues: queryValues,
+        header: baseAnimation.data_view.source.header,
+        selection: selectionIter
+      };
+      var seriesTilesets = baseAnimation.args.seriesTilesets;
+
+      if (!seriesTilesets) {
+        seriesTilesets = baseHeader.seriesTilesets;
+      }
+
+      if (seriesTilesets === true) {
+        seriesTilesets = [
+          {
+            "type": "VesselTrackAnimation",
+            "args": {
+              "title": "Vessel Track (%(queryValues)s)",
+              "color": "grey",
+              "visible": true,
+              "source": {
+                "type": "TiledBinFormat",
+                "args": {
+                  "url": "%(query_url)s"
                 }
               }
             }
-          ];
-        }
+          }
+        ];
+      }
 
-        baseAnimation.args.seriesTilesets = seriesTilesets;
+      baseAnimation.args.seriesTilesets = seriesTilesets;
 
-        if (!autoSave) {
-          self.hideSelectionAnimations(baseAnimation);
-        }
+      if (!autoSave) {
+        self.hideSelectionAnimations(baseAnimation);
+      }
 
-        var seriesAnimations = [];
-        async.each(seriesTilesets, function (seriesTilesetTemplate, cb) {
+      var seriesAnimations = [];
+      async.each(seriesTilesets, function (seriesTilesetTemplate, cb) {
+        seriesTileset = new ObjectTemplate(seriesTilesetTemplate).eval(args);
 
-          seriesTileset = new ObjectTemplate(seriesTilesetTemplate).eval({
-            url: baseAnimation.data_view.source.url,
-            versioned_url: baseAnimation.data_view.source.getUrl('sub', query, -1),
-            query_url: baseAnimation.data_view.source.getQueryUrl(query, -1),
-            query: query,
-            queryValues: queryValues,
-            header: baseAnimation.data_view.source.header,
-            selection: selectionIter
+        self.addAnimation(
+          seriesTileset,
+          function (err, animation) {
+            if (err) {
+              self.removeAnimation(animation);
+            } else {
+              if (!autoSave) {
+                animation.selectionAnimationUpdate = self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset);
+                animation.events.on({updated: animation.selectionAnimationUpdate});
+                if (animation.data_view) {
+                  animation.data_view.events.on({update: animation.selectionAnimationUpdate});
+                }
+                animation.selectionAnimationFor = baseAnimation;
+                baseAnimation.selectionAnimations.push(animation);
+              }
+              seriesAnimations.push(animation);
+            }
+            cb();
+          }
+        );
+      }, function (err) {
+        var selection = selectionIter.context ? selectionIter.context.selection : selectionIter;
+        if (selection.data.zoomToSelectionAnimations != undefined) {
+          var bounds = new SpaceTime();
+          seriesAnimations.map(function (animation) {
+            bounds.update(new Timerange([
+              animation.data_view.source.header.colsByName.datetime.min,
+              animation.data_view.source.header.colsByName.datetime.max]));
+            bounds.update(new Bounds([
+              animation.data_view.source.header.colsByName.longitude.min,
+              animation.data_view.source.header.colsByName.latitude.min,
+              animation.data_view.source.header.colsByName.longitude.max,
+              animation.data_view.source.header.colsByName.latitude.max]));
           });
 
-          self.addAnimation(
-            seriesTileset,
-            function (err, animation) {
-              if (err) {
-                self.removeAnimation(animation);
-              } else {
-                if (!autoSave) {
-                  animation.selectionAnimationUpdate = self.selectionAnimationUpdate.bind(self, animation, seriesTilesetTemplate, seriesTileset);
-                  animation.events.on({updated: animation.selectionAnimationUpdate});
-                  if (animation.data_view) {
-                    animation.data_view.events.on({update: animation.selectionAnimationUpdate});
-                  }
-                  animation.selectionAnimationFor = baseAnimation;
-                  baseAnimation.selectionAnimations.push(animation);
-                }
-                seriesAnimations.push(animation);
-              }
-              cb();
-            }
-          );
-        }, function (err) {
-          var selection = selectionIter.context ? selectionIter.context.selection : selectionIter;
-          if (selection.data.zoomToSelectionAnimations != undefined) {
-            var bounds = new SpaceTime();
-            seriesAnimations.map(function (animation) {
-              bounds.update(new Timerange([
-                animation.data_view.source.header.colsByName.datetime.min,
-                animation.data_view.source.header.colsByName.datetime.max]));
-              bounds.update(new Bounds([
-                animation.data_view.source.header.colsByName.longitude.min,
-                animation.data_view.source.header.colsByName.latitude.min,
-                animation.data_view.source.header.colsByName.longitude.max,
-                animation.data_view.source.header.colsByName.latitude.max]));
-            });
-
-            self.visualization.state.setValue("time", bounds.getTimerange().end);
-            self.visualization.state.setValue("timeExtent", bounds.getTimerange().end.getTime() - bounds.getTimerange().start.getTime());
-            bounds = bounds.getBounds();
-            self.visualization.animations.map.fitBounds({
-              south:bounds.bottom,
-              west:bounds.left,
-              north:bounds.top,
-              east:bounds.right
-            });
-            delete selection.data.zoomToSelectionAnimations;
-          }
-          cb(null, seriesAnimations);
-        });
-      }
+          self.visualization.state.setValue("time", bounds.getTimerange().end);
+          self.visualization.state.setValue("timeExtent", bounds.getTimerange().end.getTime() - bounds.getTimerange().start.getTime());
+          bounds = bounds.getBounds();
+          self.visualization.animations.map.fitBounds({
+            south:bounds.bottom,
+            west:bounds.left,
+            north:bounds.top,
+            east:bounds.right
+          });
+          delete selection.data.zoomToSelectionAnimations;
+        }
+        cb(null, seriesAnimations);
+      });
     },
 
     selectionAnimationUpdate: function (animation, specTemplate, spec) {
