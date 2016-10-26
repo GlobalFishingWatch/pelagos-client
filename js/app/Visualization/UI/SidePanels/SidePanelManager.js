@@ -119,17 +119,24 @@ define([
       var self = this;
       var advanced = !!self.visualization.state.getValue('advanced');
 
+      var old_selection = self.sidebarContainer.selectedChildWidget;
+
       self.sidebarContainer.getChildren().map(function (tab) {
         self.sidebarContainer.removeChild(tab);
       });
+      var selection = null;
       self.tabs.map(function (tab) {
         if ((tab.advanced === undefined) || (tab.advanced == advanced)) {
           self.sidebarContainer.addChild(tab);
-          if (tab.select_default) {
-            self.sidebarContainer.selectChild(tab, false);
+          if (   (tab == old_selection)
+              || (!selection && tab.select_default)) {
+            selection = tab;
           }
         }
       });
+      if (selection) {
+        self.sidebarContainer.selectChild(selection, false);
+      }
     },
 
     // Copied from Timeline...
