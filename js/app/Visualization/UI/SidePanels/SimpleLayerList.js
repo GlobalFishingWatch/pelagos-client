@@ -103,6 +103,8 @@ define([
 
     updatedHandler: function () {
       var self = this;
+      if (self._beingDestroyed) return;
+
       var editing = !!self.visualization.state.getValue('editing');
 
       $(self.domNode).toggleClass("editing-mode", editing);
@@ -187,6 +189,7 @@ define([
 
       updatedHandler: function () {
         var self = this;
+        if (self._beingDestroyed) return;
         self.inherited(arguments);
 
         $(self.saveNode).toggle(!!self.animation.selectionAnimationFor);
