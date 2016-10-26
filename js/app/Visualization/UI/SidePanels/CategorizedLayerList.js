@@ -36,6 +36,7 @@ define([
 
     addHandler: function (event) {
       var self = this;
+      if (self._beingDestroyed) return;
       self.inherited(arguments);
       if (self.category === undefined) {
         self.updateCategoryWidgets();
@@ -44,13 +45,14 @@ define([
 
     removeHandler: function(event) {
       var self = this;
+      if (self._beingDestroyed) return;
 
       /* An earlier handler for the remove event can have caused this
        * widget to be destroyed. Unfourtunately, even when though the
        * destructor unregisters the event, the handler will still be
        * called, since the event is already underway. */
 
-      if (!self.domNode) return;
+      if (self._beingDestroyed) return;
       self.inherited(arguments);
       if (self.category === undefined && !event.dontUpdate) {
         self.updateCategoryWidgets();
@@ -118,6 +120,7 @@ define([
     AnimationWidget: declare("AnimationWidget", SimpleLayerList.prototype.AnimationWidget, {
       updatedHandler: function () {
         var self = this;
+        if (self._beingDestroyed) return;
         self.inherited(arguments);
 
         /* Warning: Infinite recursion will happen if this check
