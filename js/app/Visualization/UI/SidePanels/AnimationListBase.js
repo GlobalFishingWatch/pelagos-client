@@ -42,7 +42,6 @@ define([
 
     destroy: function () {
       var self = this;
-
       self.visualization.animations.events.un({
         'add': self._addHandler,
         'remove': self._removeHandler
@@ -52,6 +51,7 @@ define([
 
     addHandler: function (event) {
       var self = this;
+      if (self._beingDestroyed) return;
       var animation = event.animation;
 
       if (self.animationFilter(animation)) {
@@ -80,6 +80,7 @@ define([
 
     removeHandler: function (event) {
       var self = this;
+      if (self._beingDestroyed) return;
       var animation = event.animation;
 
       if (self.animationList[animation.id]) {
@@ -127,13 +128,13 @@ define([
 
       destroy: function () {
         var self = this;
-
         self.animation.events.un({updated: self._updatedHandler});
         self.inherited(arguments);
       },
 
       updatedHandler: function () {
         var self = this;
+        if (self._beingDestroyed) return;
         html.set(self.titleNode, self.animation.title);
       },
 
