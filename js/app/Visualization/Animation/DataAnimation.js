@@ -82,7 +82,7 @@ define([
         uniforms: self.uniforms,
         selections: self.selections
       }, function (err, data_view) {
-        if (err) return cb(err);
+        if (err) return self.handleError(err);
 
         self.data_view = data_view;
 
@@ -99,17 +99,13 @@ define([
           self.initGlPrograms(cb);
         }
 
-        var handleError = function (err) {
-          self.handleError(err);
-          cb(err);
-        }
-
         self.data_view.source.events.on({
-          error: handleError,
+          error: self.handleError.bind(self),
           "header": handleHeader
         });
         self.data_view.source.load();
       });
+      cb();
     },
 
     getProgramContext: function (programName, programSpec) {
