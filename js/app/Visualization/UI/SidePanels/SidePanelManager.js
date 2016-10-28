@@ -4,18 +4,18 @@ define([
   "shims/jQuery/main",
   "app/ObjectTemplate",
   "app/Visualization/UI/SidePanels/InfoUI",
-  "app/Visualization/UI/SidePanels/SimpleLayerList",
+  "app/Visualization/UI/SidePanels/CategorizedLayerList",
   "app/Visualization/UI/SidePanels/LoggingUI",
   "app/Visualization/UI/SidePanels/SimpleSettings",
   "app/Visualization/UI/SidePanels/DataUI",
-  "app/Visualization/UI/Paths"
+  "app/Paths"
 ], function(
   Class ,
   AccordionContainer,
   $,
   ObjectTemplate,
   InfoUI,
-  SimpleLayerList,
+  CategorizedLayerList,
   LoggingUI,
   SimpleSettings,
   DataUI,
@@ -99,7 +99,7 @@ define([
 
     tabClasses: [
       InfoUI,
-      SimpleLayerList,
+      CategorizedLayerList,
       LoggingUI,
       SimpleSettings,
       DataUI
@@ -119,17 +119,24 @@ define([
       var self = this;
       var advanced = !!self.visualization.state.getValue('advanced');
 
+      var old_selection = self.sidebarContainer.selectedChildWidget;
+
       self.sidebarContainer.getChildren().map(function (tab) {
         self.sidebarContainer.removeChild(tab);
       });
+      var selection = null;
       self.tabs.map(function (tab) {
         if ((tab.advanced === undefined) || (tab.advanced == advanced)) {
           self.sidebarContainer.addChild(tab);
-          if (tab.select_default) {
-            self.sidebarContainer.selectChild(tab, false);
+          if (   (tab == old_selection)
+              || (!selection && tab.select_default)) {
+            selection = tab;
           }
         }
       });
+      if (selection) {
+        self.sidebarContainer.selectChild(selection, false);
+      }
     },
 
     // Copied from Timeline...

@@ -2,13 +2,11 @@ define([
   "require",
   "app/Class",
   "app/LoadingInfo",
-  "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Animation"
 ], function(
   require,
   Class,
   LoadingInfo,
-  ObjectToTable,
   Animation
 ) {
   var SatelliteAnimation = Class(Animation, {
@@ -30,7 +28,7 @@ define([
         var previous = self.previousMapType != undefined && self.previousMapType != google.maps.MapTypeId.HYBRID;
         self.manager.map.setMapTypeId(previous ? self.previousMapType : google.maps.MapTypeId.ROADMAP);
       }
-    }
+    },
   });
   Animation.animationClasses.SatelliteAnimation = SatelliteAnimation;
 

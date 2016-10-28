@@ -6,6 +6,7 @@ define([
   "app/Visualization/Animation/Shader",
   "app/Data/GeoProjection",
   "app/Data/DataView",
+  "app/Visualization/Animation/ObjectToTable",
   "shims/jQuery/main"
 ], function(
   Class,
@@ -15,6 +16,7 @@ define([
   Shader,
   GeoProjection,
   DataView,
+  ObjectToTable,
   $
 ) {
   var Animation = Class({
@@ -63,7 +65,7 @@ define([
       var self = this;
     },
 
-    draw: function () {
+    draw: function (gl) {
       var self = this;
     },
 
@@ -77,9 +79,34 @@ define([
       cb(null, null);
     },
 
+    getSelectionInfo: function (type, cb) {
+      var self = this;
+
+      if (type !== undefined) return cb("Not implemented", null);
+
+      cb(null,
+         {title: self.title,
+          description: self.args.description,
+          });
+    },
+
+    setTitleFromInfo: function (prefix, suffix, cb) {
+      var self = this;
+
+      self.getSelectionInfo(undefined, function (err, info) {
+        prefix = prefix || "";
+        suffix = suffix || "";
+        if (info && info.title) {
+          self.title = prefix + info.title + suffix;
+          self.events.triggerEvent("updated", {});
+        }
+        if (cb) cb(err, info);
+      });
+    },
+
     toString: function () {
       var self = this;
-      if (self.source.args.url) {
+      if (self.source && self.source.args && self.source.args.url) {
         return self.name + ": " + self.source.args.url;
       } else {
         return self.name;
@@ -94,7 +121,7 @@ define([
       args.source = self.source;
       args.color = self.color;
       return {
-        args: _.extend({}, self.args, args),
+        args: _.extend({}, self.args || {}, args),
         "type": self.name
       };
     }

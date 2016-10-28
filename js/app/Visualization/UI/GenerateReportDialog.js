@@ -34,133 +34,83 @@ define([
       '</div>',
 
     constructor: function(report) {
-      this.report = report;
-      this.templates = {
-        prompt: new ObjectTemplate(this.report.spec.promptTemplate),
-        url: new ObjectTemplate(this.report.spec.urlTemplate),
-        context: {}
+      var self = this;
+
+      self.report = report;
+      self.promptTemplate = new ObjectTemplate("Generate report on the %(title)s %(value)s form %(from)s to %(to)s?");
+
+      var time = self.report.state.getValue('time');
+      var extent = self.report.state.getValue('timeExtent');
+      self.configuration = {
+        from: new Date(time.getTime() - extent),
+        to: time,
+        title: self.report.animation,
       };
     },
 
     startup: function() {
       var self = this;
+
       self.inherited(arguments);
 
+      // For now, we only support single region reports
+      var region = _(self.report.spec.regions).keys().first();
+      var settings = self.report.spec.regions[region];
+      var values = self.report.data[settings.cartodbColumn];
+      self.configuration.region = region;
+      self.configuration.value = values[0];
 
-      // Keys may be direct, which means that they are copied from the polygon
-      // values as they are, or splittable, which means that the polygon value
-      // is actually a multivalued field and should be splitted into multiple
-      // possible values for the field. Keys that are in the report polygonKeys
-      // object are all multivalued fields.
-      var splittableKeys = self._getPolygonFieldKeys();
-      var baseContext = self._getBaseTemplateContext();
-
-      // Multivalued fields default to the first value
-      var multivaluedTemplateContext = self._getMultivaluedTemplateContext(splittableKeys);
-      var takeFirst = function(values) {
-        return values[0];
-      };
-      var defaultValues = _.mapValues(multivaluedTemplateContext, takeFirst);
-      self.templates.context = _.assign(baseContext, defaultValues);
-
-      // Multivalued fields allow selection of a single value through select
-      // fields
-      _.each(multivaluedTemplateContext, function(values, key) {
+      if (values.length > 1) {
         var options = _.map(values, function(value) {
           return "<option>" + value + "</option>";
         });
-
         var label =
-          '<label for="' + key + '">' +
-            self.report.spec.polygonFields[key].label +
-          ':&nbsp;</label>'
-
+          '<label for="value">' +
+          self.configuration.title +
+          ':&nbsp;</label>';
         var select =
-          '<select name="' + key + '">' + options.join(" ") + '</select>';
-
+          '<select name="value">' + options.join('') + '</select>';
         var control = $(label + select);
 
-        control.on("change", function() {
-          self.templates.context[key] = $(this).val();
-
-          var prompt = self.templates.prompt.eval(self.templates.context);
-          $(self.promptNode).html(prompt);
+        control.on('change', function () {
+          self.configuration.value = $(this).val();
+          self._refreshPromptTemplate();
         });
 
         $(self.configurationContainerNode).append(control);
-      });
-
-      var prompt = self.templates.prompt.eval(self.templates.context);
-      $(self.promptNode).html(prompt);
-
-      if (_.isEmpty(multivaluedTemplateContext)) {
-        $(self.configurationNode).hide();
+        $(self.configurationTitleNode).show();
+        $(self.configurationContainerNode).show();
       } else {
-        $(self.configurationNode).show();
+        $(self.configurationTitleNode).hide();
+        $(self.configurationContainerNode).hide();
       }
-    },
 
-    getReportUrl: function() {
-      var self = this;
-
-      var animation = self.report.animations.getReportableAnimation();
-      return "" +
-        animation.args.source.args.url +
-        self.templates.url.eval(self.templates.context);
+      self._refreshPromptTemplate();
     },
 
     getReportData: function() {
       var self = this;
 
-      return {
-        from: self.templates.context.from.toISOString(),
-        to: self.templates.context.to.toISOString(),
-        regions: [{
-          name: self.report.spec.regionName,
-          value: self.templates.context[self.report.spec.regionValueField]
-        }]
-      };
-    },
-
-    _getPolygonFieldKeys: function() {
-      var self = this;
-
-      return _(self.report.spec.polygonFields)
-        .keys();
-    },
-
-    _getBaseTemplateContext: function() {
-      var self = this;
-
-      var time = self.report.state.getValue("time");
-      var extent = self.report.state.getValue("timeExtent");
       var result = {
-        from: new Date(time.getTime() - extent),
-        to: time
+        from: self.configuration.from.toISOString(),
+        to: self.configuration.to.toISOString(),
+        regions: [],
       };
 
-      return _.assign(result, self.report.data);
+      result.regions.push({
+        name: self.configuration.region,
+        value: self.configuration.value,
+      });
+
+      return result;
     },
 
-    _getMultivaluedTemplateContext: function(splittableKeys) {
+    _refreshPromptTemplate: function() {
       var self = this;
 
-      var trim = function(value) {
-         return value.trim();
-      };
-
-      var split = function(result, value, key) {
-        var splitChar = self.report.spec.polygonFields[key].split;
-
-        var values = value.split(splitChar);
-        result[key] =  _.map(values, trim);
-      };
-
-      return _(self.report.data)
-        .pick(splittableKeys)
-        .transform(split, {})
-        .value();
-    }
+      var prompt = self.promptTemplate.eval(self.configuration);
+      $(self.promptNode).html(prompt);
+    },
   });
 
   return declare("GenerateReportDialog", [Dialog], {
@@ -179,25 +129,33 @@ define([
 
     startup: function() {
       var self = this;
-      self.inherited(arguments);
 
+      self.inherited(arguments);
       self.addChild(self.reportDialog);
     },
 
     handleAccept: function() {
-      var url = this.reportDialog.getReportUrl();
+      var self = this;
+
+      var url = self.getReportUrl();
       var contentTypeHeaders = { "Content-Type": "application/json;charset=UTF-8" };
-      var additionalHeaders = this.report.datamanager.headers;
+      var additionalHeaders = self.report.datamanager.headers;
       var headers = _.extend(contentTypeHeaders, additionalHeaders);
-      var body = JSON.stringify(this.reportDialog.getReportData());
+      var body = JSON.stringify(self.reportDialog.getReportData());
       Ajax.post(url, headers, body, function(err, result) {
         SimpleMessageDialog.show("Report generation", result.message);
       });
-      this.hide();
+      self.hide();
     },
 
     handleCancel: function() {
       this.hide();
+    },
+
+    getReportUrl: function() {
+      var self = this;
+
+      return "" + self.report.reportableAnimation.args.source.args.url + "/reports";
     }
   });
 });

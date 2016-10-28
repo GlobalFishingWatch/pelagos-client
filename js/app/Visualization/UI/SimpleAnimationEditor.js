@@ -31,7 +31,7 @@ define([
       '  <div data-dojo-attach-point="intensityNode">' +
       '    <div class="intensity-label">Intensity:</div>' +
       '  </div>' +
-      '  <div>' +
+      '  <div data-dojo-attach-point="colorNode">' +
       '    <span class="eyedropper-label">Color:</span>' +
       '    <a style="float: right;" target="_blank" data-dojo-attach-point="configNode" data-dojo-attach-event="click:onConfig"><i class="fa fa-eyedropper"></i></a>' +
       '  </div>' +
@@ -41,9 +41,16 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      var is_editable = self.animation.constructor.prototype.name == "ClusterAnimation";
-      $(self.domNode).toggle(is_editable);
-      if (is_editable) {
+      var has_intensity = self.animation.constructor.prototype.name == "ClusterAnimation";
+      var has_color = (   self.animation.constructor.prototype.name == "ClusterAnimation"
+                       || self.animation.constructor.prototype.name == "VesselTrackAnimation");
+      var has_filters = self.animation.constructor.prototype.name == "ClusterAnimation";
+
+      $(self.domNode).toggle(has_intensity || has_color || has_filters);
+      $(self.intensityNode).toggle(has_intensity);
+      $(self.colorNode).toggle(has_color);
+
+      if (has_intensity) {
         var maxv = self.val2slider(self.animation.data_view.header.colsByName.weight.max);
         var minv = self.val2slider(self.animation.data_view.header.colsByName.weight.min);
         var curv = self.val2slider(self.animation.data_view.header.colsByName.weight.source.weight);
@@ -57,10 +64,14 @@ define([
           intermediateChanges: true
         }, "mySlider");
         self.intensitySlider.placeAt(self.intensityNode);
+      }
 
+      if (has_filters) {
         self.animationFilterEditor = new AnimationFilterEditor({animation: self.animation});
         self.animationFilterEditor.placeAt(self.domNode);
+      }
 
+      if (has_color) {
         self.colorDropDown = new ColorPicker({
           'class': "sidebarColorPicker",
           onChange: self.colorSelected.bind(self),
@@ -117,12 +128,22 @@ define([
       var self = this;
 
       self.animation.color = value;
-      if (self.animation.data_view != undefined && self.animation.data_view.header.uniforms.red != undefined) {
+      if (self.animation.data_view != undefined) {
         var c = self.animation.color;
         var rgb = [parseInt(c.slice(1, 3), 16) / 255, parseInt(c.slice(3, 5), 16) / 255, parseInt(c.slice(5, 7), 16) / 255];
-        self.animation.data_view.header.uniforms.red.value = rgb[0];
-        self.animation.data_view.header.uniforms.green.value = rgb[1];
-        self.animation.data_view.header.uniforms.blue.value = rgb[2];
+
+        if (self.animation.data_view.header.uniforms.red !== undefined) {
+          self.animation.data_view.header.uniforms.red.value = rgb[0];
+          self.animation.data_view.header.uniforms.green.value = rgb[1];
+          self.animation.data_view.header.uniforms.blue.value = rgb[2];
+        } else if (self.animation.data_view.header.uniforms.high_red !== undefined) {
+          self.animation.data_view.header.uniforms.high_red.value = rgb[0];
+          self.animation.data_view.header.uniforms.high_green.value = rgb[1];
+          self.animation.data_view.header.uniforms.high_blue.value = rgb[2];
+          self.animation.data_view.header.uniforms.low_red.value = rgb[0];
+          self.animation.data_view.header.uniforms.low_green.value = rgb[1];
+          self.animation.data_view.header.uniforms.low_blue.value = rgb[2];
+        }
       }
       self.animation.events.triggerEvent("updated");
       self.animation.data_view.events.triggerEvent("update");

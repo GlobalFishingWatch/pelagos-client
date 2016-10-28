@@ -113,7 +113,6 @@ define([
   return Class({
     name: "TypedMatrixParser",
     MAGIC_COOKIE: 'tmtx',
-    withCredentials: false,
     initialize: function(url, args) {
       var self = this;
 
@@ -170,7 +169,6 @@ define([
 
       LoadingInfo.main.add(self.url, {request: self.request});
       self.request.open('GET', self.url, true);
-      self.request.withCredentials = self.withCredentials;
       self.request.responseType = "arraybuffer";
       for (var key in self.headers) {
         var values = self.headers[key]

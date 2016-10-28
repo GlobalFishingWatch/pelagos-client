@@ -13,7 +13,8 @@ define([
   "app/Data/BinFormat",
   "app/Data/EmptyFormat",
   "app/Data/TiledEmptyFormat",
-  "app/Data/ClusterTestFormat"
+  "app/Data/ClusterTestFormat",
+  "app/Data/CartoDBFormat"
 ], function(
   Class,
   Bounds,
@@ -273,6 +274,25 @@ define([
       self.events.triggerEvent("update", update);
     },
 
+    getSourceInfo: function (sourceSpec, cb) {
+      var self = this;
+      var formatClass = Format.formatClasses[sourceSpec.type];
+
+      var source = new formatClass(sourceSpec.args);
+      source.setHeaders(self.headers);
+      source.events.on({
+        error: function (err) {
+          cb(err);
+        },
+        header: function () {
+          source.getSelectionInfo(undefined, function (err, data) {
+            cb(err, data);
+          });
+        }
+      });
+      source.load();
+    },
+
     queryDirectories: function (query, offset, limit, cb) {
       var self = this;
 
@@ -285,25 +305,22 @@ define([
         "total": 0,
         "limit": limit,
         "offset": offset,
-        "nextOffset": offset + limit
+        "nextOffset": offset + limit,
+        "errors": []
       };
 
       async.each(self.directories, function (baseUrl, cb) {
         self.queryDirectory(baseUrl, query, offset, limit, function (err, data) {
           if (err) {
-            cb(err);
+            res.errors.push(err);
           } else {
             res.entries = res.entries.concat(data.entries);
             res.total += data.total;
-            cb();
           }
+          cb();
         });
       }, function (err) {
-        if (err) {
-          cb(err);
-        } else {
-          cb(null, res);
-        }
+        cb(res);
       });
     },
 

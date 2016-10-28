@@ -167,35 +167,69 @@ define([
       return urls[idx];
     },
 
-    getSelectionQuery: function(selection, cols) {
+    getSelectionQuery: function(selection) {
+      /* Selection can either be a selection object, or a selection iterator function. */
       var self = this;
 
-      var url = "";
-      if (cols === undefined) {
-        cols = selection.sortcols;
-      }
-      res = [];
-      cols.map(function (col) {
-        if (selection.data[col][0] == undefined) return;
-        res.push(encodeURIComponent(col) + "=" + encodeURIComponent(selection.data[col][0].toString()));
+      var baseSelectionRow = self.getQuerySelection(self.getUrlQuery()) || [];
+      var baseSelection = {};
+      baseSelectionRow.map(function (item) {
+        baseSelection[item.name] = item.value;
       });
-      return res.join(',');
+
+      if (selection.iterate !== undefined) {
+        selection = selection.iterate();
+      }
+      var selectionRow = selection();
+
+      var newSelectionRow = selectionRow.filter(function (item) {
+        return baseSelection[item.name] == undefined;
+      });
+      if (newSelectionRow.length == 0) return;
+
+      return baseSelectionRow.concat(newSelectionRow).filter(function (item) {
+        return item.value !== undefined;
+      }).map(function (item) {
+        return encodeURIComponent(item.name) + "=" + encodeURIComponent(item.value.toString());
+      }).join(',');
     },
 
     getSelectionUrl: function(selection, fallbackLevel) {
       var self = this;
 
-      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
-
+      var query = self.getSelectionQuery(selection);
+      if (!query) return;
       return self.getQueryUrl(query, fallbackLevel);
+    },
+
+    getQuerySelection: function(query) {
+      var self = this;
+
+      if (!query) return;
+      return query.split(",").map(function (item) {
+        item = item.split("=").map(decodeURIComponent);
+        return {name: item[0], value: parseFloat(item[1])};
+      });
+    },
+
+    getUrlQuery: function(url) {
+      /* Returns the query part of a url */
+      var self = this;
+      if (!url) url = self.url;
+
+      if (url.indexOf("/sub/") == -1) return;
+      return url.replace(new RegExp(".*/sub/\([^/]*\)\(/.*\)?"), "$1");
     },
 
     getQueryUrl: function(query, fallbackLevel) {
       var self = this;
 
       var baseUrl = self.getUrl("selection-info", query, fallbackLevel);
+
+      if (query === undefined) return baseUrl;
+
       if (baseUrl.indexOf("/sub/") != -1) {
-        baseUrl = baseUrl.replace(new RegExp("/sub/\([^/]*\)/.*"), "/sub/$1") + ","
+        baseUrl = baseUrl.replace(new RegExp("/sub/.*"), "/sub/");
       } else {
         baseUrl = baseUrl + "/sub/";
       }
@@ -206,17 +240,15 @@ define([
     getSelectionInfo: function(selection, cb) {
       var self = this;
 
-      /* FIXME: self.header.infoUsesSelection is a workaround for
-         current info database that doesn't contain seriesgroup
-         values. This should be removed in the future. */
+      var query;
+      if (selection !== undefined) {
+       query = self.getSelectionQuery(selection); 
+      }
 
-      var query = self.getSelectionQuery(selection, self.header.infoUsesSelection ? undefined : ['series']);
-
-      var getSelectionInfo = function (fallbackLevel, withCredentials) {
+      var getSelectionInfo = function (fallbackLevel) {
         var url = self.getQueryUrl(query, fallbackLevel) + "/info";
         var request = new XMLHttpRequest();
         request.open('GET', url, true);
-        request.withCredentials = withCredentials;
         Ajax.setHeaders(request, self.headers);
         LoadingInfo.main.add(url, {request:request});
         request.onreadystatechange = function() {
@@ -239,15 +271,13 @@ define([
                     new PopupAuth(data.auth_location, function (success) {
                       if (success) {
                         cb(null, null);
-                        getSelectionInfo(fallbackLevel, withCredentials);
+                        getSelectionInfo(fallbackLevel);
                       }
                     });
                   });
                   return res;
                 };
                 cb(data, null);
-              } else if (request.status == 0 && withCredentials) {
-                getSelectionInfo(fallbackLevel, false);
               } else if (fallbackLevel + 1 < self.getUrlFallbackLevels("selection-info")) {
                 getSelectionInfo(fallbackLevel + 1, true);
               } else {
