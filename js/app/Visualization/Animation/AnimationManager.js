@@ -431,6 +431,7 @@ define([
 
       var rowidx = self.getRowidxAtPos(x, y);
 
+      self.events.triggerEvent("select", {type: type, x: x, y: y, rowidx: rowidx}); 
 
       Logging.main.log(
         "Visualization.Animation.AnimationManager.handleMouse",
