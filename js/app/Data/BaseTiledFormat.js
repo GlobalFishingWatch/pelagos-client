@@ -152,6 +152,7 @@ define([
       if (fallbackLevel < 0) fallbackLevel += urls.length;
       urls = urls[fallbackLevel];
 
+      if (!urls || urls.length == 0) return undefined;
       if (urls.length == 1) return urls[0];
 
       var idx;
@@ -298,7 +299,13 @@ define([
       var self = this;
 
       var key = {query: query, offset: offset, limit: limit};
-      var url = self.getUrl("search", key, -1) + "/search?query=" + encodeURIComponent(query);
+      var url = self.getUrl("search", key, -1)
+      if (!url) {
+        return cb(null, {entries:[]});
+      }
+
+      url += "/search?query=" + encodeURIComponent(query);
+
       if (offset != undefined) {
         url += "&offset=" + offset.toString();
       }
