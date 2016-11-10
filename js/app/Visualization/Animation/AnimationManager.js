@@ -223,9 +223,9 @@ define([
       throw new AnimationManager.NoGlError();
     },
 
-    getGlContext: function (canvas) {
+    getGlContext: function (canvas, options) {
       var self = this;
-      var gl = canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
+      var gl = canvas.getContext('experimental-webgl', _.extend({preserveDrawingBuffer: true}, options || {}));
       if (!gl) self.handleNoGl();
       gl.enable(gl.BLEND);
       return gl;
@@ -234,7 +234,7 @@ define([
     createRowidxGlContext: function () {
       var self = this;
       var canvas = document.createElement('canvas');
-      var gl = self.getGlContext(canvas);
+      var gl = self.getGlContext(canvas, {antialias: false});
       gl.clearColor(1.0, 1.0, 1.0, 1.0);
       return gl;
     },
