@@ -2,11 +2,13 @@ define([
   "app/Class",
   "app/Events",
   "./TileBounds",
+  "app/Logging",
   "shims/lodash/main"
 ], function(
   Class,
   Events,
   TileBounds,
+  Logging,
   _
 ) {
   return Class({
@@ -43,8 +45,26 @@ define([
         var startTile = source.getContent()[startidx[0]];
         var endTile = source.getContent()[endidx[0]];
 
-        if (startTile && endTile) {
-
+        if (!startTile || !endTile || startTile.content.header.length <= startidx[1] || endTile.content.header.length <= endidx[1]) {
+          Logging.main.log(
+            "Error.Data.Selection.addRange",
+            {
+              tiles:  source.getContent().length,
+              startTileRows: startTile ? startTile.content.header.length : 0,
+              endTileRows: endTile ? endTile.content.header.length : 0,
+              startidx: startidx,
+              endidx: endidx,
+              toString: function () {
+                return Object.items(this).filter(function (item) {
+                  return item.key != "toString";
+                }).map(function (item) {
+                  return item.key + "=" + item.value.toString();
+                }).join(", ");
+              }
+            }
+          );
+          return;
+        } else {
           startData = {
             source: source.toString(),
             tile: startTile.printTree({})
@@ -70,6 +90,12 @@ define([
               endData[col] = undefined;
             }
           });
+
+          for (var i = 0; i < self.sortcols.length; i++) {
+            if (startData[self.sortcols[i]] == undefined || endData[self.sortcols[i]] == undefined) {
+              throw "Undefined selection value in sortcol " + self.sortcols[i].toString();
+            }
+          }
         }
       }
 
