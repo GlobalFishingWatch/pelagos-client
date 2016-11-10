@@ -27,7 +27,28 @@ define([
 
       self.visualization.animations.events.on({
         select: function (args) {
-          self.rowidxDisplay.html(JSON.stringify(args.rowidx) || "NONE");
+          var rowidx = JSON.stringify(args.rowidx) || "NONE";
+          var status = "";
+          if (args.rowidx != undefined) {
+            var animations = self.visualization.animations.getRenderers();
+            if (args.rowidx[0] >= animations.length) {
+              status = " INVALID animationidx (< " + animations.length + ")";
+            } else {
+              var animation = animations[args.rowidx[0]];
+              var tiles = animation.data_view.source.getContent();
+              if (args.rowidx[1] >= tiles.length) {
+                status = " INVALID tileidx (< " + tiles.length + ")";
+              } else {
+                var tile = tiles[args.rowidx[1]];
+                if (args.rowidx[2] >= tile.content.header.length) {
+                  status = " INVALID rowidx (< " + tile.content.header.length + ")";
+                } else {
+                  status = " OK";
+                }
+              }
+            }
+          }
+          self.rowidxDisplay.html(rowidx + status);
         }
       });
     },
