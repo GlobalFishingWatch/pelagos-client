@@ -154,8 +154,6 @@ define([
           var row = $('<tr><td><a class="title"></a></td><td><a class="description"></a></td>');
           row.find(".title").html(entry.animation.args.title);
 
-
-
           if (entry.error) {
             if (entry.animation && entry.animation.args && entry.animation.args.description) {
               row.find(".description").html(entry.animation.args.description);
@@ -169,7 +167,11 @@ define([
             row.find(".description").html(infoHtml);
           }
 
-          row.find('a').click(function () {
+          // FIXME: Horrible hack due to hard requirement to not have
+          // links in description...
+          row.find("a.description a").removeAttr("href");
+
+          row.find('a.description').click(function () {
             self.visualization.animations.addAnimation(entry.animation, function () {});
             self.hide();
           });
