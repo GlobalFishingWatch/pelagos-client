@@ -15,6 +15,7 @@ define([
   "app/Visualization/UI/Help",
   "app/Visualization/UI/SimpleMessageDialog",
   "app/Visualization/UI/WelcomeMessageDialog",    
+  "app/Visualization/UI/MouseoverDebugger",    
   "app/Visualization/UI/ZoomButtons",
   "app/Visualization/UI/LoaderIcon",
   "app/ObjectTemplate",
@@ -43,6 +44,7 @@ define([
   Help,
   SimpleMessageDialog,
   WelcomeMessageDialog,
+  MouseoverDebugger,
   ZoomButtons,
   LoaderIcon,
   ObjectTemplate,
@@ -528,6 +530,9 @@ define([
       self.saveWorkspace.startup();
       self.help = new Help({visualization: self.visualization});
       self.help.startup();
+      self.mouseoverDebugger = new MouseoverDebugger({visualization: self.visualization});
+      self.mouseoverDebugger.startup();
+
       cb();
     },
 

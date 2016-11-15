@@ -2,12 +2,14 @@ define([
   "require",
   "app/Class",
   "app/Visualization/Animation/Shader",
+  "app/Visualization/Animation/GlAnimation",
   "app/Visualization/Animation/DataAnimation",
   "./ObjectToTable"
 ], function(
   require,
   Class,
   Shader,
+  GlAnimation,
   DataAnimation,
   ObjectToTable
 ) {
@@ -118,7 +120,7 @@ define([
       var self = this;
 
       // Do not inherit from DataAnimation...
-      Animation.prototype.setGeneralUniforms.apply(self, arguments);
+      GlAnimation.prototype.setGeneralUniforms.apply(self, arguments);
     },
 
     select: function (rowidx, type, replace, event) {

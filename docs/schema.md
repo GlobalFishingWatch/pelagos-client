@@ -22,15 +22,32 @@ This schema document describes the schemas for each part in this stack:
   * Configuration options for workspace file
   * Column schemas
 
+Most objects in this stack are represented as JSON objects. The schema
+presented here only specifies a minimum set of required keys and their
+interpretations, and allows for additional keys to be present in all
+structures without causing an error. In most places additional keys
+are preserved across a worspace load/save. In particular this is true
+for the "args" member of animation specifications.
+
+
 # The tileset URL structure
 
 ## Header
 
-A tileset always has a header file under the base url:
+A tileset always has a JSON format header file under the base url
+specifying how to interpret the tileset:
 
 ```
 http://myproject.appspot.com/tile/mytileset/header
 ```
+
+It might also have a JSON format info file describing the tileset
+content to humans:
+
+```
+http://myproject.appspot.com/tile/mytileset/info
+```
+
 
 ## Fallback URLS
 
@@ -90,23 +107,13 @@ the subset tileset will reside under
 http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../
 ```
 
-and detailed information about the selection in a json file under
+The format of the tileset is the same as for the main tileset. It must
+have a header file and might have an info file
 
 ```
+http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../header
 http://myproject.appspot.com/tile/mytileset/sub/columnname1=value1,columnname2=value2.../info
 ```
-
-The info json file should contain a json structure with name: value pairs that
-will be rendered as an information table for the user.
-
-Special rendering for AIS vessel information will be done if the structure
-contains any of the fields vesselname, mmsi, imo or callsign.
-
-In all other cases, fields will be rendered as two columns, names and values.
-If a field named *name* is present, it will be used as a header, and if a field
-named *link* is present, the title will be made into a link pointing to this
-value (which must be an URL). Fields whose values are URLs will be rendered as
-links (and the value column left blank).
 
 # The tileset header
 
@@ -222,11 +229,45 @@ An optional interpretation of the labels can be supplied:
 }
 ```
 
+# The tileset info
+
+The optional info file describes the tileset content to a human user.
+For example, given a main tileset containing AIS data from fishing
+vessels, it might say this, and go on to describe the limitations of
+AIS reception and the possibility for spoofing. Info files for sub
+tilesets containing individual vessel tracks, could then describe the
+vessel, listing its name, callsign, mmsi etc.
+
+The format of the info file is JSON and it should contain a top level
+object. It is rendered to HTML as following:
+
+* If the key "title" exists, its value is rendered as a h1 tag, window
+  title or similar.
+* If the key "description" exists, its value is rendered below the title.
+* If the key "footer" exists, its value is rendered at the bottom
+  below all other content.
+* If any other keys exists, a two column table is rendered between the
+  description and footer, with keys in the left column and their
+  corresponding value in the right column.
+
+Values are rendered as following:
+
+* A string value for a key containing "time" or "date" are parsed using
+  new Date() and rendered in a standard date/time format.
+* A string containing a '&lt;' character is considered HTML and is
+  rendered verbatim.
+* A string that is not considered HTMl, but contains the substring
+  '://' is considered a URL link. An optional link title can preceede
+  the URL separated by a space character.
+* Any other string is just rendered as text.
+* Objects are rendered recursively using the same algorithm as the
+  main object of the file (so you can have key/value pair tables
+  inside each other).
+
+
 # The workspace secification
 
-A workspace is a JSON file loadable from a URL. If the URL contains a query
-?id=SOMEID, then the url without the query will be used to save new workspaces
-to using a POST request.
+A workspace is a JSON file with the following schema:
 
 ```
 {
@@ -258,6 +299,26 @@ to using a POST request.
 
     /* Overlay animation confirguration. See below. */
     "animations": []
+  },
+  "data" {
+    "directories": [
+      /* Searchable directories of layers that can be added to the
+         workspace */
+      "http://localhost/v1/directory"
+    ]
+  },
+  "metadata": {
+    /* Workspace metadata */
+    "id":"my-workspace.json",
+    "urls": {
+      /* URL to POST new workspaces to to save them */
+      "save":"http://localhost/v1/workspaces",
+      "load":"http://localhost/v1/workspaces/my-workspace.json",
+      /* This URL should load the visualization client with the
+         current workspace. Might load it inside an iframe with
+         additional surrounding content. */
+      "visualization":"http://localhost/map/workspace/my-workspace.json"
+    }
   }
 }
 ```
@@ -359,6 +420,32 @@ or a single tile file:
   }
 }
 ```
+
+#### Special note about CartoDB 
+
+There is an animation type called CartoDBAnimation that renders a
+CartoDB layer. This animation type requires the source type
+CartoDBFormat.
+
+```
+{
+  "type": "CartoDBFormat"
+  "args": {
+    "url": "http://cartodb.myproject.com/mylayer/viz.json"
+  }
+}
+```
+
+As the CartoDB layer description field has various limitations, and is
+rendered from a Markdown-inspired mini-language, there is a special
+mechanism to load the equivalent of the header and info files for
+tilesets, triggered by the description containing a link with the
+title "Metadata". If no such link exists, the description text (as
+rendered to HTML) is used as info.description, and the CartoDB layer
+title is used as info.title. If the Metadata link is present, it
+should point to a JSON file with an object containing two keys: info
+and header. Their values should be the info and header structures as
+described above, respectively.
 
 ### Uniforms
 
