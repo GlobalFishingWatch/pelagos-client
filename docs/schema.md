@@ -346,6 +346,9 @@ arguments.
     /* Visibility checkbox status */
     "visible": true,
 
+    /* If true, reports will be enabled on this animation. */
+    "report": true,
+
     /* Source configuration, see below */
     "source": {},
 
