@@ -94,15 +94,36 @@ define([
       var result = {
         from: self.configuration.from.toISOString(),
         to: self.configuration.to.toISOString(),
-        regions: [],
+        regions: [{
+          name: self.configuration.region,
+          value: self.configuration.value,
+        }],
+        vessels: {
+          countries: self._getSelectedCountries(),
+        },
       };
 
-      result.regions.push({
-        name: self.configuration.region,
-        value: self.configuration.value,
-      });
-
       return result;
+    },
+
+    _getSelectedCountries: function() {
+      var self = this;
+
+      var flagsSelection = self.report.reportableAnimation.data_view.selections.selections.flags;
+      var tilesetHeader = self.report.reportableAnimation.data_view.source.header;
+
+      if (flagsSelection) {
+        var column = flagsSelection.sortcols[0];
+        var valueToNameMap = _.invert(tilesetHeader.colsByName[column].choices);
+        return _(flagsSelection.data[column])
+          .uniq()
+          .map(function(value) {
+            return valueToNameMap[value];
+          })
+          .value();
+      } else {
+        return [];
+      }
     },
 
     _refreshPromptTemplate: function() {
