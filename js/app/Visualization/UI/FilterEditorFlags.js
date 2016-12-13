@@ -23,8 +23,6 @@ define([
         var name = CountryCodes.codeToName[code.toUpperCase()];
         if (name !== undefined) {
           item.label = '<img src="' + Paths.img + '/flags/png/' + code.toLowerCase() + '.png" style="margin: 1px; vertical-align: middle;"> ' + name;
-        } else {
-          item.label = code;
         }
       });
       return new Memory({data: data});
