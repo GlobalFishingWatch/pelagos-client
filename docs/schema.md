@@ -346,44 +346,8 @@ arguments.
     /* Visibility checkbox status */
     "visible": true,
 
-    /* Indicates that this layer supports reporting, allowing other layers to
-       run reports related to this one. For example, you may have a vessel activity
-       animation which displays the locations of different vessels, and a EEZ layer
-       which displays the EEZ boundaries. In that case, you may have a report that
-       shows the vessels inside each EEZ. To support this, you would configure the
-       vessel activity layer as reportable, and the EEZ animation would report fields
-       indicating how the report is displayed and generated. */
-    "reportable": true,
-
-    /* Settings for report generation. When an animation has these settings,
-       it allows the user to generate a report over another animation, marked with the
-       `reportable` property. */
-    "report": {
-      /* This field configures the way selected polygon fields are processed
-         for the url and prompt templates */
-      "polygonFields": {
-        /* Here we are making the `boundary` field available in the templates.
-           We are making it a splitable field, which means that the boundary field in the
-           selected polygon actually contains multiple values, such as "Egypt - Greece",
-           and the user should select one of them, either "Egypt" or "Greece" */
-        "boundary": {
-          "split": "-",
-          "label": "EEZ"
-        },
-      },
-
-      /* Template used to create the url which generates the report. The template
-         fields are extracted from the selection information of this animation (for
-         example, in the eez case, which is a cartodb animation, they are the fields of
-         the info window */
-      "urlTemplate": "sub/eez=%(boundary)s",
-
-      /* Template used to create the text message displayed to the user to
-         confirm the generation of the report. The same properties that are available on
-         the `urlTemplate` field are available here, plus the `beginTime` and `endTime`
-         properties, which are extracted from the current timeslider values */
-      "promptTemplate": "Generate report on the EEZ %(boundary)s from %(beginTime)s to %(endTime)?",s
-    },
+    /* If true, reports will be enabled on this animation. */
+    "report": true,
 
     /* Source configuration, see below */
     "source": {},
