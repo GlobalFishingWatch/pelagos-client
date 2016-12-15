@@ -23,7 +23,8 @@ define([
       var self = this;
       self.inherited(arguments);
 
-      FilterViewer.filteredSelections(self.animation).map(function (selection_name) {
+      var selections = self.animation.data_view.selections.filteredSelections();
+      selections.map(function (selection_name) {
         self.addChild(new FilterViewer({
           animation: self.animation,
           selection_name: selection_name

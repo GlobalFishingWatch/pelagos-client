@@ -98,32 +98,45 @@ define([
           name: self.configuration.region,
           value: self.configuration.value,
         }],
-        vessels: {
-          countries: self._getSelectedCountries(),
-        },
+        filters: self._getFilteredSelections(),
       };
 
       return result;
     },
 
-    _getSelectedCountries: function() {
+    _getFilteredSelections: function() {
       var self = this;
 
-      var flagsSelection = self.report.reportableAnimation.data_view.selections.selections.flags;
       var tilesetHeader = self.report.reportableAnimation.data_view.source.header;
+      var selections = self.report.reportableAnimation.data_view.selections.filteredSelections();
 
-      if (flagsSelection) {
-        var column = flagsSelection.sortcols[0];
+      var values = _.map(selections, function(selectionName) {
+        var selection = self.report.reportableAnimation.data_view.selections.selections[selectionName];
+        var column = selection.sortcols[0];
         var valueToNameMap = _.invert(tilesetHeader.colsByName[column].choices);
-        return _(flagsSelection.data[column])
+        var values = _(selection.data[column])
+          .filter(function(item) {
+            return _.isFinite(item);
+          })
           .uniq()
           .map(function(value) {
             return valueToNameMap[value];
           })
           .value();
-      } else {
-        return [];
-      }
+
+        return [selectionName, values];
+      });
+
+      var result = _(values)
+        .filter(function(item) {
+          return item[1].length > 0;
+        })
+        .reduce(function(acc, item) {
+          acc[item[0]] = item[1];
+          return acc;
+        }, {});
+
+      return result;
     },
 
     _refreshPromptTemplate: function() {
