@@ -124,7 +124,11 @@ define([
           })
           .value();
 
-        return [selectionName, values];
+        var normalizedSelectionName = selectionName.replace(/\s/g, '');
+        normalizedSelectionName = normalizedSelectionName
+          .charAt(0).toLowerCase() + normalizedSelectionName.substring(1);
+
+        return [normalizedSelectionName, values];
       });
 
       var result = _(values)
