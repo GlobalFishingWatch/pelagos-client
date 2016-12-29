@@ -45,7 +45,9 @@ define(["app/Class"], function(Class) {
 
     toBBOX: function () {
       var self = this;
-      return self.left + "," + self.bottom + "," + self.right + "," + self.top;
+      return self.toArray().map(function (item) {
+        return item.toString();
+      }).join(",");
     },
 
     contains: function(x, y, inclusive) {

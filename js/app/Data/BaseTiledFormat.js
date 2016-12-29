@@ -14,7 +14,6 @@ define([
   "app/Class",
   "app/Events",
   "app/LoadingInfo",
-  "app/Bounds",
   "app/Data/Format",
   "app/Data/Tile",
   "app/Data/TileBounds",
@@ -31,7 +30,6 @@ define([
   Class,
   Events,
   LoadingInfo,
-  Bounds,
   Format,
   Tile,
   TileBounds,
@@ -46,6 +44,9 @@ define([
 ) {
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
+
+    TileBounds: TileBounds,
+
     initialize: function() {
       var self = this;
       /* Any tiles we have loaded that we still need (maybe because
@@ -372,7 +373,7 @@ define([
 
       }
 
-      var wantedTileBounds = TileBounds.tileBounds({
+      var wantedTileBounds = self.TileBounds.tileBounds({
         bounds: bounds,
         dataQualityLevel: self.dataQualityLevel,
         temporalExtents: self.header.temporalExtents,
@@ -447,7 +448,7 @@ define([
     setUpTileContent: function (tile) {
       var self = this;
 
-      if (self.header.maxZoom != undefined && TileBounds.zoomLevelForTileBounds(tile.bounds) > self.header.maxZoom) {
+      if (self.header.maxZoom != undefined && self.TileBounds.zoomLevelForTileBounds(tile.bounds) > self.header.maxZoom) {
         tile.setContent(new EmptyFormat({
           headerTime: false,
           contentTime: false,
@@ -549,11 +550,11 @@ define([
       var filter = function (tile) { return true; };
       if (args.covers) {
         filter = function (tile) {
-          return tile.bounds.containsObj(new Bounds(args.covers))
+          return tile.bounds.containsObj(new self.TileBounds.Bounds(args.covers))
         };
       } else if (args.coveredBy) {
         filter = function (tile) {
-          return new Bounds(args.coveredBy).containsObj(tile.bounds)
+          return new self.TileBounds.Bounds(args.coveredBy).containsObj(tile.bounds)
         };
       }
 
@@ -631,9 +632,9 @@ define([
       } else {
         var bounds;
         if (data.complete_ancestor) {
-          bounds = new Bounds(data.complete_ancestor);
+          bounds = new self.TileBounds.Bounds(data.complete_ancestor);
         } else {
-          bounds = TileBounds.extendTileBounds(tile.bounds);
+          bounds = self.TileBounds.extendTileBounds(tile.bounds);
         }
 
         /* There used to be code here to fire a
