@@ -265,18 +265,14 @@ define([
       ], cb);
     },
 
-    /**
-     * Saves the current workspace to a JSON file using a POST call to
-     * the url given by self.workspaceSaveUrl. This is generally the
-     * url of the last loaded workspace, minus any query
-     * parameters.
-     *
-     * @param cb {Function}
-     */
-    save: function (cb) {
+    saveToString: function (indent) {
+      var self = this;
+      return Json.encode(self.unmergeDefaults(self.defaultConfig, Json.decode(Json.encode(self, "  "))), indent);
+    },
+
+    saveWorkspace: function (data, cb) {
       var self = this;
 
-      var data = Json.encode(self.unmergeDefaults(self.defaultConfig, Json.decode(Json.encode(self, "  "))));
       // FIXME: Use self.data.headers!!
       $.ajax({
         url: self.workspaceSaveUrl,
@@ -298,6 +294,20 @@ define([
         dataType: 'text',
         contentType: 'application/json'
       });
+    },
+
+    /**
+     * Saves the current workspace to a JSON file using a POST call to
+     * the url given by self.workspaceSaveUrl. This is generally the
+     * url of the last loaded workspace, minus any query
+     * parameters.
+     *
+     * @param cb {Function}
+     */
+    save: function (cb) {
+      var self = this;
+
+      self.saveWorkspace(self.saveToString(), cb);
     }
   });
 });

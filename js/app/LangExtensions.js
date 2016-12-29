@@ -94,7 +94,7 @@ define([], function() {
   }
 
   var JSONoldStringify = JSON.oldStringify = JSON.stringify;
-  JSON.stringify = function (obj, replacer) {
+  JSON.stringify = function (obj, replacer, indent) {
     return JSONoldStringify(obj, function (key, value) {
       if (replacer) value = replacer(key, value);
       if (typeof(value) == "number") {
@@ -103,7 +103,7 @@ define([], function() {
         if (value != value) return {__jsonclass__: ["Number", "NaN"]};
       }
       return value;
-    });
+    }, indent);
   }
 
   var JSONoldParse = JSON.oldParse = JSON.parse;
