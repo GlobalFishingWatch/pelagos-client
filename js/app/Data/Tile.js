@@ -160,6 +160,7 @@ define([
       var self = this;
 
       var info = {
+        Id: self.bounds.toString(),
         Idx: self.idx.toString(),
         Usage: self.usage.toString(),
         Level: self.manager.TileBounds.zoomLevelForTileBounds(self.bounds)
