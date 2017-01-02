@@ -45,6 +45,7 @@ define([
   var BaseTiledFormat = Class(Format, {
     name: "BaseTiledFormat",
 
+    Tile: Tile,
     TileBounds: TileBounds,
 
     initialize: function() {
@@ -474,7 +475,7 @@ define([
       var key = tilebounds.toString();
 
       if (!self.tileCache[key]) {
-        var tile = new Tile(self, tilebounds);
+        var tile = new self.Tile(self, tilebounds);
 
         tile.idx = self.tileIdxCounter++;
         if (findOverlaps !== false) tile.findOverlaps();

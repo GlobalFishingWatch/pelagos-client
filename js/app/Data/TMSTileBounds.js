@@ -29,14 +29,16 @@ define([
     tileBoundsForRegion: function(args) {
       var self = this;
 
-      var bounds = args.bounds;
+      var bounds = args.bounds.getBounds();
+      bounds = bounds.unwrapDateLine(self.world);
 
       var dataQualityLevel = args.dataQualityLevel;
 
-      var topLeft = self.project(new google.maps.LatLng(bounds.top, bounds.left));
-      var bottomRight = self.project(new google.maps.LatLng(bounds.bottom, bounds.right));
+      var topLeft = self.project(bounds.top, bounds.left);
+      var bottomRight = self.project(bounds.bottom, bounds.right);
 
-      var zoom = self.zoomLevelForTileBounds(bounds) + dataQualityLevel;
+      var zoom = Math.floor(Math.min(Math.log2(self.TILE_SIZE / (bottomRight.x - topLeft.x)),
+                                     Math.log2(self.TILE_SIZE / (bottomRight.y - topLeft.y)))) + dataQualityLevel;
       var scale = 1 << zoom;
 
       var left = Math.floor(topLeft.x * scale / self.TILE_SIZE);
@@ -45,15 +47,19 @@ define([
       var bottom = Math.ceil(bottomRight.y * scale / self.TILE_SIZE);
 
       var res = [];
-      for (var y = bottom; y <= top; y++) {
+      for (var y = top; y <= bottom; y++) {
         for (var x = left; x <= right; x++) {
-          var coords = [zoom, x, y];
-          coords = self.tmsToGoogle(coords);
-          coords = coords.map(function (value) { return value.toString(); }).join(",");
-          res.push(coords);
+          // modulo scale to rewrap dateline
+          var coords = [zoom, x % scale, y % scale];
+//          coords = self.tmsToGoogle(coords);
+          res.push(new TMSBounds(coords));
         }
       }
-      return res;
+
+      return {
+        set: res,
+        dataQualityLevel: 1
+      }
     },
 
     zoomLevelForTileBounds: function (bounds) {
@@ -66,24 +72,30 @@ define([
     extendTileBounds: function (obj) {
       var self = this;
 
-      return new self.Bounds(obj).extend();
+      var extended = obj.getBounds().extend();
+      if (extended == undefined) return undefined;
+
+      obj = obj.clone();
+      obj.update(extended);
+      return obj;
     },
 
 
     // The mapping between latitude, longitude and pixels is defined by the web
     // mercator projection.
-    project: function(latLng) {
+    project: function(lat, lng) {
       var self = this;
 
-      var siny = Math.sin(latLng.lat() * Math.PI / 180);
+      var siny = Math.sin(lat * Math.PI / 180);
 
       // Truncating to 0.9999 effectively limits latitude to 89.189. This is
       // about a third of a tile past the edge of the world tile.
       siny = Math.min(Math.max(siny, -0.9999), 0.9999);
 
-      return new google.maps.Point(
-          self.TILE_SIZE * (0.5 + latLng.lng() / 360),
-          self.TILE_SIZE * (0.5 - Math.log((1 + siny) / (1 - siny)) / (4 * Math.PI)));
+      return {
+        x: self.TILE_SIZE * (0.5 + lng / 360),
+        y: self.TILE_SIZE * (0.5 - Math.log((1 + siny) / (1 - siny)) / (4 * Math.PI))
+      };
     },
 
     tmsToGoogle: function(coords) {
@@ -92,7 +104,7 @@ define([
       var zoom = coords[0];
       var x = coords[1];
       var y = coords[2];
-      return [zoom, x, pow(2, zoom - 1) - ty];
+      return [zoom, x, Math.pow(2, zoom - 1) - y];
     }
   });
 

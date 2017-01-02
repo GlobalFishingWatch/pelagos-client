@@ -36,8 +36,9 @@ define([
     extend: function () {
       var self = this;
 
-      bounds = new self.constructor(self);
+      if (self.zoom <= 0) return undefined;
 
+      bounds = new self.constructor(self);
       bounds.zoom -= 1;
       bounds.x = Math.floor(bounds.x / 2.);
       bounds.y = Math.floor(bounds.y / 2.);
@@ -55,11 +56,21 @@ define([
       return self.x == obj.x && self.y == obj.y;
     },
 
+    intersectsObj: function (obj, partial, inclusive) {
+      var self = this;
+
+      if (self.zoom > obj.zoom) {
+        return obj.containsObj(self, partial, inclusive);
+      } else {
+        return self.containsObj(obj, partial, inclusive);
+      }
+    },
+
     /**
      * Update the Bounds object in place.
      *
-     * update("left,bottom,right,top")
-     * update([left,bottom,right,top]);
+     * update("zoom,x,y")
+     * update([zoom,x,y]);
      * update(obj, obj, ...);
      */
     update: function () {

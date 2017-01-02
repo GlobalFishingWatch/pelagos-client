@@ -206,7 +206,7 @@ define([
         return res;
       }   
 
-      return sets.reduce(flatten, [bounds]);
+      return sets.reduce(flatten, [new self.SpaceTime()]);
     },
 
     /**
