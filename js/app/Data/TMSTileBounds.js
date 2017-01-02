@@ -24,8 +24,6 @@ define([
       Bounds: TMSBounds
     }),
 
-    TILE_SIZE: 256,
-
     tileBoundsForRegion: function(args) {
       var self = this;
 
@@ -37,14 +35,14 @@ define([
       var topLeft = self.project(bounds.top, bounds.left);
       var bottomRight = self.project(bounds.bottom, bounds.right);
 
-      var zoom = Math.floor(Math.min(Math.log2(self.TILE_SIZE / (bottomRight.x - topLeft.x)),
-                                     Math.log2(self.TILE_SIZE / (bottomRight.y - topLeft.y)))) + dataQualityLevel;
+      var zoom = Math.floor(Math.min(Math.log2(1. / (bottomRight.x - topLeft.x)),
+                                     Math.log2(1. / (bottomRight.y - topLeft.y)))) + dataQualityLevel;
       var scale = 1 << zoom;
 
-      var left = Math.floor(topLeft.x * scale / self.TILE_SIZE);
-      var top = Math.floor(topLeft.y * scale / self.TILE_SIZE);
-      var right = Math.ceil(bottomRight.x * scale / self.TILE_SIZE);
-      var bottom = Math.ceil(bottomRight.y * scale / self.TILE_SIZE);
+      var left = Math.floor(topLeft.x * scale);
+      var top = Math.floor(topLeft.y * scale);
+      var right = Math.ceil(bottomRight.x * scale);
+      var bottom = Math.ceil(bottomRight.y * scale);
 
       var res = [];
       for (var y = top; y <= bottom; y++) {
@@ -93,8 +91,8 @@ define([
       siny = Math.min(Math.max(siny, -0.9999), 0.9999);
 
       return {
-        x: self.TILE_SIZE * (0.5 + lng / 360),
-        y: self.TILE_SIZE * (0.5 - Math.log((1 + siny) / (1 - siny)) / (4 * Math.PI))
+        x: 0.5 + lng / 360,
+        y: 0.5 - Math.log((1 + siny) / (1 - siny)) / (4 * Math.PI)
       };
     },
 

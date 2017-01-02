@@ -122,6 +122,31 @@ define([
       for (var i = 0; i < arguments.length; i++) {
         updateOne(arguments[i]);
       }
+
+      // Unproject so that code that wants a lat/lon bbox for
+      // visualization can get that...
+
+      var scale = 1 << self.zoom;
+      var topLeft = self.unproject(self.x / scale, self.y / scale);
+      var bottomRight = self.unproject((self.x + 1) / scale, (self.y + 1) / scale);
+
+      self.top = topLeft.lat;
+      self.left = topLeft.lon;
+      self.bottom = bottomRight.lat;
+      self.right = bottomRight.lon;
+    },
+
+    // The mapping between latitude, longitude and pixels is defined by the web
+    // mercator projection. See app/Data/TMSTileBounds:project()
+
+    unproject: function(x, y) {
+      var self = this;
+
+      var siny = 1 - 2 / (Math.exp((0.5 - y) * (4 * Math.PI)) + 1);
+      return {
+        lon: (x - 0.5) * 360,
+        lat: Math.asin(siny) * 180 / Math.PI
+      };
     },
 
     getBounds: function () { return this; },
