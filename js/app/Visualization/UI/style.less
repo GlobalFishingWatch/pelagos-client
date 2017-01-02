@@ -1226,6 +1226,29 @@ div.cartodb-legend-stack {
   }
 }
 
+.workspace-editor-dialog {
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  background: #fff !important;
+  .dijitDialogTitleBar, .dijitDialogPaneContent, .dijitDialogPaneActionBar {
+    width: 100% !important;
+    border-radius: 0 !important;
+  }
+  .dijitDialogPaneContent {
+    height: auto !important;
+    bottom: 41px !important;
+    overflow: visible;
+  }
+  .dijitDialogPaneActionBar {
+    top: auto !important;
+    bottom: 0;
+  }
+}
+
 @media screen and (min-width: 3000px) { 
   #w {
     box-shadow: -6px 2px 4px #5F5D5c;
