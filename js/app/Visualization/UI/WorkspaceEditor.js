@@ -33,7 +33,7 @@ define([
       self.inherited(arguments);
 
       KeyBindings.register(
-        ['Ctrl', 'Alt', 'W'], null, 'General',
+        ['Ctrl', 'Alt', 'R'], null, 'General',
         'Workspace editor', self.show.bind(self)
       );
     },
