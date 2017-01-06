@@ -17,7 +17,7 @@ define([
     title: "Search",
     "class": 'search-dialog',
     content: '' +
-      '<input type="text" class="query" style="width: 100%;" placeholder="Search by MMSI, IMO, callsign, ship name or port name."></input>' +
+      '<input type="text" class="query" style="width: 100%;" placeholder="Search by MMSI, IMO, callsign or ship name."></input>' +
       '<div class="search-loading">' +
       '  <img style="width: 20px;" src="' + LoaderIcon + '">' +
       '</div>' +
