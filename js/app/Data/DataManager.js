@@ -10,6 +10,7 @@ define([
   "app/Data/DataView",
   "app/Logging",
   "app/Data/TiledBinFormat",
+  "app/Data/TMSTiledBinFormat",
   "app/Data/BinFormat",
   "app/Data/EmptyFormat",
   "app/Data/TiledEmptyFormat",

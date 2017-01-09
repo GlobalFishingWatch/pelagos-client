@@ -1,11 +1,9 @@
 define([
   "app/Class",
-  "app/Events",
-  "app/Data/TileBounds"
+  "app/Events"
 ], function(
   Class,
-  Events,
-  TileBounds
+  Events
 ) {
   return Class({
     name: "Tile",
@@ -162,9 +160,10 @@ define([
       var self = this;
 
       var info = {
+        Id: self.bounds.toString(),
         Idx: self.idx.toString(),
         Usage: self.usage.toString(),
-        Level: TileBounds.zoomLevelForTileBounds(self.bounds)
+        Level: self.manager.TileBounds.zoomLevelForTileBounds(self.bounds)
       };
       if (self.content && self.content.header) info.Rows = self.content.header.length;
       var flags = []
