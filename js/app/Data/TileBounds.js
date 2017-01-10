@@ -206,7 +206,13 @@ define([
         return res;
       }   
 
-      return sets.reduce(flatten, [new self.SpaceTime()]);
+      cls = self.SpaceTime;
+      if (!bounds.getTimerange) {
+        cls = self.Bounds;
+      } else if (!bounds.getBounds) {
+        cls = self.Timerange;
+      }
+      return sets.reduce(flatten, [new cls()]);
     },
 
     /**
