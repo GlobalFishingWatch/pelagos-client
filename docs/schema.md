@@ -279,6 +279,9 @@ A workspace is a JSON file with the following schema:
     /* Time window size in milliseconds */
     "timeExtent": 10368057344,
 
+    /* The current mouse hover point on the time slider, used to highlight a part of a vessel track. */
+    "timeFocus":  {"__jsonclass__": ["Date", "2015-03-01T00:00:07.168Z"]},
+
     /* Screen center and zoom, google maps semantics */
     "lon": -169.69070434570312,
     "lat": -7.453709339338128,
