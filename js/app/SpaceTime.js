@@ -19,6 +19,10 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
    */
   var SpaceTime = Class({
     name: "SpaceTime",
+
+    Bounds: Bounds,
+    Timerange: Timerange,
+
     initialize: function () {
       var self = this;
       self.timerange = null;
@@ -114,8 +118,8 @@ define(["app/Class", "app/Bounds", "app/Timerange"], function(Class, Bounds, Tim
           }
         }
 
-        if (timerange) timerange = new Timerange(timerange);
-        if (bounds) bounds = new Bounds(bounds);
+        if (timerange) timerange = new self.Timerange(timerange);
+        if (bounds) bounds = new self.Bounds(bounds);
 
         if (timerange !== undefined) {
           if (timerange === null || self.timerange === null) {

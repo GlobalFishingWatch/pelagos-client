@@ -67,6 +67,25 @@ define([
       }
     },
 
+    filteredSelections: function() {
+      var self = this;
+      return Object
+        .items(self.selections)
+        .filter(function(item) {
+          var selection = item.value;
+          return (
+            !selection.hidden
+            && selection.sortcols.length === 1
+            && selection.sortcols[0]
+            && self.source.header.colsByName[selection.sortcols[0]]
+            && self.source.header.colsByName[selection.sortcols[0]].choices
+          );
+        })
+        .map(function(item) {
+          return item.key;
+        });
+    },
+
     toJSON: function () {
       var self = this;
       var res = {};

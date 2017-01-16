@@ -6,6 +6,7 @@ define([
   "app/Visualization/KeyBindings",
   "app/Visualization/UI/Widgets/Timeline/Timeline",
   "app/Visualization/UI/SidePanels/SidePanelManager",
+  "app/Visualization/UI/WorkspaceEditor",
   "app/Visualization/UI/Search",
   "app/Visualization/UI/MouseLatLon",
   "app/Visualization/UI/AnimationLibrary",
@@ -35,6 +36,7 @@ define([
   KeyBindings,
   Timeline,
   SidePanelManager,
+  WorkspaceEditor,
   Search,
   MouseLatLon,
   AnimationLibrary,
@@ -518,6 +520,8 @@ define([
       self.mouseLatLon.startup();
       self.zoomButtons = new ZoomButtons({visualization: self.visualization});
       self.zoomButtons.startup();
+      self.workspaceEditor = new WorkspaceEditor({visualization: self.visualization});
+      self.workspaceEditor.startup();
       self.search = new Search({visualization: self.visualization});
       self.search.startup();
       self.library = new AnimationLibrary({visualization: self.visualization});

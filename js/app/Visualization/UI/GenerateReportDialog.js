@@ -94,13 +94,51 @@ define([
       var result = {
         from: self.configuration.from.toISOString(),
         to: self.configuration.to.toISOString(),
-        regions: [],
+        regions: [{
+          name: self.configuration.region,
+          value: self.configuration.value,
+        }],
+        filters: self._getFilteredSelections(),
       };
 
-      result.regions.push({
-        name: self.configuration.region,
-        value: self.configuration.value,
+      return result;
+    },
+
+    _getFilteredSelections: function() {
+      var self = this;
+
+      var tilesetHeader = self.report.reportableAnimation.data_view.source.header;
+      var selections = self.report.reportableAnimation.data_view.selections.filteredSelections();
+
+      var values = _.map(selections, function(selectionName) {
+        var selection = self.report.reportableAnimation.data_view.selections.selections[selectionName];
+        var column = selection.sortcols[0];
+        var valueToNameMap = _.invert(tilesetHeader.colsByName[column].choices);
+        var values = _(selection.data[column])
+          .filter(function(item) {
+            return _.isFinite(item);
+          })
+          .uniq()
+          .map(function(value) {
+            return valueToNameMap[value];
+          })
+          .value();
+
+        var normalizedSelectionName = selectionName.replace(/\s/g, '');
+        normalizedSelectionName = normalizedSelectionName
+          .charAt(0).toLowerCase() + normalizedSelectionName.substring(1);
+
+        return [normalizedSelectionName, values];
       });
+
+      var result = _(values)
+        .filter(function(item) {
+          return item[1].length > 0;
+        })
+        .reduce(function(acc, item) {
+          acc[item[0]] = item[1];
+          return acc;
+        }, {});
 
       return result;
     },
