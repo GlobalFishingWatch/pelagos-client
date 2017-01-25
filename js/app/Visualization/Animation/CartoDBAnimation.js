@@ -32,56 +32,51 @@ define([
       // FIXME: Backwards compatibility, should really just assert this...
       self.source.type = "CartoDBFormat";
 
-      self.data = self.manager.visualization.data.addSource(self.source);
+      var cartoLayer = cartodb.createLayer(
+        self.manager.map, self.source.args.url, {infowindow: false}
+      ).addTo(
+        /* Note: This is does not support adding another layer before cb() is called
+         * Make sure to serialize this properly. */
+        self.manager.map, self.manager.map.overlayMapTypes.length
+      ).on('done', function(layer) {
+        self.layer = layer;
 
-      var handleHeader = function () {
-        self.data.events.un({header: handleHeader});
-
-        var cartoLayer = cartodb.createLayer(
-          self.manager.map, self.source.args.url, {infowindow: false}
-        ).addTo(
-          /* Note: This is does not support adding another layer before cb() is called
-           * Make sure to serialize this properly. */
-          self.manager.map, self.manager.map.overlayMapTypes.length
-        ).on('done', function(layer) {
-          self.layer = layer;
-
-          if (self.layer.getSubLayers) {
-            self.layer.getSubLayers().map(function (subLayer) {
-              subLayer.setInteraction(true); // Interaction for that layer must be enabled
-              cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
-            });
-          }
-
-          if (self.layer.getTimeBounds) {
-            // This is a torque layer
-
-            self.manager.visualization.state.events.on({
-              time: self.timeChanged.bind(self),
-              timeExtent: self.timeChanged.bind(self)
-            });
-
-            self.layer.stop();
-          }
-
-          self.layer.on('featureOver', self.handleMouseOver.bind(self));
-          self.layer.on('mouseout', self.handleMouseOut.bind(self));
-
-          self.setVisible(self.visible);
-
-          cb();
-        }).on("error", function (err) {
-          self.handleError(err);
-          self.manager.visualization.data.events.triggerEvent("error", {
-            url: self.source.args.url,
-            toString: function () {
-              return 'Unable to load CartoDB layer ' + this.url;
-            }
+        if (self.layer.getSubLayers) {
+          self.layer.getSubLayers().map(function (subLayer) {
+            subLayer.setInteraction(true); // Interaction for that layer must be enabled
+            cartodb.vis.Vis.addCursorInteraction(self.manager.map, subLayer);
           });
-          cb(err);
+        }
+
+        if (self.layer.getTimeBounds) {
+          // This is a torque layer
+
+          self.manager.visualization.state.events.on({
+            time: self.timeChanged.bind(self),
+            timeExtent: self.timeChanged.bind(self)
+          });
+
+          self.layer.stop();
+        }
+
+        self.layer.on('featureOver', self.handleMouseOver.bind(self));
+        self.layer.on('mouseout', self.handleMouseOut.bind(self));
+
+        self.setVisible(self.visible);
+
+        cb();
+      }).on("error", function (err) {
+        self.handleError(err);
+        self.manager.visualization.data.events.triggerEvent("error", {
+          url: self.source.args.url,
+          toString: function () {
+            return 'Unable to load CartoDB layer ' + this.url;
+          }
         });
-      };
-      self.data.events.on({header: handleHeader});
+        cb(err);
+      });
+
+      self.data = self.manager.visualization.data.addSource(self.source);
       self.data.load();
     },
 
