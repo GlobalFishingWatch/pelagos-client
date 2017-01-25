@@ -63,6 +63,7 @@ define([
     // if this source code is minified.
     var clsCreator = eval("(function (initialize) { var cls = function " + name + "() { this.constructor = cls; return initialize.apply(this, arguments); }; return cls; })");
     var cls = clsCreator(initialize);
+    cls.bases = Array.prototype.slice.call(arguments, 0, len-1);
     cls.prototype = initialize.prototype;
 
     return cls;
