@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'/>
+    <script src="js/libs/jquery-1.10.2.min.js"></script>
+    <style>
+      body {
+        background: #BDD7FF;
+      }
+      div {
+        position: absolute;
+      }
+    </style>
+    <script>
+      $(document).ready(function () {
+        var rows = 100;
+        var cols = 10;
+
+        for (var col = 0; col < cols; col++) {
+          var w = 1 + col;
+
+          for (var row = 0; row < rows; row++) {
+            var d = row / rows;
+
+            var node = $("<div>&nbsp;</div>");
+
+            var cut1 = function (v) {
+              return Math.min(1.0, v);
+            };
+
+            var cut2 = function (v) {
+              var a = 0.1;
+              return v/2.0 - Math.sqrt(4.0*a*a + v*v - 2.0*v + 1.0) / 2.0 + 1.0/2.0;
+            }
+
+            var cut, color;
+            if (0) {
+              var c = d*w;
+
+              cut = cut2;
+
+              color = [255,
+                       Math.floor(256 * cut(0.6 * c)),
+                       Math.floor(256 * cut(0.3 * c)),
+                       cut(c)];
+            } else if (1) {
+              cut = cut1;
+              var alpha = Math.min(1.0, d * Math.sqrt(w));
+              var c = d*d * w / alpha;
+              color = [Math.floor(256 * cut(1.0 * c)),
+                       Math.floor(256 * cut(0.4 * c)),
+                       Math.floor(256 * cut(0.2 * c)),
+                       cut(alpha)];
+            }
+
+            var color = "rgba(" + color.join(", ") + ")";
+            node.css({
+              top: (100.0*row/rows) + "%",
+              left: (100.0*col/cols) + "%",
+              height: (100.0/rows) + "%",
+              width: (100.0/cols) + "%",
+              background: color
+            });
+            $("body").append(node);
+          }
+        }
+      });
+    </script>
+  </head>
+  <body>
+
+
+  </body>
+</html>

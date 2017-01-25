@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+  <head>
+    <title>VectorVisual</title>
+
+    <script type="text/javascript">
+      app = {
+        useDojo: false,
+        useBuild: false,
+        main: function () {
+          require(["app/Class", "app/Events", "app/Bounds", "app/Visualization/Shader", "app/Data/DataView", "Stats"], function (Class, Events, Bounds, Shader, DataView, Stats) {
+
+            var datasetsnr = 1;
+            var datasetpointsnr = 500000;
+
+            function get_shader_program(gl, data_view, cb) {
+              Shader.createShaderProgramFromUrl(
+                gl,
+                require.toUrl("app/Visualization/Animation/ClusterAnimation-vertex.glsl"),
+                require.toUrl("app/Visualization/Animation/ClusterAnimation-fragment.glsl"),
+                {
+                  attr0: "latitude",
+                  attrmapper: Shader.compileMapping(data_view)
+                },
+                function (program) {
+                  cb(program);
+                }
+              );
+            }
+
+            function setupgl(data_view, cb) {
+              var canvas=$("#your_canvas")[0];
+              canvas.width=window.innerWidth;
+              canvas.height=window.innerHeight;
+
+              stats = new Stats();
+              stats.setMode(0);
+              stats.domElement.style.position = 'absolute';
+              stats.domElement.style.left = '0px';
+              stats.domElement.style.top = '0px';
+              document.body.appendChild(stats.domElement);
+
+              try {
+                var gl = canvas.getContext("experimental-webgl", {antialias: true});
+              } catch (e) {
+                alert("You are not webgl compatible :(") ;
+                return false;
+              } ;
+
+              gl.enable(gl.BLEND);
+              gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+              gl.canvas = canvas;
+
+              get_shader_program(gl, data_view, function (program) {
+                gl.program = program;
+                gl.useProgram(gl.program);
+                cb(gl);
+              });
+            }
+
+            function load_data(gl) {
+              var datasets = [];
+
+              for (var i = 0; i < datasetsnr; i++) {
+                var dataset = {};
+                datasets.push(dataset);
+
+                dataset.latitude = new Float32Array(datasetpointsnr);
+                dataset.longitude = new Float32Array(datasetpointsnr);
+                for (var j = 0; j < datasetpointsnr; j++) {                                   
+                  dataset.latitude[j] = Math.random()*85.0*2.0 - 85.0;
+                  dataset.longitude[j] = Math.random()*360 - 180.0;
+                }
+              }
+
+              var start = performance.now();
+              for (var i = 0; i < datasetsnr; i++) {
+                dataset = datasets[i];
+
+                dataset.latitudeBuffer= GL.createBuffer();
+                dataset.longitudeBuffer= GL.createBuffer();
+                GL.bindBuffer(GL.ARRAY_BUFFER, dataset.latitudeBuffer);
+                GL.bufferData(GL.ARRAY_BUFFER, dataset.latitude, GL.STATIC_DRAW);
+
+                GL.bindBuffer(GL.ARRAY_BUFFER, dataset.longitudeBuffer);
+                GL.bufferData(GL.ARRAY_BUFFER, dataset.longitude, GL.STATIC_DRAW);
+              }
+              var end = performance.now();
+
+              console.log("Load time for " + datasetsnr + " arrays of " + datasetpointsnr + " points = " + (end - start));
+
+              return datasets;
+            }
+
+            function draw_gl(gl, data_view, datasets) {
+
+              var mat = new Float32Array(16);
+              mat.set([
+                1.0/128.0, 0,               0, 0,
+                0,         1.0/128.0,       0, 0,
+                0,         0,         0, 0,
+                -1,         -1,         0, 1
+              ]);
+
+              gl.uniformMatrix4fv(gl.program.uniforms.googleMercator2webglMatrix, false, mat);
+              gl.uniform1f(gl.program.uniforms.width, window.innerWidth);
+              Shader.setMappingUniforms(gl.program, data_view);
+
+              gl.clearColor(0.0, 0.0, 0.0, 0.0);
+              gl.viewport(0.0, 0.0, gl.canvas.width, gl.canvas.height);
+
+
+              timings = {
+                time: 0,
+                count: 0
+              };
+
+              function renderFrame() {
+
+                stats.begin();
+                var start = performance.now();
+
+                gl.clear(gl.COLOR_BUFFER_BIT);
+
+
+                var start = performance.now();
+
+                datasets.map(function (dataset) {
+                  Shader.programBindArray(gl, dataset.latitudeBuffer, gl.program, "latitude", 1, gl.FLOAT);
+                  Shader.programBindArray(gl, dataset.longitudeBuffer, gl.program, "longitude", 1, gl.FLOAT);
+
+                  gl.drawArrays(gl.POINTS, 0, datasetpointsnr);
+                });
+
+                gl.flush();
+
+                var end = performance.now();
+                stats.end();
+
+
+                timings.time += end - start;
+                timings.count++;
+
+                if (timings.count % 100 == 0) {
+                  console.log("Avg. JS draw time: " + (timings.time / timings.count));
+                }
+
+                window.requestAnimationFrame(renderFrame, gl.canvas);
+              }
+
+              renderFrame();
+            };
+
+            data_view = new DataView(
+              {events: new Events(),
+               sortcols:[],
+               header: {colsByName: {
+                 latitude: true,
+                 longitude: true
+               }}},
+              {
+                columns: {
+                  longitude: {type: "Float32", hidden: true, source: {longitude: 1.0}},
+                  latitude: {type: "Float32", hidden: true, source: {latitude: 1.0}},
+
+                  sigma: {type: "Float32", source: {_: 0.0}, min: 0.0, max: 1.0},
+                  weight: {type: "Float32", source: {_: 1.0}, min: 0.0, max: 1.0},
+
+                  time: {type: "Float32", hidden: true, source: {_: 0.0}},
+
+                  series: {type: "Float32", hidden: true, source: {_: 0.0}},
+
+                  filter: {type: "Float32", hidden: true, source: {_: 0.0}}
+                }
+              }
+            );
+
+            setupgl(data_view, function (glctx) {
+              gl = glctx;
+              GL = gl;
+
+              var datasets = load_data(gl);
+              draw_gl(gl, data_view, datasets);
+            });
+          });
+        }
+      };
+    </script>
+    <script type="text/javascript" src="js/deps.js"></script>
+  </head>
+  <body class="claro">
+    <canvas id='your_canvas' style='position: absolute; background-color: black;'></canvas>
+  </body>
+</html>
+true

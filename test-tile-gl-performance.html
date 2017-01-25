@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+  <head>
+    <title>VectorVisual</title>
+
+    <script type="text/javascript">
+      app = {
+        useDojo: false,
+        useBuild: false,
+        main: function () {
+          require(["app/Class", "app/Bounds", "app/Visualization/Shader", "app/Data/DataView", "app/Data/TiledBinFormat"], function (Class, Bounds, Shader, DataView, TiledBinFormat) {
+
+            function get_shader_program(gl, data_view, cb) {
+              Shader.createShaderProgramFromUrl(
+                gl,
+                require.toUrl("app/Visualization/Animation/ClusterAnimation-vertex.glsl"),
+                require.toUrl("app/Visualization/Animation/ClusterAnimation-fragment.glsl"),
+                {
+                  attr0: "latitude",
+                  attrmapper: Shader.compileMapping(data_view)
+                },
+                function (program) {
+                  cb(program);
+                }
+              );
+            }
+
+            function setupgl(data_view, cb) {
+              var canvas=$("#your_canvas")[0];
+              canvas.width=window.innerWidth;
+              canvas.height=window.innerHeight;
+
+              try {
+                var gl = canvas.getContext("experimental-webgl", {antialias: true});
+              } catch (e) {
+                alert("You are not webgl compatible :(") ;
+                return false;
+              } ;
+
+              gl.enable(gl.BLEND);
+              gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+              gl.canvas = canvas;
+
+              get_shader_program(gl, data_view, function (program) {
+                gl.program = program;
+                gl.useProgram(gl.program);
+                cb(gl);
+              });
+            }
+
+            function draw_gl(gl, data_view) {
+              var buffers = {};
+              var tiles = data_view.source.getContent();
+
+              var start = performance.now();
+              tiles.map(function (tile) {
+                buffers[tile.content.url] = {};
+                Object.keys(tile.content.header.colsByName).map(function (name) {
+                  buffers[tile.content.url][name] = gl.createBuffer();
+                  Shader.programLoadArray(gl, buffers[tile.content.url][name], tile.content.data[name], gl.program);
+                });
+              });
+              var end = performance.now();
+              console.log("Load time: " + (end - start));
+
+              var mat = new Float32Array(16);
+              mat.set([
+                1.0/128.0, 0,               0, 0,
+                0,         1.0/128.0,       0, 0,
+                0,         0,         0, 0,
+                -1,         -1,         0, 1
+              ]);
+
+
+              gl.uniformMatrix4fv(gl.program.uniforms.googleMercator2webglMatrix, false, mat);
+              gl.uniform1f(gl.program.uniforms.startTime, -1.0/0.0);
+              gl.uniform1f(gl.program.uniforms.endTime, 1.0/0.0);
+              gl.uniform1f(gl.program.uniforms.pointSize, 50.0);
+              Shader.setMappingUniforms(gl.program, data_view);
+
+
+
+              gl.clearColor(0.0, 0.0, 0.0, 0.0);
+              gl.viewport(0.0, 0.0, gl.canvas.width, gl.canvas.height);
+              gl.clear(gl.COLOR_BUFFER_BIT);
+
+
+              var start = performance.now();
+              tiles.map(function (tile) {
+                for (var name in buffers[tile.content.url]) {
+                  Shader.programBindArray(gl, buffers[tile.content.url][name], gl.program, name, 1, gl.FLOAT);
+                };
+                for (var i = 0; i < tile.content.series.length - 1; i++) {
+                  if (tile.content.series[i+1]-tile.content.series[i] > 0) {
+                    gl.drawArrays(
+                      gl.POINTS,
+                      tile.content.series[i],
+                      tile.content.series[i+1]-tile.content.series[i]
+                    );
+                  }
+                }
+              });
+              var end = performance.now();
+
+              console.log("Draw time: " + (end - start));
+
+              gl.flush();
+            };
+
+            f = new TiledBinFormat({url:"/tile/test-grid"});
+            f.tilesPerScreen = 128;
+
+            var bounds = [
+              new Bounds(-180,-85,180,85),
+              new Bounds(-90,-42,90,42),
+              new Bounds(-45,-21,45,21),
+              new Bounds(-22,-10,22,10),
+              new Bounds(-11,-5,11,5)];
+
+            var bidx = 0;
+            var cbounds;
+            var start;
+            var data_view;
+            var gl;
+            f.events.on({
+              header: function () {
+                data_view = new DataView(
+                  f,
+                  {
+                    columns: {
+                      longitude: {type: "Float32", hidden: true, source: {longitude: 1.0}},
+                      latitude: {type: "Float32", hidden: true, source: {latitude: 1.0}},
+
+                      sigma: {type: "Float32", source: {sigma: 1}, min: 0.0, max: 1.0},
+                      weight: {type: "Float32", source: {weight: 1}, min: 0.0, max: 1.0},
+
+                      time: {type: "Float32", hidden: true, source: {datetime: 1.0}},
+
+                      series: {type: "Float32", hidden: true, source: {series: 1.0}}
+                    }
+                  }
+                );
+
+                setupgl(data_view, function (glctx) {
+                  gl = glctx;
+                  GL = gl;
+
+                  start = performance.now();
+                  cbounds = bounds[bidx];
+                  f.zoomTo(cbounds);
+                });
+              },
+              update: function (e) {},
+              all: function () {
+                var end = performance.now();
+
+                console.log("Number of tiles: " + f.getContent().length);
+                console.log("Number of tiles: " + f.getContent().length);
+                console.log("Number of series: " + f.getContent().map(function (tile) { return tile.content.series.length - 1; }).reduce(function (a, b) { return a + b; }, 0));
+                console.log("Number of points: " + f.getContent().map(function (tile) { return tile.content.header.length; }).reduce(function (a, b) { return a + b; }, 0));
+
+                console.log("Fetch time: " + (end - start));
+
+                draw_gl(gl, data_view);
+
+                bidx++;
+                if (bidx < bounds.length) {
+                  start = performance.now();
+                  cbounds = bounds[bidx];
+                  f.zoomTo(cbounds);
+                }
+              },
+              error: function (e) {
+                console.log("ERROR");
+              }
+            });
+
+            f.load();
+          });
+        }
+      };
+    </script>
+    <script type="text/javascript" src="js/deps.js"></script>
+  </head>
+  <body class="claro">
+    <canvas id='your_canvas' style='position: absolute; background-color: black;'></canvas>
+  </body>
+</html>
+true
