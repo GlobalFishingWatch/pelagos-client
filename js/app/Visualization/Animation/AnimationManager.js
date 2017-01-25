@@ -759,12 +759,10 @@ define([
       var self = this;
 
       async.series([
-/*
         function (cb) {
           self.bboxSelection = new BboxSelection(self, {});
           self.addAnimationInstance(self.bboxSelection, cb, "overlays");
         }
-*/
       ], cb);
     },
 
