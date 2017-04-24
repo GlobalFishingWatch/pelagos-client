@@ -12,5 +12,6 @@
     "welcomeMessage": {
       "url": "%(root)s/message-version-1.2.3.html"
     }
-  }
+  },
+  "end_of_life_url": "http://new-map.com"
 }
