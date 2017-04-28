@@ -127,7 +127,7 @@ define([
 
 /* FXIME NEVER HACK FOR END OF HISTORY */
 if (self.defaultConfig.end_of_life_url) {
-  $("#visualization").append('<a class="old_map_message">You are viewing an old version of the Global Fishing Watch map. Check out the new one here!</a>');
+  $("#visualization").append('<a class="old_map_message" target="_blank">You are viewing an old version of the Global Fishing Watch map. Check out the new one here!</a>');
   $(".old_map_message").attr("href", self.defaultConfig.end_of_life_url);
 }
 
