@@ -145,20 +145,20 @@ body {
 .logo {
   position: absolute;
   left: 8pt;
-  top: 10pt;
+  top: 25pt !important;
   pointer-events: none;
 }
 
 .loading {
   padding-left: 14px;
-  padding-top: 10px;
+  padding-top: 25px;
   position: absolute;
   top: 175px !important;
 }
 
 .ZoomButtons {
   position: absolute;
-  top: 100px;
+  top: 125px !important;
   left: 8px;
   background-color: #ffffff;
   border-radius: 2px;
@@ -751,6 +751,7 @@ hyperwall is: 3 1280px screens wide and 3 720pxs screens high.
   padding-bottom: 135pt;
   z-index: 1;
   margin-right: 8px;
+  padding-top: 25px !important;
 
   &.expanded {
     left: auto;
@@ -1348,3 +1349,20 @@ div.cartodb-legend-stack {
     }
   }
 }
+
+.old_map_message {
+  background-color: green;
+  color: #ffffff;
+  width: 100%;
+  text-align: center;
+  margin: 0 auto;
+  padding: 1px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-bottom: solid 1px #011137;
+  z-index: 500;
+  font-weight: 400 !important;
+  font-size: 12px !important;
+}
+

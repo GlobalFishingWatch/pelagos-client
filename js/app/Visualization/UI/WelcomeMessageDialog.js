@@ -24,8 +24,8 @@ define([
 
     actionBarTemplate: '' +
       '<div class="dijitDialogPaneActionBar" data-dojo-attach-point="actionBarNode">' +
-      '  <span class="left"><checkbox data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="dontShowAgain"></checkbox> <label>Don\'t show this message again</label></span>' +
-      '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Close</button>' +
+      '  <span class="left"><checkbox data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="dontShowAgain"></checkbox> <label>Please don\'t show this message again</label></span>' +
+      '  <button data-dojo-type="dijit/form/Button" type="submit" data-dojo-attach-point="closeButton">Continue</button>' +
       '</div>',
 
     startup: function () {
