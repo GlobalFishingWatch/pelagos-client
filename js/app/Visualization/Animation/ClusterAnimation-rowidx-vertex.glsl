@@ -38,6 +38,7 @@ void main() {
     float ps = 7.0 ; // In pixels
 
     float pixelSigma = pixelsPerWebGlX * latLonDistanceToWebGL(_sigma, lonlat, googleMercator2webglMatrix);
+    if (pixelSigma > 40) { pixelSigma = 40; }
 
     float radius = ps + 2.5 * pixelSigma;
     float areaScale = ps*ps / (radius*radius);
