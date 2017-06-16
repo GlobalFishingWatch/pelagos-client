@@ -31,9 +31,10 @@ define([
     mouseMove: function (e) {
       var self = this;
 
-      var coords = ol.proj.transform([e.pageX, e.pageY],
-				     self.visualization.animations.map.getView().getProjection(),
-				     'EPSG:4326');
+      var coords = ol.proj.transform(
+	  self.visualization.animations.map.getCoordinateFromPixel([e.pageX, e.pageY]),
+	  self.visualization.animations.map.getView().getProjection(),
+	  "EPSG:4326");
 
       var s = coords[1].toFixed(4) + ", " + coords[0].toFixed(4);
       $(self.displayNode).text(s);

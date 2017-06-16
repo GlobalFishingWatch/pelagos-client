@@ -89,8 +89,8 @@ define([
 
       async.series([
         self.initMap.bind(self),
-        self.initCanvas.bind(self),
         self.initStats.bind(self),
+        self.initCanvas.bind(self),
         self.initMouse.bind(self),
         self.initUpdates.bind(self),
         self.initOverlays.bind(self),
@@ -233,6 +233,8 @@ return;
       self.canvas = document.createElement('canvas');
       $(self.canvas).css({position: "fixed", top: 0, left: 0, width: "100%", height: "100%"});
       self.node.append(self.canvas);
+
+      window.requestAnimationFrame(self.update.bind(self));
 
       try {
         self.gl = self.getGlContext(self.canvas);
@@ -987,11 +989,7 @@ return;
 	      self.map.getSize()),
 	  self.map.getView().getProjection(),
 	  'EPSG:4326');
-      var latmin = extent.bottom;
-      var lonmin = extent.left;
-      var latmax = extent.top;
-      var lonmax = extent.right;
-      var bounds = new Bounds([lonmin, latmin, lonmax, latmax]);
+      var bounds = new Bounds(extent);
 
       var end = self.visualization.state.getValue("time");
       if (end == undefined) return;
@@ -1069,6 +1067,7 @@ return;
 
       var translation = self.map.getView().getCenter();
       Matrix.translateMatrix(self.googleMercator2webglMatrix, translation[0], translation[1]);
+console.log("\n\n" + JSON.stringify({scale:scale, translation:translation, matrix:self.googleMercator2webglMatrix}) + "\n\n");
     },
 
     isPaused: function () {
