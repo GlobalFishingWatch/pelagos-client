@@ -1099,6 +1099,11 @@ console.log("\n\n" + JSON.stringify({scale:scale, translation:translation, matri
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();
 
+      self.gl.canvas.width = $(self.canvas).innerWidth();
+      self.gl.canvas.height = $(self.canvas).innerHeight();
+      self.gl.viewport(0, 0, self.gl.canvas.width, self.gl.canvas.height);
+      self.gl.enable(self.gl.SCISSOR_TEST);
+      self.gl.scissor(0, 0, self.gl.canvas.width, self.gl.canvas.height);
       self.gl.clear(self.gl.COLOR_BUFFER_BIT);
 
       Logging.main.log("Visualization.Animation.AnimationManager.update", {
@@ -1126,6 +1131,7 @@ console.log("\n\n" + JSON.stringify({scale:scale, translation:translation, matri
       if (!e || e.mouseoverChange !== false) {
         self.mouseoverUpdateNeeded = true;
       }
+      window.requestAnimationFrame(self.update.bind(self));
     },
 
     load: function (animations, cb) {
