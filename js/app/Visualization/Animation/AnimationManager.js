@@ -14,7 +14,6 @@ define([
   "dijit/Dialog",
   "app/Visualization/Animation/Matrix",
   "libs/bower-ol3/build/ol",
-//  "shims/CanvasLayer/main",
   "shims/Stats/main",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
@@ -26,7 +25,6 @@ define([
   "app/Visualization/Animation/TileAnimation",
   "app/Visualization/Animation/DebugAnimation",
   "app/Visualization/Animation/ClusterAnimation",
-//  "app/Visualization/Animation/MapsEngineAnimation",
 //  "app/Visualization/Animation/CartoDBAnimation",
   "app/Visualization/Animation/VesselTrackAnimation",
   "app/Visualization/Animation/ArrowAnimation",
@@ -45,7 +43,6 @@ define([
   $,
   Dialog,
   Matrix,
-//  CanvasLayer,
   ol,
   Stats,
   ObjectToTable,
@@ -1062,14 +1059,39 @@ return;
       // copy pixel->webgl matrix
       self.googleMercator2webglMatrix.set(self.pixelsToWebGLMatrix);
 
-      var scale = self.map.getView().getZoom();
-scale = 16;
+      var scale = Math.pow(2, self.map.getView().getZoom());
+      //scale = 16;
       Matrix.scaleMatrix(self.googleMercator2webglMatrix, scale, scale);
 
-      var translation = self.map.getView().getCenter();
-translation = [-88, -105.81249999999999];
-      Matrix.translateMatrix(self.googleMercator2webglMatrix, translation[0], translation[1]);
-console.log("\n\n" + JSON.stringify({scale:scale, translation:translation, matrix:self.googleMercator2webglMatrix}) + "\n\n");
+      var translation = self.getMapTranslation();
+      //translation = {x:-88, y:-105.81249999999999};
+      Matrix.translateMatrix(self.googleMercator2webglMatrix, translation.x, translation.y);
+    },
+
+    getMapTranslation: function () {
+      var self = this;
+      // Extents are minX, minY, maxX, maxY
+
+      // Where is northwest corner of earth compared to northwest corner of canvas?  If there's more than one
+      // projection displaying (i.e. the international date line is visible one or more times), select 
+      // projection which covers the center pixel of the container
+      var scale = Math.pow(2, self.map.getView().getZoom());
+      var world = self.map.getView().getProjection().getExtent();
+      var worldWidth = world[2] - world[0];
+      var worldHeight = world[3] - world[1];
+      var projectionWidth = worldWidth / scale;
+
+      var extent = self.map.getView().calculateExtent(self.map.getSize());
+
+      var translation = {x:(extent[0] - world[0]) * 256 / worldWidth, y:(-extent[3] - world[1]) * 256 / worldHeight}; // Top left corner
+      translation.x = -translation.x;
+      translation.y = -translation.y;
+
+      // Calculate how many projectionWidths we can move to the right before the origin crosses the center pixel of the container    
+      var advance = Math.floor(((0.5 * self.map.getSize()[0] / scale) - translation.x) / projectionWidth);
+
+      translation.x += advance * projectionWidth;
+      return translation;
     },
 
     isPaused: function () {
