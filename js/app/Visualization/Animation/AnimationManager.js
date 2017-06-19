@@ -123,9 +123,14 @@ define([
       self.layer = new ol.layer.Tile({
         source: new ol.source.OSM()
       });
+      self.markerLayer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+          url: 'http://t1.openseamap.org/seamark/{z}/{x}/{y}.png'
+        })
+      });
       self.map = new ol.Map({
         layers: [
-         self.layer
+         self.layer, self.markerLayer
         ],
         target: self.node[0],
         controls: ol.control.defaults({
