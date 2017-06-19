@@ -231,7 +231,7 @@ return;
       var self = this;
 
       self.canvas = document.createElement('canvas');
-      $(self.canvas).css({position: "fixed", top: 0, left: 0, width: "100%", height: "100%"});
+      $(self.canvas).css({"pointer-events": "none", position: "fixed", top: 0, left: 0, width: "100%", height: "100%"});
       self.node.append(self.canvas);
 
       window.requestAnimationFrame(self.update.bind(self));
@@ -1063,9 +1063,11 @@ return;
       self.googleMercator2webglMatrix.set(self.pixelsToWebGLMatrix);
 
       var scale = self.map.getView().getZoom();
+scale = 16;
       Matrix.scaleMatrix(self.googleMercator2webglMatrix, scale, scale);
 
       var translation = self.map.getView().getCenter();
+translation = [-88, -105.81249999999999];
       Matrix.translateMatrix(self.googleMercator2webglMatrix, translation[0], translation[1]);
 console.log("\n\n" + JSON.stringify({scale:scale, translation:translation, matrix:self.googleMercator2webglMatrix}) + "\n\n");
     },
