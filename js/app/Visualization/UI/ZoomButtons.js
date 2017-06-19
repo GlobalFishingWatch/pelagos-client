@@ -26,11 +26,13 @@ define([
 
     zoomIn: function () {
       var self = this;
-      self.visualization.animations.map.setZoom(self.visualization.animations.map.zoom + 1);
+      var view = self.visualization.animations.map.getView();
+      view.setZoom(view.getZoom() + 1);
     },
     zoomOut: function () {
       var self = this;
-      self.visualization.animations.map.setZoom(self.visualization.animations.map.zoom - 1);
+      var view = self.visualization.animations.map.getView();
+      view.setZoom(view.getZoom() - 1);
     }
   });
 });
