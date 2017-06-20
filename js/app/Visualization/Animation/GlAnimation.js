@@ -8,7 +8,7 @@ define([
   "app/Data/GeoProjection",
   "app/Data/DataView",
   "shims/jQuery/main",
-  "libs/bower-ol3/build/ol"
+  "shims/openlayers/main"
 ], function(
   Class,
   Events,

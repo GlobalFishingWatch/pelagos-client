@@ -1,5 +1,5 @@
 if (false) {
-  define(["shims/GoogleMaps/main", "app/CanvasLayer"], function () {});
+  define(["shims/GoogleMaps/main"], function () {});
 }
 
 (function () {

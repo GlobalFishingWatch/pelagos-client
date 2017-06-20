@@ -11,7 +11,8 @@ JSDEPS= \
   $(LIBS)/loggly-jslogger/src/loggly.tracker.js \
   $(LIBS)/cartodb.js/cartodb.js \
   $(LIBS)/cartodb.js/cartodb.mod.torque.js \
-  $(LIBS)/clipboard.js/clipboard.min.js
+  $(LIBS)/clipboard.js/clipboard.min.js \
+  $(LIBS)/bower-ol3/build/ol.js
 
 CSSDEPS= \
   $(LIBS)/font-awesome/css/font-awesome.min.css \

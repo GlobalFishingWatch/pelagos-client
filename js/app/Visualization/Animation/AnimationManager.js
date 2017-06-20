@@ -13,7 +13,7 @@ define([
   "shims/jQuery/main",
   "dijit/Dialog",
   "app/Visualization/Animation/Matrix",
-  "libs/bower-ol3/build/ol",
+  "shims/openlayers/main",
   "shims/Stats/main",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",

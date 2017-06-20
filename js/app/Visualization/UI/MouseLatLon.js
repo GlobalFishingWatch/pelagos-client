@@ -2,7 +2,7 @@ define([
   "dojo/_base/declare",
   "./TemplatedContainer",
   "shims/jQuery/main",
-  "libs/bower-ol3/build/ol"
+  "shims/openlayers/main"
 ], function(
   declare,
   TemplatedContainer,

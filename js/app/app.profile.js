@@ -4,7 +4,6 @@ profile = {
     amd: function(filename, mid) {
       var specials = {
                       // "app/Condition": true,
-                      "app/CanvasLayer": true
 /*
 ,
 
