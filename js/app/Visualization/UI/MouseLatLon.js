@@ -1,11 +1,13 @@
 define([
   "dojo/_base/declare",
   "./TemplatedContainer",
-  "shims/jQuery/main"
+  "shims/jQuery/main",
+  "shims/openlayers/main"
 ], function(
   declare,
   TemplatedContainer,
-  $
+  $,
+  ol
 ) {
   return declare("MouseLatLon", [TemplatedContainer], {
     baseClass: 'MouseLatLon',
@@ -22,12 +24,19 @@ define([
     startup: function () {
       var self = this;
       self.placeAt(self.visualization.node[0]);
-      google.maps.event.addListener(self.visualization.animations.map, 'mousemove', self.mouseMove.bind(self));
+
+      $(self.visualization.animations.node).mousemove(self.mouseMove.bind(self));
     },
 
     mouseMove: function (e) {
       var self = this;
-      var s = e.latLng.lat().toFixed(4) + ", " + e.latLng.lng().toFixed(4);
+
+      var coords = ol.proj.transform(
+	  self.visualization.animations.map.getCoordinateFromPixel([e.pageX, e.pageY]),
+	  self.visualization.animations.map.getView().getProjection(),
+	  "EPSG:4326");
+
+      var s = coords[1].toFixed(4) + ", " + coords[0].toFixed(4);
       $(self.displayNode).text(s);
     }
   });

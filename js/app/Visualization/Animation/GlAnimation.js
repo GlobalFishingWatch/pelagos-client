@@ -7,7 +7,8 @@ define([
   "app/Visualization/Animation/Shader",
   "app/Data/GeoProjection",
   "app/Data/DataView",
-  "shims/jQuery/main"
+  "shims/jQuery/main",
+  "shims/openlayers/main"
 ], function(
   Class,
   Events,
@@ -17,7 +18,8 @@ define([
   Shader,
   GeoProjection,
   DataView,
-  $
+  $,
+  ol
 ) {
   return Class(Animation, {
     name: "GlAnimation",
@@ -176,17 +178,22 @@ define([
 
       var timeFocus = self.manager.visualization.state.getValue("timeFocus");
       program.gl.uniform1f(program.uniforms.timefocus, timeFocus);
-      program.gl.uniform1f(program.uniforms.zoom, self.manager.map.zoom);
-      program.gl.uniform1f(program.uniforms.width, self.manager.canvasLayer.canvas.width);
-      program.gl.uniform1f(program.uniforms.height, self.manager.canvasLayer.canvas.height);
+      program.gl.uniform1f(program.uniforms.zoom, self.manager.map.getView().getZoom());
+      program.gl.uniform1f(program.uniforms.width, $(self.manager.canvas).innerWidth());
+      program.gl.uniform1f(program.uniforms.height, $(self.manager.canvas).innerHeight());
+
+      var center = ol.proj.transform(
+	  self.manager.map.getView().getCenter(),
+	  self.manager.map.getView().getProjection(),
+	  'EPSG:4326');
 
       // pointSize range [5,20], 21 zoom levels
       var pointSize = Math.max(
-        Math.floor( ((20-5) * (self.manager.map.zoom - 0) / (21 - 0)) + 5 ),
+        Math.floor( ((20-5) * (self.manager.map.getView().getZoom() - 0) / (21 - 0)) + 5 ),
         ((self.manager.visualization.state.getValue("resolution") || 1000)
          / GeoProjection.metersPerGoogleMercatorAtLatitude(
-             self.manager.map.getCenter().lat(),
-             self.manager.map.zoom)));
+             center[1],
+             self.manager.map.getView().getZoom())));
 
       program.gl.uniform1f(program.uniforms.pointSize, pointSize*1.0);
     }

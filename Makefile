@@ -11,7 +11,8 @@ JSDEPS= \
   $(LIBS)/loggly-jslogger/src/loggly.tracker.js \
   $(LIBS)/cartodb.js/cartodb.js \
   $(LIBS)/cartodb.js/cartodb.mod.torque.js \
-  $(LIBS)/clipboard.js/clipboard.min.js
+  $(LIBS)/clipboard.js/clipboard.min.js \
+  $(LIBS)/bower-ol3/build/ol.js
 
 CSSDEPS= \
   $(LIBS)/font-awesome/css/font-awesome.min.css \
@@ -58,14 +59,14 @@ js-build/build-succeded: js-dojo-build/build-succeded js-build/deps.js js-build/
 	(cd js-dojo-build; find . -type f \! -name "*.js") | while read name; do cp "js-dojo-build/$$name" "js-build/$$name"; done
 	(cd js/libs; find . -type d) | while read name; do mkdir -p "js-build/libs/$$name"; done
 	(cd js/libs; find . -type f \! -name "*.js") | while read name; do cp "js/libs/$$name" "js-build/libs/$$name"; done
-	cp js-dojo-build/app/app.js.uncompressed.js js-build/app/app.js.uncompressed.js
+	cp js-dojo-build/app/app.js js-build/app/app.js.uncompressed.js
 	cp js-dojo-build/app/nls/* js-build/app/nls/
 	cp js-dojo-build/app/TabletMeta.js js-build/app/TabletMeta.js
 	# Minify app.js
 	node_modules/.bin/uglifyjs js-build/app/app.js.uncompressed.js --screw-ie8 --keep-fnames --stats -o js-build/app/app.js
 	touch $@
 
-js-build/deps.js: $(JSDEPS) js/app/CanvasLayer.js
+js-build/deps.js: $(JSDEPS)
 	mkdir -p js-build
 	for name in $^; do cat $$name; echo; done > $@
 

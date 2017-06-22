@@ -1,6 +1,7 @@
 dojoConfig = {
   isDebug: true,
   async: true,
+  layerOptimize: false,
   cssOptimize: "comments.keepLines",
   cssOptimize: "comments",
   selectorEngine: "lite",

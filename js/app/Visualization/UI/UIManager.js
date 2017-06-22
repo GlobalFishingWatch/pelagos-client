@@ -195,8 +195,8 @@ define([
         setTimeout(setActiveHandler, 100);
       };
 
-      self.loadingNode = $('<div class="loading"><img style="width: 20px;" src="' + LoaderIcon + '"></div>');
-      self.visualization.animations.map.controls[google.maps.ControlPosition.LEFT_TOP].push(self.loadingNode[0]);
+      self.loadingNode = $('<div class="loading" css="position: absolute; left: 10px; top: 10px;"><img style="width: 20px;" src="' + LoaderIcon + '"></div>');
+      $(self.visualization.animations.node).append(self.loadingNode);
 
       self.loadingNode.hide();
       LoadingInfo.main.events.on({

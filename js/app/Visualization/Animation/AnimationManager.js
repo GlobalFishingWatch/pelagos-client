@@ -13,20 +13,19 @@ define([
   "shims/jQuery/main",
   "dijit/Dialog",
   "app/Visualization/Animation/Matrix",
-  "shims/CanvasLayer/main",
+  "shims/openlayers/main",
   "shims/Stats/main",
   "app/Visualization/Animation/ObjectToTable",
   "app/Visualization/Animation/Rowidx",
   "app/Visualization/Animation/Animation",
-  "app/Visualization/Animation/BboxSelection",
+//  "app/Visualization/Animation/BboxSelection",
   "app/Visualization/Animation/PointAnimation",
   "app/Visualization/Animation/LineAnimation",
   "app/Visualization/Animation/LineStripAnimation",
   "app/Visualization/Animation/TileAnimation",
   "app/Visualization/Animation/DebugAnimation",
   "app/Visualization/Animation/ClusterAnimation",
-  "app/Visualization/Animation/MapsEngineAnimation",
-  "app/Visualization/Animation/CartoDBAnimation",
+//  "app/Visualization/Animation/CartoDBAnimation",
   "app/Visualization/Animation/VesselTrackAnimation",
   "app/Visualization/Animation/ArrowAnimation",
   "app/Visualization/Animation/SatelliteAnimation"
@@ -44,7 +43,7 @@ define([
   $,
   Dialog,
   Matrix,
-  CanvasLayer,
+  ol,
   Stats,
   ObjectToTable,
   Rowidx,
@@ -55,18 +54,6 @@ define([
     name: "AnimationManager",
 
     mapOptions: {
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
-      zoomControl: false,
-      scaleControl: true,
-      mapTypeControl: false,
-      streetViewControl: false,
-      overviewMapControl: false,
-      styles: [
-        {
-          featureType: 'poi',
-          stylers: [{visibility: 'off'}]
-        }
-      ]
     },
 
     initialize: function (visualization) {
@@ -99,9 +86,8 @@ define([
 
       async.series([
         self.initMap.bind(self),
-        self.initOverlay.bind(self),
-        self.initCanvas.bind(self),
         self.initStats.bind(self),
+        self.initCanvas.bind(self),
         self.initMouse.bind(self),
         self.initUpdates.bind(self),
         self.initOverlays.bind(self),
@@ -134,25 +120,38 @@ define([
     initMap: function (cb) {
       var self = this;
 
-      self.map = new google.maps.Map(
-        self.node[0],
-        $.extend(
-          {
-            zoom: 1,
-            center: {lat: 0, lng: 0}
-          },
-          self.mapOptions
-        )
-      );
+      self.layer = new ol.layer.Tile({
+        source: new ol.source.OSM()
+      });
+      self.markerLayer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+          url: 'http://t1.openseamap.org/seamark/{z}/{x}/{y}.png'
+        })
+      });
+      self.map = new ol.Map({
+        layers: [
+         self.layer, self.markerLayer
+        ],
+        target: self.node[0],
+        controls: ol.control.defaults({
+          attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
+            collapsible: false
+          })
+        }),
+        view: new ol.View({
+          center: [0, 0],
+          zoom: 2
+        })
+      });
 
       window.addEventListener('resize', self.windowSizeChanged.bind(self), false);
-      google.maps.event.addListener(self.map, 'tilesloaded', self.tilesLoaded.bind(self));
-      google.maps.event.addListener(self.map, 'center_changed', self.centerChanged.bind(self));
-      google.maps.event.addListener(self.map, 'zoom_changed', self.zoomChanged.bind(self));
-      google.maps.event.addListener(self.map, 'bounds_changed', self.boundsChanged.bind(self));
-      google.maps.event.addListener(self.map, 'dragstart', function () { self.indrag = true; });
-      google.maps.event.addListener(self.map, 'dragend', function () { self.indrag = false; self.boundsChanged(); });
-      google.maps.event.addListener(self.map, "bounds_changed", self.checkBounds.bind(self));
+      self.layer.getSource().on('tileloadstart', self.tilesLoaded.bind(self));
+      self.map.getView().on('change:zoom', self.zoomChanged.bind(self));
+      self.map.getView().on('change:center', self.centerChanged.bind(self));
+      self.map.getView().on('resolution', self.boundsChanged.bind(self));
+      self.map.on('movestart', function () { self.indrag = true; });
+      self.map.on('moveend', function () { self.indrag = false; self.boundsChanged(); });
+      self.map.getView().on('resolution', self.checkBounds.bind(self));
 
       cb();
     },
@@ -162,20 +161,22 @@ define([
 
     checkBounds: function() {
       var self = this;
+// FIXME: NOT FIXED
+return;
 
       var bounds = self.map.getBounds();
       var top = bounds.getNorthEast().lat();
       var bottom = bounds.getSouthWest().lat();
-      var center = self.map.getCenter();
+      var center = self.map.getView().getCenter();
 
       if (bottom < self.minLat) {
         if (top > self.maxLat) {
           self.map.setZoom(self.map.getZoom() + 1);
         } else {
-          self.map.setCenter(new google.maps.LatLng(center.lat() + (self.minLat - bottom), center.lng()));
+          self.map.setCenter([center.lng(), center.lat() + (self.minLat - bottom)]);
         }
       } else if (top > self.maxLat) {
-        self.map.setCenter(new google.maps.LatLng(center.lat() + (self.maxLat - top), center.lng()));
+        self.map.setCenter([center.lng(), center.lat() + (self.maxLat - top)]);
       }
     },
 
@@ -187,17 +188,6 @@ define([
        * focus, but generates a spurious and broken selection event.
        * self.node.children().children().first().children().trigger('click');
        */
-    },
-
-    initOverlay: function (cb) {
-      var self = this;
-
-      var overlay = self.visualization.state.getValue("overlay")
-      if (overlay) {
-        var kmlLayer = new google.maps.KmlLayer({url: overlay, preserveViewport: true});
-        kmlLayer.setMap(self.map);
-      }
-      cb();
     },
 
     handleNoGl: function () {
@@ -242,16 +232,14 @@ define([
     initCanvas: function (cb) {
       var self = this;
 
-      var canvasLayerOptions = {
-        map: self.map,
-        resizeHandler: function () { if (self.initialized) self.canvasResize() },
-        updateHandler: function () { if (self.initialized) self.update(); },
-        animate: true
-      };
-      self.canvasLayer = new CanvasLayer(canvasLayerOptions);
+      self.canvas = document.createElement('canvas');
+      $(self.canvas).css({"pointer-events": "none", position: "fixed", top: 0, left: 0, width: "100%", height: "100%"});
+      self.node.append(self.canvas);
+
+      window.requestAnimationFrame(self.update.bind(self));
 
       try {
-        self.gl = self.getGlContext(self.canvasLayer.canvas);
+        self.gl = self.getGlContext(self.canvas);
 
         self.rowidxGl = [self.createRowidxGlContext(), self.createRowidxGlContext()];
       } catch (e) {
@@ -262,16 +250,9 @@ define([
         }
       }
 
-      var onAdd = function () {
-        if (!self.canvasLayer.isAdded_) {
-          setTimeout(onAdd, 1);
-        } else {
-          self.canvasResize();
-          cb();
-        }
-      }
-      onAdd();
-    },
+      self.canvasResize();
+      cb();
+   },
 
     search: function(query, offset, limit, cb) {
       var self = this;
@@ -350,8 +331,8 @@ define([
 
 
         self.mouseoverPixelCache[cell] = self.rowidxGl.map(function (gl) {
-          gl.canvas.width = self.canvasLayer.canvas.width;
-          gl.canvas.height = self.canvasLayer.canvas.height;
+          gl.canvas.width = $(self.canvas).innerWidth();
+          gl.canvas.height = $(self.canvas).innerHeight();
           gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
           gl.enable(gl.SCISSOR_TEST);
           gl.scissor(gridX_global, gridY_global, self.mouseoverCacheCellSize.width, self.mouseoverCacheCellSize.height);
@@ -380,10 +361,10 @@ define([
     getRowidxAtPos: function (x, y) {
       var self = this;
 
-      var height = self.canvasLayer.canvas.height;
+      var height = $(self.canvas).innerHeight();
 
       /* Canvas coordinates are upside down for some reason... */
-      y = self.canvasLayer.canvas.height - y;
+      y = height - y;
 
       return Rowidx.pixelToId(
         Rowidx.appendByteArrays.apply(
@@ -420,6 +401,10 @@ define([
 
       var x, y;
 
+      if (e.originalEvent) {
+        e = e.originalEvent;
+      }
+
       if (e.pageX != undefined) {
         var offset = self.node.offset();
         x = e.pageX - offset.left;
@@ -450,7 +435,7 @@ define([
       );
 
       if (type == "info" || type == "selected") {
-        self.closeInfoPopup();
+        // self.closeInfoPopup();
       }
 
       if (rowidx) {
@@ -717,19 +702,20 @@ define([
         'Show raw object information (no server query) in popup'
       );
 
+/*
       self.infoPopup = new google.maps.InfoWindow({});
       google.maps.event.addListener(self.infoPopup, "closeclick", self.closeInfoPopup.bind(self));
-
+*/
       self.node.mousemove(function (e) {
         if (!self.indrag) self.handleMouse(e, 'hover');
       });
 
-      google.maps.event.addListener(self.map, "click", function(e) {
+      self.map.on('click', function(e) {
         self.handleMouse(e, 'selected');
         if (e.preventDefault) e.preventDefault();
         if (e.stopPropagation) e.stopPropagation();
       });
-      google.maps.event.addListener(self.map, "rightclick", function(e) {
+      self.map.getView().on('contextmenu', function(e) {
         e.pageX = e.pixel.x;
         e.pageY = e.pixel.y;
         
@@ -759,10 +745,12 @@ define([
       var self = this;
 
       async.series([
+/*
         function (cb) {
           self.bboxSelection = new BboxSelection(self, {});
           self.addAnimationInstance(self.bboxSelection, cb, "overlays");
         }
+*/
       ], cb);
     },
 
@@ -793,6 +781,7 @@ define([
       });
     },
 
+/*
     closeInfoPopup: function () {
       var self = this;
       self.infoPopup.close();
@@ -800,6 +789,7 @@ define([
         animation.select(undefined, "info", true, {});
       });
     },
+*/
 
     handleInfo: function (animation, type, err, data, selectionData) {
       var self = this;
@@ -825,7 +815,7 @@ define([
       if (type == 'info') {
         if (err) data = err;
         if (!data) return;
-
+/*
         var content = ObjectToTable(data);
         if (typeof(content) != "string") content = content.html();
 
@@ -835,6 +825,7 @@ define([
                      lng: selectionData.longitude}
         });
         self.infoPopup.open(self.map);
+*/
       } else {
         var category;
         var event = {
@@ -956,26 +947,28 @@ define([
 
     windowSizeChanged: function () {
       var self = this;
-      google.maps.event.trigger(self.map, 'resize');
+      self.canvasResize();
+      self.map.updateSize();
     },
 
     panZoom: function () {
       var self = this;
 
       if (!self.inPanZoom) {
-        self.map.setCenter({
-          lat: self.visualization.state.getValue("lat"),
-          lng: self.visualization.state.getValue("lon")
-        });
-        self.map.setZoom(self.visualization.state.getValue("zoom"));
+        self.map.getView().setCenter(
+	    ol.proj.transform([self.visualization.state.getValue("lon"),
+			       self.visualization.state.getValue("lat")],
+			      'EPSG:4326', self.map.getView().getProjection()));
+        self.map.getView().setZoom(self.visualization.state.getValue("zoom"));
       }
     },
 
     centerChanged: function() {
       var self = this;
       self.inPanZoom = true;
-      self.visualization.state.setValue("lat", self.map.getCenter().lat());
-      self.visualization.state.setValue("lon", self.map.getCenter().lng());
+      var center = ol.proj.transform(self.map.getView().getCenter(), self.map.getView().getProjection(), 'EPSG:4326');
+      self.visualization.state.setValue("lat", center[1]);
+      self.visualization.state.setValue("lon", center[0]);
       self.inPanZoom = false;
       self.triggerUpdate();
     },
@@ -997,14 +990,12 @@ define([
 
     dataNeedsChanged: function() {
       var self = this;
-      var bounds = self.map.getBounds();
-      var ne = bounds.getNorthEast();
-      var sw = bounds.getSouthWest();
-      var latmin = sw.lat();
-      var lonmin = sw.lng();
-      var latmax = ne.lat();
-      var lonmax = ne.lng();
-      var bounds = new Bounds([lonmin, latmin, lonmax, latmax]);
+      var extent = ol.proj.transformExtent(
+	  self.map.getView().calculateExtent(
+	      self.map.getSize()),
+	  self.map.getView().getProjection(),
+	  'EPSG:4326');
+      var bounds = new Bounds(extent);
 
       var end = self.visualization.state.getValue("time");
       if (end == undefined) return;
@@ -1020,8 +1011,8 @@ define([
 
       if (!self.gl) return;
 
-      var width = self.canvasLayer.canvas.width;
-      var height = self.canvasLayer.canvas.height;
+      var width = $(self.canvas).innerWidth();
+      var height = $(self.canvas).innerHeight();
 
       self.gl.viewport(0, 0, width, height);
 
@@ -1074,16 +1065,42 @@ define([
        * see https://developers.google.com/maps/documentation/javascript/maptypes#MapCoordinate
        */
 
-      var mapProjection = self.map.getProjection();
-
       // copy pixel->webgl matrix
       self.googleMercator2webglMatrix.set(self.pixelsToWebGLMatrix);
 
-      var scale = self.canvasLayer.getMapScale();
+      var scale = Math.pow(2, self.map.getView().getZoom());
+      //scale = 16;
       Matrix.scaleMatrix(self.googleMercator2webglMatrix, scale, scale);
 
-      var translation = self.canvasLayer.getMapTranslation();
+      var translation = self.getMapTranslation();
+      //translation = {x:-88, y:-105.81249999999999};
       Matrix.translateMatrix(self.googleMercator2webglMatrix, translation.x, translation.y);
+    },
+
+    getMapTranslation: function () {
+      var self = this;
+      // Extents are minX, minY, maxX, maxY
+
+      // Where is northwest corner of earth compared to northwest corner of canvas?  If there's more than one
+      // projection displaying (i.e. the international date line is visible one or more times), select 
+      // projection which covers the center pixel of the container
+      var scale = Math.pow(2, self.map.getView().getZoom());
+      var world = self.map.getView().getProjection().getExtent();
+      var worldWidth = world[2] - world[0];
+      var worldHeight = world[3] - world[1];
+      var projectionWidth = worldWidth / scale;
+
+      var extent = self.map.getView().calculateExtent(self.map.getSize());
+
+      var translation = {x:(extent[0] - world[0]) * 256 / worldWidth, y:(-extent[3] - world[1]) * 256 / worldHeight}; // Top left corner
+      translation.x = -translation.x;
+      translation.y = -translation.y;
+
+      // Calculate how many projectionWidths we can move to the right before the origin crosses the center pixel of the container    
+      var advance = Math.floor(((0.5 * self.map.getSize()[0] / scale) - translation.x) / projectionWidth);
+
+      translation.x += advance * projectionWidth;
+      return translation;
     },
 
     isPaused: function () {
@@ -1113,6 +1130,11 @@ define([
       self.updateTime(self.visualization.data.header, paused);
       self.updateProjection();
 
+      self.gl.canvas.width = $(self.canvas).innerWidth();
+      self.gl.canvas.height = $(self.canvas).innerHeight();
+      self.gl.viewport(0, 0, self.gl.canvas.width, self.gl.canvas.height);
+      self.gl.enable(self.gl.SCISSOR_TEST);
+      self.gl.scissor(0, 0, self.gl.canvas.width, self.gl.canvas.height);
       self.gl.clear(self.gl.COLOR_BUFFER_BIT);
 
       Logging.main.log("Visualization.Animation.AnimationManager.update", {
@@ -1140,17 +1162,7 @@ define([
       if (!e || e.mouseoverChange !== false) {
         self.mouseoverUpdateNeeded = true;
       }
-    },
-
-    setMapOptions: function (options) {
-      var self = this;
-
-      options = $.extend({}, options);
-      delete options.zoom;
-      delete options.center;
-
-      self.mapOptions = options;
-      self.map.setOptions(options);
+      window.requestAnimationFrame(self.update.bind(self));
     },
 
     load: function (animations, cb) {
@@ -1160,10 +1172,6 @@ define([
         animation.destroy();
       });
       self.animations = [];
-
-      if (animations.options) {
-        self.setMapOptions(animations.options);
-      }
 
       async.mapSeries(
         animations.animations,
