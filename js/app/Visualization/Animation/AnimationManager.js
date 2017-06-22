@@ -401,6 +401,10 @@ return;
 
       var x, y;
 
+      if (e.originalEvent) {
+        e = e.originalEvent;
+      }
+
       if (e.pageX != undefined) {
         var offset = self.node.offset();
         x = e.pageX - offset.left;
@@ -431,7 +435,7 @@ return;
       );
 
       if (type == "info" || type == "selected") {
-        self.closeInfoPopup();
+        // self.closeInfoPopup();
       }
 
       if (rowidx) {
